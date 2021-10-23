@@ -329,10 +329,64 @@ class IpnMock:
 
 # == Mixins to reduce duplication ==
 
-# TODO - we are moving away from these, to:
-# - explicitly using factories that create the thing you need
-# - factories that intelligently set up their own needed dependencies
-class CreateCampMixin:
+
+class BookingLogInMixin:
+    booker_email = "booker@bookers.com"
+
+    def login(self, add_account_details=True, shortcut=None) -> BookingAccount:
+        if getattr(self, "_logged_in", False):
+            return
+
+        if shortcut is None:
+            shortcut = self.is_full_browser_test
+
+        if shortcut:
+            account, _ = BookingAccount.objects.get_or_create(email=self.booker_email)
+            self._set_signed_cookie(
+                "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS
+            )
+        else:
+            # Easiest way is to simulate what the user actually has to do
+            self.get_url("cciw-bookings-start")
+            self.fill_by_name({"email": self.booker_email})
+            self.submit("[type=submit]")
+            url, path, querydata = read_email_url(mail.outbox.pop(), "https://.*/booking/v/.*")
+            self.get_literal_url(path_and_query_to_url(path, querydata))
+            account = BookingAccount.objects.get(email=self.booker_email)
+
+        if add_account_details:
+            account.name = "Joe"
+            account.address_line1 = "456 My Street"
+            account.address_city = "Metrocity"
+            account.address_country = "GB"
+            account.address_post_code = "XYZ"
+            account.phone_number = "0123 456789"
+            account.save()
+        self._logged_in = True
+        return account
+
+    def _set_signed_cookie(self, key, value, salt="", **kwargs):
+        value = signing.get_cookie_signer(salt=key + salt).sign(value)
+        if self.is_full_browser_test:
+            if not self._have_visited_page():
+                self.get_url("django_functest.emptypage")
+            return self._add_cookie({"name": key, "value": value, "path": "/"})
+        else:
+            return self.app.set_cookie(key, value)
+
+
+class CreateBookingWebMixin(BookingLogInMixin):
+    """
+    Mixin to be used for functional testing of creating bookings online. It
+    creates `self.camp` and `self.camp_2` and provides other utility methods.
+    """
+
+    # For other, model level tests, we prefer explicit use of factories
+    # for the things under test.
+
+    def setUp(self):
+        super().setUp()
+        self.create_camps()
 
     camp_minimum_age = 11
     camp_maximum_age = 17
@@ -362,9 +416,9 @@ class CreateCampMixin:
             start_date=start_date + timedelta(days=7),
         )
 
-
-class CreatePricesMixin:
     def add_prices(self, deposit=None, early_bird_discount=None):
+        if hasattr(self, "price_full"):
+            return
         year = self.camp.year
         (
             self.price_full,
@@ -373,61 +427,6 @@ class CreatePricesMixin:
             self.price_deposit,
             self.price_early_bird_discount,
         ) = factories.create_prices(year, deposit=deposit, early_bird_discount=early_bird_discount)
-
-    def setUp(self):
-        super().setUp()
-        self.create_camps()
-
-
-class LogInMixin:
-    email = "booker@bookers.com"
-
-    def login(self, add_account_details=True, shortcut=None) -> BookingAccount:
-        if getattr(self, "_logged_in", False):
-            return
-
-        if shortcut is None:
-            shortcut = self.is_full_browser_test
-
-        if shortcut:
-            account, _ = BookingAccount.objects.get_or_create(email=self.email)
-            self._set_signed_cookie(
-                "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS
-            )
-        else:
-            # Easiest way is to simulate what the user actually has to do
-            self.get_url("cciw-bookings-start")
-            self.fill_by_name({"email": self.email})
-            self.submit("[type=submit]")
-            url, path, querydata = read_email_url(mail.outbox.pop(), "https://.*/booking/v/.*")
-            self.get_literal_url(path_and_query_to_url(path, querydata))
-            account = BookingAccount.objects.get(email=self.email)
-
-        if add_account_details:
-            account.name = "Joe"
-            account.address_line1 = "456 My Street"
-            account.address_city = "Metrocity"
-            account.address_country = "GB"
-            account.address_post_code = "XYZ"
-            account.phone_number = "0123 456789"
-            account.save()
-        self._logged_in = True
-        return account
-
-    def _set_signed_cookie(self, key, value, salt="", **kwargs):
-        value = signing.get_cookie_signer(salt=key + salt).sign(value)
-        if self.is_full_browser_test:
-            if not self._have_visited_page():
-                self.get_url("django_functest.emptypage")
-            return self._add_cookie({"name": key, "value": value, "path": "/"})
-        else:
-            return self.app.set_cookie(key, value)
-
-
-class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
-    def setUp(self):
-        super().setUp()
-        self.create_camps()
 
     def create_booking(
         self,
@@ -463,7 +462,7 @@ class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
         if shortcut:
             data.update(
                 {
-                    "account": BookingAccount.objects.get(email=self.email),
+                    "account": BookingAccount.objects.get(email=self.booker_email),
                     "state": BookingState.INFO_COMPLETE,
                 }
             )
@@ -912,7 +911,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         self.assertUrlsEqual(reverse("cciw-bookings-pay"))
 
 
-class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
+class AccountDetailsBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
 
     urlname = "cciw-bookings-account_details"
     submit_css_selector = "[type=submit]"
@@ -1397,7 +1396,7 @@ class EditPlaceAdminBase(
         self.add_prices()
         self.officer_login(BOOKING_SECRETARY)
         account = BookingAccount.objects.create(
-            email=self.email,
+            email=self.booker_email,
             name="Joe",
             address_post_code="XYZ",
         )
@@ -2155,7 +2154,7 @@ class TestPaySL(PayBase, SeleniumBase):
     pass
 
 
-class TestPayReturnPoints(BookingBaseMixin, LogInMixin, WebTestBase):
+class TestPayReturnPoints(BookingBaseMixin, BookingLogInMixin, WebTestBase):
     def test_pay_done(self):
         self.login()
         self.get_url("cciw-bookings-pay_done")
@@ -2679,7 +2678,7 @@ class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
     pass
 
 
-class LogOutBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
+class LogOutBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
     def test_logout(self):
         self.login()
         self.get_url("cciw-bookings-account_overview")
