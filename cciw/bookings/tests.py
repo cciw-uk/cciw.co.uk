@@ -248,7 +248,7 @@ class Factories(FactoriesBase):
             active=True,
         )
 
-    def create_prices(self, year, deposit=None, early_bird_discount=None):
+    def create_prices(self, year, deposit=None, early_bird_discount=None, full_price=None):
         if deposit is None:
             deposit = Decimal(20)
         else:
@@ -257,7 +257,11 @@ class Factories(FactoriesBase):
             early_bird_discount = Decimal(10)
         else:
             early_bird_discount = Decimal(early_bird_discount)
-        price_full = Price.objects.get_or_create(year=year, price_type=PriceType.FULL, price=Decimal("100"))[0].price
+        if full_price is None:
+            full_price = Decimal(100)
+        else:
+            full_price = Decimal(full_price)
+        price_full = Price.objects.get_or_create(year=year, price_type=PriceType.FULL, price=full_price)[0].price
         price_2nd_child = Price.objects.get_or_create(
             year=year, price_type=PriceType.SECOND_CHILD, price=Decimal("75")
         )[0].price
@@ -688,16 +692,18 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
                 assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
 
 
-class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, WebTestBase):
+class TestBookingIndex(BookingBaseMixin, WebTestBase):
     def test_show_with_no_prices(self):
+        camp = camps_factories.create_camp()
         self.get_url("cciw-bookings-index")
-        self.assertTextPresent(f"Prices for {self.camp.year} have not been finalised yet")
+        self.assertTextPresent(f"Prices for {camp.year} have not been finalised yet")
 
     def test_show_with_prices(self):
-        self.add_prices()  # need for booking to be open
+        camp = camps_factories.create_camp()
+        factories.create_prices(camp.year, full_price=100, deposit=20)
         self.get_url("cciw-bookings-index")
         self.assertTextPresent("£100")
-        self.assertTextPresent("£20")  # Deposit price
+        self.assertTextPresent("£20")
 
 
 class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
