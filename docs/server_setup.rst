@@ -6,9 +6,10 @@ Server provisioning/upgrade
 ---------------------------
 
 To upgrade to a major new version of the OS, it is usually better to start a new
-VM, test it is all working, then transfer. Here is the process, assuming that we
-are staying with the same provider (DigitalOcean). If moving to a new hosts some
-steps will need to be changed.
+`VPS <https://en.wikipedia.org/wiki/Virtual_private_server>`_, test it is all
+working, then transfer. Here is the process, assuming that we are staying with
+the same provider (DigitalOcean). If moving to a new host, some steps will need
+to be changed.
 
 
 1. Change the TTL on all cciw.co.uk domains down to 1 hour (3600 seconds), so
@@ -16,16 +17,19 @@ steps will need to be changed.
    needs to be done at least X seconds before the actual switch over is planned,
    where X is the previous TTL, to give time for DNS propagation. So, if
    previous TTL is 86400 (1 day), this step needs to be done at least 1 day
-   before go live of new server.
+   before going live with the new server.
 
    Later on, at least 1 hour before switch over, we'll reduce it further to 5
    minutes.
+
+   On Digital Ocean, these setting can be done on the `Networking page
+   <https://cloud.digitalocean.com/networking/domains>`_.
 
 2. Fetch old SSL certificates::
 
      fab download_letscencrypt_config
 
-3. Create new VM:
+3. Create new VPS:
 
    On DigitalOcean, last time (2020-04-18) this process was:
 
@@ -52,29 +56,29 @@ steps will need to be changed.
 
    - Enable backups
 
-4. Add new VM to /etc/hosts so that it can be accessed easily, using the IP address given
-   e.g.::
+4. Add new VPS to your local /etc/hosts so that it can be accessed easily, using
+   the IP address given e.g.::
 
    178.62.115.97 cciw2.digitalocean.com
 
-   Check you can login with ``ssh root@cciw2.digitalocean.com``
+   Check you can login to the new VPS with ``ssh root@cciw2.digitalocean.com``
 
-5. Change ``env.hosts`` in fabfile to point to new VM. Remember that from now
-   on it will use the new VM by default, unless ``-H`` flag is passed.
+5. Change ``env.hosts`` in ``fabfile.py`` to point to the new VPS. Remember that
+   from now on it will use the new VPS by default, unless ``-H`` flag is passed.
 
-6. Upgrade versions of things, preferably to defaults for new distribution
+6. Upgrade versions of dependencies, preferably to defaults for new distribution
 
    * Python version - see ``PYTHON_BIN`` in fabfile.py
    * Postgresql version - fabfile.py
 
-6. Provision VM::
+6. Provision VPS::
 
     $ fab secure
     $ fab provision
 
 
-  If this fails update any dependencies, searching for new packages using
-  ``apt search``.
+  If this fails to update any dependencies, search for new packages using ``apt
+  search``.
 
   Then::
 
@@ -102,7 +106,8 @@ the process works.
      fab -H cciw2.digitalocean.com start_webserver
 
 9. Use your local /etc/hosts to point www.cciw.co.uk to the new server, and test
-   the new site works as expected.
+   the new site works as expected. Revert /etc/hosts so that you don’t
+   confuse yourself.
 
 10. If everything works, prepare to do it for real
 
@@ -114,11 +119,11 @@ Now we'll repeat some steps, with changes:
 
 11. Stop the old server
 
-12. Repeat step 7 - download media and DB from old server
+12. Same as step 7 - download media and DB from old server
 
-13. Repeat step 8 - upload media and DB to new server
+13. Same as step 8 - upload media and DB to new server
 
-14. Repeat step 9 - check everything works
+14. Same as step 9 - check everything works
 
 15. Switch DNS to the new server in the DigitalOcean control panel. Put DNS TTL
     back up to 86400
@@ -139,4 +144,4 @@ Upgrading
 
 Instead you may opt to upgrade a server in place, with an easier upgrade route
 but potentially more downtime if something goes wrong. Use
-``do-release-upgrade`` and follow prompts.
+``do-release-upgrade`` on the server and follow prompts.

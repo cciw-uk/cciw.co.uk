@@ -12,11 +12,16 @@ We use:
 * nginx as main webserver
 * postgresql as database
 * AWS SES for mail services
+* uwsgi to run the Django app
+* memcached for caching
+* supervisord for managing some of the processes
 
 We currently have no need for async tasks, but do have a crontab for a few
 scheduled background tasks.
 
-Other Python dependencies are detailed in ``requirements.txt``.
+Python dependencies are detailed in ``requirements.txt``. Deployment
+configuration is in ``config/``, and applied using ``fabfile.py`` - see
+`<deployment.rst>`_
 
 Components
 ----------

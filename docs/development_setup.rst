@@ -12,7 +12,7 @@ Assuming a Linux/Unix machine, the requirements are:
 
 * Python 3.9
 * Postgres 12
-* Node
+* Node (used only for development and pre-deployment building)
 
 For tests, see also:
 

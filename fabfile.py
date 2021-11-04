@@ -65,6 +65,7 @@ REQS = [
     "debian-goodies",  # checkrestart
     "software-properties-common",  # "
     "unattended-upgrades",
+    "apt-listchanges",
     "rsync",
     "git",
     "mercurial",
@@ -520,6 +521,9 @@ def no_tag():
 
 
 def create_target():
+    """
+    Creates a place on the server where we will push the app to.
+    """
     commit_ref = get_current_git_ref()
     target = Version(commit_ref)
     target.make_dirs()
@@ -603,6 +607,9 @@ def push_secrets(target):
 
 
 def create_venv(target):
+    """
+    Create a Python virtualenv in the target.
+    """
     venv_root = target.VENV_ROOT
     if exists(venv_root):
         return
