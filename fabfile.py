@@ -975,7 +975,7 @@ def install_or_renew_ssl_certificate():
     certbot_static_path = version.STATIC_ROOT + "/root"
     run(f"test -d {certbot_static_path} || mkdir {certbot_static_path}")
     run(f"letsencrypt certonly --webroot -w {certbot_static_path} -d {env.domains[0]}")
-    run("service nginx restart")
+    run("service nginx reload")
 
 
 @task
