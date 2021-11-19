@@ -1,5 +1,5 @@
 
-# Remove www prefix:
+# Add www prefix:
 server {
     listen 80;
     server_name cciw.co.uk;
