@@ -1,12 +1,14 @@
 import django.contrib.auth.views
 import django.contrib.staticfiles.views
 import django.views.static
+from decorator_include import decorator_include
 from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path, register_converter
 
 import cciw.officers.views
+from cciw.bookings.decorators import check_booking_decorator
 
 from . import converters
 
@@ -38,7 +40,7 @@ urlpatterns = [
     path("captcha/", include("captcha.urls")),
     path("admin/", admin.site.urls),
     # Our normal views
-    path("booking/", include("cciw.bookings.urls")),
+    path("booking/", decorator_include([check_booking_decorator], "cciw.bookings.urls")),
     path("officers/", include("cciw.officers.urls")),
     path("notifications/", include("django_nyt.urls")),
     path("wiki/", include("wiki.urls")),

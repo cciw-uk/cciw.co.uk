@@ -17,6 +17,7 @@ urlpatterns = [
     path("leaders/references/<campid:camp_id>/", views.manage_references, name="cciw-officers-manage_references"),
     path("leaders/officer-list/<campid:camp_id>/", views.officer_list, name="cciw-officers-officer_list"),
     path("leaders/officer/<int:officer_id>/", views.officer_history, name="cciw-officers-officer_history"),
+    path("add-officer/", views.create_officer, name="cciw-officers-create_officer"),
     path(
         "leaders/export-officer-data/<campid:camp_id>/",
         views.export_officer_data,
@@ -85,13 +86,22 @@ urlpatterns = [
         name="cciw-officers-create_reference",
     ),
     path("ref/thanks/", views.create_reference_thanks, name="cciw-officers-create_reference_thanks"),
-    path("add-officer/", views.create_officer, name="cciw-officers-create_officer"),
+    # Officer other
     path("files/<path:path>", views.officer_files, name="cciw-officers-officer_files"),
     path("info/", views.officer_info, name="cciw-officers-info"),
+    # Booking secretary functions:
     path(
         "bookings/reports/<yyyy:year>/", views.booking_secretary_reports, name="cciw-officers-booking_secretary_reports"
     ),
     path("bookings/export-payments/", views.export_payment_data, name="cciw-officers-export_payment_data"),
+    path("bookings/booking-places-json/", views.booking_places_json, name="cciw-officers-booking_places_json"),
+    path("bookings/booking-account-json/", views.booking_account_json, name="cciw-officers-booking_account_json"),
+    path("bookings/booking-problems-json/", views.booking_problems_json, name="cciw-officers-booking_problems_json"),
+    path(
+        "bookings/expected-amount-json/",
+        views.get_booking_expected_amount_due,
+        name="cciw-officers-get_booking_expected_amount_due",
+    ),
     # Bookings progress
     path(
         "bookings/booking-progress-stats/<yyyy:start_year>-<yyyy:end_year>/",

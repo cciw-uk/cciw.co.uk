@@ -7,7 +7,7 @@ from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
 from django.urls import reverse
 
-from cciw.bookings.views import ensure_booking_account_attr
+from cciw.bookings.middleware import get_booking_account_from_request
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 
@@ -28,14 +28,12 @@ for val in ContactType:
 @ajax_form_validate(AjaxContactUsForm)
 def contact_us(request):
     form_class = ContactUsForm
-    ensure_booking_account_attr(request)
-    # At module level, use of 'settings' seems to cause problems
+    booking_account = get_booking_account_from_request(request)
 
     if request.method == "POST":
         form = form_class(request.POST)
         if form.is_valid():
             to_emails = CONTACT_CHOICE_DESTS[form.cleaned_data["subject"]]
-            booking_account = request.booking_account
             if booking_account is not None and form.cleaned_data["email"] != booking_account.email:
                 # They changed the email from the default, so disconnect
                 # this message from the booking account, to avoid confusion
@@ -50,8 +48,8 @@ def contact_us(request):
         for val, caption in ContactType.choices:
             if val in request.GET:
                 initial["subject"] = val
-        if request.booking_account is not None:
-            initial["email"] = request.booking_account.email
+        if booking_account is not None:
+            initial["email"] = booking_account.email
         form = form_class(initial=initial)
 
     return TemplateResponse(

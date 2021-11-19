@@ -1,3 +1,4 @@
+import contextlib
 import operator
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -26,10 +27,12 @@ from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.accounts.models import User
-from cciw.bookings.models import most_recent_booking_year
+from cciw.bookings.models import Booking, BookingAccount, Price, is_booking_open, most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (
+    account_to_dict,
     addresses_for_mailing_list,
+    booking_to_dict,
     camp_bookings_to_spreadsheet,
     camp_sharable_transport_details_to_spreadsheet,
     payments_to_spreadsheet,
@@ -1700,6 +1703,118 @@ def spreadsheet_response(formatter, filename):
     response = HttpResponse(formatter.to_bytes(), content_type=formatter.mimetype)
     response["Content-Disposition"] = f"attachment; filename={filename}.{formatter.file_ext}"
     return response
+
+
+@booking_secretary_required
+@json_response
+def booking_places_json(request):
+    try:
+        account_id = int(request.GET["id"])
+    except (KeyError, ValueError):
+        return {
+            "status": "success",
+            "places": [],
+        }
+
+    account = BookingAccount.objects.get(id=account_id)
+    qs = account.bookings.all()
+    try:
+        exclude_id = int(request.GET["exclude"])
+    except (KeyError, ValueError):
+        exclude_id = None
+    if exclude_id:
+        qs = qs.exclude(id=exclude_id)
+
+    return {
+        "status": "success",
+        "places": [booking_to_dict(b) for b in qs],
+    }
+
+
+@booking_secretary_required
+@json_response
+def booking_account_json(request):
+    try:
+        account_id = int(request.GET["id"])
+    except (KeyError, ValueError):
+        return {"status": "failure"}
+    acc = BookingAccount.objects.get(id=account_id)
+    return {
+        "status": "success",
+        "account": account_to_dict(acc),
+    }
+
+
+@booking_secretary_required
+@json_response
+def booking_problems_json(request):
+    """
+    Get the booking problems associated with the data POSTed.
+    """
+    # This is used by the admin.
+    # We have to create a Booking object, but not save it.
+    from cciw.bookings.admin import BookingAdminForm
+
+    # Make it easy on front end:
+    data = request.POST.copy()
+    with contextlib.suppress(KeyError):
+        data["created_at"] = data["created_at_0"] + " " + data["created_at_1"]
+
+    if "booking_id" in data:
+        booking_obj = Booking.objects.get(id=int(data["booking_id"]))
+        if "created_online" not in data:
+            # readonly field, data not included in form
+            data["created_online"] = booking_obj.created_online
+        form = BookingAdminForm(data, instance=booking_obj)
+    else:
+        form = BookingAdminForm(data)
+
+    retval = {"status": "success"}
+    if form.is_valid():
+        retval["valid"] = True
+        instance = form.save(commit=False)
+        # We will get errors later on if prices don't exist for the year chosen, so
+        # we check that first.
+        if not is_booking_open(instance.camp.year):
+            retval["problems"] = [f"Prices have not been set for the year {instance.camp.year}"]
+        else:
+            problems, warnings = instance.get_booking_problems(booking_sec=True)
+            retval["problems"] = problems + warnings
+    else:
+        retval["valid"] = False
+        retval["errors"] = form.errors
+    return retval
+
+
+@json_response
+@staff_member_required
+@booking_secretary_required
+def get_booking_expected_amount_due(request):
+    fail = {"status": "success", "amount": None}
+    try:
+        # If we use a form to construct an object, we won't get pass
+        # validation. So we construct a partial object, doing manual parsing of
+        # posted vars.
+
+        if "id" in request.POST:
+            # Start with saved data if it is available
+            b = Booking.objects.get(id=int(request.POST["id"]))
+        else:
+            b = Booking()
+        b.price_type = int(request.POST["price_type"])
+        b.camp_id = int(request.POST["camp"])
+        b.early_bird_discount = "early_bird_discount" in request.POST
+        b.state = int(request.POST["state"])
+    except (ValueError, KeyError):  # not a valid price_type/camp, data missing
+        return fail
+    try:
+        amount = b.expected_amount_due()
+    except Price.DoesNotExist:
+        return fail
+
+    if amount is not None:
+        amount = str(amount)  # convert decimal
+    return {"status": "success", "amount": amount}
 
 
 cciw_password_reset = PasswordResetView.as_view(form_class=CciwPasswordResetForm)

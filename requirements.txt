@@ -78,6 +78,8 @@ django-countries==7.2.1
     # via -r requirements.in
 django-debug-toolbar==3.2
     # via -r requirements-dev.in
+django-decorator-include==3.0
+    # via -r requirements.in
 django-functest==1.1
     # via -r requirements-dev.in
 django-js-asset==1.1.0
@@ -107,6 +109,7 @@ django==3.2.6
     #   django-classy-tags
     #   django-colorful
     #   django-debug-toolbar
+    #   django-decorator-include
     #   django-functest
     #   django-mailer
     #   django-mptt

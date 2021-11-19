@@ -31,14 +31,14 @@
   <script type="text/javascript">
     var cciw = (function(pub) {
       "use strict";
-      pub.allAccountJsonUrl = '{% url "cciw-bookings-all_accounts_json" %}';
-      pub.bookingProblemsJsonUrl = '{% url "cciw-bookings-booking_problems_json" %}';
+      pub.allAccountJsonUrl = '{% url "cciw-officers-booking_account_json" %}';
+      pub.bookingProblemsJsonUrl = '{% url "cciw-officers-booking_problems_json" %}';
       pub.placeAvailabilityJsonUrl = '{% url "cciw-bookings-place_availability_json" %}';
-      pub.getExpectedAmountDueUrl = '{% url "cciw-bookings-get_expected_amount_due" %}';
+      pub.getExpectedAmountDueUrl = '{% url "cciw-officers-get_booking_expected_amount_due" %}';
 
       // For 'use previous' functionality:
-      pub.placesJsonUrl = '{% url "cciw-bookings-all_places_json" %}';
-      pub.accountJsonUrl = '{% url "cciw-bookings-all_accounts_json" %}';
+      pub.placesJsonUrl = '{% url "cciw-officers-booking_places_json" %}';
+      pub.accountJsonUrl = '{% url "cciw-officers-booking_account_json" %}';
       return pub;
 
     })(cciw || {});

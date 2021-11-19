@@ -4,24 +4,21 @@ import re
 from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
-from functools import wraps
 
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
 from django.views.decorators.csrf import csrf_exempt
-from django_countries.fields import Country
 from paypal.standard.forms import PayPalPaymentsForm
 
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
-from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
+from cciw.bookings.middleware import unset_booking_account_cookie
 from cciw.bookings.models import (
     AgreementFetcher,
     Booking,
@@ -43,9 +40,16 @@ from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
-from cciw.utils.views import user_passes_test_improved
 
-# decorators and utilities
+from .decorators import (
+    account_details_required,
+    booking_account_optional,
+    booking_account_required,
+    redirect_if_agreement_fix_required,
+)
+from .utils import account_to_dict, booking_to_dict
+
+# utilities
 
 
 class BookingStage:
@@ -57,61 +61,11 @@ class BookingStage:
     PAY = "pay"
 
 
-def ensure_booking_account_attr(request):
-    if not hasattr(request, "booking_account"):
-        request.booking_account = get_booking_account_from_request(request)
-
-
-def booking_account_required(view_func):
-    """
-    Requires a signed cookie that verifies the booking account,
-    redirecting if this is not satisfied,
-    and attaches the BookingAccount object to the request.
-    """
-
-    @wraps(view_func)
-    def view(request, *args, **kwargs):
-        ensure_booking_account_attr(request)
-        if request.booking_account is None:
-            return HttpResponseRedirect(reverse("cciw-bookings-not_logged_in"))
-        return view_func(request, *args, **kwargs)
-
-    return view
-
-
-def account_details_required(view_func):
-    @wraps(view_func)
-    def view(request, *args, **kwargs):
-        ensure_booking_account_attr(request)
-        if not request.booking_account.has_account_details():
-            return next_step(request.booking_account)
-        return view_func(request, *args, **kwargs)
-
-    return view
-
-
-booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser or user.is_booking_secretary)
-
-
-def redirect_if_agreement_fix_required(view_func):
-    @wraps(view_func)
-    def view(request, *args, **kwargs):
-        ensure_booking_account_attr(request)
-        if request.booking_account.bookings.agreement_fix_required().exists():
-            messages.warning(
-                request, "There is an issue with your existing bookings. Please address it before continuing."
-            )
-            return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
-        return view_func(request, *args, **kwargs)
-
-    return view
-
-
 # Views
 
 
+@booking_account_optional
 def index(request):
-    ensure_booking_account_attr(request)
     year = common.get_thisyear()
     bookingform_relpath = f"{settings.BOOKINGFORMDIR}/booking_form_{year}.pdf"
     context = {
@@ -179,9 +133,10 @@ def next_step(account):
         return HttpResponseRedirect(reverse("cciw-bookings-account_details"))
 
 
+@booking_account_optional
 def start(request):
     form_class = EmailForm
-    account = get_booking_account_from_request(request)
+    account = request.booking_account
     if account is not None:
         return next_step(account)
     if request.method == "POST":
@@ -206,6 +161,7 @@ def start(request):
     )
 
 
+@booking_account_optional
 def email_sent(request):
     return TemplateResponse(
         request,
@@ -217,6 +173,7 @@ def email_sent(request):
     )
 
 
+@booking_account_optional
 def link_expired_email_sent(request):
     return TemplateResponse(
         request,
@@ -250,6 +207,7 @@ def verify_and_continue(request):
         return next_step(account)
 
 
+@booking_account_optional
 def verify_email_failed(request):
     return TemplateResponse(
         request,
@@ -261,6 +219,7 @@ def verify_email_failed(request):
     )
 
 
+@booking_account_optional
 def not_logged_in(request):
     return TemplateResponse(
         request,
@@ -363,163 +322,41 @@ def add_place(request):
     return add_or_edit_place(request, {"title": "Booking - add new camper details"})
 
 
+@booking_account_required
 def edit_place(request, booking_id: int):
     return add_or_edit_place(
         request, {"title": "Booking - edit camper details", "edit_mode": True}, booking_id=booking_id
     )
 
 
-# Public attributes - i.e. that the account holder is allowed to see
-BOOKING_PLACE_PUBLIC_ATTRS = [
-    "id",
-    "first_name",
-    "last_name",
-    "sex",
-    "date_of_birth",
-    "address_line1",
-    "address_line2",
-    "address_city",
-    "address_county",
-    "address_country",
-    "address_post_code",
-    "phone_number",
-    "church",
-    "contact_name",
-    "contact_line1",
-    "contact_line2",
-    "contact_city",
-    "contact_county",
-    "contact_country",
-    "contact_post_code",
-    "contact_phone_number",
-    "dietary_requirements",
-    "gp_name",
-    "gp_line1",
-    "gp_line2",
-    "gp_city",
-    "gp_county",
-    "gp_country",
-    "gp_post_code",
-    "gp_phone_number",
-    "medical_card_number",
-    "last_tetanus_injection_date",
-    "allergies",
-    "regular_medication_required",
-    "learning_difficulties",
-    "serious_illness",
-    "created_at",
-]
-
-# Public attributes - i.e. that the account holder is allowed to see
-ACCOUNT_PUBLIC_ATTRS = [
-    "email",
-    "name",
-    "address_line1",
-    "address_line2",
-    "address_city",
-    "address_county",
-    "address_country",
-    "address_post_code",
-    "phone_number",
-]
-
-handle_country = lambda v: v.code if isinstance(v, Country) else v
-booking_to_dict = lambda b: {k: handle_country(getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS}
-account_to_dict = lambda acc: {k: handle_country(getattr(acc, k)) for k in ACCOUNT_PUBLIC_ATTRS}
-
-
 @booking_account_required
 @json_response
 def places_json(request):
-    return _get_places_dict(request, request.booking_account)
-
-
-@booking_secretary_required
-@json_response
-def all_places_json(request):
-    try:
-        account_id = int(request.GET["id"])
-    except (KeyError, ValueError):
-        return {"status": "success", "places": []}
-    acc = BookingAccount.objects.get(id=account_id)
-    return _get_places_dict(request, acc)
-
-
-def _get_places_dict(request, account):
-    retval = {"status": "success"}
+    account = request.booking_account
     qs = account.bookings.all()
-    if "exclude" in request.GET:
-        with contextlib.suppress(ValueError):
-            exclude_id = int(request.GET["exclude"])
-            qs = qs.exclude(id=exclude_id)
-    retval["places"] = [booking_to_dict(b) for b in qs]
-    return retval
+    try:
+        exclude_id = int(request.GET["exclude"])
+    except (KeyError, ValueError):
+        exclude_id = None
+    if exclude_id:
+        qs = qs.exclude(id=exclude_id)
+
+    return {
+        "status": "success",
+        "places": [booking_to_dict(b) for b in qs],
+    }
 
 
 @booking_account_required
 @json_response
 def account_json(request):
-    return _get_account_dict(request.booking_account)
+    return {
+        "status": "success",
+        "account": account_to_dict(request.booking_account),
+    }
 
 
-@booking_secretary_required
-@json_response
-def all_accounts_json(request):
-    try:
-        account_id = int(request.GET["id"])
-    except (KeyError, ValueError):
-        return {"status": "failure"}
-    acc = BookingAccount.objects.get(id=account_id)
-    return _get_account_dict(acc)
-
-
-def _get_account_dict(account):
-    retval = {"status": "success"}
-    retval["account"] = account_to_dict(account)
-    return retval
-
-
-@booking_secretary_required
-@json_response
-def booking_problems_json(request):
-    """
-    Get the booking problems associated with the data POSTed.
-    """
-    # This is used by the admin.
-    # We have to create a Booking object, but not save it.
-    from .admin import BookingAdminForm
-
-    # Make it easy on front end:
-    data = request.POST.copy()
-    with contextlib.suppress(KeyError):
-        data["created_at"] = data["created_at_0"] + " " + data["created_at_1"]
-
-    if "booking_id" in data:
-        booking_obj = Booking.objects.get(id=int(data["booking_id"]))
-        if "created_online" not in data:
-            # readonly field, data not included in form
-            data["created_online"] = booking_obj.created_online
-        form = BookingAdminForm(data, instance=booking_obj)
-    else:
-        form = BookingAdminForm(data)
-
-    retval = {"status": "success"}
-    if form.is_valid():
-        retval["valid"] = True
-        instance = form.save(commit=False)
-        # We will get errors later on if prices don't exist for the year chosen, so
-        # we check that first.
-        if not is_booking_open(instance.camp.year):
-            retval["problems"] = [f"Prices have not been set for the year {instance.camp.year}"]
-        else:
-            problems, warnings = instance.get_booking_problems(booking_sec=True)
-            retval["problems"] = problems + warnings
-    else:
-        retval["valid"] = False
-        retval["errors"] = form.errors
-    return retval
-
-
+@booking_account_optional
 @json_response
 def place_availability_json(request):
     retval = {"status": "success"}
@@ -528,37 +365,6 @@ def place_availability_json(request):
     places = camp.get_places_left()
     retval["result"] = dict(total=places[0], male=places[1], female=places[2])
     return retval
-
-
-@json_response
-@staff_member_required
-@booking_secretary_required
-def get_expected_amount_due(request):
-    fail = {"status": "success", "amount": None}
-    try:
-        # If we use a form to construct an object, we won't get pass
-        # validation. So we construct a partial object, doing manual parsing of
-        # posted vars.
-
-        if "id" in request.POST:
-            # Start with saved data if it is available
-            b = Booking.objects.get(id=int(request.POST["id"]))
-        else:
-            b = Booking()
-        b.price_type = int(request.POST["price_type"])
-        b.camp_id = int(request.POST["camp"])
-        b.early_bird_discount = "early_bird_discount" in request.POST
-        b.state = int(request.POST["state"])
-    except (ValueError, KeyError):  # not a valid price_type/camp, data missing
-        return fail
-    try:
-        amount = b.expected_amount_due()
-    except Price.DoesNotExist:
-        return fail
-
-    if amount is not None:
-        amount = str(amount)  # convert decimal
-    return {"status": "success", "amount": amount}
 
 
 def make_state_token(bookings):
@@ -796,6 +602,7 @@ def pay(request):
 
 
 @csrf_exempt  # PayPal will post to this
+@booking_account_optional
 def pay_done(request):
     return TemplateResponse(
         request,
@@ -808,6 +615,7 @@ def pay_done(request):
 
 
 @csrf_exempt  # PayPal will post to this
+@booking_account_optional
 def pay_cancelled(request):
     return TemplateResponse(
         request,

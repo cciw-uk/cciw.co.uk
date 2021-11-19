@@ -2473,16 +2473,16 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         assert j["account"]["address_line1"] == "123 Main Street"
         assert j["account"]["address_country"] == "FR"
 
-    def test_all_accounts_json(self):
+    def test_booking_account_json(self):
         acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
 
         self.officer_login(OFFICER)
-        resp = self.get_literal_url(reverse("cciw-bookings-all_accounts_json"), expect_errors=True)
+        resp = self.get_literal_url(reverse("cciw-officers-booking_account_json"), expect_errors=True)
         assert resp.status_code == 403
 
         # Now as booking secretary
         self.officer_login(BOOKING_SECRETARY)
-        resp = self.get_literal_url(reverse("cciw-bookings-all_accounts_json") + f"?id={acc1.id}")
+        resp = self.get_literal_url(reverse("cciw-officers-booking_account_json") + f"?id={acc1.id}")
         assert resp.status_code == 200
 
         j = json.loads(resp.content.decode("utf-8"))
@@ -2493,7 +2493,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         for k, v in place_details.items():
             data[k] = v.id if isinstance(v, models.Model) else v
 
-        resp = self.client.post(reverse("cciw-bookings-booking_problems_json"), data)
+        resp = self.client.post(reverse("cciw-officers-booking_problems_json"), data)
         return json.loads(resp.content.decode("utf-8"))
 
     def _initial_place_details(self):
@@ -2506,7 +2506,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
         self.client.login(username=BOOKING_SECRETARY_USERNAME, password=BOOKING_SECRETARY_PASSWORD)
-        resp = self.client.post(reverse("cciw-bookings-booking_problems_json"), {"account": str(acc1.id)})
+        resp = self.client.post(reverse("cciw-officers-booking_problems_json"), {"account": str(acc1.id)})
 
         assert resp.status_code == 200
         j = json.loads(resp.content.decode("utf-8"))

@@ -343,6 +343,19 @@ information on MailChimp's use of these technologies, you can read their <a
 href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.</span>"""
 )
 
+# Public attributes - i.e. that the account holder is allowed to see
+ACCOUNT_PUBLIC_ATTRS = [
+    "email",
+    "name",
+    "address_line1",
+    "address_line2",
+    "address_city",
+    "address_county",
+    "address_country",
+    "address_post_code",
+    "phone_number",
+]
+
 
 class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
@@ -696,6 +709,12 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(camp__start_date__gt=date.today())
 
     def missing_agreements(self):
+        """
+        Returns bookings that are missing agreements.
+        """
+        # This typically happens if a CustomAgreement was addded after the place
+        # was booked.
+
         # See also Booking.get_missing_agreements()
         return self.exclude(self._agreements_complete_Q())
 
@@ -712,8 +731,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
     def agreement_fix_required(self):
         # We need a fix if:
         # - it is booked
-        # - it is missing an agreement (happens if the CustomAgreement was addded after
-        #   the place was booked)
+        # - it is missing an agreement
         # - it is a future camp. For past camps, there is nothing we can do about it.
         return self.booked().missing_agreements().future()
 
@@ -756,6 +774,48 @@ class BookingManagerBase(models.Manager):
 
 
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
+
+
+# Public attributes - i.e. that the account holder is allowed to see
+BOOKING_PLACE_PUBLIC_ATTRS = [
+    "id",
+    "first_name",
+    "last_name",
+    "sex",
+    "date_of_birth",
+    "address_line1",
+    "address_line2",
+    "address_city",
+    "address_county",
+    "address_country",
+    "address_post_code",
+    "phone_number",
+    "church",
+    "contact_name",
+    "contact_line1",
+    "contact_line2",
+    "contact_city",
+    "contact_county",
+    "contact_country",
+    "contact_post_code",
+    "contact_phone_number",
+    "dietary_requirements",
+    "gp_name",
+    "gp_line1",
+    "gp_line2",
+    "gp_city",
+    "gp_county",
+    "gp_country",
+    "gp_post_code",
+    "gp_phone_number",
+    "medical_card_number",
+    "last_tetanus_injection_date",
+    "allergies",
+    "regular_medication_required",
+    "learning_difficulties",
+    "serious_illness",
+    "created_at",
+]
 
 
 class Booking(models.Model):

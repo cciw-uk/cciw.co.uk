@@ -313,7 +313,7 @@
                     type: "GET",
                     data: {
                         'exclude': getCurrentBookingId(),
-                        'id': getAccountId() // ignored by place_json, used by all_place_json
+                        'id': getAccountId() // ignored by cciw-bookings-place_json
                     },
                     url: cciw.placesJsonUrl,
                     dataType: "json",
@@ -324,7 +324,7 @@
                 $.ajax({
                     type: "GET",
                     data: {
-                        'id': getAccountId() // ignored by account_json, used by all_account_json
+                        'id': getAccountId() // ignored by cciw-bookings-account_json
                     },
                     url: cciw.accountJsonUrl,
                     dataType: "json",
