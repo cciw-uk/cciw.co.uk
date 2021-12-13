@@ -4,7 +4,7 @@ django-functest==1.1
 django-plainpasswordhasher==0.3
 flake8==3.8.4
 hypothesis==6.3.3
-ipython==7.21.0
+ipython==7.30.1
 lxml==4.6.2
 mccabe==0.6.1
 pyquery==1.4.1
