@@ -390,7 +390,7 @@ webob==1.8.1
     # via webtest
 webtest==2.0.35
     # via django-webtest
-wheel==0.37.0
+wheel==0.37.1
     # via pip-tools
 wiki==0.7.6
     # via -r requirements.in
