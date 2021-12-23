@@ -197,7 +197,19 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.SHA1PasswordHasher",
 ]
 
-X_FRAME_OPTIONS = "SAMEORIGIN"
+if LIVEBOX:
+    # Can't use in development because we use HTTP locally
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
+# CSRF_COOKIE_HTTPONLY = True   # Can't use this until we fix cciwutils.js which requires checking all forms.
 
 # == LOGGING ==
 LOGGING = {
@@ -322,13 +334,6 @@ DATABASES = {
         "CONN_MAX_AGE": 30,
     }
 }
-
-# == SESSIONS ==
-
-if LIVEBOX:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
 
 # == TEMPLATES ==
 

@@ -24,6 +24,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.accounts.models import User
@@ -889,6 +890,7 @@ def correct_application(request):
     return TemplateResponse(request, "cciw/officers/email_update.html", context)
 
 
+@xframe_options_sameorigin  # This is displayed in an iframe
 @staff_member_required
 @camp_admin_required
 def create_officer(request):
