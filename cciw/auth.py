@@ -7,8 +7,7 @@ from cciw.accounts.models import User
 
 class CciwAuthBackend:
     # This is similar to django.contrib.auth.backends.ModelBackend,
-    # but based on our 'Role' instead of 'Group'. In addition, we also
-    # drop "user permissions" (all permissions are defined at Role level).
+    # but based on our 'Role' instead of 'Group'.
 
     # We also include logic to check password against validators,
     # so that adding new validators causes people to change their
@@ -43,6 +42,9 @@ class CciwAuthBackend:
         return user.is_active
 
     def _get_all_permissions(self, user_obj):
+        # In contrast to django.contrib.auth.backends.ModelBackend, we
+        # deliberarely don't have user level permissions, everything must be
+        # defined on Role.
         if user_obj.is_superuser:
             perms = Permission.objects.all()
         else:
