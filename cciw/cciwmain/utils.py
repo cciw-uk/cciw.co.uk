@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.validators import ValidationError, validate_email
 from django.http import HttpResponse
 from django.utils import timezone
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.functional import Promise
 
 
@@ -22,7 +22,7 @@ from django.utils.functional import Promise
 class LazyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
-            return force_text(obj)
+            return force_str(obj)
         elif isinstance(obj, date):
             # The format we need for filling in date fields:
             return obj.strftime("%Y-%m-%d")
