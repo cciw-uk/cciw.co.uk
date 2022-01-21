@@ -46,8 +46,8 @@
   </script>
 
   {% compress js %}
-    <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
+    <script defer type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
+    <script defer type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
   {% endcompress %}
 
   <input id="readonly" type="hidden" value="0">

@@ -9,7 +9,7 @@
 {% block extrahead %}
   {{ block.super }}
   {% compress js %}
-    <script type="text/javascript" src="{% static "js/manage_dbss.js" %}"></script>
+    <script defer type="text/javascript" src="{% static "js/manage_dbss.js" %}"></script>
   {% endcompress %}
 {% endblock %}
 
