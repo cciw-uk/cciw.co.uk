@@ -9,11 +9,12 @@
 # - We also have 'dynamic' roles which are calculated automatically using other
 #   data in the database. For example, via the links between the 'Camp',
 #   'Person' and 'User' table, we know which logged in 'Users' are leaders for
-#   camps, and which are leaders for current camps. These are 'current leaders',
+#   camps, and which are leaders for current camps. These are 'current leaders'.
+#   This type of role does not need to manually managed.
 #
 # Permissions work in two ways:
 #
-# - The permissions defined in this file that allow certain roles to view/edit
+# - The permissions defined in this file allow certain roles to view/edit
 #   various database tables via the 'admin' section of the website.
 #
 # - Certain other pages (e.g. booking reports, leaders functionality) are

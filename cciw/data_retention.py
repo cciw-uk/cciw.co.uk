@@ -134,10 +134,10 @@ class ModelDetail:
 
 
 class ErasureMethod:
-    def allowed_for_field(self, field: Field):
+    def allowed_for_field(self, field: Field) -> bool:
         raise NotImplementedError(f"{self.__class__} needs to implement allowed_for_field")
 
-    def build_update_dict(self, field):
+    def build_update_dict(self, field) -> dict:
         """
         Returns a dict which can be passed as keyword arguments
         to a QuerySet.update() call.
