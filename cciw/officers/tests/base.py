@@ -342,7 +342,7 @@ class Factories(FactoriesBase):
         referee2_overrides=None,
     ) -> Application:
         if year is not None:
-            date_saved = datetime(year, 3, 1)
+            date_saved = datetime(year, 1, 1)
         elif date_saved is None:
             date_saved = timezone.now().date()
 
