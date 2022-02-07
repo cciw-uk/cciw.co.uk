@@ -404,7 +404,7 @@ have to fill in another DBS form.</p> """,
         if request.method == "POST":
             self._force_post_vals(request)
 
-        return super().change_view(request, object_id)
+        return super().change_view(request, object_id, extra_context={"is_nav_sidebar_enabled": False})
 
     def has_change_permission(self, request, obj=None):
         # Normal users do not have change permission, unless they are editing
