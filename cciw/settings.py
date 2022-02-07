@@ -139,6 +139,7 @@ INSTALLED_APPS = [
     "django_countries",
     "mailer",
     "captcha",
+    "django_urlconfchecks",
 ]
 
 if DEVBOX and DEBUG:

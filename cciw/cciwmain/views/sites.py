@@ -15,7 +15,7 @@ def index(request):
     )
 
 
-def detail(request, slug=None):
+def detail(request, slug: str):
     return TemplateResponse(
         request,
         "cciw/sites/detail.html",

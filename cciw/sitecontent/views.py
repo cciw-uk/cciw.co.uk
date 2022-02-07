@@ -4,7 +4,7 @@ from django.template.response import TemplateResponse
 from cciw.sitecontent.models import MenuLink
 
 
-def find(request, path, template_name="cciw/chunk_page.html"):
+def find(request, path: str, template_name="cciw/chunk_page.html"):
     if path in ("", "/"):
         url = "/"
     else:

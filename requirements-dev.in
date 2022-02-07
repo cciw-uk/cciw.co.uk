@@ -17,3 +17,4 @@ pytest-django==4.1.0
 pytest-xdist[psutil]==2.1.0
 pre-commit==2.9.3
 time-machine==2.1.0
+django-urlconfchecks==0.4.0
