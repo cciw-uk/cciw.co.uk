@@ -72,7 +72,7 @@
     <br style="clear: left;" />
     <script type="text/javascript">
       <!--
-      var cciw = (function(pub, $) {
+      var cciw = (function(pub) {
         // Add some things to cciw object that we will need. Rest of javascript in officer_list.js
         pub.campId = {{ camp.id }};
         pub.updateOfficerUrl = "{% url 'cciw-officers-update_officer' %}";
@@ -82,7 +82,7 @@
         pub.createOfficerUrl = "{% url 'cciw-officers-create_officer' %}";
 
         return pub;
-      })(cciw || {}, jQuery);
+      })(cciw || {});
       -->
     </script>
 
