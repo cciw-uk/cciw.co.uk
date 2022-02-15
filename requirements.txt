@@ -6,11 +6,17 @@
 #
 asgiref==3.4.1
     # via django
+async-generator==1.10
+    # via
+    #   trio
+    #   trio-websocket
 attrs==21.2.0
     # via
     #   -r requirements.in
     #   hypothesis
+    #   outcome
     #   pytest
+    #   trio
 backcall==0.2.0
     # via ipython
 bcrypt==3.1.7
@@ -31,6 +37,7 @@ certifi==2018.10.15
     # via
     #   requests
     #   sentry-sdk
+    #   urllib3
 cffi==1.14.4
     # via
     #   bcrypt
@@ -48,10 +55,12 @@ coverage==4.5.1
     # via
     #   pandas-highcharts
     #   pytest-cov
-cryptography==3.3.1
+cryptography==36.0.1
     # via
     #   -r requirements.in
     #   paramiko
+    #   pyopenssl
+    #   urllib3
 cssselect==1.1.0
     # via pyquery
 datedelta==1.3
@@ -97,7 +106,7 @@ django-debug-toolbar==3.2
     # via -r requirements-dev.in
 django-decorator-include==3.0
     # via -r requirements.in
-django-functest==1.1
+django-functest==1.3
     # via -r requirements-dev.in
 django-js-asset==1.1.0
     # via django-mptt
@@ -123,8 +132,6 @@ django-webtest==1.9.9
     # via django-functest
 docutils==0.14
     # via botocore
-easyprocess==1.1
-    # via pyvirtualdisplay
 execnet==1.9.0
     # via pytest-xdist
 ezodf2==0.2.10
@@ -145,12 +152,17 @@ furl==2.1.0
     # via
     #   -r requirements.in
     #   django-functest
+h11==0.13.0
+    # via wsproto
 hypothesis==6.3.3
     # via -r requirements-dev.in
 identify==2.4.8
     # via pre-commit
 idna==2.6
-    # via requests
+    # via
+    #   requests
+    #   trio
+    #   urllib3
 iniconfig==1.1.1
     # via pytest
 ipython==7.30.1
@@ -194,6 +206,8 @@ numpy==1.21.4
     #   pandas
 orderedmultidict==1.0.1
     # via furl
+outcome==1.1.0
+    # via trio
 packaging==20.4
     # via
     #   bleach
@@ -258,6 +272,8 @@ pygments==2.10.0
     # via ipython
 pynacl==1.3.0
     # via paramiko
+pyopenssl==22.0.0
+    # via urllib3
 pyparsing==2.4.7
     # via packaging
 pyquery==1.4.1
@@ -293,8 +309,6 @@ pytz==2019.3
     #   django
     #   django-paypal
     #   pandas
-pyvirtualdisplay==2.2
-    # via django-functest
 pywatchman==1.4.1
     # via -r requirements.in
 pyyaml==5.1.2
@@ -317,7 +331,7 @@ rjsmin==1.1.0
     #   django-compressor
 s3transfer==0.1.13
     # via boto3
-selenium==3.141.0
+selenium==4.1.0
     # via
     #   -r requirements-dev.in
     #   django-functest
@@ -327,9 +341,7 @@ six==1.16.0
     # via
     #   bcrypt
     #   bleach
-    #   cryptography
     #   django-compressor
-    #   django-functest
     #   django-mailer
     #   django-paypal
     #   django-simple-captcha
@@ -343,12 +355,16 @@ six==1.16.0
     #   traitlets
     #   vcrpy
     #   virtualenv
+sniffio==1.2.0
+    # via trio
 sorl-thumbnail==12.7.0
     # via
     #   -r requirements.in
     #   wiki
 sortedcontainers==2.4.0
-    # via hypothesis
+    # via
+    #   hypothesis
+    #   trio
 soupsieve==2.3.1
     # via beautifulsoup4
 sqlparse==0.2.4
@@ -367,9 +383,15 @@ traitlets==4.3.2
     # via
     #   ipython
     #   matplotlib-inline
+trio==0.19.0
+    # via
+    #   selenium
+    #   trio-websocket
+trio-websocket==0.9.2
+    # via selenium
 typing-extensions==3.7.4.3
     # via pydantic
-urllib3==1.24
+urllib3[secure]==1.26.8
     # via
     #   requests
     #   selenium
@@ -389,13 +411,17 @@ webencodings==0.5.1
 webob==1.8.7
     # via webtest
 webtest==3.0.0
-    # via django-webtest
+    # via
+    #   django-functest
+    #   django-webtest
 wheel==0.37.1
     # via pip-tools
 wiki==0.7.10
     # via -r requirements.in
 wrapt==1.13.3
     # via vcrpy
+wsproto==1.0.0
+    # via trio-websocket
 xlrd==1.2.0
     # via -r requirements.in
 xlwt==1.3.0

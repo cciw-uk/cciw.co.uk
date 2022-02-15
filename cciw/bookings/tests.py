@@ -370,7 +370,7 @@ class BookingLogInMixin:
         if self.is_full_browser_test:
             if not self._have_visited_page():
                 self.get_url("django_functest.emptypage")
-            return self._add_cookie({"name": key, "value": value, "path": "/"})
+            return self._driver.add_cookie({"name": key, "value": value, "path": "/"})
         else:
             return self.app.set_cookie(key, value)
 
