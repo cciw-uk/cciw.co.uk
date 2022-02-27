@@ -173,15 +173,27 @@
     <h2>Export officer data</h2>
 
     <p>The officer list above, along with address details and qualifications from this year's
-      application forms, can be downloaded below, <b>subject to our data retention rules as below.</b></p>
+      application forms, can be downloaded below.</p>
 
     <ul>
       <li>Officer data, camp {{ camp.name }}, {{ camp.year }}:
-        <a href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=xls">XLS</a> |
-        <a href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=ods">ODS</a>
+        <a
+          href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=xls"
+          hx-get="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=xls"
+          hx-indicator="#officer-download-notice"
+          hx-target="#officer-download-notice"
+          hx-swap="innerHTML show:bottom">
+          XLS</a> |
+        <a
+          href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=ods"
+          hx-get="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=ods"
+          hx-indicator="#officer-download-notice"
+          hx-target="#officer-download-notice"
+          hx-swap="innerHTML show:bottom">
+          ODS</a>
       </li>
     </ul>
-    {% include "cciw/officers/officer_data_retention_rules_inc.html" with expand_details=True %}
+    <div id="officer-download-notice"></div>
     <form>
       {% csrf_token %}{# Ensure cookie is set for AJAX #}
     </form>

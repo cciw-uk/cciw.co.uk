@@ -126,6 +126,8 @@ django-sekizai==2.0.0
     # via wiki
 django-simple-captcha==0.5.13
     # via -r requirements.in
+django-spurl==0.6.8
+    # via -r requirements.in
 django-urlconfchecks==0.4.0
     # via -r requirements-dev.in
 django-webtest==1.9.9
@@ -345,6 +347,7 @@ six==1.16.0
     #   django-mailer
     #   django-paypal
     #   django-simple-captcha
+    #   django-spurl
     #   fabric3
     #   furl
     #   orderedmultidict
@@ -396,6 +399,8 @@ urllib3[secure]==1.26.8
     #   requests
     #   selenium
     #   sentry-sdk
+urlobject==2.4.3
+    # via django-spurl
 uwsgi==2.0.20
     # via -r requirements.in
 vcrpy==1.10.2

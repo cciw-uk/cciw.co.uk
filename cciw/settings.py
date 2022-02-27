@@ -140,6 +140,7 @@ INSTALLED_APPS = [
     "mailer",
     "captcha",
     "django_urlconfchecks",
+    "spurl",
 ]
 
 if DEVBOX and DEBUG:

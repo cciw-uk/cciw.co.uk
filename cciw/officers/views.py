@@ -1,8 +1,9 @@
 import contextlib
+import enum
 import operator
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from functools import reduce
+from functools import reduce, wraps
 from urllib.parse import urlparse
 
 import attr
@@ -149,6 +150,11 @@ secretary_or_committee_required = user_passes_test_improved(
 potential_camp_officer_required = user_passes_test_improved(lambda u: u.is_potential_camp_officer)
 
 
+class DataRetentionNotice(enum.Enum):
+    OFFICERS = "officers"
+    CAMPERS = "campers"
+
+
 def close_window_and_update_referee(ref_id):
     """
     HttpResponse that closes the current window, and updates the reference
@@ -157,6 +163,48 @@ def close_window_and_update_referee(ref_id):
     return HttpResponse(
         f"""<!DOCTYPE HTML><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection({ref_id}); window.close()</script></head><body></body></html>"""
     )
+
+
+DATA_RETENTION_NOTICES = {
+    DataRetentionNotice.OFFICERS: "cciw/officers/officer_data_retention_rules_inc.html",
+    DataRetentionNotice.CAMPERS: "cciw/officers/camper_data_retention_rules_inc.html",
+}
+
+
+for val in DataRetentionNotice:
+    assert val in DATA_RETENTION_NOTICES, f"Need to add {val} to DATA_RETENTION_NOTICES"
+
+
+def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title):
+    """
+    Decorator for downloads that redirects via a prompt to ensure
+    user knows about data retention
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            if "data_retention_notice_seen" in request.GET:
+                return func(request, *args, **kwargs)
+            else:
+                partial = "HX-Request" in request.headers
+                if partial:
+                    template = "cciw/officers/show_data_retention_notice_partial.html"
+                else:
+                    template = "cciw/officers/show_data_retention_notice.html"
+                return TemplateResponse(
+                    request,
+                    template,
+                    {
+                        "include_file": DATA_RETENTION_NOTICES[notice_type],
+                        "partial": partial,
+                        "brief_title": brief_title,
+                    },
+                )
+
+        return wrapper
+
+    return decorator
 
 
 # /officers/
@@ -971,6 +1019,7 @@ def resend_email(request):
 
 @staff_member_required
 @camp_admin_required
+@show_data_retention_notice(DataRetentionNotice.OFFICERS, "Officer data")
 def export_officer_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
@@ -979,6 +1028,7 @@ def export_officer_data(request, camp_id: CampId):
 
 @staff_member_required
 @camp_admin_required
+@show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
@@ -987,6 +1037,7 @@ def export_camper_data(request, camp_id: CampId):
 
 @staff_member_required
 @booking_secretary_required
+@show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data_for_year(request, year: int):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(year_bookings_to_spreadsheet(year, formatter), f"CCIW-bookings-{year}")
@@ -994,6 +1045,7 @@ def export_camper_data_for_year(request, year: int):
 
 @staff_member_required
 @camp_admin_required
+@show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper sharable transport details")
 def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)

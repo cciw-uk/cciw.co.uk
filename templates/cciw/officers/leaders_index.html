@@ -3,11 +3,6 @@
 {% block content %}<div id="content-main">
   <h1>Leaders' tools</h1>
 
-  <p>Please note our data retention rules regarding data available from this site:</p>
-
-  {% include "cciw/officers/officer_data_retention_rules_inc.html" with expand_details=True %}
-  {% include "cciw/officers/camper_data_retention_rules_inc.html" with expand_details=True %}
-
   {% if current_camps %}
     {% with current_camps as camps %}
       <h2>Current camps:</h2>

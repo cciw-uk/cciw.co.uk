@@ -1,0 +1,11 @@
+{% load spurl %}
+<div class="data-retention-notice">
+  <h1>Downloading {{ brief_title }}…</h1>
+  <p>Before downloading this data you must understand the following:</p>
+  {% include include_file with expand_details=True %}
+
+  <br>
+  <p>
+    <a class="button" href="{% spurl base=request.get_full_path add_query="data_retention_notice_seen=1" %}">Accept responsibility and continue</a>
+  </p>
+</div>
