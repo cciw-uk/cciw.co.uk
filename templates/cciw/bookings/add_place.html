@@ -72,6 +72,17 @@
 
       {% cciw_form_field form 'price_type' 'Price' %}
 
+      <h2>Use of data</h2>
+
+      <p>
+        We store and use your data in accordance with our <a href="/info/privacy-notice/">privacy policy</a>.
+        In general terms, this means that we do not collect any more data than
+        is necessary to ensure the safety and well-being of all campers, and we
+        do not pass on the data to 3rd parties except where that is necessary
+        for those purposes. Further notes about how we use specific pieces of
+        information are given below.
+      </p>
+
       <h2>Camper details <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;"></h2>
       {% cciw_form_field form 'first_name' 'First name' %}
       {% cciw_form_field form 'last_name' 'Surname' %}
@@ -79,6 +90,8 @@
       {% cciw_form_field form 'date_of_birth' 'Date of birth' %}
 
       <h2>Camper address <input type="submit" class="copy_data_btn" id="id_use_account_1_btn" value="Use account address" style="display:none;"></h2>
+
+      <p>We will use this information to contact you before camp.</p>
 
       {% cciw_form_field form 'address_line1' 'Address line 1' %}
       {% cciw_form_field form 'address_line2' 'Address line 2' %}
@@ -102,7 +115,7 @@
 
       <h2>Contact details <input type="submit" id="id_use_account_2_btn" class="copy_data_btn" value="Use account address" style="display:none;"></h2>
 
-      <p>Please enter a contact name, address and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
+      <p>Please enter a contact name, address and number that we can use <strong>during the week of camp</strong> in case of emergency.</p>
 
       {% cciw_form_field form 'contact_name' 'Name' %}
       {% cciw_form_field form 'contact_line1' 'Address line 1' %}
@@ -115,12 +128,17 @@
 
       <h2>Dietary requirements</h2>
 
-      <p>Please enter any special dietary requirements here (e.g. vegetarian).</p>
+      <p>
+        Please enter any special dietary requirements here (e.g. vegetarian), to
+        ensure we can provide appropriate food on camp.
+      </p>
       {% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
 
       <h2>GP details <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;"></h2>
 
-      <p>Please enter the details of the camper's GP:</p>
+      <p>Please enter the details of the camper's GP, so that we can be in
+        contact in the case of medical needs that arise on camp.
+      </p>
 
       {% cciw_form_field form 'gp_name' 'Name' %}
       {% cciw_form_field form 'gp_line1' 'Address line 1' %}
@@ -132,6 +150,12 @@
       {% cciw_form_field form 'gp_phone_number' 'Phone number' %}
 
       <h2>Medical details</h2>
+
+      <p>
+        We collect medical and health details to ensure we can provide a safe
+        environment for campers and can respond to medical needs. We may pass on
+        medical details to medical professionals as necessary.
+      </p>
 
       {% cciw_form_field form 'medical_card_number' 'NHS number' %}
       {% cciw_form_field form 'last_tetanus_injection_date' 'Last tetanus injection (if known)' %}
