@@ -11,6 +11,7 @@ class ContactType(TextChoices):
     WEBSITE = "website", "Web site problems"
     BOOKINGFORM = "bookingform", "Paper booking form request"
     BOOKINGS = "bookings", "Bookings"
+    DATA_PROTECTION = "data_protection", "Data protection and related"
     GENERAL = "general", "Other"
 
 
