@@ -96,10 +96,10 @@
   <h2>Paper booking form</h2>
 
   {% if bookingform %}
-    <p>If you have a printer you can download and print a booking form for
+    <p>We are encouraging all bookings to be made online. However, if you have a
+      printer you can download and print a booking form for
       {{ thisyear }}.  Please fill in the form and follow the instructions on it.
       You will need a PDF reader to view or print the form.</p>
-
 
     <p><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCiW
       booking form for {{ thisyear }}</a> </p>
@@ -110,11 +110,11 @@
 
   {% else %}
 
-    <p>There is no booking form for {{ thisyear }} available yet online. Booking
-      forms are normally printed in January, and are distributed to all
-      individuals who came on camp the previous year (sometimes via churches). We
-      try to make the booking form available online as a PDF file at about the
-      same time, so that you can print your own.</p>
+    <p>We are encouraging all bookings to be made online. However, we try to
+      make the booking form available online as a PDF file, so that you can
+      download and print your own if necessary. There is no paper booking form for
+      {{ thisyear }} available yet but watch this space.
+    </p>
 
   {% endif %}
 
