@@ -226,17 +226,17 @@ def index(request):
     context = {}
     context["thisyear"] = common.get_thisyear()
     context["lastyear"] = context["thisyear"] - 1
-    if user.is_camp_admin:
+    if user.is_camp_admin or user.is_superuser:
         context["show_leader_links"] = True
         context["show_admin_link"] = True
-    if user.is_cciw_secretary:
+    if user.is_cciw_secretary or user.is_superuser:
         context["show_secretary_links"] = True
         context["show_admin_link"] = True
-    if user.is_dbs_officer or user.is_camp_admin:
+    if user.is_dbs_officer or user.is_camp_admin or user.is_superuser:
         context["show_dbs_officer_links"] = True
-    if user.is_booking_secretary:
+    if user.is_booking_secretary or user.is_superuser:
         context["show_booking_secretary_links"] = True
-    if user.is_committee_member or user.is_booking_secretary:
+    if user.is_committee_member or user.is_booking_secretary or user.is_superuser:
         context["show_secretary_and_committee_links"] = True
         booking_year = most_recent_booking_year()
         if booking_year is not None:
