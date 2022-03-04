@@ -1,6 +1,7 @@
 # Settings file for testing on development box
 import faulthandler
 import signal
+from datetime import timedelta
 
 from cciw.settings_local import *  # NOQA
 from cciw.settings_local import DATABASES, INSTALLED_APPS, MIDDLEWARE
@@ -49,9 +50,9 @@ faulthandler.register(signal.SIGUSR1)
 CAPTCHA_TEST_MODE = True
 
 # Use normal values of these for tests:
-BOOKING_FULL_PAYMENT_DUE_DAYS = 3 * 30
-BOOKING_FULL_PAYMENT_DUE_TIME = "3 months"
-LATE_BOOKING_THRESHOLD = 30  # days
+BOOKING_FULL_PAYMENT_DUE = timedelta(days=90)
+BOOKING_FULL_PAYMENT_DUE_DISPLAY = "3 months"
+LATE_BOOKING_THRESHOLD = timedelta(days=30)
 
 
 TESTS_RUNNING = True

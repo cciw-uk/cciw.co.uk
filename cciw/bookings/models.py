@@ -1002,7 +1002,7 @@ class Booking(models.Model):
         # Amount due at this point of time. If allow_deposits=True, we take into
         # account the fact that only a deposit might be due. Otherwise we ignore
         # deposits (which means that the current date is also ignored)
-        cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
+        cutoff = today + settings.BOOKING_FULL_PAYMENT_DUE
         if allow_deposits and self.camp.start_date > cutoff:
             deposit_price = price_checker.get_deposit_price(self.camp.year)
             return min(deposit_price, self.amount_due)

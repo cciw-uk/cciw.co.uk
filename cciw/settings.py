@@ -1,8 +1,8 @@
 # isort:skip_file
 
-# Settings file
 import json
 import os
+from datetime import timedelta
 from pathlib import Path
 import socket
 import subprocess
@@ -502,12 +502,12 @@ COLORS_LESS_FILE = "css/camp_colors.less"
 
 
 # == Bookings ==
-BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS = 3
-BOOKING_SESSION_TIMEOUT_SECONDS = 60 * 60 * 24 * 14  # 2 weeks
-BOOKING_FULL_PAYMENT_DUE_DAYS = 90
-BOOKING_FULL_PAYMENT_DUE_TIME = "3 months"  # for display purposes
-BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS = 3
-LATE_BOOKING_THRESHOLD = 14  # days
+BOOKING_EMAIL_VERIFY_TIMEOUT = timedelta(days=3)
+BOOKING_SESSION_TIMEOUT = timedelta(weeks=2)
+BOOKING_FULL_PAYMENT_DUE = timedelta(days=90)
+BOOKING_FULL_PAYMENT_DUE_DISPLAY = "3 months"
+BOOKING_EMAIL_REMINDER_FREQUENCY = timedelta(days=3)
+LATE_BOOKING_THRESHOLD = timedelta(days=14)
 
 
 # == DBS ==

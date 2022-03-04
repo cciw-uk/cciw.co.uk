@@ -342,9 +342,7 @@ class BookingLogInMixin:
 
         if shortcut:
             account, _ = BookingAccount.objects.get_or_create(email=self.booker_email)
-            self._set_signed_cookie(
-                "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS
-            )
+            self._set_signed_cookie("bookingaccount", account.id, salt=BOOKING_COOKIE_SALT)
         else:
             # Easiest way is to simulate what the user actually has to do
             self.get_url("cciw-bookings-start")
@@ -365,7 +363,7 @@ class BookingLogInMixin:
         self._logged_in = True
         return account
 
-    def _set_signed_cookie(self, key, value, salt="", **kwargs):
+    def _set_signed_cookie(self, key, value, salt=""):
         value = signing.get_cookie_signer(salt=key + salt).sign(value)
         if self.is_full_browser_test:
             if not self._have_visited_page():
@@ -397,7 +395,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         self.today = date.today()
         # Need to create a Camp that we can choose i.e. is in the future.
         # We also need it so that payments can be made when only the deposit is due
-        delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
+        delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE.days
         start_date = self.today + timedelta(delta_days)
         camp_name = camps_factories.get_or_create_camp_name("Blue")
         camp_name_2 = camps_factories.get_or_create_camp_name("Red")
@@ -898,7 +896,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         m = mail.outbox[0]
         url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
 
-        with override_settings(BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS=-1):
+        with override_settings(BOOKING_EMAIL_VERIFY_TIMEOUT=timedelta(days=-1)):
             self.get_literal_url(path_and_query_to_url(path, querydata))
 
         # link expired, new email should be sent.

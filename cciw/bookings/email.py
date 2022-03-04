@@ -47,7 +47,7 @@ class EmailVerifyTokenGenerator:
         constant if verification failed, or VerifyExpired if the link expired.
         """
         if max_age is None:
-            max_age = settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS * 60 * 60 * 24
+            max_age = settings.BOOKING_EMAIL_VERIFY_TIMEOUT
         try:
             unencoded_token = self.url_safe_decode(token)
         except (UnicodeDecodeError, binascii.Error):
@@ -141,8 +141,7 @@ def send_places_confirmed_email(bookings):
     today = datetime.utcnow().date()
 
     for booking in bookings:
-        if (booking.camp.start_date - today).days < settings.LATE_BOOKING_THRESHOLD:
-
+        if (booking.camp.start_date - today) < settings.LATE_BOOKING_THRESHOLD:
             c = {
                 "domain": common.get_current_domain(),
                 "account": account,
@@ -220,7 +219,7 @@ def send_payment_reminder_emails():
     for account in accounts:
         if (
             account.last_payment_reminder is not None
-            and (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS
+            and (now - account.last_payment_reminder) < settings.BOOKING_EMAIL_REMINDER_FREQUENCY
         ):
             continue
 

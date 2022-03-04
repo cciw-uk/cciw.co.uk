@@ -17,13 +17,16 @@ logger = logging.getLogger(__name__)
 
 def set_booking_account_cookie(response, account):
     response.set_signed_cookie(
-        "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS
+        "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT.total_seconds()
     )
 
 
 def get_booking_account_from_request(request):
     cookie = request.get_signed_cookie(
-        "bookingaccount", salt=BOOKING_COOKIE_SALT, default=None, max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS
+        "bookingaccount",
+        salt=BOOKING_COOKIE_SALT,
+        default=None,
+        max_age=settings.BOOKING_SESSION_TIMEOUT.total_seconds(),
     )
     if cookie is None:
         return None

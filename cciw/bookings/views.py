@@ -113,7 +113,7 @@ def index(request):
             "price_early_bird_discount": early_bird_discount,
             "booking_open": booking_open,
             "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
-            "full_payment_due_time": settings.BOOKING_FULL_PAYMENT_DUE_TIME,
+            "full_payment_due_time": settings.BOOKING_FULL_PAYMENT_DUE_DISPLAY,
         }
     )
     return TemplateResponse(request, "cciw/bookings/index.html", context)
