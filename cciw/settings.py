@@ -504,10 +504,8 @@ COLORS_LESS_FILE = "css/camp_colors.less"
 # == Bookings ==
 BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS = 3
 BOOKING_SESSION_TIMEOUT_SECONDS = 60 * 60 * 24 * 14  # 2 weeks
-# Normally 3 months, as a temporary fix for 2021 it is reduced
-# to 1 day, proper logic will be defined later.
-BOOKING_FULL_PAYMENT_DUE_DAYS = 1
-BOOKING_FULL_PAYMENT_DUE_TIME = "1 day"  # for display purposes
+BOOKING_FULL_PAYMENT_DUE_DAYS = 90
+BOOKING_FULL_PAYMENT_DUE_TIME = "3 months"  # for display purposes
 BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS = 3
 LATE_BOOKING_THRESHOLD = 14  # days
 
