@@ -32,6 +32,11 @@
 
     {% include "cciw/bookings/price_table.html" %}
 
+    {% if price_early_bird_discount == 0 and price_deposit == 0 %}
+      <p>This year, no deposit is required for booking.
+        We also unfortunately cannot offer a discount for early bookings.
+      </p>
+    {% endif %}
 
     {% if price_deposit %}
       <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full
