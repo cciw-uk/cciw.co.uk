@@ -62,17 +62,7 @@
     </p>
   {% endif %}
 
-  <h2>Booking</h2>
-
-  <p>There are two ways to book places for campers:</p>
-
-  <h3>Paper booking</h3>
-
-  <p>You will need the booking form which comes with our camp brochure, which we
-    can post to you, or you can download below. You will need to include a cheque to
-    pay a deposit {% if price_deposit %}of £{{ price_deposit }}{% endif %} with your booking.</p>
-
-  <h3>Online booking</h3>
+  <h2>Onlne booking</h2>
 
   <p>You can <a href="{% url 'cciw-bookings-start' %}">book and pay online</a>,
     providing you have a debit card, credit card, or PayPal account.</p>
@@ -81,9 +71,9 @@
     and your place will be confirmed immediately. This will also save CCiW volunteers
     time, and save you money if you book before the early bird cutoff date.</p>
 
-  <p>When you book online, if you book more than {{ full_payment_due_time }} before the camp start
-    date, you can choose to pay either the full amount, or the just deposit,
-    just like paper bookings. {{ full_payment_due_time }} before camp starts you
+  <p>When you book online, if you book more than {{ full_payment_due_time }} before
+    the camp start date, you can choose to pay either the full amount, or the
+    just deposit, just like paper bookings. {{ full_payment_due_time }} before camp starts you
     will be asked to pay the full amount.</p>
 
   <h3>Officers and leaders</h3>
@@ -93,7 +83,7 @@
     to be a <a href="/helpers/officers/">leader or officer</a>.</p>
 
 
-  <h2>Paper booking form</h2>
+  <h2>Paper booking</h2>
 
   {% if bookingform %}
     <p>We are encouraging all bookings to be made online. However, if you have a
@@ -105,8 +95,8 @@
       booking form for {{ thisyear }}</a> </p>
 
     <p>Completed booking forms should be sent to the booking secretary (address
-      below), with the deposit (cheques made payable to “Christian Camps in
-      Wales”).</p>
+      below), with the deposit {% if price_deposit %}of £{{ price_deposit }}{% endif %} (cheques
+      made payable to “Christian Camps in Wales”).</p>
 
   {% else %}
 
