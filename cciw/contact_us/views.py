@@ -19,6 +19,7 @@ CONTACT_CHOICE_DESTS = {
     ContactType.BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
     ContactType.GENERAL: settings.GENERAL_CONTACT_EMAILS,
     ContactType.WEBSITE: settings.WEBMASTER_EMAILS,
+    ContactType.VOLUNTEERING: settings.VOLUNTEERING_EMAILS,
     ContactType.DATA_PROTECTION: settings.WEBMASTER_EMAILS,
 }
 
