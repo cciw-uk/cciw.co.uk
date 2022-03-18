@@ -73,7 +73,8 @@ def make_policy(
         custom_erasure_methods=custom_erasure_methods,
     )
     return Policy(
-        source="test", groups=[Group(rules=Rules(keep=keep, erasable_on_request=False), models=[model_detail])]
+        source="test",
+        groups=[Group(name="A name", rules=Rules(keep=keep, erasable_on_request=False), models=[model_detail])],
     )
 
 

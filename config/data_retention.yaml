@@ -22,7 +22,7 @@
 #   retention policy" is in fact what their policy is supposed to be, and what
 #   actually happens could be completely different.
 
-# - There is no possibility of the committee updating a policy document but
+# - There is no possibility of the CCiW committee updating a policy document but
 #   failing to communicate that to the web developers, because there is only a
 #   single policy document.
 
@@ -45,8 +45,9 @@
 #   keep some details in a row, while removing others, and is usually the
 #   preferred method.
 #
-# - removing entire rows of data. This generally makes it harder to keep stats
-#   like "number of campers on each camp", and we usually prefer not to do this.
+# - removing entire rows of data. This generally makes it harder to keep
+#   statistics (totals, averages e.g.) about what happened, and we usually
+#   prefer not to do this, but where we have no need of the stats it's fine.
 #
 # - other more complicated methods, discussed as needed.
 #
@@ -64,36 +65,41 @@
 # For each group, we start by defining the rules that will be applied, then by
 # listing the tables and columns it applies to.
 
-# --- Group: Camper and officer data to keep forever ---
+# -------------------------------
 
-# The CCiW committee have decided that there is some of data that we will keep
-# forever. The main purposes for this are:
+- group: Camper and officer data to keep forever
 
-# - future legal defence needs for criminal or civil cases
-#
-# - being able to cooperate fully and helpfully with any criminal investigations
-#   into allegations of abuse or neglect that happened on camp
-#
-# - being able to defend the good reputation of CCiW
+  # The CCiW committee have decided that there is some data that we will keep
+  # forever. The main purposes for this are:
 
-# For these reasons, we need our records to have:
+  # - future legal defence needs for criminal or civil cases
+  #
+  # - being able to cooperate fully and helpfully with any criminal investigations
+  #   into allegations of abuse or neglect that happened on camp
+  #
+  # - being able to defend the good reputation of CCiW
 
-# - complete lists of campers on each camp (with enough names to be able to
-#   identify campers)
-#
-# - complete lists of officers on each camp
-#
-# - information about what medical information parents supplied (needed e.g. for
-#   accusations of medical negligence)
-#
-# - most officer application form data and all reference data
-#
-# - records showing our due diligence regarding DBS checks etc.
+  # For these reasons, we need our records to have:
 
-# As per exceptions allowed in GDPR for these purposes, this policy overrides
-# "right to erasure" of data subjects.
+  # - complete lists of campers on each camp (with enough names to be able to
+  #   identify campers)
+  #
+  # - complete lists of officers on each camp
+  #
+  # - information about what medical information parents supplied (needed e.g. for
+  #   accusations of medical negligence)
+  #
+  # - most officer application form data and all reference data
+  #
+  # - records showing our due diligence regarding DBS checks etc.
 
-- rules:
+  # As per exceptions allowed in GDPR for these purposes, this policy overrides
+  # "right to erasure" of data subjects.
+  #
+  # However, CCiW will consider prioritising "right to erasure" even for this data
+  # if there are special considerations.
+
+  rules:
     keep: forever
     deletable on request from data subject: no
 
@@ -182,15 +188,18 @@
       - applicant_accepted
       - registered_with_dbs_update
 
-# --- Group: Deletable camper and parent booking data ---
 
-# It is useful for campers/parents if we keep booking data for several years,
-# since this will massively speed up the process of them filling in booking
-# forms in subsequent years. But we will delete earlier if requested. We also
-# check that information is not needed for business reasons (e.g. chasing
-# payment) before deleting.
+# -------------------------------
 
-- rules:
+- group: Deletable camper and parent booking data
+
+  # It is useful for campers/parents if we keep booking data for several years,
+  # since this will massively speed up the process of them filling in booking
+  # forms in subsequent years. But we will delete earlier if requested. We also
+  # check that information is not needed for business reasons (e.g. chasing
+  # payment) before deleting.
+
+  rules:
     keep: 5 years
     deletable on request from data subject: yes
 
@@ -243,7 +252,7 @@
         # It is useful for our statistics and records to know the approx age of
         # campers on camp. So we here configure a custom deletion method that
         # chooses a date of birth that will preserve the calculated "age on
-        # camp".
+        # camp", but anonymise.
         date_of_birth: preserve_age_on_camp
 
     - name: ipn.PayPalIPN
@@ -264,12 +273,14 @@
       - contact_phone
 
 
-# A second set of camper-related information is "Supporting information". This
-# is almost always documents that relate to a camper's application for custom
-# discounts. We keep this for 3 years, because it relates to finances and as a
-# charity we should keep these records for 3 years.
+- group: Deletable camper and parent booking data - supporting information
 
-- rules:
+  # A second set of camper-related information is "Supporting information". This
+  # is almost always documents that relate to a camper's application for custom
+  # discounts. We keep this for 3 years, because it relates to finances and as a
+  # charity we should keep these records for 3 years.
+
+  rules:
     keep: 3 years
     deletable on request from data subject: no
 
@@ -289,13 +300,15 @@
       - content
 
 
-# --- Group: Deleteable officer data ----
+# -------------------------------
 
-# It is usually most useful for us to keep officer data indefinitely, because
-# this avoids officers needing to re-enter data. However, with exceptions noted
-# above, we can observe "right to erasure" for some officer data:
+- group: Deleteable officer data
 
-- rules:
+  # It is usually most useful for us to keep officer data indefinitely, because
+  # this avoids officers needing to re-enter data. However, with exceptions noted
+  # above, we can observe "right to erasure" for some officer data:
+
+  rules:
     keep: forever  # by default, i.e. indefinitely
     deletable on request from data subject: yes
 
@@ -318,12 +331,15 @@
       - address_mobile
       - address_email
 
-# --- Group: temporary data ---
 
-# Various pieces of data that we don't need forever, and could contain personal
-# data.
+# -------------------------------
 
-- rules:
+- group: Temporary data
+
+  # Various pieces of data that we don't need forever, and could contain personal
+  # data.
+
+  rules:
     keep: 1 year
     deletable on request from data subject: no  # It is not directly linked to any data subject
 
@@ -337,23 +353,23 @@
     - name: contact_us.Message
       delete row: yes
 
+# -------------------------------
 
-# --- Group: Non-personal data ---
+- group: Non-personal data
 
-# This includes:
+  # This includes:
 
-# - data related to bookings and officers that is not entered by the user themselves,
-#   but is internal book-keeping data (first section)
-#
-# - many other tables of data for various business purposes
+  # - data related to bookings and officers that is not entered by the user themselves,
+  #   nor is personal in nature, but is internal book-keeping data (first section)
+  #
+  # - many other tables of data for various business purposes
 
-# The purpose of listing this is so that we have an exhaustive list of all
-# tables/columns. If any new tables or columns are added to the system, but a
-# policy is not defined in this file, an automatic check will stop deployment
-# until the policy is defined.
+  # The purpose of listing this is so that we have an exhaustive list of all
+  # tables/columns. If any new tables or columns are added to the system, but a
+  # policy is not defined in this file, an automatic check will stop deployment
+  # until the policy is defined.
 
-
-- rules:
+  rules:
     keep: forever
     deletable on request from data subject: no
 
@@ -454,7 +470,7 @@
       columns:
       # Column names here are often confusing, this is due
       # to choices by PayPal, not us :-(
-      - business  # email address of the person being paid
+      - business  # email address of the person being paid i.e. us
       - charset
       - custom  # contains custom data that links to BookingAccount
       - notify_version

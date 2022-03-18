@@ -52,16 +52,23 @@ if TYPE_CHECKING:
 
 
 # --- Policy and sub-components ---
+#
+# The YAML file is parsed into these objects.
 
 
 @dataclass
 class Policy:
+    """
+    The entire data retention policy, which we have only one of in production.
+    """
+
     source: str
     groups: list[Group]
 
 
 @dataclass
 class Group:
+    name: str
     rules: Rules
     models: list[ModelDetail]
 
@@ -219,8 +226,13 @@ def load_data_retention_policy() -> Policy:
             if yaml_table:
                 raise ValueError(f'Unexpected keys in "tables" entry: {", ".join(yaml_table.keys())}')
 
+        try:
+            group_name = yaml_group.pop("group")
+        except KeyError:
+            raise ValueError('Every group should have a named defined in "group" key')
         groups.append(
             Group(
+                name=group_name,
                 rules=Rules(
                     keep=keep,
                     erasable_on_request=erasable_on_request,
