@@ -616,5 +616,5 @@ class PreserveAgeOnCamp(ErasureMethod):
 
 
 CUSTOM_ERASURE_METHODS = {
-    "preserve_age_on_camp": PreserveAgeOnCamp(),
+    "preserve age on camp": PreserveAgeOnCamp(),
 }

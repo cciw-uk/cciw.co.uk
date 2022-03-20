@@ -64,6 +64,10 @@
 
 # For each group, we start by defining the rules that will be applied, then by
 # listing the tables and columns it applies to.
+#
+# All groups have an implicit rule: data which is still in use should not be
+# deleted. (For example, the address of a person who still owes us money). Rules
+# for determining which data is in use is not defined in this document.
 
 # -------------------------------
 
@@ -253,7 +257,7 @@
         # campers on camp. So we here configure a custom deletion method that
         # chooses a date of birth that will preserve the calculated "age on
         # camp", but anonymise.
-        date_of_birth: preserve_age_on_camp
+        date_of_birth: preserve age on camp
 
     - name: ipn.PayPalIPN
       # This contains all the data PayPal sends to us about a payment,
