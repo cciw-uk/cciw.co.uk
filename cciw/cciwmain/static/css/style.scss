@@ -1,9 +1,9 @@
 // Imports
 
-@import "elements.less";
-@import "mixins.less";
-@import (reference) "flexbox.less";
-@import "variables.less";
+@import "variables.scss";
+@import "mixins.scss";
+@import "camp_colors.scss";
+
 
 // Fonts
 @font-face {
@@ -18,20 +18,20 @@
 
 // General
 
-@lineHeight: 26px;
+$lineHeight: 26px;
 
 body {
-    color: @textColor;
-    background-color: @footerBackgroundColor;
+    color: $textColor;
+    background-color: $footerBackgroundColor;
     margin: 0;
     padding: 0;
 }
 
 body, input, button, select, option, textarea {
     font-size: 17px;
-    line-height: @lineHeight;
+    line-height: $lineHeight;
 
-    @media screen and (max-width: @smallScreenWidth) {
+    @media screen and (max-width: $smallScreenWidth) {
         font-size: 14px;
         line-height: 21px;
     }
@@ -44,7 +44,7 @@ a img, a {
 }
 
 a:link {
-    color: @primaryColor;
+    color: $primaryColor;
     text-decoration: underline;
 }
 
@@ -109,7 +109,7 @@ p {
 // Header
 
 header {
-    background-color: @primaryColor;
+    background-color: $primaryColor;
     background-image: url('/static/images/topbanner_1600x1200.jpeg');
     background-repeat: no-repeat;
     background-position: center top -10vw;
@@ -117,7 +117,7 @@ header {
 }
 
 .headerinner {
-    background-color: @headerColor;
+    background-color: $headerColor;
 }
 
 #headerlogo {
@@ -133,11 +133,11 @@ header {
         max-width: 100%;
         height: 100%;
     }
-    @media screen and (max-width: @contentWidth) {
+    @media screen and (max-width: $contentWidth) {
         width: 15vw;
         height: 15vw;
     }
-    @media screen and (max-width: @mobileMenuWidth) {
+    @media screen and (max-width: $mobileMenuWidth) {
         width: 10vw;
         height: 10vw;
     }
@@ -152,20 +152,20 @@ header {
     // viewport width, and therefore its height does too, so the height of the
     // header has to scale this way too.
 
-    @media screen and (max-width: @contentWidth) {
+    @media screen and (max-width: $contentWidth) {
         padding: 2vw 0;
     }
     h1 {
         font-size: 2.5em;
         margin: 0;
         padding: 0.3em 0 0.3em 0;
-        @media screen and (max-width: @contentWidth) {
+        @media screen and (max-width: $contentWidth) {
             padding: 0;
             font-size: 5vw;
         }
         text-align: center;
         text-shadow: 0px 2px 5px black;
-        @media screen and (max-width: @mobileMenuWidth) {
+        @media screen and (max-width: $mobileMenuWidth) {
             font-size: 5vw;
         }
     }
@@ -173,26 +173,22 @@ header {
 
 // menubar
 
-@menubarLineHeight: @lineHeight;
+$menubarLineHeight: $lineHeight;
 
-@menubarPaddingHeight: 3px;
-@menubarBorderHeight: 1px;
+$menubarPaddingHeight: 3px;
+$menubarBorderHeight: 1px;
 
-// menubar unselected wants to look about same as @primaryColorLighter, but due
+// menubar unselected wants to look about same as $primaryColorLighter, but due
 // to contrast from dark background in header we have to darken and destaturate it
-@menubarUnselectedColor: #90ab70;
-
-.topnavlinks() {
-   text-shadow: 0px 1px 3px #222;
-}
+$menubarUnselectedColor: #90ab70;
 
 #menubar {
 
     font-weight: bold;
     width: 100%;
-    .topnavlinks();
+    @include topnavlinks();
 
-    @media screen and (max-width: @smallMenubarFontScreenWidth) {
+    @media screen and (max-width: $smallMenubarFontScreenWidth) {
         font-size: 80%;
     }
 
@@ -211,27 +207,27 @@ header {
         padding: 0;
         list-style-type: none;
 
-        #flexbox .display(flex);
-        #flexbox .direction(row);
+        display: flex;
+        flex-direction: row;
 
         li {
             z-index: 0;
 
             a, .spacer {
-                background-color: fadeout(@menubarUnselectedColor, 50%);
-                line-height: @menubarLineHeight;
+                background-color: scale-color($menubarUnselectedColor, $alpha: -50%);
+                line-height: $menubarLineHeight;
                 display: inline-block;
-                padding: @menubarPaddingHeight 20px;
-                @media screen and (max-width: @smallMenubarFontScreenWidth) {
+                padding: $menubarPaddingHeight 20px;
+                @media screen and (max-width: $smallMenubarFontScreenWidth) {
                     padding-left: 10px;
                     padding-right: 10px;
                 }
             }
 
-            #flexbox .flex(0, 1, auto);
+            flex: 0 1 auto;
 
             &.spacerstart {
-                #flexbox .flex(1, 1, auto);
+                flex: 1 1 auto;
             }
             &.spacerend {
                 display: none;
@@ -246,7 +242,7 @@ header {
                 color: white;
 
                 &:hover {
-                    background-color: lighten(@menubarUnselectedColor, 20%);
+                    background-color: lighten($menubarUnselectedColor, 20%);
                 }
 
                 &[aria-current="page"],
@@ -263,10 +259,10 @@ header {
 
 // Main body
 
-@contentPadding: 16px;
+$contentPadding: 16px;
 
 #contentinner {
-    padding: 10px @contentPadding 32px @contentPadding;
+    padding: 10px $contentPadding 32px $contentPadding;
     min-height: 20em;
 
     > p:first-child, > form > p:first-child {
@@ -275,11 +271,11 @@ header {
 }
 
 #content {
-    background-color: @contentBackgroundColor;
+    background-color: $contentBackgroundColor;
 }
 
 .content {
-    max-width: @contentWidth;
+    max-width: $contentWidth;
     margin: 0 auto;
 }
 
@@ -289,11 +285,11 @@ header {
 
 footer {
     font-size: 85%;
-    @media screen and (max-width: @smallScreenWidth) {
+    @media screen and (max-width: $smallScreenWidth) {
         font-size: inherit;
     }
 
-    background-color: @footerBackgroundColor;
+    background-color: $footerBackgroundColor;
     text-align: left;
     color: #e0e0e0;
     min-height: 10em;
@@ -318,9 +314,9 @@ footer {
     }
 
     .websiteinfo {
-        @websiteinfoColor: lighten(@footerBackgroundColor, 5%);
-        background-color: @websiteinfoColor;
-        box-shadow: 0px 3px 2px darken(@websiteinfoColor, 10%);
+        $websiteinfoColor: lighten($footerBackgroundColor, 5%);
+        background-color: $websiteinfoColor;
+        box-shadow: 0px 3px 2px darken($websiteinfoColor, 10%);
         padding: 0 0 2em 0;
     }
 
@@ -328,18 +324,18 @@ footer {
         border-bottom: 1px solid #aaa;
     }
 
-    @linkgroupPadding: 20px;
+    $linkgroupPadding: 20px;
 
     .linkgroupcontainer {
-        #flexbox .display(flex);
-        #flexbox .direction(row);
-        #flexbox .wrap(wrap);
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
 
         // Compensate for padding at left and right edges:
-        margin-left: (-@linkgroupPadding);
-        margin-right: (-@linkgroupPadding);
+        margin-left: (-$linkgroupPadding);
+        margin-right: (-$linkgroupPadding);
 
-        @media screen and (max-width: @noColumnsScreenWidth) {
+        @media screen and (max-width: $noColumnsScreenWidth) {
             // No columns
             display: block;
             margin-left: 0px;
@@ -352,13 +348,13 @@ footer {
         margin-top: 1em;
         width: 25%;
         box-sizing: border-box;
-        padding: 0px @linkgroupPadding;
+        padding: 0px $linkgroupPadding;
 
-        @media screen and (max-width: @smallMenubarFontScreenWidth) {
+        @media screen and (max-width: $smallMenubarFontScreenWidth) {
             width: 50%;
         }
 
-        @media screen and (max-width: @noColumnsScreenWidth) {
+        @media screen and (max-width: $noColumnsScreenWidth) {
             // No columns
             display: block;
             width: 100%;
@@ -376,16 +372,16 @@ footer {
 // Content styles
 
 #contentinner h1 {
-    margin-left: -@contentPadding; // to make bg go to edge
-    margin-right: -@contentPadding;
-    padding-left: @contentPadding;
-    padding-right: @contentPadding;
+    margin-left: -$contentPadding; // to make bg go to edge
+    margin-right: -$contentPadding;
+    padding-left: $contentPadding;
+    padding-right: $contentPadding;
     background: linear-gradient(white 0%, white 52%, #007633 53%, #007633 58%, white 59%);
     text-shadow: 2px 2px 2px white, 2px -2px 2px white, -2px 2px 2px white, -2px -2px 2px white;
 }
 
 h2 {
-    border-bottom: 2px solid @secondaryColor;
+    border-bottom: 2px solid $secondaryColor;
 }
 
 h2[class^=with-camp-colors-] {
@@ -436,7 +432,7 @@ table.topheaders {
     }
 
     > * > tr > th {
-        background-color: @primaryColorLighter;
+        background-color: $primaryColorLighter;
         font-weight: bold;
         a:link {
             text-decoration: none;
@@ -444,7 +440,7 @@ table.topheaders {
     }
 
     > tbody > tr > td:not([class^=with-camp-colors-]) {
-        background-color: @contentBackgroundColor;
+        background-color: $contentBackgroundColor;
     }
     box-shadow: 0px 2px 4px #888;
     margin-bottom: 1.5em;
@@ -498,7 +494,7 @@ table.actiongrid {
         vertical-align: middle;
     }
     button {
-        .compactButton();
+        @include compactButton();
     }
 }
 
@@ -525,12 +521,12 @@ div.sitephoto {
 
 // Forms
 
-@labelWidth: 16em;
-@fieldHelpScale: 0.9;
+$labelWidth: 16em;
+$fieldHelpScale: 0.9;
 
 div.formrow {
 
-    .clearfix();
+    @include clearfix();
     clear: both;
     margin: 0px 0px 4px 0px;
     padding: 0px 6px 2px 6px;
@@ -540,7 +536,7 @@ div.formrow {
         label {
             display: block;
             float: left;
-            width: @labelWidth;
+            width: $labelWidth;
             margin-bottom: 0.8em;
         }
 
@@ -552,9 +548,9 @@ div.formrow {
         }
 
         ul {
-            margin-left: @labelWidth;
+            margin-left: $labelWidth;
 
-            @media screen and (max-width: @smallScreenWidth) {
+            @media screen and (max-width: $smallScreenWidth) {
                 display: block;
                 clear: left;
                 margin-left: 0px;
@@ -579,8 +575,8 @@ div.formrow {
     }
 
     .field-help {
-        font-size: @fieldHelpScale * 100%;
-        color: @textLighterColor;
+        font-size: $fieldHelpScale * 100%;
+        color: $textLighterColor;
     }
 }
 
@@ -624,8 +620,8 @@ input.placeholder {
 }
 
 .successMessage {
-    border: 1px solid @primaryColor;
-    background-color: @primaryColorLighter;
+    border: 1px solid $primaryColor;
+    background-color: $primaryColorLighter;
     padding: 5px 9px;
     text-align: left;
     margin-bottom: 1em;
@@ -635,7 +631,7 @@ input.placeholder {
 
 #contactform .field-help {
     display: block;
-    margin-left: @labelWidth / @fieldHelpScale;
+    margin-left: $labelWidth / $fieldHelpScale;
 }
 
 img.captcha {
@@ -643,43 +639,19 @@ img.captcha {
 }
 
 // Buttons
-.normalButtonStyle() {
-    border: 1px solid #aaa;
-    background-image: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 10%, #e8e8e8 90%, #d0d0d0 100%);
-    &:hover {
-        background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
-    }
-    &:active {
-        // Press down appearance
-        position:relative;
-        top:1px;
-    }
-}
-
-.normalButton() {
-    .normalButtonStyle();
-    padding: 3px 8px;
-    border-radius: 4px;
-}
-
-.compactButton() {
-    padding: 1px 5px;
-    border-radius: 3px;
-}
-
 button, input[type=submit] {
-    .normalButton();
+    @include normalButton();
 }
 
 // Breadcrumbs
 
 div.breadcrumb {
-    border-bottom: 1px solid @primaryColor;
+    border-bottom: 1px solid $primaryColor;
     margin-bottom: 5px;
 }
 
 div.bottombreadcrumb {
-    border-top: 1px solid @primaryColor;
+    border-top: 1px solid $primaryColor;
     margin-top: 1em;
 }
 
@@ -768,56 +740,13 @@ ul.messagelist {
     font-size: 120%;
     line-height: 150%;
     border-radius: 6px;
-    background-color: @secondaryColor;
+    background-color: $secondaryColor;
     color: white;
 }
 
-.bigaction() {
-    -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
-    -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
-    box-shadow:inset 0px 1px 0px 0px #729e48;
-    background-color: @primaryColor;
-    background-image: none;
-    -moz-border-radius:6px;
-    -webkit-border-radius:6px;
-    border-radius:6px;
-    border:1px solid #005611;
-    display:inline-block;
-    color:#ffffff;
-    font-size: 19px;
-    @media screen and (max-width: @smallScreenWidth) {
-        font-size: 15px;
-    }
-    font-weight:bold;
-    padding:6px 24px;
-    text-decoration:none;
-    text-shadow:1px 1px 0px #528009;
-    margin-left: 5px;
-    cursor: pointer;
-
-    &:hover {
-        background-color: @primaryColorLighter;
-        background-image: none;
-        border-color:#f0fff0;
-    }
-    &:active {
-        position:relative;
-        top:1px;
-    }
-
-    &[disabled] {
-        cursor: not-allowed;
-        background-color: #aaa;
-        border-color: #aaa;
-        box-shadow: none;
-        &:active {
-            top: 0px;
-        }
-    }
-}
 
 a.booknow, a.bigaction, input.bigaction {
-    .bigaction();
+    @include bigaction();
 }
 
 .actiongroup {
@@ -832,7 +761,7 @@ a.booknow, a.bigaction, input.bigaction {
         display: inline;
         float: right;
     }
-    .clearfix();
+    @include clearfix();
 }
 
 #bookingbar {
@@ -840,7 +769,7 @@ a.booknow, a.bigaction, input.bigaction {
     text-align: center;
     box-shadow: inset 0 -3px 5px -3px #222;
     padding: 0 4px;
-    .topnavlinks();
+    @include topnavlinks();
     a {
         color: white;
     }
@@ -862,7 +791,7 @@ a.booknow, a.bigaction, input.bigaction {
                 font-weight: bold;
 
                 &:hover {
-                    background-color: lighten(@menubarUnselectedColor, 20%);
+                    background-color: lighten($menubarUnselectedColor, 20%);
                 }
             }
 
@@ -891,14 +820,14 @@ a.booknow, a.bigaction, input.bigaction {
 // Add/edit place
 
 input.copy_data_btn {
-    .compactButton();
+    @include compactButton();
     float: right;
     margin: -5px 0px 5px 5px;
     clear: both;
 }
 
 .payboxes {
-    .clearfix();
+    @include clearfix();
 }
 
 .paybox {
@@ -932,6 +861,9 @@ table.prices td {
     padding: 5px;
 }
 
+@import "bookings_add_place.scss";
+
+
 /* list bookings */
 
 table.bookinglist {
@@ -951,12 +883,12 @@ table.bookinglist {
     td.bookinglistaction {
         text-align: center;
 
-        @media screen and (max-width: @smallScreenWidth) {
+        @media screen and (max-width: $smallScreenWidth) {
             padding: 1px;
         }
     }
     input[type=submit] {
-        .compactButton();
+        @include compactButton();
         margin-bottom: 1px;
     }
 }
@@ -969,7 +901,7 @@ table.bookinglist {
 
 // Smaller screens
 
-@media screen and (max-width: @smallScreenWidth) {
+@media screen and (max-width: $smallScreenWidth) {
     img {
         max-width: 100%;
         height: auto;
@@ -978,13 +910,13 @@ table.bookinglist {
 
 // Menubar for mobile:
 
-@media screen and (min-width: (@mobileMenuWidth + 1px)) {
+@media screen and (min-width: ($mobileMenuWidth + 1px)) {
     #menubar #menutoggle {
         display: none;
     }
 }
 
-@media screen and (max-width: @mobileMenuWidth) {
+@media screen and (max-width: $mobileMenuWidth) {
     #menubar {
         position: absolute;
         top: 5px;
@@ -1011,7 +943,7 @@ table.bookinglist {
                     &[aria-current="page"]:hover,
                     &.currentSection,
                     &.currentSection:hover {
-                        background-color: fadeout(@menubarUnselectedColor, 10%);
+                        background-color: scale-color($menubarUnselectedColor, $alpha: -10%);
                     }
                 }
 
@@ -1024,7 +956,7 @@ table.bookinglist {
     }
 }
 
-@media screen and (max-width: @responsiveTablesScreenWidth) {
+@media screen and (max-width: $responsiveTablesScreenWidth) {
 
     table.responsive {
         // To use this class, you must add `data-label` attributes
@@ -1095,7 +1027,7 @@ table.bookinglist {
     #pagetitle {
         padding-top: 20vh;
     }
-    @media screen and (min-width: (@mobileMenuWidth + 1px)) {
+    @media screen and (min-width: ($mobileMenuWidth + 1px)) {
         // If not displaying mobile menu bar, shift menubar down to below photo
         // and center it.
         header {
@@ -1106,7 +1038,7 @@ table.bookinglist {
             bottom: 0px;
             li.spacerstart, li.spacerend {
                 display: block;
-                #flexbox .flex(1, 1, auto);
+                flex: 1 1 auto;
             }
         }
     }

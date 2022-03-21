@@ -629,14 +629,13 @@ def install_requirements(target):
 def _install_deps_with(run_with):
     run_with("pip install --progress-bar off --upgrade setuptools pip wheel six")
     run_with("pip install --progress-bar off -r requirements.txt --exists-action w")
-    run_with("nodeenv --node=system --python-virtualenv --requirement=requirements-node.txt")
 
 
 def build_static(target):
     assert target.STATIC_ROOT.strip() != "" and target.STATIC_ROOT.strip() != "/"
     with django_project(target):
         # django-compressor doesn't always find changes if we don't do this:
-        run("find . -name '*.less' | xargs touch")
+        run("find . -name '*.scss' | xargs touch")
         run("./manage.py collectstatic -v 0 --noinput")
 
     # This is needed for certbot/letsencrypt:

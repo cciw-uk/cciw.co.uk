@@ -12,15 +12,15 @@
     width: 100%;
 }
 
-@addToListBlockWidth: 30em;  // see also officer_list.js
+$addToListBlockWidth: 30em;  // see also officer_list.js
 .leftcolumn {
-    margin-right: @addToListBlockWidth;
+    margin-right: $addToListBlockWidth;
 }
 
 .rightcolumn {
     float: left;
-    width: @addToListBlockWidth;
-    margin-left: -@addToListBlockWidth;
+    width: $addToListBlockWidth;
+    margin-left: -$addToListBlockWidth;
     background-color: #f0f0f0;
 }
 

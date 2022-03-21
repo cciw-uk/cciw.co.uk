@@ -17,9 +17,9 @@ from cciw.cciwmain.models import Person
 from cciw.utils.tests.base import TestBase, TestBaseMixin
 
 
-# We don't need less compilation when running normal tests, and it adds a lot to
+# We don't need CSS compilation when running normal tests, and it adds a lot to
 # the test run.
-class DummyLessCssFilter(CompilerFilter):
+class NoOpFilter(CompilerFilter):
     def __init__(self, content, command=None, *args, **kwargs):
         pass
 
@@ -98,7 +98,7 @@ class CommonMixin:
 
 
 @override_settings(
-    COMPRESS_PRECOMPILERS=[("text/less", "cciw.utils.tests.webtest.DummyLessCssFilter")],
+    COMPRESS_PRECOMPILERS=[("text/x-scss", "cciw.utils.tests.webtest.NoOpFilter")],
 )
 class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     """

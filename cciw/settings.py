@@ -470,7 +470,7 @@ STATICFILES_FINDERS = [
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 
 COMPRESS_PRECOMPILERS = [
-    ("text/less", "lessc {infile} {outfile}"),
+    ("text/x-scss", "django_libsass.SassCompiler"),
 ]
 COMPRESS_ENABLED = True
 
@@ -497,9 +497,9 @@ DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
 ROLES_CONFIG_FILE = basepath / "config" / "static_roles.yaml"
 DATA_RETENTION_CONFIG_FILE = basepath / "config" / "data_retention.yaml"
 
-# Referenced from style.less
-COLORS_LESS_DIR = "cciw/cciwmain/static/"
-COLORS_LESS_FILE = "css/camp_colors.less"
+# Referenced from style.scss
+COLORS_SCSS_DIR = "cciw/cciwmain/static/"
+COLORS_SCSS_FILE = "css/camp_colors.scss"
 
 
 # == Bookings ==

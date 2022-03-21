@@ -1,0 +1,81 @@
+@mixin clearfix() {
+  &:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+  }
+}
+
+@mixin normalButtonStyle() {
+    border: 1px solid #aaa;
+    background-image: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 10%, #e8e8e8 90%, #d0d0d0 100%);
+    &:hover {
+        background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
+    }
+    &:active {
+        // Press down appearance
+        position:relative;
+        top:1px;
+    }
+}
+
+@mixin normalButton() {
+    @include normalButtonStyle();
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+@mixin compactButton() {
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+@mixin topnavlinks() {
+   text-shadow: 0px 1px 3px #222;
+}
+
+@mixin bigaction() {
+    -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
+    box-shadow:inset 0px 1px 0px 0px #729e48;
+    background-color: $primaryColor;
+    background-image: none;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #005611;
+    display:inline-block;
+    color:#ffffff;
+    font-size: 19px;
+    @media screen and (max-width: $smallScreenWidth) {
+        font-size: 15px;
+    }
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #528009;
+    margin-left: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $primaryColorLighter;
+        background-image: none;
+        border-color:#f0fff0;
+    }
+    &:active {
+        position:relative;
+        top:1px;
+    }
+
+    &[disabled] {
+        cursor: not-allowed;
+        background-color: #aaa;
+        border-color: #aaa;
+        box-shadow: none;
+        &:active {
+            top: 0px;
+        }
+    }
+}

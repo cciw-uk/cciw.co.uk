@@ -12,12 +12,10 @@ Assuming a Linux/Unix machine, the requirements are:
 
 * Python 3.9
 * Postgres 12
-* Node (used only for development and pre-deployment building)
 
 For tests, see also:
 
 * requirements of `django-functest <https://django-functest.readthedocs.io/en/latest/installation.html#dependencies>`_
-* requirements of `PyVirtualDisplay <https://github.com/ponty/pyvirtualdisplay#installation/>`_
 
 Steps:
 
@@ -33,7 +31,7 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 * Make a virtualenv using Python 3.9 e.g. using mkvirtualenv/virtualenv_wrapper::
 
-    mkvirtualenv --python=`which python3.9` cciw
+    mkvirtualenv --python=`which python3.9` -a `pwd` cciw
 
   Add project path to the venv::
 
@@ -46,6 +44,7 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 * Install the requirements using the fabfile::
 
+    pip install --upgrade pip
     pip install fabric3 fabtools3
     fab initial_dev_setup
 
@@ -68,10 +67,12 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
   Now you should be able to browse the site on http://cciw.local:8000/
 
-* Technically optional, but very helpful - add precommit::
+* Add pre-commit hooks::
 
     $ pre-commit install
 
+  (this assumes you have already `installed pre-commit
+  <https://pre-commit.com/>`_)
 
 See also `<deployment.rst>`_ for docs on deploying, and setup you might
 want to do now for that.

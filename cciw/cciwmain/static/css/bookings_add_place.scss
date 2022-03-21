@@ -1,4 +1,4 @@
-@import "variables.less";
+@import "variables.scss";
 
 #id_use_existing_data_popup {
     max-width: 50em;
@@ -14,5 +14,5 @@
 }
 
 .placeAvailability {
-    color: @textLighterColor;
+    color: $textLighterColor;
 }
