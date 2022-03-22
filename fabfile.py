@@ -88,9 +88,6 @@ REQS = [
     # Daemons
     "supervisor",  # For running uwsgi and php-cgi daemons
     "nginx",
-    # Non-Python stuff
-    "npm",
-    "nodejs",  # For less css
     # Python stuff
     "python",
     "python3",
