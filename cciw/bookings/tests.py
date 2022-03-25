@@ -633,22 +633,16 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
             else:
                 account = BookingAccount.objects.get(id=account.id)
             with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
-                assert (
-                    account.get_balance(
-                        confirmed_only=False,
-                        allow_deposits=True,
-                        price_checker=price_checker,
-                    )
-                    == Decimal("0.00")
-                )
-                assert (
-                    account.get_balance(
-                        confirmed_only=True,
-                        allow_deposits=True,
-                        price_checker=price_checker,
-                    )
-                    == Decimal("0.00")
-                )
+                assert account.get_balance(
+                    confirmed_only=False,
+                    allow_deposits=True,
+                    price_checker=price_checker,
+                ) == Decimal("0.00")
+                assert account.get_balance(
+                    confirmed_only=True,
+                    allow_deposits=True,
+                    price_checker=price_checker,
+                ) == Decimal("0.00")
 
         # But for full amount, they still owe 80 (full price minus deposit)
         assert account.get_balance_full() == Decimal("80.00")
@@ -2901,7 +2895,7 @@ class TestEarlyBird(TestBase):
         year = booking.camp.year
         with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the future
-            mock_f.return_value = timezone.get_default_timezone().localize(datetime(year + 10, 1, 1))
+            mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
             book_basket_now([booking])
         booking.refresh_from_db()
         assert booking.early_bird_discount
@@ -2913,7 +2907,7 @@ class TestEarlyBird(TestBase):
         booking = factories.create_booking()
         with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the past
-            mock_f.return_value = timezone.get_default_timezone().localize(datetime(booking.camp.year - 10, 1, 1))
+            mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
             book_basket_now([booking])
         booking.refresh_from_db()
         assert not booking.early_bird_discount

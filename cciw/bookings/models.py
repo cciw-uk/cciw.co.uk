@@ -1584,7 +1584,7 @@ def book_basket_now(bookings):
 
 def get_early_bird_cutoff_date(year):
     # 1st May
-    return timezone.get_default_timezone().localize(datetime(year, 5, 1))
+    return datetime(year, 5, 1, tzinfo=timezone.get_default_timezone())
 
 
 def early_bird_is_available(year, booked_at_date):

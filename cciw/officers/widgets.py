@@ -21,7 +21,7 @@ class ExplicitBooleanFieldSelect(admin.widgets.AdminRadioSelect):
             value = {True: "2", False: "3", "2": "2", "3": "3"}[value]
         except KeyError:
             value = "1"
-        return super().render(name, value, attrs, renderer=renderer)
+        return super().render(name, value, attrs=attrs, renderer=renderer)
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name)

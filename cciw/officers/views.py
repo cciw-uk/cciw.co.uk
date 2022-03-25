@@ -1587,8 +1587,10 @@ def booking_secretary_reports(request, year: int):
 def export_payment_data(request):
     date_start = request.GET["start"]
     date_end = request.GET["end"]
-    date_start = timezone.get_default_timezone().localize(datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT))
-    date_end = timezone.get_default_timezone().localize(datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT))
+    date_start = datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT).replace(
+        tzinfo=timezone.get_default_timezone()
+    )
+    date_end = datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT).replace(tzinfo=timezone.get_default_timezone())
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(
         payments_to_spreadsheet(date_start, date_end, formatter),

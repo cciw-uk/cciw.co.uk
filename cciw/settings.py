@@ -49,7 +49,8 @@ else:
 if DEVBOX:
 
     def show_toolbar(request):
-        if request.is_ajax():
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        if is_ajax:
             return False
         if "-stats" in request.get_full_path():
             # debug toolbar slows down the stats pages for some reason

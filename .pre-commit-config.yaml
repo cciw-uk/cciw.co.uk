@@ -21,7 +21,7 @@ repos:
         entry: djhtml -t 2 -i
         language_version: python3.9
   - repo: https://github.com/ikamensh/flynt/
-    rev: '0.69'
+    rev: '0.76'
     hooks:
       - id: flynt
         language_version: python3.9
@@ -43,8 +43,7 @@ repos:
       - id: autopep8
         language_version: python3.9
   - repo: https://github.com/psf/black
-    rev: 21.8b0
+    rev: 22.1.0
     hooks:
       - id: black
-        language_version: python3
         language_version: python3.9

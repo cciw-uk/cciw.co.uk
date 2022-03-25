@@ -521,7 +521,6 @@ def _handle_list_booking_actions(request, places):
 
 
 class CustomAmountPayPalForm(PayPalPaymentsForm):
-
     amount = forms.IntegerField(widget=forms.widgets.NumberInput)
 
 

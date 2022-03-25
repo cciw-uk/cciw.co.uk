@@ -4,13 +4,13 @@
 #
 #    pip-compile --output-file=requirements.txt requirements-dev.in requirements.in
 #
-asgiref==3.4.1
+asgiref==3.5.0
     # via django
 async-generator==1.10
     # via
     #   trio
     #   trio-websocket
-attrs==21.2.0
+attrs==21.4.0
     # via
     #   -r requirements.in
     #   hypothesis
@@ -19,7 +19,7 @@ attrs==21.2.0
     #   trio
 backcall==0.2.0
     # via ipython
-bcrypt==3.1.7
+bcrypt==3.2.0
     # via paramiko
 beautifulsoup4==4.8.0
     # via
@@ -27,33 +27,33 @@ beautifulsoup4==4.8.0
     #   webtest
 bleach==3.3.1
     # via wiki
-boto3==1.4.7
+boto3==1.21.24
     # via -r requirements.in
-botocore==1.7.48
+botocore==1.24.24
     # via
     #   boto3
     #   s3transfer
-certifi==2018.10.15
+certifi==2021.10.8
     # via
     #   requests
     #   sentry-sdk
     #   urllib3
-cffi==1.14.4
+cffi==1.15.0
     # via
     #   bcrypt
     #   cryptography
     #   pynacl
-charset-normalizer==2.0.9
+charset-normalizer==2.0.12
     # via requests
-click==7.1.1
+click==8.0.4
     # via pip-tools
-concurrent-log-handler==0.9.19
+concurrent-log-handler==0.9.20
     # via -r requirements.in
-coverage==4.5.1
+coverage==6.3.2
     # via
     #   pandas-highcharts
     #   pytest-cov
-cryptography==36.0.1
+cryptography==36.0.2
     # via
     #   -r requirements.in
     #   paramiko
@@ -61,13 +61,11 @@ cryptography==36.0.1
     #   urllib3
 cssselect==1.1.0
     # via pyquery
-datedelta==1.3
+datedelta==1.4
     # via -r requirements.in
-decorator==4.3.0
-    # via
-    #   ipython
-    #   traitlets
-django==3.2.9
+decorator==5.1.1
+    # via ipython
+django==4.0.3
     # via
     #   -r requirements.in
     #   django-appconf
@@ -76,6 +74,7 @@ django==3.2.9
     #   django-debug-toolbar
     #   django-decorator-include
     #   django-functest
+    #   django-js-asset
     #   django-mailer
     #   django-nyt
     #   django-paypal
@@ -87,9 +86,9 @@ django==3.2.9
     #   jsonfield
     #   pwned-passwords-django
     #   wiki
-django-appconf==1.0.4
+django-appconf==1.0.5
     # via django-compressor
-django-classy-tags==2.0.0
+django-classy-tags==3.0.1
     # via django-sekizai
 django-colorful==1.3
     # via -r requirements.in
@@ -97,7 +96,7 @@ django-compressor==3.1
     # via
     #   -r requirements.in
     #   django-libsass
-django-countries==7.2.1
+django-countries==7.3.2
     # via -r requirements.in
 django-debug-toolbar==3.2
     # via -r requirements-dev.in
@@ -105,34 +104,32 @@ django-decorator-include==3.0
     # via -r requirements.in
 django-functest==1.3
     # via -r requirements-dev.in
-django-js-asset==1.1.0
+django-js-asset==2.0.0
     # via django-mptt
 django-libsass==0.9
     # via -r requirements.in
-django-mailer==2.1
+django-mailer==2.2
     # via -r requirements.in
 django-mptt==0.13.4
     # via wiki
 django-nyt==1.2.2
     # via wiki
-django-paypal==1.1.1
+django-paypal==2.0
     # via -r requirements.in
 django-plainpasswordhasher==0.3
     # via -r requirements-dev.in
 django-ranged-response==0.2.0
     # via django-simple-captcha
-django-sekizai==2.0.0
+django-sekizai==3.0.1
     # via wiki
-django-simple-captcha==0.5.13
+django-simple-captcha==0.5.17
     # via -r requirements.in
 django-spurl==0.6.8
     # via -r requirements.in
 django-urlconfchecks==0.4.0
     # via -r requirements-dev.in
-django-webtest==1.9.9
+django-webtest==1.9.10
     # via django-functest
-docutils==0.14
-    # via botocore
 execnet==1.9.0
     # via pytest-xdist
 ezodf2==0.2.10
@@ -145,9 +142,9 @@ fabtools3==0.19.0
     # via -r requirements.in
 flake8==3.8.4
     # via -r requirements-dev.in
-frozendict==1.0
+frozendict==2.3.0
     # via -r requirements.in
-furl==2.1.0
+furl==2.1.3
     # via
     #   -r requirements.in
     #   django-functest
@@ -155,7 +152,7 @@ h11==0.13.0
     # via wsproto
 hypothesis==6.3.3
     # via -r requirements-dev.in
-idna==2.6
+idna==3.3
     # via
     #   requests
     #   trio
@@ -166,13 +163,11 @@ ipython==7.30.1
     # via
     #   -r requirements-dev.in
     #   pandas-highcharts
-ipython-genutils==0.2.0
-    # via traitlets
 isort==5.6.4
     # via -r requirements-dev.in
-jedi==0.18.0
+jedi==0.18.1
     # via ipython
-jmespath==0.9.3
+jmespath==1.0.0
     # via
     #   boto3
     #   botocore
@@ -187,7 +182,7 @@ lxml==4.6.2
     #   -r requirements-dev.in
     #   ezodf2
     #   pyquery
-markdown==3.1.1
+markdown==3.2.2
     # via wiki
 matplotlib-inline==0.1.3
     # via ipython
@@ -195,7 +190,7 @@ mccabe==0.6.1
     # via
     #   -r requirements-dev.in
     #   flake8
-numpy==1.21.4
+numpy==1.22.3
     # via
     #   -r requirements.in
     #   pandas
@@ -203,29 +198,29 @@ orderedmultidict==1.0.1
     # via furl
 outcome==1.1.0
     # via trio
-packaging==20.4
+packaging==21.3
     # via
     #   bleach
     #   pytest
-pandas==1.3.4
+pandas==1.4.1
     # via
     #   -r requirements.in
     #   pandas-highcharts
 pandas-highcharts==0.5.2
     # via -r requirements.in
-paramiko==2.7.1
+paramiko==2.10.3
     # via fabric3
-parso==0.8.1
+parso==0.8.3
     # via jedi
-parsy==1.3.0
+parsy==1.4.0
     # via -r requirements.in
 pep517==0.12.0
     # via pip-tools
-pexpect==4.5.0
+pexpect==4.8.0
     # via ipython
-pickleshare==0.7.4
+pickleshare==0.7.5
     # via ipython
-pillow==8.0.1
+pillow==9.0.1
     # via
     #   django-simple-captcha
     #   wiki
@@ -233,19 +228,19 @@ pip-tools==6.5.1
     # via -r requirements.in
 pluggy==0.13.1
     # via pytest
-portalocker==2.3.2
+portalocker==2.4.0
     # via concurrent-log-handler
-prompt-toolkit==3.0.17
+prompt-toolkit==3.0.28
     # via ipython
-psutil==5.6.7
+psutil==5.9.0
     # via
     #   -r requirements.in
     #   pytest-xdist
-psycopg2-binary==2.9.2
+psycopg2-binary==2.9.3
     # via -r requirements.in
-ptyprocess==0.5.2
+ptyprocess==0.7.0
     # via pexpect
-pwned-passwords-django==1.4.1
+pwned-passwords-django==1.5
     # via -r requirements.in
 py==1.11.0
     # via
@@ -253,19 +248,19 @@ py==1.11.0
     #   pytest-forked
 pycodestyle==2.6.0
     # via flake8
-pycparser==2.18
+pycparser==2.21
     # via cffi
-pydantic==1.8
+pydantic==1.9
     # via -r requirements.in
 pyflakes==2.2.0
     # via flake8
-pygments==2.10.0
+pygments==2.11.2
     # via ipython
-pynacl==1.3.0
+pynacl==1.5.0
     # via paramiko
 pyopenssl==22.0.0
     # via urllib3
-pyparsing==2.4.7
+pyparsing==3.0.7
     # via packaging
 pyquery==1.4.1
     # via
@@ -294,52 +289,47 @@ python-dateutil==2.8.2
     #   time-machine
 python-memcached==1.59
     # via -r requirements.in
-pytz==2019.3
+pytz==2022.1
     # via
     #   -r requirements.in
-    #   django
     #   django-paypal
     #   pandas
 pywatchman==1.4.1
     # via -r requirements.in
-pyyaml==5.1.2
+pyyaml==6.0
     # via
     #   -r requirements.in
     #   vcrpy
 rcssmin==1.1.0
     # via django-compressor
-requests==2.26.0
+requests==2.27.1
     # via
     #   -r requirements.in
     #   django-paypal
     #   pwned-passwords-django
 rjsmin==1.2.0
     # via django-compressor
-s3transfer==0.1.13
+s3transfer==0.5.2
     # via boto3
 selenium==4.1.0
     # via
     #   -r requirements-dev.in
     #   django-functest
-sentry-sdk==1.3.1
+sentry-sdk==1.5.8
     # via -r requirements.in
 six==1.16.0
     # via
     #   bcrypt
     #   bleach
     #   django-mailer
-    #   django-paypal
-    #   django-simple-captcha
     #   django-spurl
     #   fabric3
     #   furl
     #   libsass
     #   orderedmultidict
-    #   packaging
-    #   pynacl
+    #   paramiko
     #   python-dateutil
     #   python-memcached
-    #   traitlets
     #   vcrpy
 sniffio==1.2.0
     # via trio
@@ -353,7 +343,7 @@ sortedcontainers==2.4.0
     #   trio
 soupsieve==2.3.1
     # via beautifulsoup4
-sqlparse==0.2.4
+sqlparse==0.4.2
     # via
     #   django
     #   django-debug-toolbar
@@ -361,22 +351,25 @@ time-machine==2.1.0
     # via -r requirements-dev.in
 toml==0.10.2
     # via pytest
-tomli==1.2.2
+tomli==2.0.1
     # via pep517
-traitlets==4.3.2
+traitlets==5.1.1
     # via
     #   ipython
     #   matplotlib-inline
-trio==0.19.0
+trio==0.20.0
     # via
     #   selenium
     #   trio-websocket
 trio-websocket==0.9.2
     # via selenium
-typing-extensions==3.7.4.3
-    # via pydantic
-urllib3[secure]==1.26.8
+typing-extensions==4.1.1
     # via
+    #   django-countries
+    #   pydantic
+urllib3[secure]==1.26.9
+    # via
+    #   botocore
     #   requests
     #   selenium
     #   sentry-sdk
@@ -386,9 +379,9 @@ uwsgi==2.0.20
     # via -r requirements.in
 vcrpy==1.10.2
     # via -r requirements-dev.in
-waitress==2.0.0
+waitress==2.1.1
     # via webtest
-wcwidth==0.1.7
+wcwidth==0.2.5
     # via prompt-toolkit
 webencodings==0.5.1
     # via bleach
@@ -402,11 +395,11 @@ wheel==0.37.1
     # via pip-tools
 wiki==0.8
     # via -r requirements.in
-wrapt==1.13.3
+wrapt==1.14.0
     # via vcrpy
-wsproto==1.0.0
+wsproto==1.1.0
     # via trio-websocket
-xlrd==1.2.0
+xlrd==2.0.1
     # via -r requirements.in
 xlwt==1.3.0
     # via -r requirements.in
