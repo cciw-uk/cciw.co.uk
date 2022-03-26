@@ -41,9 +41,6 @@
 
       <a href="{% url 'cciw-officers-index' %}">Officer homepage</a> /
 
-      {% if user.has_usable_password %}
-        <a href="{% url 'admin:password_change' %}">Change password</a> /
-      {% endif %}
       <a href="{% url 'admin:logout' %}">Log out</a>
     {% endblock %}
   </div>
