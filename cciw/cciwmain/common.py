@@ -113,7 +113,7 @@ def standard_processor(request):
     context["homepage"] = request.path == "/"
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match(fr"/camps/{thisyear}/(\d+)/", request.path)
+    m = re.match(rf"/camps/{thisyear}/(\d+)/", request.path)
     if m is not None:
         request_path = f"/thisyear/{m.groups()[0]}/"
     else:
