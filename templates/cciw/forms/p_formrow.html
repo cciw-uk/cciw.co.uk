@@ -1,0 +1,25 @@
+<div
+  class="formrow {{ field.css_classes }}"
+  id="div_id_{{ field.name }}"
+>
+  {% if errors %}
+    <div class="fieldMessages">
+      {{ errors }}
+    </div>
+  {% endif %}
+  <div class="field">
+    {% if label_tag %}
+      {# Passed in from template via cciw_form_field #}
+      {{ label_tag }}
+    {% else %}
+      {% if field.label %}{{ field.label_tag }}{% endif %}
+    {% endif %}
+    <div class="inputwidget">
+      {{ field }}
+      {% if field.help_text %}
+        <br>
+        <span class="helptext">{{ field.help_text|safe }}</span>
+      {% endif %}
+    </div>
+  </div>
+</div>

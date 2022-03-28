@@ -26,12 +26,10 @@
 
   <form method="POST" action="">
     {% csrf_token %}
-    <div class="form">
-      <div class="field">
-        <label class="required" for="id_email">Email address:</label>
-        {{ form.email }}
-        <input type="submit" name="submit" value="Submit" />
-      </div>
+    <div class="field">
+      <label class="required" for="id_email">Email address:</label>
+      {{ form.email }}
+      <input type="submit" name="submit" value="Submit" />
     </div>
   </form>
   <br>

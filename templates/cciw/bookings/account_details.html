@@ -10,6 +10,19 @@
     {% csrf_token %}
     {{ form.as_p }}
 
+    <div class='mailchimp-notice'>Email newsletter: we use a third party email
+      service provider, MailChimp, to send you these newsletter emails. We
+      provide MailChimp with only your email address. MailChimp treats
+      information about you in accordance with the provisions of its <a href='https://mailchimp.com/legal/privacy/'>Privacy
+        Policy</a>. MailChimp also utilizes certain technologies, such as pixels
+      and web beacons, in the emails that are sent through MailChimp. These
+      technologies allow MailChimp to track whether you have opened or clicked
+      on our emails and if so, the date, time, and IP address associated with
+      the open and/or click. For more information on MailChimp's use of these
+      technologies, you can read their
+      <a href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.
+    </div>
+
     <div class="formrow">
       <br/>
       <input type="submit" name="submit" value="Save and continue" />

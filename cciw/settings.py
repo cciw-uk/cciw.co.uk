@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.sites",
     "django.contrib.staticfiles",
+    "django.forms",
     # Ours
     "cciw.accounts",
     "cciw.cciwmain.apps.CciwmainConfig",

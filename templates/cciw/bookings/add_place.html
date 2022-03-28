@@ -212,18 +212,16 @@
           {{ agreement.text_html|safe }}
         </div>
 
-        <div class="form">
-          <div id="div_id_agreement" class="formrow">
-            <div class="field">
-              <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
-              <input type="checkbox"
-                name="custom_agreement_{{ agreement.id }}"
-                id="id_custom_agreement_{{ agreement.id }}"
-                {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
-                  checked="checked"
-                {% endif %}
-              >
-            </div>
+        <div id="div_id_agreement" class="formrow">
+          <div class="field">
+            <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
+            <input type="checkbox"
+              name="custom_agreement_{{ agreement.id }}"
+              id="id_custom_agreement_{{ agreement.id }}"
+              {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
+                checked="checked"
+              {% endif %}
+            >
           </div>
         </div>
 

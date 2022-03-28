@@ -330,19 +330,6 @@ class BookingAccountManagerBase(models.Manager):
 BookingAccountManager = BookingAccountManagerBase.from_queryset(BookingAccountQuerySet)
 
 
-MAILCHIMP_NOTICE = mark_safe(
-    """<span class='mailchimp-notice'>We use a third party email service provider,
-MailChimp, to send you these newsletter emails. We provide MailChimp with only
-your email address. MailChimp treats information about you in accordance with
-the provisions of its <a href='https://mailchimp.com/legal/privacy/'>Privacy
-Policy</a>. MailChimp also utilizes certain technologies, such as pixels and web
-beacons, in the emails that are sent through MailChimp. These technologies allow
-MailChimp to track whether you have opened or clicked on our emails and if so,
-the date, time, and IP address associated with the open and/or click. For more
-information on MailChimp's use of these technologies, you can read their <a
-href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.</span>"""
-)
-
 # Public attributes - i.e. that the account holder is allowed to see
 ACCOUNT_PUBLIC_ATTRS = [
     "email",
@@ -382,9 +369,7 @@ class BookingAccount(models.Model):
     subscribe_to_mailings = models.BooleanField(
         "Receive mailings about future camps", default=None, blank=True, null=True
     )
-    subscribe_to_newsletter = models.BooleanField(
-        "Subscribe to email newsletter", default=False, help_text=MAILCHIMP_NOTICE
-    )
+    subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False)
     total_received = models.DecimalField(default=Decimal("0.00"), decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(blank=False)
     first_login = models.DateTimeField(null=True, blank=True)

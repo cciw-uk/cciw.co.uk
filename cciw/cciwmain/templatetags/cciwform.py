@@ -1,21 +1,24 @@
 from django import template
-from django.utils.html import format_html, mark_safe
+from django.forms import Form
+from django.utils.html import format_html
 
 register = template.Library()
 
 
 @register.simple_tag
-def cciw_form_field(form, field_name, label):
+def cciw_form_field(form: Form, field_name, label_text):
     """
     Display a single field in the standard CCiW format.
     """
     # Assumes form has CciwFormMixin as a base
-
-    top_errors, hidden_fields = [], []  # these will be discarded.
-    return mark_safe(
-        form.start_template
-        + form.render_field(field_name, form.fields[field_name], top_errors, hidden_fields, label_text=label)
-        + form.end_template
+    bound_field = form[field_name]
+    return form.render(
+        context={
+            "field": bound_field,
+            "errors": form.error_class(bound_field.errors, renderer=form.renderer),
+            "label_tag": bound_field.label_tag(contents=label_text),
+        },
+        template_name=form.template_name_p_formrow,
     )
 
 

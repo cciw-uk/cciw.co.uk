@@ -1,0 +1,13 @@
+{% if errors %}
+  <div class="userError">
+    {{ errors.as_ul }}
+  </div>
+{% endif %}
+
+{% for field, errors in fields %}
+  {% include formrow_template %}
+{% endfor %}
+
+{% if hidden_fields %}
+  <div>{% for field in hidden_fields %}{{ field }}{% endfor %}</div>
+{% endif %}

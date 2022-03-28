@@ -521,13 +521,9 @@ div.sitephoto {
 
 // Forms
 
-$labelWidth: 16em;
-$fieldHelpScale: 0.9;
 
 div.formrow {
 
-    @include clearfix();
-    clear: both;
     margin: 0px 0px 8px 0px;
     padding: 0px 6px 2px 6px;
 
@@ -535,34 +531,11 @@ div.formrow {
         display: flex;
         flex-wrap: wrap;
 
-        // LHS of form
         > label {
             display: block;
-            width: $labelWidth;
+            width: 16em;
         }
 
-        // RHS of form
-        ul, ul li {
-            list-style-type: none;
-            margin-left: 0px;
-            padding-left: 0px;
-        }
-
-        ul {
-            margin-left: $labelWidth;
-
-            @media screen and (max-width: $smallScreenWidth) {
-                display: block;
-                clear: left;
-                margin-left: 0px;
-            }
-        }
-
-        ul label {
-            /* Override what we set before under div.formrow label */
-            float: none;
-            width: auto;
-        }
     }
 
     .emptywarning {
@@ -572,14 +545,18 @@ div.formrow {
     }
 
     textarea, select, input:not([type=checkbox]):not([type=radio]) {
-        max-width: 100%;
+        // These controls should never be wider than we've
+        // got room to show them on the screen.
+        box-sizing: border-box;
+        max-width: calc(100vw - #{$contentPadding} * 2);
+
+        // But they should have a standard minimum width.
         min-width: 170px;
     }
 
-    .field-help {
-        font-size: $fieldHelpScale * 100%;
+    .helptext {
+        font-size: 90%;
         color: $textLighterColor;
-        margin-left: 5px;
     }
 }
 
@@ -632,14 +609,17 @@ input.placeholder {
 
 }
 
-#contactform .field-help {
-    display: block;
-    margin-left: $labelWidth / $fieldHelpScale;
-}
-
 img.captcha {
     vertical-align: top;
 }
+
+
+// Account details
+.mailchimp-notice {
+    font-size: 90%;
+    color: $textLighterColor;
+}
+
 
 // Buttons
 button, input[type=submit] {
@@ -809,16 +789,6 @@ a.booknow, a.bigaction, input.bigaction {
     }
 }
 
-// Account details
-#div_id_subscribe_to_newsletter {
-    .field-help {
-        display: none;
-    }
-    input:checked + .field-help {
-        display: block;
-        clear: both;
-    }
-}
 
 // Add/edit place
 
