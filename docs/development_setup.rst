@@ -74,5 +74,15 @@ These steps have only been tested on Ubuntu-based Linux installations.
   (this assumes you have already `installed pre-commit
   <https://pre-commit.com/>`_)
 
+* To be able to mark releases in Sentry, you need Sentry credentials. To
+  activate them, you should create a ``cciw_sentry_env`` file like the
+  following, preferably stored in an encrypted folder::
+
+    export SENTRY_AUTH_TOKEN=MYSECRETTOKEN
+
+  Then add it to the venv::
+
+    echo "source /path/to/my/cciw_sentry_env" >> $VIRTUAL_ENV/bin/postactivate
+
 See also `<deployment.rst>`_ for docs on deploying, and setup you might
 want to do now for that.
