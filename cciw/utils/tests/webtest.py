@@ -4,9 +4,7 @@ from typing import Union
 from urllib.parse import urlparse
 
 import pytest
-from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test.utils import override_settings
 from django.urls import reverse
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, MultiThreadedLiveServerMixin, ShortcutLoginMixin
 from pyquery import PyQuery
@@ -15,16 +13,6 @@ import conftest
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Person
 from cciw.utils.tests.base import TestBase, TestBaseMixin
-
-
-# We don't need CSS compilation when running normal tests, and it adds a lot to
-# the test run.
-class NoOpFilter(CompilerFilter):
-    def __init__(self, content, command=None, *args, **kwargs):
-        pass
-
-    def input(self, **kwargs):
-        return ""
 
 
 class CommonMixin:
@@ -97,9 +85,6 @@ class CommonMixin:
             self.submit(submit_css_selector)
 
 
-@override_settings(
-    COMPRESS_PRECOMPILERS=[("text/x-scss", "cciw.utils.tests.webtest.NoOpFilter")],
-)
 class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     """
     Base class for integration tests that need more than Django's test Client.
