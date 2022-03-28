@@ -35,6 +35,8 @@ from .email import send_booking_expiry_mail, send_places_confirmed_email
 # Some business logic duplicated in
 # cciw.officers.views.booking_secretary_reports for performance reasons.
 
+DEFAULT_COUNTRY = "GB"
+
 
 class Sex(models.TextChoices):
     MALE = "m", "Male"
@@ -355,7 +357,7 @@ class BookingAccount(models.Model):
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255, blank=True)
     address_county = models.CharField("county/state", max_length=255, blank=True)
-    address_country = CountryField("country", null=True, blank=True)
+    address_country = CountryField("country", null=True, blank=True, default=DEFAULT_COUNTRY)
     address_post_code = models.CharField("post code", blank=True, max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
     share_phone_number = models.BooleanField(
@@ -816,7 +818,7 @@ class Booking(models.Model):
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255)
     address_county = models.CharField("county/state", max_length=255, blank=True)
-    address_country = CountryField("country", null=True)
+    address_country = CountryField("country", null=True, default=DEFAULT_COUNTRY)
     address_post_code = models.CharField("post code", max_length=10)
 
     phone_number = models.CharField(blank=True, max_length=22)
@@ -830,7 +832,7 @@ class Booking(models.Model):
     contact_line2 = models.CharField("address line 2", max_length=255, blank=True)
     contact_city = models.CharField("town/city", max_length=255)
     contact_county = models.CharField("county/state", max_length=255, blank=True)
-    contact_country = CountryField("country", null=True)
+    contact_country = CountryField("country", null=True, default=DEFAULT_COUNTRY)
     contact_post_code = models.CharField("post code", max_length=10)
     contact_phone_number = models.CharField(max_length=22)
 
@@ -843,7 +845,7 @@ class Booking(models.Model):
     gp_line2 = models.CharField("address line 2", max_length=255, blank=True)
     gp_city = models.CharField("town/city", max_length=255)
     gp_county = models.CharField("county/state", max_length=255, blank=True)
-    gp_country = CountryField("country", null=True)
+    gp_country = CountryField("country", null=True, default=DEFAULT_COUNTRY)
     gp_post_code = models.CharField("post code", max_length=10)
     gp_phone_number = models.CharField("GP phone number", max_length=22)
 
