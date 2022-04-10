@@ -340,6 +340,7 @@ class Factories(FactoriesBase):
         dbs_check_consent=True,
         referee1_overrides=None,
         referee2_overrides=None,
+        finished=True,
     ) -> Application:
         if year is not None:
             date_saved = datetime(year, 1, 1)
@@ -375,7 +376,7 @@ class Factories(FactoriesBase):
             crime_declaration=False,
             crime_details="",
             date_saved=date_saved,
-            finished=True,
+            finished=finished,
             full_name=full_name,
             illness_details="",
             relevant_illness=False,
