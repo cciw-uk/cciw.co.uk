@@ -63,18 +63,32 @@ class Document(models.Model):
 
     In short:
     - subclass Document e.g. MyDocument(Document)
+    - use DocumentManager to create the default `objects` Manager on MyDocument.
+      The main purpose is to defer loading of the `content` field.
+      to defer loading of the `content` field
     - create a OneToOne field to it from another model, using `DocumentField`
       e.g.
             class MyInfo(models.Model):
                document = DocumentField(MyDocument)
 
-    - use DocumentManager, and in other places you'll need to remember
-      to defer loading of the `content` field
-    - Remember to clean up orphaned instances which are left behind
+      The purpose of this model will vary. The DocumentField link may have
+      `null=True` is allowed if the document is an optional part of MyInfo
+
+    - In places you load MyInfo, if you load `MyDocument` at the same time (e.g.
+      `select_related('document')`, then typically you'll need to you'll need to
+      remember to defer loading of MyDocument.content for performance e.g.
+      `defer('document__content')`
+
+    - Remember to clean up orphaned instances of MyDocument which are left behind
       - when a new document is associated with MyInfo instance
       - when uploads are done but the MyInfo instance is not saved
+
+      This can be done using a scheduled task that looks for MyDocument instances
+      not related to a MyInfo.
+
     - Remember to add permissions for the file to be downloaded, in static_roles.yaml
     - Use DocumentRelatedModelAdminMixin and DocumentAdmin for admin
+
     """
 
     created_at = models.DateTimeField(default=timezone.now)
@@ -123,6 +137,10 @@ class Document(models.Model):
 
 
 class DocumentModelFile(File):
+    """
+    File subclass that handles instances of Document (subclass)
+    """
+
     def __init__(self, document):
         self.document = document
 
@@ -146,7 +164,3 @@ class DocumentModelFile(File):
             "documents-download",
             kwargs={"id": self.document.id, "app_label": model._meta.app_label, "model_name": model.__name__.lower()},
         )
-
-
-# TODO:
-# - retention policies
