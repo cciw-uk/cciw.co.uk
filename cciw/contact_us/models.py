@@ -17,3 +17,6 @@ class Message(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     objects = MessageQuerySet.as_manager()
+
+    def __str__(self):
+        return f"Message {self.id} from {self.email} on {self.created_at}"
