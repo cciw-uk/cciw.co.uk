@@ -7,6 +7,10 @@
     <title>{% block title %}{{ title }} | CCiW{% endblock %}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="initial-scale=1.0" />
+    <link rel="shortcut icon" type="image/x-icon" href="{{ STATIC_URL }}images/favicon-16x16.png" sizes="16x16" />
+    <link rel="shortcut icon" type="image/x-icon" href="{{ STATIC_URL }}images/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="{{ STATIC_URL }}images/favicon-192x192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="{{ STATIC_URL }}images/apple-touch-icon.png" />
     <link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet" type="text/css" />
     {% compress css %}
       <link rel="stylesheet" href="{% static "css/style.scss" %}" type="text/x-scss" />
