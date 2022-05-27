@@ -296,6 +296,10 @@ LOGGING = {
             "propagate": False,
         },
     },
+    "root": {
+        "handlers": ["file"],
+        "level": "INFO",
+    },
 }
 
 if DEVBOX:
@@ -309,6 +313,7 @@ if DEVBOX:
         "handlers": ["console"],
         "propagate": False,
     }
+    LOGGING["root"]["handlers"] = ["console"]
 
 
 PASSWORD_RESET_TIMEOUT = 7 * 24 * 3600
