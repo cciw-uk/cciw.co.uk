@@ -21,7 +21,7 @@ from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
-from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_MESSAGE_ID, AWS_SNS_NOTIFICATION
+from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_MESSAGE_ID, AWS_SNS_NOTIFICATION, BAD_MESSAGE_1
 
 
 def b(s):
@@ -161,6 +161,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
         assert not any(b"List-Post: <mailto:myrole@mailtest.cciw.co.uk>" in m for m in sent_messages_bytes)
+
+    def test_handle_bad_message_malformed_1(self):
+        msg = emailify(BAD_MESSAGE_1)
+        handle_mail(msg)
+
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        assert len(rejections) == 0
+        assert len(sent_messages) == 0
 
     def test_handle_officer_list(self):
         camp = camp_factories.create_camp(

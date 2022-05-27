@@ -503,7 +503,14 @@ def handle_mail(data):
         logger.info("Discarding virus, message-id %s", mail.get("Message-ID", "<unknown>"))
         return
 
-    from_email = extract_email_addresses(mail["From"])[0]
+    from_header = mail["From"]
+    if not isinstance(from_header, str):
+        # Sometimes get Header instance here. So far it has only happened with spam mail
+        # which seems to be malformed (unicode chars in a header instead of "encoded word" syntax)
+        logger.info("Discarding malformed mail, message-id %s", mail.get("Message-ID", "<unknown>"))
+        return
+
+    from_email = extract_email_addresses(from_header)[0]
 
     for address in addresses:
         try:

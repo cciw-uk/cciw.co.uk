@@ -39,6 +39,100 @@ AWS_BOUNCE_NOTIFICATION = {
     "body": b'{\n  "Type" : "Notification",\n  "MessageId" : "bf5991d9-9f94-5bbf-af30-c99758486554",\n  "TopicArn" : "arn:aws:sns:eu-west-1:319777369186:ses-bounces",\n  "Message" : "{\\"notificationType\\":\\"Bounce\\",\\"bounce\\":{\\"feedbackId\\":\\"010201765723ea4a-97e6a38a-da36-47c9-b447-bc76b838c0c2-000000\\",\\"bounceType\\":\\"Permanent\\",\\"bounceSubType\\":\\"General\\",\\"bouncedRecipients\\":[{\\"emailAddress\\":\\"a.referrer@example.com\\",\\"action\\":\\"failed\\",\\"status\\":\\"5.1.1\\",\\"diagnosticCode\\":\\"smtp; 550 5.1.1 user unknown\\"}],\\"timestamp\\":\\"2020-12-12T13:29:00.000Z\\",\\"remoteMtaIp\\":\\"3.218.174.122\\",\\"reportingMTA\\":\\"dsn; a7-17.smtp-out.eu-west-1.amazonses.com\\"},\\"mail\\":{\\"timestamp\\":\\"2020-12-12T13:28:58.951Z\\",\\"source\\":\\"webmaster@cciw.co.uk\\",\\"sourceArn\\":\\"arn:aws:ses:eu-west-1:319777369186:identity/cciw.co.uk\\",\\"sourceIp\\":\\"85.153.236.111\\",\\"sendingAccountId\\":\\"319777369186\\",\\"messageId\\":\\"010201765723e547-6322af43-456a-45cb-aa18-05ab53ff52ee-000000\\",\\"destination\\":[\\"a.referrer@example.com\\"],\\"headersTruncated\\":false,\\"headers\\":[{\\"name\\":\\"Received\\",\\"value\\":\\"from bunyan ([85.153.236.111]) by email-smtp.amazonaws.com with SMTP (SimpleEmailService-d-TK1K3UJR7) id eA7YseB1P5MKA1YsAa16 for a.referrer@example.com; Sat, 12 Dec 2020 13:28:58 +0000 (UTC)\\"},{\\"name\\":\\"Content-Type\\",\\"value\\":\\"text/plain; charset=\\\\\\"utf-8\\\\\\"\\"},{\\"name\\":\\"MIME-Version\\",\\"value\\":\\"1.0\\"},{\\"name\\":\\"Content-Transfer-Encoding\\",\\"value\\":\\"7bit\\"},{\\"name\\":\\"Subject\\",\\"value\\":\\"[CCIW] Reference for Roy Armstrong\\"},{\\"name\\":\\"From\\",\\"value\\":\\"webmaster@cciw.co.uk\\"},{\\"name\\":\\"To\\",\\"value\\":\\"a.referrer@example.com\\"},{\\"name\\":\\"Date\\",\\"value\\":\\"Sat, 12 Dec 2020 13:28:58 -0000\\"},{\\"name\\":\\"Message-ID\\",\\"value\\":\\"<160777973839.803843.6703080364289671170@bunyan>\\"},{\\"name\\":\\"Reply-To\\",\\"value\\":\\"a.camp.leader@example.com\\"},{\\"name\\":\\"X-CCIW-Camp\\",\\"value\\":\\"2000-blue\\"},{\\"name\\":\\"X-CCIW-Action\\",\\"value\\":\\"ReferenceRequest\\"}],\\"commonHeaders\\":{\\"from\\":[\\"webmaster@cciw.co.uk\\"],\\"replyTo\\":[\\"a.camp.leader@example.com\\"],\\"date\\":\\"Sat, 12 Dec 2020 13:28:58 -0000\\",\\"to\\":[\\"a.referrer@example.com\\"],\\"messageId\\":\\"<160777973839.803843.6703080364289671170@bunyan>\\",\\"subject\\":\\"[CCIW] Reference for Roy Armstrong\\"}}}",\n  "Timestamp" : "2020-12-12T13:29:00.409Z",\n  "SignatureVersion" : "1",\n  "Signature" : "fp/ladNgk9bI4s8zK7uCV4r8xpBDX1EBc1A/OjbiS/4AuDDqc6EmBsj/P/tYXU1Py2Qe3ih1HVxP2IEZtjl6qnoUixUh8KjGQfTD2Als0m/VgIIFfikwgn6UEpPbVIF4E9QmrgBmeUHnC5i8m7YSmw4zQLll9fccmkZjmMEjRAFa7SWaClFTcvWPK1KlK/sjiwi/ger+ZFz5M73V9HLfzT/pEbuCpr3++hXlh5QK2mLk8ANy7Nu+chl/4c7hl5DBZITZn4c1w09qsgIbUsZh/QUhrkFzxc5aQaRbODSiqfGWvvLHmzLGtJSV+7afWgi22zsMHDBMJml4u31rwiSdvg==",\n  "SigningCertURL" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-010a507c1833636cd94bdb98bd93083a.pem",\n  "UnsubscribeURL" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:319777369186:ses-bounces:a4995c81-f8b5-4879-8747-3897967e333e"\n}',
 }
 
+BAD_MESSAGE_1 = """
+Return-Path: <no-reply@mvlar.top>
+Received: from ns.mvlar.top (ns.mvlar.top [45.156.24.67])
+ by inbound-smtp.eu-west-1.amazonaws.com with SMTP id 2f5o7drgukqhmg1aff9de61r6b9mtpe4lkuqr4o1
+ for cpo@mailtest.cciw.co.uk;
+ Fri, 27 May 2022 09:48:04 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: pass (spfCheck: domain of mvlar.top designates 45.156.24.67 as permitted sender) client-ip=45.156.24.67; envelope-from=no-reply@mvlar.top; helo=ns.mvlar.top;
+Authentication-Results: amazonses.com;
+ spf=pass (spfCheck: domain of mvlar.top designates 45.156.24.67 as permitted sender) client-ip=45.156.24.67; envelope-from=no-reply@mvlar.top; helo=ns.mvlar.top;
+ dmarc=pass header.from=mvlar.top;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFFL1duUTUrVXFTU2tPNCtmWi9sMVBZaEdSdjJzZnRoSjNlalFXL2t1Zkx6WW96N2RPVklXTkdaa0ZodVkrMHBxVUlRU1lDdHpPMFVVYm4xMlhQN3VuRDExQmFoQm9mbnVOSkFLRlpNbkJNekdBL1dGR0RqQUJDczkxQVBWWC95MVExU1puWGptdGV1bmVwdXpidFVTaU9tNjNNRW1Pb0dVUy94dXhPd0docHRvRkNDbFlSSGx1NUNta0tKY1J1Tkd0MlJJZzJVNDNhOFIydGw4UXFHTmh5aklsWDBhUGZ3NGdBK2JBSGJTb3UvM0Z0MUsyaFI2WmY2cUNzU0lWSmNlL3E0eXNEaE1KV0hIc1RIdHEyREZmWjhJa3pFbE94WHVzZE5IV1JxMnpXM0E9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=e5KfJ/TahP5Yxni/34a9KRjIVhw9OQW6/h6+OUIXe/IuWnYvSj1giCvThtSYMsnCqYjyvAvy21fRwtPEUjZ6yD2/2cI8eFfXYUnEDbPXO7oD7SFpOeNdJzxit+ttEqh1PZlUz+iZ2LAHFDB85VSRb9gRcFmsTjKFkRsdhZzec4I=; c=relaxed/simple; s=ihchhvubuqgjsxyuhssfvqohv7z3u4hn; d=amazonses.com; t=1653644885; v=1; bh=Trju8PuifJ5awuxRLq5pO915rIw1dJU1CAWX5A91760=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+Received: by ns.mvlar.top for <cpo@mailtest.cciw.co.uk>; Fri, 27 May 2022 09:48:00 +0000 (envelope-from <no-reply@mvlar.top>)
+Date: Fri, 27 May 2022 09:48:00 GMT
+To: <cpo@mailtest.cciw.co.uk>
+Subject: Your Sunday Saving Is Waiting Inside...
+From: "RB-USA® Sunglasses"<no-reply@mvlar.top>
+Message-Id: <4b5f7d5e-87db-43b4-9b5c-64fc5217a5b7@mvlar.top>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+X-Priority: 2
+X-Spam-Score: 1
+ReturnReceipt: 1
+DKIM-Signature: v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJqILd3seO5ZwfYWfg8RbSJYbxFAbI5llEe+ASpw4l0mhoJlESL/SPs+2f+f8+Hgjlr7CvxdU1f+Baj0jAPbdOK9CprwgwM9csdeLXGjKvTjW2hsL6qtgMf1APhtvKWEf7h4IvXIiEyyb+70PtFr5Wb4I3+EiIr3AOAvhv4zBqcQIDAQAB
+List-Unsubscribe: <https://www.sexydoll4u.com/list.cgi?cmd=unsub&lst=list>, <mailto:allen@sexydoll4u.com?subject=unsubscribe>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>RayBan@Sunglasses</title>
+</head>
+<body>
+<table width="620" border="0" cellspacing="5" cellpadding="0" align="center"  style="border:1px solid #898989;font-family:'Palatino Linotype', 'Book Antiqua', Palatino, serif;">
+  <tr>
+    <td colspan="2">
+        <table width="620" border="0" cellspacing="0" cellpadding="0" align="center">
+          <tr>
+            <td height="5" bgcolor="#F0BB2D"></td>
+            <td height="5" bgcolor="#E2DFD0"> </td>
+            <td height="5" bgcolor="#000"> </td>
+            <td height="5" bgcolor="#F0BB2D"></td>
+            <td height="5" bgcolor="#E2DFD0"> </td>
+            <td height="5" bgcolor="#000"> </td>
+            <td height="5" bgcolor="#F0BB2D"></td>
+            <td height="5" bgcolor="#E2DFD0"> </td>
+            <td height="5" bgcolor="#000"> </td>
+          </tr>
+        </table>
+    </td>
+  </tr>
+  <tr><td colspan="2">
+      <span style="display:block; font-size:14px; text-align:center; margin:10px; font-weight:lighter; color:#555; letter-spacing:1px; line-height:20px;">Having trouble reading this email?<a style="color:#555;" href="https://subscriber.ijgdmf.com/SubscribeClick?6vz6=jw&5jg5=cpo@mailtest.cciw.co.uk&i2ex0wlfdx5053=&grabbed =Gregory grabbed a ribbed sandwich that had been strewn nearby he massaged it with his fi" target="_blank">View it in your browser</a>. <br>Not interested anymore? <a style="color:#555;" href="https://subscriber.ijgdmf.com/Uns?6vz6=jw&5jg5=cpo@mailtest.cciw.co.uk&i2ex0wlfdx5053=&grabbed =Gregory grabbed a ribbed sandwich that had been strewn nearby he massaged it with his fi" target="_blank">Unsubscribe instantly</a>. <a style="color:#000;" href="https://subscriber.ijgdmf.com/Spam?name=jw&5jg5=cpo@mailtest.cciw.co.uk&i2ex0wlfdx5053=&grabbed =Gregory grabbed a ribbed sandwich that had been strewn nearby he massaged it with his fi" target="_blank"><font color="red">SPAM</font></a></span>
+  </td></tr>
+  <tr>
+    <td width="270" style="padding:0 20px; font-size:16px; line-height:20px; color:#555; text-align:center; letter-spacing:1px; background:#f9f9f9"><p><strong style="font-size:30px; font-weight:bold; line-height:40px; color:#000;">FINAL CLEARANCE:<br>EXTRA 90% OFF</strong></p>
+      <p>From May 27th<br>
+        <br> Use promo code 90XTRA at the checkout.<br>
+    <span style="display:block; width:160px; font-size:17px; font-weight:bold; border:3px solid #000; background:#F7C030; padding:10px; margin:30px auto;"><a href="https://subscriber.ijgdmf.com/SubscribeClick?6vz6=jw&5jg5=cpo@mailtest.cciw.co.uk&i2ex0wlfdx5053=&grabbed =Gregory grabbed a ribbed sandwich that had been strewn nearby he massaged it with his fi" target="_blank" style="text-decoration:none; color:#fff;">SHOP NOW &gt;</a></span></p></td>
+    <td width="270" style="padding:0 20px; background:#F7C030; font-size:30px; font-family:Tahoma, Geneva, sans-serif; letter-spacing:-2px; text-align:center">
+         <p><strong style="font-size:37px; line-height:50px;">Ray-Ban SUNGLASSES</strong></p>
+        <p><strong style="font-size:37px; line-height:50px;">GET AN EXTRA</strong><br>
+          <strong style="font-size:55px; line-height:70px; color:#fff; background:#000; padding:0 10px; margin:10px 0; display:block;">90% OFF</strong><b style="color:#fff; line-height:35px">FINAL CLEARANCE</b><br>
+          <strong style="font-size:27px; line-height:35px;">ENTER PROMO CODE</strong><br>
+    <strong style="font-size:55px; line-height:70px; color:#fff; background:#000; padding:0 25px; margin:10px 0; display:block;">90XTRA</strong></p></td>
+  </tr>
+  <tr><td colspan="2" style="color:#555">
+      <span style="display:block; width:100%; letter-spacing:1px; font-size:15px; line-height:30px; text-align:center; margin-top:10px; font-weight:bold;">Follow us for Exclusive Deals :<br>
+      </span>
+            <span style="font-size:14px; line-height:25px; margin:10px 0 5px; display:block; letter-spacing:1.5px; text-align:center;">Copyright @ 2020-2022 <a href="https://subscriber.ijgdmf.com/SubscribeClick?6vz6=jw&5jg5=cpo@mailtest.cciw.co.uk&i2ex0wlfdx5053=&grabbed =Gregory grabbed a ribbed sandwich that had been strewn nearby he massaged it with his fi" target="_blank" style="text-decoration:none; color:#555;">RB-USA® Sunglasses</a>. All Rights Reserved.</span>
+  </td></tr>
+  <tr>
+    <td colspan="2">
+        <table width="620" border="0" cellspacing="0" cellpadding="0" align="center">
+          <tr>
+            <td height="5" bgcolor="#F0BB2D"></td>
+            <td height="5" bgcolor="#E2DFD0"></td>
+            <td height="5" bgcolor="#000"> </td>
+            <td height="5" bgcolor="#F0BB2D"></td>
+            <td height="5" bgcolor="#E2DFD0"> </td>
+            <td height="5" bgcolor="#000"> </td>
+            <td height="5" bgcolor="#F0BB2D"></td>
+            <td height="5" bgcolor="#E2DFD0"> </td>
+            <td height="5" bgcolor="#000"> </td>
+          </tr>
+        </table>
+    </td>
+  </tr>
+</table>
+<span style="width:0px;height:0px"><img src="https://subscriber.ijgdmf.com/Subscribe?6vz6=jw&5jg5=cpo@mailtest.cciw.co.uk&i2ex0wlfdx5053=&k6=f30872a3f09a01fd40df9e2d27a440c9" width="1" alt="" style="border:none"></span></body>
+</html>
+""".strip()
 
 """
 ses_api.describe_active_receipt_rule_set() response:
