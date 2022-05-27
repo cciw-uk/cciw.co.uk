@@ -232,7 +232,7 @@ LOGGING = {
             "()": "django.utils.log.ServerFormatter",
             "format": "[%(server_time)s] %(message)s",
         },
-        "verbose": {"format": "%(levelname)s %(asctime)s %(module)s " "%(process)d %(thread)d %(message)s"},
+        "verbose": {"format": "%(levelname)s %(asctime)s %(name)s " "%(process)d %(thread)d %(message)s"},
     },
     "handlers": {
         "django.server": {

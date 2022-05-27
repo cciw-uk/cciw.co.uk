@@ -320,6 +320,7 @@ def _set_mail_header(mail, header, value):
 
 def forward_email_to_list(mail, email_list: EmailList):
     orig_from_addr = mail["From"]
+    orig_msg_id = mail.get("Message-ID", "unknown")
     # Use 'reply-to' header for reply-to, if it exists, falling back to 'From'
     reply_to = mail.get("Reply-To", orig_from_addr)
     if email_list.list_reply:
@@ -399,6 +400,13 @@ def forward_email_to_list(mail, email_list: EmailList):
     errors = []
     for to_addr, from_address, mail_as_bytes in messages_to_send:
         try:
+            logger.info(
+                "Forwarding msg %s from %s to email list %s address %s",
+                orig_msg_id,
+                orig_from_addr,
+                email_list.address,
+                to_addr,
+            )
             send_mime_message(to_addr, from_address, mail_as_bytes)
         except Exception as e:
             errors.append((addr, e))
@@ -520,8 +528,10 @@ def handle_mail(data):
             if not known_officer_email_address(from_email):
                 # Don't bother sending bounce emails to addresses
                 # we've never seen before. This is highly likely to be spam.
+                logger.info("Ignoring mail to %s from unknown email %s", address, from_email)
                 continue
             subject = decode_mail_header_value(mail["Subject"])
+            logger.info("Access denied to %s from known email %s, sending rejection email", address, from_email)
             send_mail(
                 f"[CCIW] Access to mailing list {address} denied",
                 f"You attempted to email the list {address}\n"
