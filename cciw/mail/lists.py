@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import tempfile
-from typing import Callable
+from typing import Callable, Generator
 
 import attr
 from django.conf import settings
@@ -38,51 +38,6 @@ from .ses import download_ses_message_from_s3
 from .smtp import send_mime_message
 
 logger = logging.getLogger(__name__)
-
-
-# Externally used functions:
-def find_list(address, from_addr):
-    for email_list in get_all_lists():
-        if email_list.matches(address, from_addr):
-            return email_list
-    raise NoSuchList()
-
-
-def get_all_lists():
-    current_camps = Camp.objects.all().filter(year__gte=common.get_thisyear() - 1)
-    for generator in GENERATORS:
-        yield from generator(current_camps)
-
-
-def address_for_camp_officers(camp):
-    return make_camp_officers_list(camp).address
-
-
-def address_for_camp_slackers(camp):
-    return make_camp_slackers_list(camp).address
-
-
-def address_for_camp_leaders(camp):
-    return make_camp_leaders_list(camp).address
-
-
-# Reading mailboxes
-email_extract_re = re.compile(
-    r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)",
-    re.IGNORECASE,
-)
-
-
-def extract_email_addresses(email_line):
-    return email_extract_re.findall(email_line)
-
-
-class NoSuchList(ValueError):
-    pass
-
-
-class MailAccessDenied(ValueError):
-    pass
 
 
 # We have:
@@ -139,6 +94,51 @@ class EmailList:
         return True
 
 
+# Externally used functions:
+def find_list(address, from_addr) -> EmailList:
+    for email_list in get_all_lists():
+        if email_list.matches(address, from_addr):
+            return email_list
+    raise NoSuchList()
+
+
+def get_all_lists() -> Generator[EmailList, None, None]:
+    current_camps = Camp.objects.all().filter(year__gte=common.get_thisyear() - 1)
+    for generator in GENERATORS:
+        yield from generator(current_camps)
+
+
+def address_for_camp_officers(camp):
+    return make_camp_officers_list(camp).address
+
+
+def address_for_camp_slackers(camp):
+    return make_camp_slackers_list(camp).address
+
+
+def address_for_camp_leaders(camp):
+    return make_camp_leaders_list(camp).address
+
+
+# Reading mailboxes
+email_extract_re = re.compile(
+    r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)",
+    re.IGNORECASE,
+)
+
+
+def extract_email_addresses(email_line):
+    return email_extract_re.findall(email_line)
+
+
+class NoSuchList(ValueError):
+    pass
+
+
+class MailAccessDenied(ValueError):
+    pass
+
+
 # Definitions of EmailLists
 
 
@@ -147,7 +147,7 @@ def camp_officers_list_generator(current_camps: list[Camp]):
         yield make_camp_officers_list(camp)
 
 
-def make_camp_officers_list(camp):
+def make_camp_officers_list(camp) -> EmailList:
     def get_members():
         return camp_officer_list(camp)
 
