@@ -319,6 +319,9 @@ Use the following link to manage this reference:
             + urlquote(bounced_email_address)
         )
 
+    logger.info(
+        "Sending 'Reference request bounced' for email %s to addresses %s", bounced_email_address, email_addresses
+    )
     forward_with_text(
         email_addresses, f"[CCIW] Reference request to {bounced_email_address} bounced.", forward_body, original_message
     )
