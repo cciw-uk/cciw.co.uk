@@ -14,8 +14,9 @@ class MessageAdmin(admin.ModelAdmin):
     def message_formatted(message):
         return linebreaksbr(message.message)
 
-    list_display = ["id", "email", "booking_account", "name", message_formatted, view, "created_at"]
+    list_display = ["id", "subject", "email", "booking_account", "name", message_formatted, view, "created_at"]
     autocomplete_fields = ["booking_account"]
+    list_filter = ["subject"]
 
 
 admin.site.register(Message, MessageAdmin)

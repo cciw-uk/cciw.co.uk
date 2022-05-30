@@ -11,8 +11,8 @@ from cciw.bookings.middleware import get_booking_account_from_request
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 
-from .forms import AjaxContactUsForm, ContactType, ContactUsForm
-from .models import Message
+from .forms import AjaxContactUsForm, ContactUsForm
+from .models import ContactType, Message
 
 CONTACT_CHOICE_DESTS = {
     ContactType.BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,

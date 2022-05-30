@@ -26,6 +26,7 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         self.get_url("cciw-contact_us-send")
         self.fill(
             {
+                "#id_subject": "website",
                 "#id_name": "My Name",
                 "#id_email": "",
                 "#id_message": "The Message",
@@ -41,6 +42,7 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         self.get_url("cciw-contact_us-send")
         self.fill(
             {
+                "#id_subject": "website",
                 "#id_name": "My Name",
                 "#id_email": "invalidemail",
                 "#id_message": "The Message",
@@ -56,6 +58,7 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         self.get_url("cciw-contact_us-send")
         self.fill(
             {
+                "#id_subject": "website",
                 "#id_name": "My Name",
                 "#id_email": "invalidemail",
                 "#id_message": "",
@@ -71,6 +74,7 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         self.get_url("cciw-contact_us-send")
         self.fill(
             {
+                "#id_subject": "website",
                 "#id_name": "My Name",
                 "#id_email": "validemail@example.com",
                 "#id_message": "The Message",
@@ -87,12 +91,12 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         self.get_url("cciw-contact_us-send")
         self.fill(
             {
+                "#id_subject": "bookings",
                 "#id_name": "My Name",
                 "#id_email": "validemail@example.com",
                 "#id_message": "The Message",
                 "#id_cx_0": "PASSED",
                 "#id_cx_1": "PASSED",
-                "#id_subject": "bookings",
             }
         )
         self.submit('input[type="submit"]')
