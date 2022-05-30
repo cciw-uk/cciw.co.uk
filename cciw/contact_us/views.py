@@ -88,7 +88,7 @@ the link to view it:
 """
 
     email = mail.EmailMessage(
-        subject="[CCIW] Website feedback",
+        subject=f"[CCIW] Website feedback {msg.id}",
         body=body,
         from_email=settings.SERVER_EMAIL,
         to=to_emails,
