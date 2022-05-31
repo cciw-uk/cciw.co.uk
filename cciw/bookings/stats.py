@@ -77,9 +77,17 @@ def get_booking_summary_stats(start_year, end_year):
         .order_by("camp__year", "sex")
         .annotate(count=models.Count("sex"))
     )
-    data = {s1: [c for y, s, c in rows if s == s1[0].lower()] for s1 in ["Male", "Female"]}
-    years = sorted(list({y for y, s, c in rows}))
-    df = pd.DataFrame(index=years, data=data)
+    years = sorted(list({year for year, s, c in rows}))
+    counts = {(year, sex): count for year, sex, count in rows}
+
+    counts_by_sex = {
+        sex: [counts.get((year, sex.lower()[0]), 0) for year in years]
+        for sex in [
+            "Male",
+            "Female",
+        ]
+    }
+    df = pd.DataFrame(index=years, data=counts_by_sex)
     df["Total"] = df["Male"] + df["Female"]
     return df
 
