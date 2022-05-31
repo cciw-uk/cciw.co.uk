@@ -304,11 +304,6 @@ LOGGING = {
 }
 
 if DEVBOX:
-    LOGGING["loggers"]["cciw.aws"] = {
-        "level": "INFO",
-        "handlers": ["console"],
-        "propagate": False,
-    }
     LOGGING["loggers"]["cciw"] = {
         "level": "INFO",
         "handlers": ["console"],
