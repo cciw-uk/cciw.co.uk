@@ -216,6 +216,7 @@ X_FRAME_OPTIONS = "DENY"
 # CSRF_COOKIE_HTTPONLY = True   # Can't use this until we fix cciwutils.js which requires checking all forms.
 
 # == LOGGING ==
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
@@ -241,8 +242,8 @@ LOGGING = {
             "formatter": "django.server",
         },
         "console": {
-            "level": "INFO",
-            "filters": ["require_debug_true"],
+            "level": "DEBUG",
+            "formatter": "verbose",
             "class": "logging.StreamHandler",
         },
         "file": {
@@ -308,13 +309,12 @@ if DEVBOX:
         "handlers": ["console"],
         "propagate": False,
     }
-    LOGGING["loggers"]["cciw.mail.lists"] = {
+    LOGGING["loggers"]["cciw"] = {
         "level": "INFO",
         "handlers": ["console"],
         "propagate": False,
     }
     LOGGING["root"]["handlers"] = ["console"]
-
 
 PASSWORD_RESET_TIMEOUT = 7 * 24 * 3600
 
