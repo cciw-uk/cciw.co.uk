@@ -79,7 +79,7 @@ def get_reference_contact_users():
     users = get_role_users(REFERENCE_CONTACT_ROLE_NAME)
     for user in users:
         if not user.contact_phone_number:
-            logger.error("No contact_phone_number defined for reference user %s id %s", user.username, user.id)
+            logger.error("No contact_phone_number defined for reference contact user %s id %s", user.username, user.id)
     return users
 
 
