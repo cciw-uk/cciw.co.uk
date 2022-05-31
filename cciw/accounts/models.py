@@ -1,3 +1,5 @@
+import logging
+
 import yaml
 from django.conf import settings
 from django.contrib import auth
@@ -29,6 +31,9 @@ WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_
 # 1) users designated as 'admin' for a camp
 # 2) users with admin rights for a camp (includes 1. above and leaders)
 # 3) users with general admin rights (includes committee, secretaries)
+
+
+logger = logging.getLogger(__name__)
 
 
 def active_staff(user):
@@ -71,7 +76,11 @@ def get_role_email_recipients(role_name):
 
 
 def get_reference_contact_users():
-    return get_role_users(REFERENCE_CONTACT_ROLE_NAME)
+    users = get_role_users(REFERENCE_CONTACT_ROLE_NAME)
+    for user in users:
+        if not user.contact_phone_number:
+            logger.error("No contact_phone_number defined for reference user %s id %s", user.username, user.id)
+    return users
 
 
 class UserQuerySet(models.QuerySet):
