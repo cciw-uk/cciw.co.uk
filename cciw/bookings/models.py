@@ -1,3 +1,6 @@
+"""
+Accounts and places for campers coming in camps
+"""
 import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta

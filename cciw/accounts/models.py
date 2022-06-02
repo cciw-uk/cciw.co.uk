@@ -1,3 +1,6 @@
+"""
+User accounts for staff
+"""
 import logging
 
 import yaml
