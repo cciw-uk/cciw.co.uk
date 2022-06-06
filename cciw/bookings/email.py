@@ -2,6 +2,7 @@ import base64
 import binascii
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Union
 
 import mailer as queued_mail
 from django.conf import settings
@@ -16,9 +17,6 @@ from cciw.officers.email import admin_emails_for_camp
 
 class VerifyFailed:
     pass
-
-
-VerifyFailed = VerifyFailed()
 
 
 @dataclass
@@ -41,7 +39,7 @@ class EmailVerifyTokenGenerator:
         """
         return self.url_safe_encode(self.signer.sign(email))
 
-    def email_from_token(self, token, max_age=None):
+    def email_from_token(self, token, max_age=None) -> Union[str, VerifyFailed, VerifyExpired]:
         """
         Extracts the verified email address from the token, or a VerifyFailed
         constant if verification failed, or VerifyExpired if the link expired.
@@ -51,13 +49,13 @@ class EmailVerifyTokenGenerator:
         try:
             unencoded_token = self.url_safe_decode(token)
         except (UnicodeDecodeError, binascii.Error):
-            return VerifyFailed
+            return VerifyFailed()
         try:
             return self.signer.unsign(unencoded_token, max_age=max_age)
         except (SignatureExpired,):
             return VerifyExpired(self.signer.unsign(unencoded_token))
         except (BadSignature,):
-            return VerifyFailed
+            return VerifyFailed()
 
     # Somehow the trailing '=' produced by base64 encode gets eaten by
     # people/programs handling the email verification link. Additional

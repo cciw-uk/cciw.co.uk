@@ -3202,7 +3202,7 @@ def test_decode_inverts_encode(email):
 @given(st.emails())
 def test_truncated_returns_invalid(email):
     v = EmailVerifyTokenGenerator()
-    assert v.email_from_token(v.token_for_email(email)[2:]) == VerifyFailed
+    assert isinstance(v.email_from_token(v.token_for_email(email)[2:]), VerifyFailed)
 
 
 @given(st.emails())

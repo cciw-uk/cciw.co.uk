@@ -1,10 +1,14 @@
 import logging
+from typing import Callable
 
 import furl
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.urls import reverse
+from typing_extensions import assert_never
 
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_verify_email
 from cciw.bookings.models import BookingAccount
@@ -40,12 +44,15 @@ def unset_booking_account_cookie(response):
     response.delete_cookie("bookingaccount")
 
 
-def booking_token_login(get_response):
-    def middleware(request):
+Middleware = Callable[[HttpRequest], HttpResponse]
+
+
+def booking_token_login(get_response: Middleware) -> Middleware:
+    def middleware(request: HttpRequest) -> HttpResponse:
         if "bt" in request.GET:
             token = request.GET["bt"]
             verified_email = EmailVerifyTokenGenerator().email_from_token(token)
-            if verified_email is VerifyFailed:
+            if isinstance(verified_email, VerifyFailed):
                 logger.warning("Booking login verification failed, token=%s", token)
                 return HttpResponseRedirect(reverse("cciw-bookings-verify_email_failed"))
             elif isinstance(verified_email, VerifyExpired):
@@ -76,6 +83,8 @@ def booking_token_login(get_response):
                     "Remember to log out if you are using a public computer.",
                 )
                 return resp
+            else:
+                assert_never(verified_email)
 
         return get_response(request)
 
