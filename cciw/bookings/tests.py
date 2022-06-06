@@ -3196,19 +3196,19 @@ class DocumentDownloadView(WebTestBase):
 @given(st.emails())
 def test_decode_inverts_encode(email):
     v = EmailVerifyTokenGenerator()
-    assert v.email_for_token(v.token_for_email(email)) == email
+    assert v.email_from_token(v.token_for_email(email)) == email
 
 
 @given(st.emails())
 def test_truncated_returns_invalid(email):
     v = EmailVerifyTokenGenerator()
-    assert v.email_for_token(v.token_for_email(email)[2:]) == VerifyFailed
+    assert v.email_from_token(v.token_for_email(email)[2:]) == VerifyFailed
 
 
 @given(st.emails())
 def test_expired_returns_expired(email):
     v = EmailVerifyTokenGenerator()
-    assert v.email_for_token(v.token_for_email(email), max_age=-1) == VerifyExpired(email)
+    assert v.email_from_token(v.token_for_email(email), max_age=-1) == VerifyExpired(email)
 
 
 @given(email=st.text())
@@ -3223,4 +3223,4 @@ def test_tolerate_truncated_trailing_equals(email):
     def remove_equals(s):
         return s.rstrip("=")
 
-        assert v.email_for_token(remove_equals(v.token_for_email(email))) == email
+        assert v.email_from_token(remove_equals(v.token_for_email(email))) == email

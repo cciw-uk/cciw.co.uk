@@ -44,7 +44,7 @@ def booking_token_login(get_response):
     def middleware(request):
         if "bt" in request.GET:
             token = request.GET["bt"]
-            verified_email = EmailVerifyTokenGenerator().email_for_token(token)
+            verified_email = EmailVerifyTokenGenerator().email_from_token(token)
             if verified_email is VerifyFailed:
                 logger.warning("Booking login verification failed, token=%s", token)
                 return HttpResponseRedirect(reverse("cciw-bookings-verify_email_failed"))

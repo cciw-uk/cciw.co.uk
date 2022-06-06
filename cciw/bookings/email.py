@@ -41,7 +41,7 @@ class EmailVerifyTokenGenerator:
         """
         return self.url_safe_encode(self.signer.sign(email))
 
-    def email_for_token(self, token, max_age=None):
+    def email_from_token(self, token, max_age=None):
         """
         Extracts the verified email address from the token, or a VerifyFailed
         constant if verification failed, or VerifyExpired if the link expired.
