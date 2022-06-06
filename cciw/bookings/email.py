@@ -1,8 +1,8 @@
 import base64
 import binascii
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-import attr
 import mailer as queued_mail
 from django.conf import settings
 from django.core import mail
@@ -21,9 +21,9 @@ class VerifyFailed:
 VerifyFailed = VerifyFailed()
 
 
-@attr.s
+@dataclass
 class VerifyExpired:
-    email = attr.ib()
+    email: str
 
 
 class EmailVerifyTokenGenerator:

@@ -57,7 +57,7 @@ def booking_token_login(get_response):
                         target_view_name = view_name
                 send_verify_email(request, verified_email.email, target_view_name=target_view_name)
                 return HttpResponseRedirect(reverse("cciw-bookings-link_expired_email_sent"))
-            else:
+            elif isinstance(verified_email, str):
                 try:
                     account = BookingAccount.objects.filter(email__iexact=verified_email)[0]
                 except IndexError:
