@@ -320,6 +320,7 @@ class BookingAccountManagerBase(models.Manager):
         # deposit as sufficient in some cases.
         retval = []
         price_checker = PriceChecker()
+        account: BookingAccount
         for account in potentials:
             confirmed_balance_due = account.get_balance(
                 confirmed_only=True,
@@ -440,6 +441,7 @@ class BookingAccount(models.Model):
             payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only))
 
         total = Decimal("0.00")
+        booking: Booking
         for booking in payable_bookings:
             total += booking.amount_now_due(today, allow_deposits=allow_deposits, price_checker=price_checker)
 
