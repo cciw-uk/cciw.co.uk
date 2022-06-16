@@ -6,7 +6,7 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 5,35    * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
 0,20,40 * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> /dev/null
 0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup
-# 0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
+0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
 
 
 # Apply data retention daily
