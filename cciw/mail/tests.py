@@ -1,5 +1,6 @@
 import email
 import re
+from email import policy
 from unittest import mock
 
 import mailer.engine
@@ -20,7 +21,15 @@ from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
-from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
+from .lists import (
+    MailAccessDenied,
+    NoSuchList,
+    decode_mail_header_value,
+    extract_email_addresses,
+    find_list,
+    handle_mail,
+    mangle_from_address,
+)
 from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_MESSAGE_ID, AWS_SNS_NOTIFICATION, BAD_MESSAGE_1
 
 
@@ -161,6 +170,26 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
         assert not any(b"List-Post: <mailto:myrole@mailtest.cciw.co.uk>" in m for m in sent_messages_bytes)
+
+    def test_handle_internationalised_headers(self):
+        role = self._setup_role_for_email(
+            email="myrole@mailtest.cciw.co.uk",
+            allow_emails_from_public=True,
+            recipients=[("test1", "test1@example.com")],
+        )
+
+        msg = make_message(to_email=role.email, from_email="Çelik <celik@example.com>")
+        handle_mail(msg)
+
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        assert len(rejections) == 0
+        assert len(sent_messages) == 1
+
+        sent_message_parsed = email.message_from_bytes(sent_messages[0].message().as_bytes(), policy=policy.compat32)
+        assert (
+            decode_mail_header_value(sent_message_parsed["From"])
+            == "Çelik celik(at)example.com via <noreply@cciw.co.uk>"
+        )
 
     def test_handle_bad_message_malformed_1(self):
         msg = emailify(BAD_MESSAGE_1)
@@ -406,10 +435,16 @@ class TestMailBackend(LocMemEmailBackend):
 
         # Subject check
         for m in messages:
-            if not m.subject.startswith("[CCIW]") and b" via <noreply@cciw.co.uk>" not in m.message().as_bytes():
-                raise AssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
+            if not m.subject.startswith("[CCIW]"):
+                if not _is_forwarded_message(m):
+                    raise AssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
 
         return super().send_messages(messages)
+
+
+def _is_forwarded_message(raw_message):
+    message = email.message_from_bytes(raw_message.message().as_bytes(), policy=policy.compat32)
+    return "via <noreply@cciw.co.uk>" in decode_mail_header_value(message["From"])
 
 
 def make_message(
@@ -440,8 +475,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Subject: {encode_email_header(subject)}
-From: {from_email}
-To: {', '.join(all_to_emails)}
+From: {encode_email_header(from_email)}
+To: {encode_email_header(', '.join(all_to_emails))}
 Date: Sun, 28 Feb 2016 22:32:03 -0000
 Message-ID: <56CCDE2E.9030103@example.com>
 {extra_headers}

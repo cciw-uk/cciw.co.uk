@@ -6,6 +6,7 @@
 # module), and routing incoming mail to them.
 
 import email
+import email.policy
 import fcntl
 import itertools
 import logging
@@ -319,7 +320,7 @@ def _set_mail_header(mail, header, value):
 
 
 def forward_email_to_list(mail, email_list: EmailList):
-    orig_from_addr = mail["From"]
+    orig_from_addr = decode_mail_header_value(mail["From"])
     orig_msg_id = mail.get("Message-ID", "unknown")
     # Use 'reply-to' header for reply-to, if it exists, falling back to 'From'
     reply_to = mail.get("Reply-To", orig_from_addr)
@@ -494,7 +495,7 @@ def handle_mail(data):
     data is RFC822 formatted bytes
     """
     mail = email.message_from_bytes(data)
-    to = mail["To"]
+    to = decode_mail_header_value(mail["To"])
     if to is None:
         # Some spam is like this.
         return
@@ -517,6 +518,7 @@ def handle_mail(data):
         # which seems to be malformed (unicode chars in a header instead of "encoded word" syntax)
         logger.info("Discarding malformed mail, message-id %s", mail.get("Message-ID", "<unknown>"))
         return
+    from_header = decode_mail_header_value(from_header)
 
     from_email = extract_email_addresses(from_header)[0]
 
@@ -560,6 +562,8 @@ def decode_mail_header_value(text):
         val, charset = part
         if charset is not None:
             val = val.decode(charset)
+        elif isinstance(val, bytes):
+            val = val.decode("ascii")
         output.append(val)
     return "".join(output)
 
