@@ -320,7 +320,7 @@ def _set_mail_header(mail, header, value):
 
 
 def forward_email_to_list(mail, email_list: EmailList):
-    orig_from_addr = decode_mail_header_value(mail["From"])
+    orig_from_addr = mail["From"]
     orig_msg_id = mail.get("Message-ID", "unknown")
     # Use 'reply-to' header for reply-to, if it exists, falling back to 'From'
     reply_to = mail.get("Reply-To", orig_from_addr)
@@ -423,7 +423,7 @@ def forward_email_to_list(mail, email_list: EmailList):
     if errors:
         # Attempt to report problem
         address_messages = [f"{address}: {str(e)}" for address, e in errors]
-        subject = decode_mail_header_value(mail["Subject"])
+        subject = mail["Subject"]
         msg = """
 You attempted to email the list {address}
 with an email titled "{subject}".
@@ -444,8 +444,8 @@ There were problems with the following addresses:
 
 
 def mangle_from_address(address):
-    address = address.replace("@", "(at)").replace("<", "").replace(">", "")
-    address = address + " via <noreply@cciw.co.uk>"
+    address = address.replace("@", "(at)").replace("<", "").replace(">", "").replace('"', "")
+    address = f'"{address}" <noreply@cciw.co.uk>'
     return address
 
 
@@ -494,8 +494,8 @@ def handle_mail(data):
     Forwards an email to the correct list of people.
     data is RFC822 formatted bytes
     """
-    mail = email.message_from_bytes(data)
-    to = decode_mail_header_value(mail["To"])
+    mail = email.message_from_bytes(data, policy=email.policy.SMTP)
+    to = mail["To"]
     if to is None:
         # Some spam is like this.
         return
@@ -518,7 +518,6 @@ def handle_mail(data):
         # which seems to be malformed (unicode chars in a header instead of "encoded word" syntax)
         logger.info("Discarding malformed mail, message-id %s", mail.get("Message-ID", "<unknown>"))
         return
-    from_header = decode_mail_header_value(from_header)
 
     from_email = extract_email_addresses(from_header)[0]
 
@@ -532,7 +531,7 @@ def handle_mail(data):
                 # we've never seen before. This is highly likely to be spam.
                 logger.info("Ignoring mail to %s from unknown email %s", address, from_email)
                 continue
-            subject = decode_mail_header_value(mail["Subject"])
+            subject = mail["Subject"]
             logger.info("Access denied to %s from known email %s, sending rejection email", address, from_email)
             send_mail(
                 f"[CCIW] Access to mailing list {address} denied",
@@ -553,19 +552,6 @@ def handle_mail(data):
             # for us because we only have routes created for the email
             # we expect.
             pass
-
-
-def decode_mail_header_value(text):
-    parts = email.header.decode_header(text)
-    output = []
-    for part in parts:
-        val, charset = part
-        if charset is not None:
-            val = val.decode(charset)
-        elif isinstance(val, bytes):
-            val = val.decode("ascii")
-        output.append(val)
-    return "".join(output)
 
 
 def known_officer_email_address(address):

@@ -21,15 +21,7 @@ from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
-from .lists import (
-    MailAccessDenied,
-    NoSuchList,
-    decode_mail_header_value,
-    extract_email_addresses,
-    find_list,
-    handle_mail,
-    mangle_from_address,
-)
+from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
 from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_MESSAGE_ID, AWS_SNS_NOTIFICATION, BAD_MESSAGE_1
 
 
@@ -146,7 +138,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         ]
         assert all(b"Sender: committee@mailtest.cciw.co.uk" in m for m in sent_messages_bytes)
         assert all(b"List-Post: <mailto:committee@mailtest.cciw.co.uk>" in m for m in sent_messages_bytes)
-        assert all(m.from_email == "Me a.person.1(at)example.com via <noreply@cciw.co.uk>" for m in sent_messages)
+        assert all(m.from_email == '"Me a.person.1(at)example.com" <noreply@cciw.co.uk>' for m in sent_messages)
         assert all(b"\nX-Original-From: Me <a.person.1@example.com>" in m for m in sent_messages_bytes)
         assert all(b"Subject: Test" in m for m in sent_messages_bytes)
         assert all(b"X-Original-To: committee@mailtest.cciw.co.uk" in m for m in sent_messages_bytes)
@@ -185,11 +177,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         assert len(rejections) == 0
         assert len(sent_messages) == 1
 
-        sent_message_parsed = email.message_from_bytes(sent_messages[0].message().as_bytes(), policy=policy.compat32)
-        assert (
-            decode_mail_header_value(sent_message_parsed["From"])
-            == "Çelik celik(at)example.com via <noreply@cciw.co.uk>"
-        )
+        sent_message_parsed = email.message_from_bytes(sent_messages[0].message().as_bytes(), policy=policy.SMTP)
+        assert sent_message_parsed["From"] == '"Çelik celik(at)example.com" <noreply@cciw.co.uk>'
 
     def test_handle_bad_message_malformed_1(self):
         msg = emailify(BAD_MESSAGE_1)
@@ -232,7 +221,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
         assert all(b"\nX-Original-From: Kevin Smith <kevin.smith@example.com>" in m for m in sent_messages_bytes)
         assert all(
-            m.from_email == "Kevin Smith kevin.smith(at)example.com via <noreply@cciw.co.uk>" for m in sent_messages
+            m.from_email == '"Kevin Smith kevin.smith(at)example.com" <noreply@cciw.co.uk>' for m in sent_messages
         )
         assert all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m for m in sent_messages_bytes)
         assert any(True for m in mail.outbox if '"Fred Jones" <fredjones@example.com>' in m.to)
@@ -380,8 +369,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         assert response.status_code == 200
 
     def test_mangle_from_address(self):
-        assert mangle_from_address("foo@bar.com") == "foo(at)bar.com via <noreply@cciw.co.uk>"
-        assert mangle_from_address("Mr Foo <foo@bar.com>") == "Mr Foo foo(at)bar.com via <noreply@cciw.co.uk>"
+        assert mangle_from_address("foo@bar.com") == '"foo(at)bar.com" <noreply@cciw.co.uk>'
+        assert mangle_from_address("Mr Foo <foo@bar.com>") == '"Mr Foo foo(at)bar.com" <noreply@cciw.co.uk>'
 
     def test_invalid_characters(self):
         bad_mail = MSG_BAD_CHARACTERS
@@ -443,8 +432,8 @@ class TestMailBackend(LocMemEmailBackend):
 
 
 def _is_forwarded_message(raw_message):
-    message = email.message_from_bytes(raw_message.message().as_bytes(), policy=policy.compat32)
-    return "via <noreply@cciw.co.uk>" in decode_mail_header_value(message["From"])
+    message = email.message_from_bytes(raw_message.message().as_bytes(), policy=policy.SMTP)
+    return "<noreply@cciw.co.uk>" in message["From"]
 
 
 def make_message(
