@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.urls import reverse
 from furl import furl
 
-from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_ADMIN_ROLES, SECRETARY_ROLE_NAME, user_has_role
+from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_MANAGER_ROLES, SECRETARY_ROLE_NAME, user_has_role
 from cciw.officers.tests.base import OFFICER, OfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
@@ -16,7 +16,7 @@ class TestUserModel(OfficersSetupMixin, TestBase):
 
     def test_user_in_group_true_for_one_item(self):
         with self.assertNumQueries(1):
-            assert user_has_role(self.booking_secretary, CAMP_ADMIN_ROLES)
+            assert user_has_role(self.booking_secretary, CAMP_MANAGER_ROLES)
 
     def test_user_in_group_false(self):
         with self.assertNumQueries(1):

@@ -24,7 +24,7 @@ COMMITTEE_ROLE_NAME = "Committee"
 BOOKING_SECRETARY_ROLE_NAME = "Booking secretaries"
 REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinators"
 
-CAMP_ADMIN_ROLES = [SECRETARY_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_NAME]
+CAMP_MANAGER_ROLES = [SECRETARY_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_NAME]
 
 WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_NAME, SECRETARY_ROLE_NAME]
 
@@ -63,11 +63,11 @@ def user_has_role(user, role_names):
     return any(role.name == name for name in role_names for role in roles)
 
 
-def get_camp_admin_role_users():
+def get_camp_manager_role_users():
     """
     Returns all users who are in the 'camp admin' roles
     """
-    return User.objects.filter(roles__in=Role.objects.filter(name__in=CAMP_ADMIN_ROLES))
+    return User.objects.filter(roles__in=Role.objects.filter(name__in=CAMP_MANAGER_ROLES))
 
 
 def get_role_users(role_name):
@@ -289,7 +289,7 @@ class User(AbstractBaseUser):
         """
         if not active_staff(self):
             return False
-        return user_has_role(self, CAMP_ADMIN_ROLES) or len(self.current_camps_as_admin_or_leader) > 0
+        return user_has_role(self, CAMP_MANAGER_ROLES) or len(self.current_camps_as_admin_or_leader) > 0
 
     @cached_property
     def is_potential_camp_officer(self):

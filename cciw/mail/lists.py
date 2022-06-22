@@ -24,7 +24,7 @@ from cciw.accounts.models import (
     DBS_OFFICER_ROLE_NAME,
     Role,
     User,
-    get_camp_admin_role_users,
+    get_camp_manager_role_users,
     get_role_email_recipients,
     get_role_users,
 )
@@ -193,7 +193,7 @@ def make_camp_leaders_list(camp):
         return get_leaders_for_camp(camp)
 
     def has_permission(email_address):
-        return is_camp_leader_or_admin_or_dbs_officer_or_superuser(email_address, [camp])
+        return is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, [camp])
 
     return EmailList(
         local_address=f"camp-{camp.url_id}-leaders",
@@ -218,7 +218,7 @@ def make_camp_leaders_for_year_list(year, camps):
         return sorted(list(s))
 
     def has_permission(email_address):
-        return is_camp_leader_or_admin_or_dbs_officer_or_superuser(email_address, camps)
+        return is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, camps)
 
     return EmailList(
         local_address=f"camps-{year}-leaders",
@@ -282,11 +282,11 @@ def is_camp_leader_or_admin(email_address, camps):
     return email_match(email_address, all_users)
 
 
-def is_camp_leader_or_admin_or_dbs_officer_or_superuser(email_address, camps):
+def is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, camps):
     if is_camp_leader_or_admin(email_address, camps):
         return True
 
-    if email_match(email_address, get_camp_admin_role_users()):
+    if email_match(email_address, get_camp_manager_role_users()):
         return True
 
     if get_role_users(DBS_OFFICER_ROLE_NAME).filter(email__iexact=email_address).exists():
