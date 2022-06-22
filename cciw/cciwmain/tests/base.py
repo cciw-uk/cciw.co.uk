@@ -172,6 +172,9 @@ class Factories(FactoriesBase):
     def make_into_person(self, user_or_person: Union[User, Person]) -> Person:
         if isinstance(user_or_person, User):
             user = user_or_person
+            matching_people = [p for p in user.people.all() if set(p.users.all()) == {user}]
+            if matching_people:
+                return matching_people[0]
             person = self.create_person(name=user.full_name)
             person.users.set([user])
             return person
@@ -197,6 +200,10 @@ class Factories(FactoriesBase):
             retval.append((leader, leader_user))
 
         return retval
+
+    def add_camp_leader(self, camp, user_or_person):
+        person = self.make_into_person(user_or_person)
+        camp.leaders.add(person)
 
 
 class SiteSetupMixin:

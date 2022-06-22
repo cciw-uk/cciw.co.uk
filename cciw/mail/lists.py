@@ -13,7 +13,7 @@ import logging
 import os
 import re
 import tempfile
-from typing import Callable, Generator
+from typing import Callable, Iterable, Iterator
 
 import attr
 from django.conf import settings
@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 @attr.s(auto_attribs=True)
 class EmailList:
     local_address: str
-    get_members: Callable[[], list[User]]
+    get_members: Callable[[], Iterable[User]]
     has_permission: Callable[[str], bool]
     list_reply: bool
 
@@ -103,7 +103,7 @@ def find_list(address, from_addr) -> EmailList:
     raise NoSuchList()
 
 
-def get_all_lists() -> Generator[EmailList, None, None]:
+def get_all_lists() -> Iterator[EmailList]:
     current_camps = Camp.objects.all().filter(year__gte=common.get_thisyear() - 1)
     for generator in GENERATORS:
         yield from generator(current_camps)
@@ -149,7 +149,7 @@ def camp_officers_list_generator(current_camps: list[Camp]):
 
 
 def make_camp_officers_list(camp) -> EmailList:
-    def get_members():
+    def get_members() -> list[User]:
         return camp_officer_list(camp)
 
     def has_permission(email_address):
@@ -169,7 +169,7 @@ def camp_slackers_list_generator(current_camps):
 
 
 def make_camp_slackers_list(camp):
-    def get_members():
+    def get_members() -> list[User]:
         return camp_slacker_list(camp)
 
     def has_permission(email_address):
@@ -189,7 +189,7 @@ def camp_leaders_list_generator(current_camps):
 
 
 def make_camp_leaders_list(camp):
-    def get_members():
+    def get_members() -> set[User]:
         return get_leaders_for_camp(camp)
 
     def has_permission(email_address):
@@ -203,19 +203,19 @@ def make_camp_leaders_list(camp):
     )
 
 
-def camp_leaders_for_year_list_generator(current_camps):
+def camp_leaders_for_year_list_generator(current_camps: list[Camp]) -> Iterator[EmailList]:
     get_year = lambda camp: camp.year
     for year, camps in itertools.groupby(sorted(current_camps, key=get_year), key=get_year):
-        camps = list(camps)
-        yield make_camp_leaders_for_year_list(year, camps)
+        camps2 = list(camps)
+        yield make_camp_leaders_for_year_list(year, camps2)
 
 
-def make_camp_leaders_for_year_list(year, camps):
-    def get_members():
+def make_camp_leaders_for_year_list(year, camps) -> EmailList:
+    def get_members() -> list[User]:
         s = set()
         for c in camps:
             s.update(get_leaders_for_camp(c))
-        return sorted(list(s))
+        return sorted(list(s), key=lambda user: user.email)
 
     def has_permission(email_address):
         return is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, camps)
@@ -262,7 +262,7 @@ GENERATORS = [
 # Helper functions for lists:
 
 
-def get_leaders_for_camp(camp):
+def get_leaders_for_camp(camp) -> set[User]:
     retval = set()
     for p in camp.leaders.all().prefetch_related("users"):
         for u in p.users.all():

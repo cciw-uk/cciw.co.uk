@@ -65,12 +65,20 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
         assert [u.username for u in officer_list.get_members()] == ["fredjones", "joebloggs", "petersmith"]
 
-    def test_leader_list(self):
+    def test_leader_lists(self):
         camp = camp_factories.create_camp(year=2020, camp_name="Blue")
-        ((_, leader_1_user),) = camp_factories.create_and_add_leaders(
-            camp, count=1, email_template="leader{n}@example.com"
+        (_, leader_1_user), (_, leader_2_user) = camp_factories.create_and_add_leaders(
+            camp, count=2, email_template="leader{n}@example.com"
         )
         officer_factories.add_officers_to_camp(camp, [officer := officer_factories.create_officer()])
+
+        camp_2 = camp_factories.create_camp(year=2020, camp_name="Red")
+        ((_, leader_3_user),) = camp_factories.create_and_add_leaders(
+            camp_2, count=1, username_template="other_leader", email_template="other_leader@example.com"
+        )
+
+        # Add an existing leader to a second camp
+        camp_factories.add_camp_leader(camp, leader_1_user)
 
         # Permissions
 
@@ -82,18 +90,22 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         l1 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "ADMIN1@ADMIN.COM")
 
         # leader:
-        l2 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "LEADER1@example.com")
+        l2 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", leader_1_user.email)
 
         # DBS officer
         l3 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "DBSOFFICER@somewhere.com")
 
         # Contents
-        members = set(find_list("camps-2020-leaders@mailtest.cciw.co.uk", "LEADER1@example.com").get_members())
-        assert members == {leader_1_user}
+        expected_members = {leader_1_user, leader_2_user}
 
         for email_list in [l1, l2, l3]:
-            assert email_list.get_members() == members
+            assert email_list.get_members() == expected_members
             assert email_list.address == "camp-2020-blue-leaders@mailtest.cciw.co.uk"
+
+        # All leader list
+        l4 = find_list("camps-2020-leaders@mailtest.cciw.co.uk", leader_1_user.email)
+        members = l4.get_members()
+        assert members == [leader_1_user, leader_2_user, leader_3_user]
 
     def _setup_role_for_email(self, *, name="Test", email, allow_emails_from_public, recipients):
         role, _ = Role.objects.get_or_create(name=name)
