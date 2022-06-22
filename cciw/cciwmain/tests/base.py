@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import date, timedelta
 from functools import lru_cache
+from typing import Union
 
 from django.conf import settings
 from django.contrib.sites.models import Site as DjangoSite
@@ -168,7 +169,7 @@ class Factories(FactoriesBase):
             person = self.make_into_person(user)
         return person
 
-    def make_into_person(self, user_or_person) -> Person:
+    def make_into_person(self, user_or_person: Union[User, Person]) -> Person:
         if isinstance(user_or_person, User):
             user = user_or_person
             person = self.create_person(name=user.full_name)
@@ -184,19 +185,18 @@ class Factories(FactoriesBase):
             name=name,
         )
 
-    def create_leaders(self, camp):
-        leader_1 = Person.objects.create(name="Mr Leader")
-        leader_2 = Person.objects.create(name="Mrs Leaderess")
+    def create_and_add_leaders(
+        self, camp, *, count, email_template="leader{n}@example.com", username_template="leader{n}"
+    ) -> list[tuple[Person, User]]:
+        retval = []
+        for n in range(1, count + 1):
+            leader = Person.objects.create(name=f"Leader{n}")
+            leader_user = User.objects.create(username=username_template.format(n=n), email=email_template.format(n=n))
+            leader.users.add(leader_user)
+            camp.leaders.add(leader)
+            retval.append((leader, leader_user))
 
-        leader_1_user = User.objects.create(username="leader1", email="leader1@mail.com")
-        leader_2_user = User.objects.create(username="leader2", email="leader2@mail.com")
-
-        leader_1.users.add(leader_1_user)
-        leader_2.users.add(leader_2_user)
-
-        camp.leaders.add(leader_1)
-        camp.leaders.add(leader_2)
-        return (leader_1, leader_1_user), (leader_2, leader_2_user)
+        return retval
 
 
 class SiteSetupMixin:

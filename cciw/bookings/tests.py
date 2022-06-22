@@ -2170,7 +2170,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         Camp.objects.update(start_date=date.today() + timedelta(days=1))
 
         booking = factories.create_booking()
-        (_, leader_1_user), (_, leader_2_user) = camps_factories.create_leaders(booking.camp)
+        (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
         account = booking.account
         book_basket_now([booking])
         booking.refresh_from_db()

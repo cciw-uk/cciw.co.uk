@@ -66,30 +66,34 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         assert [u.username for u in officer_list.get_members()] == ["fredjones", "joebloggs", "petersmith"]
 
     def test_leader_list(self):
-        leader_user = self.leader_user
+        camp = camp_factories.create_camp(year=2020, camp_name="Blue")
+        ((_, leader_1_user),) = camp_factories.create_and_add_leaders(
+            camp, count=1, email_template="leader{n}@example.com"
+        )
+        officer_factories.add_officers_to_camp(camp, [officer := officer_factories.create_officer()])
 
         # Permissions
 
         # Officer/non-privileged
         with pytest.raises(MailAccessDenied):
-            find_list("camps-2000-leaders@mailtest.cciw.co.uk", self.officer1.email)
+            find_list("camps-2020-leaders@mailtest.cciw.co.uk", officer.email)
 
         # superuser:
-        l1 = find_list("camp-2000-blue-leaders@mailtest.cciw.co.uk", "ADMIN1@ADMIN.COM")
+        l1 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "ADMIN1@ADMIN.COM")
 
         # leader:
-        l2 = find_list("camp-2000-blue-leaders@mailtest.cciw.co.uk", "LEADER@SOMEWHERE.COM")
+        l2 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "LEADER1@example.com")
 
         # DBS officer
-        l3 = find_list("camp-2000-blue-leaders@mailtest.cciw.co.uk", "DBSOFFICER@somewhere.com")
+        l3 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "DBSOFFICER@somewhere.com")
 
         # Contents
-        members = set(find_list("camps-2000-leaders@mailtest.cciw.co.uk", leader_user.email).get_members())
-        assert members == {self.leader_user}
+        members = set(find_list("camps-2020-leaders@mailtest.cciw.co.uk", "LEADER1@example.com").get_members())
+        assert members == {leader_1_user}
 
         for email_list in [l1, l2, l3]:
             assert email_list.get_members() == members
-            assert email_list.address == "camp-2000-blue-leaders@mailtest.cciw.co.uk"
+            assert email_list.address == "camp-2020-blue-leaders@mailtest.cciw.co.uk"
 
     def _setup_role_for_email(self, *, name="Test", email, allow_emails_from_public, recipients):
         role, _ = Role.objects.get_or_create(name=name)
