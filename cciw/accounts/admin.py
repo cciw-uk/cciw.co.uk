@@ -10,12 +10,13 @@ class MyUserAdmin(UserAdmin):
         (None, {"fields": ("username", "password")}),
         ("Personal info", {"fields": ("first_name", "last_name", "email", "contact_phone_number")}),
         (
-            "Permissions",
+            "Permissions and roles",
             {
                 "fields": (
                     "is_active",
                     "is_staff",
                     "is_superuser",
+                    "roles_display",
                 )
             },
         ),
@@ -23,6 +24,12 @@ class MyUserAdmin(UserAdmin):
     )
     filter_horizontal = []
     list_filter = ["is_staff", "is_superuser", "is_active", "roles"]
+    readonly_fields = ["roles_display"]
+
+    # Display helpers for roles
+    @admin.display(description="Roles")
+    def roles_display(self, obj: User):
+        return ", ".join(role.name for role in obj.roles.all())
 
 
 class RoleAdmin(admin.ModelAdmin):
