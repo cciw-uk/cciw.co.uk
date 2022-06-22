@@ -109,15 +109,15 @@ def get_all_lists() -> Generator[EmailList, None, None]:
         yield from generator(current_camps)
 
 
-def address_for_camp_officers(camp):
+def address_for_camp_officers(camp: Camp) -> str:
     return make_camp_officers_list(camp).address
 
 
-def address_for_camp_slackers(camp):
+def address_for_camp_slackers(camp: Camp) -> str:
     return make_camp_slackers_list(camp).address
 
 
-def address_for_camp_leaders(camp):
+def address_for_camp_leaders(camp: Camp) -> str:
     return make_camp_leaders_list(camp).address
 
 

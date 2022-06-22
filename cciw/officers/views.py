@@ -4,6 +4,7 @@ import operator
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from functools import reduce, wraps
+from typing import Iterable
 from urllib.parse import urlparse
 
 import attr
@@ -253,7 +254,7 @@ def leaders_index(request):
     user = request.user
     thisyear = common.get_thisyear()
     show_all = "show_all" in request.GET
-    camps = Camp.objects.all().include_other_years_info()
+    camps: Iterable[Camp] = Camp.objects.all().include_other_years_info()
     if not show_all:
         camps = camps.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
     last_existing_year = Camp.objects.order_by("-year")[0].year

@@ -42,7 +42,10 @@
             hx-indicator="#camp-download-notice-{{ camp.id }}"
           >ODS</a>
         </li>
-      </li>ul>
+        <li>Leaders list email: <a href="mailto:{{ camp.leaders_email_list_address }}">{{ camp.leaders_email_list_address }}</a>
+          <br />&nbsp;(you can only send to it from your registered email address: <b>{{ request.user.email }}</b>)
+        </li>
+      </ul>
 
       <div id="camp-download-notice-{{ camp.id }}"></div>
     </li>

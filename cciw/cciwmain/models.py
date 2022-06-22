@@ -176,6 +176,12 @@ class Camp(models.Model):
         return self._format_leaders(list(self.leaders.all()))
 
     @property
+    def leaders_email_list_address(self):
+        from cciw.mail.lists import address_for_camp_leaders
+
+        return address_for_camp_leaders(self)
+
+    @property
     def name(self):
         return self.camp_name.name
 
