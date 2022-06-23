@@ -276,10 +276,10 @@ class User(AbstractBaseUser):
 
     # Helpers for roles
     @cached_property
-    def is_booking_secretary(user):
-        if not active_staff(user):
+    def is_booking_secretary(self):
+        if not active_staff(self):
             return False
-        return user_has_role(user, [BOOKING_SECRETARY_ROLE_NAME])
+        return user_has_role(self, [BOOKING_SECRETARY_ROLE_NAME])
 
     @cached_property
     def is_camp_admin(self):
