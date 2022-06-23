@@ -141,6 +141,9 @@ camp_admin_required = user_passes_test_improved(lambda u: u.is_camp_admin)
 dbs_officer_required = user_passes_test_improved(lambda u: u.is_dbs_officer)
 dbs_officer_or_camp_admin_required = user_passes_test_improved(lambda u: u.is_dbs_officer or u.is_camp_admin)
 booking_secretary_required = user_passes_test_improved(lambda u: u.is_booking_secretary)
+booking_secretary_or_treasurer_required = user_passes_test_improved(
+    any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_treasurer)
+)
 cciw_secretary_required = user_passes_test_improved(lambda u: u.is_cciw_secretary)
 cciw_secretary_or_booking_secretary_required = user_passes_test_improved(
     any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary)
@@ -237,6 +240,8 @@ def index(request):
         context["show_dbs_officer_links"] = True
     if user.is_booking_secretary or user.is_superuser:
         context["show_booking_secretary_links"] = True
+    if user.is_booking_secretary or user.is_treasurer or user.is_superuser:
+        context["show_booking_report_links"] = True
     if user.is_committee_member or user.is_booking_secretary or user.is_superuser:
         context["show_secretary_and_committee_links"] = True
         booking_year = most_recent_booking_year()
@@ -1549,7 +1554,9 @@ def officer_info(request):
     )
 
 
-@booking_secretary_required
+# treasurer gets to see these to know how much money
+# to transfer to camp leaders.
+@booking_secretary_or_treasurer_required
 def booking_secretary_reports(request, year: int):
     from cciw.bookings.models import Booking, booking_report_by_camp, outstanding_bookings_with_fees
 

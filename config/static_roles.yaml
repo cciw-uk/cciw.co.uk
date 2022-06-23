@@ -97,6 +97,10 @@ Roles:
       - officers.DBSActionLog/add
       - officers.DBSActionLog/change
       - officers.DBSActionLog/delete
+  Treasurers:
+    # Treasurer doesn't need to access anything in general admin yet,
+    # just has access to a few pages of booking summaries
+    Permissions: []
   Committee:
     Permissions:
       # Do general changes to camps, including setting leaders

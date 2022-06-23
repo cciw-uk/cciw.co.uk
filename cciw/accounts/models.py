@@ -23,6 +23,7 @@ DBS_OFFICER_ROLE_NAME = "DBS Officers"
 COMMITTEE_ROLE_NAME = "Committee"
 BOOKING_SECRETARY_ROLE_NAME = "Booking secretaries"
 REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinators"
+TREASURER_ROLE_NAME = "Treasurers"
 
 CAMP_MANAGER_ROLES = [SECRETARY_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_NAME]
 
@@ -280,6 +281,12 @@ class User(AbstractBaseUser):
         if not active_staff(self):
             return False
         return user_has_role(self, [BOOKING_SECRETARY_ROLE_NAME])
+
+    @cached_property
+    def is_treasurer(self):
+        if not active_staff(self):
+            return False
+        return user_has_role(self, [TREASURER_ROLE_NAME])
 
     @cached_property
     def is_camp_admin(self):
