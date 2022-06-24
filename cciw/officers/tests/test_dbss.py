@@ -6,19 +6,21 @@ from django.utils import timezone
 from django_functest import FuncBaseMixin
 
 from cciw.cciwmain.models import Camp
+from cciw.cciwmain.tests.base import factories as camp_factories
 from cciw.officers.dbs import get_officers_with_dbs_info_for_camps
 from cciw.officers.models import DBSActionLog, DBSCheck
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import DBSOFFICER, OfficersSetupMixin, SimpleOfficerSetupMixin, factories
+from .base import factories
 
 
-class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
+class DbsInfoTests(TestBase):
     def setUp(self):
         super().setUp()
-        self.camp = self.default_camp_1
+        self.camp = camp_factories.create_camp()
         self.year = self.camp.year
+        self.officer_user = factories.create_officer()
         self.camp.invitations.create(officer=self.officer_user)
 
     def get_officer_with_dbs_info(self):
@@ -171,18 +173,20 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
         assert dbs_info.update_enabled_dbs_number.previous_check_good is None
 
 
-class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
+class ManageDbsPageBase(FuncBaseMixin):
     def setUp(self):
         super().setUp()
-        self.camp = self.default_camp_1
+        self.camp = camp_factories.create_camp(leader=factories.create_leader())
         self.year = self.camp.year
+        self.officer_user = factories.create_officer()
         self.camp.invitations.create(officer=self.officer_user)
+        self.dbs_officer = factories.create_dbs_officer()
 
     def test_view_no_application_forms(self):
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         self.assertCode(200)
-        self.assertTextPresent("Manage DBSs 2000 | CCiW Officers")
+        self.assertTextPresent(f"Manage DBSs {self.year} | CCiW Officers")
 
         officers = [i.officer for i in self.camp.invitations.all()]
         assert len(officers) != 0
@@ -198,14 +202,14 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
 
     def test_view_with_application_forms(self):
         factories.create_application(self.officer_user, year=self.year)
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         self.assertTextAbsent("Needs application form")
 
     def test_log_dbs_sent(self):
         factories.create_application(self.officer_user, year=self.year)
         officer = self.officer_user
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
 
@@ -215,7 +219,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         # should be on same page
         self.assertUrlsEqual(url)
         assert officer.dbsactionlogs.count() == 1
-        assert officer.dbsactionlogs.get().user.username == DBSOFFICER[0]
+        assert officer.dbsactionlogs.get().user.username == self.dbs_officer.username
 
         if self.is_full_browser_test:
             self.assertElementText(f"#id_last_dbs_form_sent_{officer.id}", "Just now")
@@ -228,7 +232,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
 
     def test_alert_leaders(self):
         factories.create_application(self.officer_user, year=self.year, dbs_check_consent=False)
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
         self.assertTextPresent("Officer does not consent")
@@ -254,7 +258,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
 
     def test_request_dbs_form_sent(self):
         factories.create_application(self.officer_user, year=self.year)
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
         assert self.get_element_text(f"#id_last_form_request_sent_{self.officer_user.id}").strip() == "No record"
@@ -279,7 +283,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
     def test_register_received_dbs(self):
         factories.create_application(self.officer_user, year=self.year)
         assert self.officer_user.dbs_checks.all().count() == 0
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
         self.click_register_received_button(self.officer_user)
@@ -320,7 +324,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         today = date.today()
 
         # Use the DBS page
-        self.officer_login(DBSOFFICER)
+        self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
         self.click_dbs_checked_online_button(self.officer_user)
