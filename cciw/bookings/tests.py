@@ -1152,7 +1152,7 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
                 "#id_first_name": "",
                 "#id_gp_name": "",
                 "#id_gp_line1": "",
-                "#id_gp_country": "",
+                "#id_gp_country": "GB",
             }
         )
 
@@ -1165,11 +1165,11 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
         self.assertValues(
             {
                 "#id_address_line1": "",
-                "#id_address_country": "",
+                "#id_address_country": "GB",
                 "#id_address_post_code": "",
                 "#id_contact_name": "",
                 "#id_contact_line1": "",
-                "#id_contact_country": "",
+                "#id_contact_country": "GB",
                 "#id_contact_post_code": "",
                 "#id_first_name": "",
                 "#id_gp_name": "Doctor Who",
