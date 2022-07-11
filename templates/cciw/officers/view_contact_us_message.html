@@ -25,6 +25,37 @@
         </textarea>
       </td>
     </tr>
+
+    <tr>
+      <th>Spaminess</th>
+
+      <td>
+        {% if message.bogosity_percent != None %}
+          {{ message.bogosity_percent }}%
+          <meter
+            max="100"
+            optimum="0"
+            high="20"
+            value="{{ message.bogosity_percent }}"></meter>
+          {{ message.get_spam_classification_bogofilter_display|upper }}
+
+        {% else %}
+          Not checked
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <th>Spam control</th>
+
+      <td>
+        {% if message.spam_classification_manual != "UNCLASSIFIED" %}
+          Manually marked: {{ message.spam_classification_manual }}
+        {% endif %}
+        <form method="POST" action=".">{% csrf_token %}
+          <input type="submit" name="mark_spam" value="❌ Mark as spam"> <input type="submit" name="mark_ham" value="👍 Mark as ham">
+        </form>
+      </td>
+    </tr>
   </table>
   <p><a href="mailto:{{ message.email|urlencode }}?subject={{ subject|urlencode }}&body={{ reply_template|urlencode }}">Reply in your email program</a></p>
 

@@ -2,13 +2,24 @@ from django.conf import settings
 from django.core import mail
 from django.urls import reverse
 
-from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.cciwmain.tests.base import BasicSetupMixin, SiteSetupMixin
+from cciw.contact_us.bogofilter import BogofilterStatus
+from cciw.officers.tests.base import factories as officer_factories
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.tests.webtest import WebTestBase
 
-from .models import Message
+from .models import ContactType, Message, SpamStatus
 
 CONTACT_US_URL = reverse("cciw-contact_us-send")
+
+
+def create_message() -> Message:
+    return Message.objects.create(
+        subject=ContactType.WEBSITE,
+        email="someemail@example.com",
+        name="Some Person",
+        message="This is an important message please read it",
+    )
 
 
 class ContactUsPage(BasicSetupMixin, WebTestBase):
@@ -86,6 +97,9 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         assert len(mail.outbox) == 1
         assert Message.objects.count() == 1
         assert mail.outbox[0].to == settings.EMAIL_RECIPIENTS["GENERAL_CONTACT"]
+        message = Message.objects.get()
+        assert message.bogosity is not None
+        assert message.spam_classification_bogofilter != BogofilterStatus.UNCLASSIFIED
 
     def test_send_to_booking_secretary(self):
         self.get_url("cciw-contact_us-send")
@@ -103,3 +117,27 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         assert len(mail.outbox) == 1
         assert sorted(mail.outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
         assert Message.objects.count() == 1
+
+
+class ViewMessagePage(SiteSetupMixin, WebTestBase):
+    def test_view(self):
+        message = create_message()
+        self.officer_login(officer_factories.create_secretary())
+        self.get_url("cciw-contact_us-view", message.id)
+        self.assertTextPresent(message.message)
+
+    def test_ham_spam_buttons(self):
+        message = create_message()
+        assert message.spam_classification_manual == SpamStatus.UNCLASSIFIED
+        self.officer_login(officer_factories.create_secretary())
+        self.get_url("cciw-contact_us-view", message.id)
+
+        self.submit('[name="mark_ham"]')
+        self.assertTextPresent("Marked as ham")
+        message.refresh_from_db()
+        assert message.spam_classification_manual == SpamStatus.HAM
+
+        self.submit('[name="mark_spam"]')
+        self.assertTextPresent("Marked as spam")
+        message.refresh_from_db()
+        assert message.spam_classification_manual == SpamStatus.SPAM

@@ -115,6 +115,7 @@ REQS = [
     "libpcre3-dev",
     # Other
     "certbot",
+    "bogofilter",
 ]
 
 

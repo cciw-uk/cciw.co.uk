@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core import mail
 from django.http import HttpResponseRedirect
@@ -43,6 +44,7 @@ def contact_us(request):
             msg = form.save(commit=False)
             msg.booking_account = booking_account
             msg.save()
+            msg.classify_with_bogofilter()
             send_contact_us_emails(to_emails, msg)
             return HttpResponseRedirect(reverse("cciw-contact_us-done"))
     else:
@@ -85,6 +87,8 @@ the link to view it:
 
 {make_contact_us_view_url(msg)}
 
+Spaminess: {msg.bogosity_percent}% - {msg.get_spam_classification_bogofilter_display().upper()}
+
 """
 
     email = mail.EmailMessage(
@@ -99,8 +103,18 @@ the link to view it:
 @cciw_secretary_or_booking_secretary_required
 @staff_member_required
 def view_message(request, *, message_id: int):
-    msg = get_object_or_404(Message.objects.filter(id=int(message_id)))
+    msg: Message = get_object_or_404(Message.objects.filter(id=int(message_id)))
+
+    if request.method == "POST":
+        if "mark_spam" in request.POST:
+            msg.mark_spam()
+            messages.info(request, "Marked as spam")
+        elif "mark_ham" in request.POST:
+            msg.mark_ham()
+            messages.info(request, "Marked as ham")
+
     quoted_message_body = "\n".join(["> " + line for line in wordwrap(msg.message, 70).split("\n")])
+
     reply_template = """Dear {name},
 
 

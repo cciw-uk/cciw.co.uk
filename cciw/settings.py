@@ -34,6 +34,13 @@ if LIVEBOX and not CHECK_DEPLOY:
 else:
     LOG_PATH = parentpath / "logs"
 
+if not LOG_PATH.exists():
+    LOG_PATH.mkdir(parents=True)
+
+
+BOGOFILTER_DIR = HOME_PATH / ".bogofilter-cciw"
+if not BOGOFILTER_DIR.exists():
+    BOGOFILTER_DIR.mkdir(parents=True)
 
 if LIVEBOX:
     SECRET_KEY = SECRETS["PRODUCTION_SECRET_KEY"]

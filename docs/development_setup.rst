@@ -12,6 +12,7 @@ Assuming a Linux/Unix machine, the requirements are:
 
 * Python 3.9
 * Postgres 12
+* bogofilter
 
 For tests, see also:
 
