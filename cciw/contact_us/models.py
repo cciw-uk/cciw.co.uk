@@ -55,7 +55,7 @@ class Message(models.Model):
         return f"Message {self.id} from {self.email} on {self.created_at}"
 
     @property
-    def bogosity_percent(self):
+    def bogosity_percent(self) -> int:
         return None if self.bogosity is None else int(self.bogosity * 100)
 
     def mark_spam(self):
@@ -68,13 +68,14 @@ class Message(models.Model):
         mark_ham(self._make_bogofilter_email_message())
         self.classify_with_bogofilter()
 
-    def classify_with_bogofilter(self):
+    def classify_with_bogofilter(self) -> tuple[BogofilterStatus, float]:
         status, score = get_bogofilter_classification(self._make_bogofilter_email_message())
         if self.spam_classification_bogofilter == BogofilterStatus.UNCLASSIFIED or status != BogofilterStatus.ERROR:
             self.spam_classification_bogofilter = status
         if score is not None:
             self.bogosity = score
         self.save()
+        return status, score
 
     def _make_bogofilter_email_message(self):
         return make_email_msg(

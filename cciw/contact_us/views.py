@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -10,10 +12,13 @@ from django.urls import reverse
 
 from cciw.bookings.middleware import get_booking_account_from_request
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
+from cciw.contact_us.bogofilter import BogofilterStatus
 from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 
 from .forms import AjaxContactUsForm, ContactUsForm
 from .models import ContactType, Message
+
+logger = logging.getLogger(__name__)
 
 CONTACT_CHOICE_DESTS = {
     ContactType.BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
@@ -41,11 +46,14 @@ def contact_us(request):
                 # They changed the email from the default, so disconnect
                 # this message from the booking account, to avoid confusion
                 booking_account = None
-            msg = form.save(commit=False)
+            msg: Message = form.save(commit=False)
             msg.booking_account = booking_account
             msg.save()
-            msg.classify_with_bogofilter()
-            send_contact_us_emails(to_emails, msg)
+            status, score = msg.classify_with_bogofilter()
+            if status == BogofilterStatus.SPAM and score > 0.95:
+                logger.info("Not sending contact_us email id=%s with spam score %.3f", msg.id, score)
+            else:
+                send_contact_us_emails(to_emails, msg)
             return HttpResponseRedirect(reverse("cciw-contact_us-done"))
     else:
         initial = {}

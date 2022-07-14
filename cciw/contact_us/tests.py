@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.conf import settings
 from django.core import mail
 from django.urls import reverse
@@ -117,6 +119,24 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
         assert len(mail.outbox) == 1
         assert sorted(mail.outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
         assert Message.objects.count() == 1
+
+    def test_spam_filter_threshold(self):
+        self.get_url("cciw-contact_us-send")
+        self.fill(
+            {
+                "#id_subject": "website",
+                "#id_name": "Spam",
+                "#id_email": "spammer@example.com",
+                "#id_message": "Would you like some yummy Spam?",
+                "#id_cx_0": "PASSED",
+                "#id_cx_1": "PASSED",
+            }
+        )
+        with mock.patch("cciw.contact_us.models.get_bogofilter_classification") as m:
+            m.return_value = (BogofilterStatus.SPAM, 0.98)
+            self.submit('input[type="submit"]')
+        assert Message.objects.count() == 1
+        assert len(mail.outbox) == 0
 
 
 class ViewMessagePage(SiteSetupMixin, WebTestBase):
