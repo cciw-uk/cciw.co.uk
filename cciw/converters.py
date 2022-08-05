@@ -1,5 +1,7 @@
 # URL path converters
 
+from typing import Optional
+
 from .cciwmain.common import CampId
 
 
@@ -47,15 +49,15 @@ class CampIdListConverter:
         return ",".join(CampIdConverter.to_url(camp_id) for camp_id in value)
 
 
-class OptStr:
+class OptInt:
     """
-    Optional string - zero or more characters, excluding /
+    Optional int - zero or digits, converted to None if zero length
     """
 
-    regex = r"[^/]*"
+    regex = r"\d*"
 
-    def to_python(self, value) -> str:
-        return value
+    def to_python(self, value) -> Optional[int]:
+        return None if value == "" else int(value)
 
     def to_url(self, value):
-        return value
+        return "" if value is None else str(value)

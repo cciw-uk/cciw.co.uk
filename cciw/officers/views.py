@@ -2,7 +2,7 @@ import contextlib
 import enum
 from datetime import date, datetime, timedelta
 from functools import wraps
-from typing import Iterable
+from typing import Iterable, Optional
 from urllib.parse import urlparse
 
 import furl
@@ -743,7 +743,7 @@ def initial_reference_form_data(referee, prev_reference):
     return retval
 
 
-def create_reference(request, referee_id, hash, prev_ref_id=""):
+def create_reference(request, referee_id: int, hash: str, prev_ref_id: Optional[int] = None):
     """
     View for allowing referee to submit reference (create the Reference object)
     """
@@ -751,10 +751,10 @@ def create_reference(request, referee_id, hash, prev_ref_id=""):
     if hash != make_ref_form_url_hash(referee_id, prev_ref_id):
         context["incorrect_url"] = True
     else:
-        referee = get_object_or_404(Referee.objects.filter(id=int(referee_id)))
+        referee = get_object_or_404(Referee.objects.filter(id=referee_id))
         prev_reference = None
-        if prev_ref_id != "":
-            prev_reference = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
+        if prev_ref_id is not None:
+            prev_reference = get_object_or_404(Reference.objects.filter(id=prev_ref_id))
 
         if prev_reference is not None:
             context["update"] = True
@@ -1405,7 +1405,7 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, **kw
 
 @staff_member_required
 @camp_admin_required
-def booking_progress_stats(request, start_year: int = None, end_year: int = None, camp_ids=None):
+def booking_progress_stats(request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None):
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=True
     )
@@ -1431,7 +1431,9 @@ def booking_progress_stats(request, start_year: int = None, end_year: int = None
 
 @staff_member_required
 @camp_admin_required
-def booking_progress_stats_download(request, start_year: int = None, end_year: int = None, camp_ids=None):
+def booking_progress_stats_download(
+    request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None
+):
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=False
     )
@@ -1481,7 +1483,9 @@ def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids):
 
 @staff_member_required
 @camp_admin_required
-def booking_ages_stats(request, start_year: int = None, end_year: int = None, camp_ids=None, single_year=None):
+def booking_ages_stats(
+    request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None, single_year: int = None
+):
     if single_year is not None:
         camps = Camp.objects.filter(year=int(single_year))
         return HttpResponseRedirect(

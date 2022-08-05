@@ -400,7 +400,7 @@ have to fill in another DBS form.</p> """,
         self._force_no_add_another(request)
         self._force_user_val(request)
 
-    def change_view(self, request, object_id):
+    def change_view(self, request, object_id: str):
         if request.method == "POST":
             self._force_post_vals(request)
 
