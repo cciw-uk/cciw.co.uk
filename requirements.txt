@@ -69,7 +69,7 @@ datedelta==1.4
     # via -r requirements.in
 decorator==5.1.1
     # via ipython
-django==4.0.3
+django==4.0.7
     # via
     #   -r requirements.in
     #   django-appconf
