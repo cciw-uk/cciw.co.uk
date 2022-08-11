@@ -166,9 +166,15 @@ if USE_DEBUG_TOOLBAR and DEBUG:
 SILENCED_SYSTEM_CHECKS = [
     "1_6.W001",
     "1_8.W001",
-    "urlchecker.W001",
-    "urlchecker.W003",
 ]
+
+URLCONFCHECKS_SILENCED_VIEWS = {
+    "debug_toolbar.panels.sql.views.sql_*": "E004",
+    # CBVs:
+    "*.View.as_view.<locals>.view": "W001",
+    # Django currently doesn't have type annotations:
+    "django.*": "W003",
+}
 
 if not CHECK_DEPLOY:
     # It's annoying to have to fix data retention immediately
