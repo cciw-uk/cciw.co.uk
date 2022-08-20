@@ -12,12 +12,13 @@ the same provider (DigitalOcean). If moving to a new host, some steps will need
 to be changed.
 
 
-1. Change the TTL on all cciw.co.uk domains down to 1 hour (3600 seconds), so
-   that the downtime caused by a new IP later on will be much quicker. This
-   needs to be done at least X seconds before the actual switch over is planned,
-   where X is the previous TTL, to give time for DNS propagation. So, if
-   previous TTL is 86400 (1 day), this step needs to be done at least 1 day
-   before going live with the new server.
+1. For all cciw.co.uk domains that point to the DO droplet (usually just the
+   ``A`` record), change the TTL on down to 1 hour (3600 seconds), so that the
+   downtime caused by a new IP address later on will be much quicker. This needs
+   to be done at least X seconds before the actual switch over is planned, where
+   X is the previous TTL, to give time for DNS propagation. So, if previous TTL
+   is 86400 (1 day), this step needs to be done at least 1 day before going live
+   with the new server.
 
    Later on, at least 1 hour before switch over, we'll reduce it further to 5
    minutes.
@@ -27,7 +28,7 @@ to be changed.
 
 2. Fetch old SSL certificates::
 
-     fab download_letscencrypt_config
+     fab download-letscencrypt-config
 
 3. Create new VPS:
 
@@ -39,32 +40,38 @@ to be changed.
 
    Choose:
 
-   - Latest Ubuntu LTS (last time - 18.04.3 (LTS) x64)
-   - Starter plan
-   - Smallest box (last time - $5/month, 1 Gb mem, 25 Gb disk, 1000 Gb transfer)
+   - Latest Ubuntu LTS (last time - 22.04 x64)
+   - Basic plan
+   - Smallest box (last time - $6/month, 1 Gb mem, 25 Gb disk, 1000 Gb transfer)
    - London datacenter
-   - IPv6 enabled
    - SSH authentication
      - luke@calvin SSH key selected (will need to upload one if there isn't one configured)
 
+       This key should be the same as ~/.ssh/id_rsa.pub on the machine you deploy from.
+
+   - Enable backups
+   - Enable IPv6
+
    - 1 droplet
-   - Hostname: 'cciw' plus an incrementing number (last time: cciw2)
+   - Hostname: 'cciw' plus an incrementing number (last time: cciw3)
 
      Use incrementing numbers for each new VM, to ensure you don't confuse with
      previous one. This is not the same as the public domain name. Substitute
-     this name wherever ``cciw2`` appears below.
+     this name wherever ``cciw3`` appears below.
 
-   - Enable backups
+   - Project: CCIW
 
 4. Add new VPS to your local /etc/hosts so that it can be accessed easily, using
    the IP address given e.g.::
 
-   178.62.115.97 cciw2.digitalocean.com
+   157.245.36.120 cciw3.digitalocean.com
 
-   Check you can login to the new VPS with ``ssh root@cciw2.digitalocean.com``
+   Check you can login to the new VPS with ``ssh root@cciw3.digitalocean.com``
 
-5. Change ``env.hosts`` in ``fabfile.py`` to point to the new VPS. Remember that
+5. Change ``DEFAULT_HOST`` in ``fabfile.py`` to point to the new VPS. Remember that
    from now on it will use the new VPS by default, unless ``-H`` flag is passed.
+
+   Check it has worked by doing ``fab root-hostname``
 
 6. Upgrade versions of dependencies, preferably to defaults for new distribution
 
@@ -73,18 +80,24 @@ to be changed.
 
 6. Provision VPS::
 
-    $ fab secure
+    $ fab initial-secure
     $ fab provision
 
 
   If this fails to update any dependencies, search for new packages using ``apt
   search``.
 
+  Check you can login to ``root@...``
+
   Then::
 
-    $ fab upload_letscencrypt_config
-    $ fab create_project
-    $ fab deploy
+    $ fab upload-letsencrypt-conf
+    $ fab create-project
+
+  Check you can login as cciw@...
+  Then::
+
+    $ fab deploy --test-host
 
 
 The next steps are a 'dry-run', that we will do before the real thing, to check
@@ -94,16 +107,16 @@ the process works.
 7. Download DB and media from old server. Note use of ``-H`` flag to point to old
    server temporarily::
 
-     fab -H cciw1.digitalocean.com download_usermedia get_live_db
+     fab -H cciw2.digitalocean.com download-usermedia get-live-db
 
 8. Upload media and DB to new server - make sure -H is correct, and change
    ``filename`` to the file downloaded in step 7::
 
-     fab -H cciw2.digitalocean.com upload_usermedia migrate_upload_db:filename
+     fab -H cciw3.digitalocean.com upload-usermedia stop-all migrate-upload-db filename
 
    This may return some errors, while still being successful. Restart webserver::
 
-     fab -H cciw2.digitalocean.com start_webserver
+     fab -H cciw3.digitalocean.com restart-webserver
 
 9. Use your local /etc/hosts to point www.cciw.co.uk to the new server, and test
    the new site works as expected. Revert /etc/hosts so that you don’t
@@ -117,7 +130,9 @@ the process works.
 
 Now we'll repeat some steps, with changes:
 
-11. Stop the old server
+11. Stop the old server (or set to “maintenance mode” somehow, TODO)::
+
+    fab stop-all
 
 12. Same as step 7 - download media and DB from old server
 
@@ -130,7 +145,7 @@ Now we'll repeat some steps, with changes:
 
 16. Make sure letsencrypt is working::
 
-      fab install_or_renew_ssl_certificate
+      fab install-or-renew-ssl-certificate
 
 
 Done!

@@ -186,7 +186,7 @@ class ManageDbsPageBase(FuncBaseMixin):
         self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         self.assertCode(200)
-        self.assertTextPresent(f"Manage DBSs {self.year} | CCiW Officers")
+        self.assertTextPresent(f"Manage DBSs {self.year} | CCiW Officers", within="title")
 
         officers = [i.officer for i in self.camp.invitations.all()]
         assert len(officers) != 0
@@ -236,7 +236,7 @@ class ManageDbsPageBase(FuncBaseMixin):
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
         self.assertTextPresent("Officer does not consent")
-        assert self.get_element_text(f"#id_last_leader_alert_sent_{self.officer_user.id}").strip() == "No record"
+        assert self.get_element_inner_text(f"#id_last_leader_alert_sent_{self.officer_user.id}").strip() == "No record"
         self.click_alert_leaders_button(self.officer_user)
         self.assertTextPresent("Report DBS problem to leaders")
         self.submit('input[name="send"]')
@@ -252,7 +252,9 @@ class ManageDbsPageBase(FuncBaseMixin):
         self.assertUrlsEqual(url)
 
         assert (
-            self.get_element_text(f"#id_last_leader_alert_sent_{self.officer_user.id}").strip().replace("\u00A0", " ")
+            self.get_element_inner_text(f"#id_last_leader_alert_sent_{self.officer_user.id}")
+            .strip()
+            .replace("\u00A0", " ")
             == "0 minutes ago"
         )
 
@@ -261,9 +263,9 @@ class ManageDbsPageBase(FuncBaseMixin):
         self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url
-        assert self.get_element_text(f"#id_last_form_request_sent_{self.officer_user.id}").strip() == "No record"
+        assert self.get_element_inner_text(f"#id_last_form_request_sent_{self.officer_user.id}").strip() == "No record"
         self.click_request_dbs_form_button(self.officer_user)
-        self.assertTextPresent(f"Ask for DBS form to be sent to {self.officer_user.full_name}")
+        self.assertTextPresent(f"Ask for DBS form to be sent to {self.officer_user.full_name}", within="title")
         self.submit('input[name="send"]')
         assert len(mail.outbox) == 1
         m = mail.outbox[0]
@@ -276,7 +278,9 @@ class ManageDbsPageBase(FuncBaseMixin):
         self.assertUrlsEqual(url)
 
         assert (
-            self.get_element_text(f"#id_last_form_request_sent_{self.officer_user.id}").strip().replace("\u00A0", " ")
+            self.get_element_inner_text(f"#id_last_form_request_sent_{self.officer_user.id}")
+            .strip()
+            .replace("\u00A0", " ")
             == "0 minutes ago"
         )
 

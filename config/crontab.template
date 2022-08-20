@@ -2,30 +2,30 @@ PYTHON=%(VENV_ROOT)s/bin/python
 DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 
-*       * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE send_mail 2>> /dev/null
-5,35    * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
-0,20,40 * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> /dev/null
-0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup
-0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
+*       * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE send_mail 2>> /dev/null
+5,35    * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
+0,20,40 * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> /dev/null
+0       2 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE cleanup
+0       7 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
 
 
 # Apply data retention daily
-0       1 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE apply_data_retention
-0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE clean_orphaned_data
+0       1 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE apply_data_retention
+0       2 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE clean_orphaned_data
 
 # expire_bookings must be run only once an hour
-30      * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE expire_bookings
+30      * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE expire_bookings
 
 
 # Recycle webserver instance once a day
-30      2 * * *  root          supervisorctl restart %(proj_name)s_uwsgi
+30      2 * * *  root          supervisorctl restart %(PROJECT_NAME)s_uwsgi
 
 # Cleanup temp mail files once a day. Random hour and minute
-10      3 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup_temp_mail_files
+10      3 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE cleanup_temp_mail_files
 
 
 # Backups once a day
-35      6 * * * %(proj_user)s  $PYTHON %(SRC_ROOT)s/backup_s3.py
+35      6 * * * %(PROJECT_USER)s  $PYTHON %(SRC_ROOT)s/backup_s3.py
 
 
 # Renew letsencrypt
@@ -35,7 +35,7 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 
 # Clear out old uWSGI logs which don't rotate proplerly:
-42         4    * * *  root          find /home/%(proj_user)s/logs/ -name '*_uwsgi.log.*' -mtime +7 -exec rm {} \;
+42         4    * * *  root          find /home/%(PROJECT_USER)s/logs/ -name '*_uwsgi.log.*' -mtime +7 -exec rm {} \;
 
 # GoAccess analytics
 30         23   * * *  root          goaccess --restore --persist --log-format=COMBINED /var/log/nginx/access.log /var/log/nginx/access.log.1 -o "/var/log/goaccess/report-$(date '+\%%Y-\%%m-\%%d').html" --keep-last=32
