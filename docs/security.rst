@@ -50,6 +50,33 @@ following points must be observed:
   website and necessary development tools are kept up to date with relevant
   security patches.
 
+
+Architecture and encryption
+---------------------------
+
+For better security and tracking of how we are storing data, we prefer to keep
+things as simple as possible. The application is very small, with a tiny amount
+of data by modern standards. This means it can be easily served by a single
+machine, so we have a single Virtual Private Server which hosts both the
+database and the web servers. If more resources are needed, vertical scaling
+(i.e. more powerful machines) will likely be a much better solution that
+horizontal scaling. This allows us to avoid the complexities of things like AWS
+services or other systems where there are many policies regarding security that
+can easily be misconfigured. It also means we can keep our database locked down
+to only accept localhost connections.
+
+For a simple configuration like this, there is little to zero benefit from some
+security mechanisms such as "encrypted at rest" databases. (Since the decryption
+key has to be on the same machine as the database, if the database machine is
+compromised then the key will also be compromised). Since adding these would
+only increase complexity, and also the possibility of accidental data loss, we
+currently do not encrypt data at rest.
+
+We do use encryption at rest for any 3rd party services that we use e.g.
+database backups on Amazon S3. Amazon S3 itself manages the encryption key for
+us.
+
+
 Data protection and privacy
 ---------------------------
 
@@ -274,26 +301,3 @@ reduce human error. This functionality may grow as necessary as more requests
 of this nature are dealt with.
 
 **TODO** Details of what we don't provide, to be agreed.
-
-
-Architecture and encryption
----------------------------
-
-For better security, we prefer to keep things as simple as possible. Since the
-application is very small, and can be easily served by a single machine, we have
-a single Virtual Private Server which hosts both the database and the web
-servers. This allows us to avoid the complexities of things like AWS services or
-other systems where there are many policies regarding security that can easily
-be misconfigured. It also means we can keep our database locked down to only
-accept localhost connections.
-
-For a simple configuration like this, there is little to zero benefit from some
-security mechanisms such as "encrypted at rest" databases. (Since the decryption
-key has to be on the same machine as the database, if the database machine is
-compromised then the key will also be compromised). Since adding these would
-only increase complexity, and also the possibility of accidental data loss, we
-currently do not encrypt data at rest.
-
-We do use encryption at rest for any 3rd party services that we use e.g.
-database backups on Amazon S3. Amazon S3 itself manages the encryption key for
-us.

@@ -171,7 +171,7 @@ SILENCED_SYSTEM_CHECKS = [
 URLCONFCHECKS_SILENCED_VIEWS = {
     "debug_toolbar.panels.sql.views.sql_*": "E004",
     # CBVs:
-    "*.View.as_view.<locals>.view": "W001",
+    "*.View.as_view": "W001",
     # Django currently doesn't have type annotations:
     "django.*": "W003",
 }

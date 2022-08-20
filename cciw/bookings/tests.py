@@ -546,7 +546,7 @@ class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
             "agreement": True,
         }
 
-    def fill(self, data):
+    def fill(self, data, scroll=True):
         # Accept more things than super().fill()
         # This allows us to write `get_place_details()` above in a way
         # that means that data can be easily passed to Factory.create_booking()
@@ -559,7 +559,7 @@ class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
                 data2[k] = v.isoformat()
             else:
                 data2[k] = v
-        return super().fill(data2)
+        return super().fill(data2, scroll=scroll)
 
 
 class BookingBaseMixin(AtomicChecksMixin):
@@ -849,19 +849,19 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         querydata["bt"] = "a000" + querydata["bt"]
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertTextPresent("failed")
+        self.assertTextPresent("failed", within="title")
 
         # This will trigger a base64 decode error:
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         querydata["bt"] = "XXX" + querydata["bt"]
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertTextPresent("failed")
+        self.assertTextPresent("failed", within="title")
 
         # This will trigger a UnicodeDecodeError
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         querydata["bt"] = "xxxx"
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertTextPresent("failed")
+        self.assertTextPresent("failed", within="title")
 
 
 class TestBookingVerifyWT(BookingVerifyBase, WebTestBase):

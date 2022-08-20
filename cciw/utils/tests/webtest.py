@@ -57,10 +57,7 @@ class CommonMixin:
         assert path == url
 
     def assertElementText(self, css_selector, text):
-        assert self.get_element_text(css_selector) == text
-
-    def assert_html5_form_invalid(self):
-        assert len(self._driver.find_elements_by_css_selector("form:invalid")), 1
+        assert self.get_element_inner_text(css_selector) == text
 
     def submit_expecting_html5_validation_errors(self, submit_css_selector=None):
         """
@@ -74,7 +71,7 @@ class CommonMixin:
             if submit_css_selector is None:
                 submit_css_selector = self.submit_css_selector
             self.click(self.submit_css_selector)
-            self.assert_html5_form_invalid()
+            assert self.is_element_present("form:invalid")
             self.execute_script('$("[required]").removeAttr("required");')
             # Now we can go ahead and submit normally
         if submit_css_selector is None:
@@ -106,10 +103,6 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
 
     def assertHtmlPresent(self, html):
         self.assertContains(self.last_response, html, html=True)
-
-    def get_element_text(self, css_selector):
-        pq = PyQuery(self.last_response.content.decode("utf-8"))
-        return pq.find(css_selector)[0].text_content()
 
     def add_admin_inline_form_to_page(self, inline_name, count=1):
         """
@@ -165,9 +158,6 @@ class SeleniumBase(
 
     def assertHtmlPresent(self, html):
         self.assertContains(self._get_page_source(), html, html=True)
-
-    def get_element_text(self, css_selector):
-        return self._driver.find_element_by_css_selector(css_selector).text
 
     def wait_for_ajax(self):
         time.sleep(0.1)
