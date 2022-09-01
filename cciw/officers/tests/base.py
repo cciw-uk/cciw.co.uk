@@ -13,10 +13,10 @@ from cciw.accounts.models import (
     setup_auth_roles,
 )
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.utils import Auto, set_thisyear
+from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Reference
-from cciw.utils.tests.base import FactoriesBase
+from cciw.utils.tests.factories import Auto, FactoriesBase, sequence
 
 OFFICER_USERNAME = "joebloggs"
 OFFICER_PASSWORD = "test_normaluser_password"
@@ -224,10 +224,10 @@ class ReferenceSetupMixin(set_thisyear(2000), RequireApplicationsMixin):
         self.application2.referees[1].log_request_made(None, timezone.now())
 
 
-class Factories(FactoriesBase):
-    def __init__(self):
-        self._user_counter = 0
+USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
 
+
+class Factories(FactoriesBase):
     def create_officer(
         self,
         username=None,
@@ -241,8 +241,9 @@ class Factories(FactoriesBase):
         roles=None,
         contact_phone_number="",
     ):
-        username = username or self._make_auto_username()
-        email = email or self._make_auto_email(username)
+        username = username or next(USERNAME_SEQUENCE)
+        email = email or f"{username}@example.com"
+
         user = User(
             username=username,
             first_name=first_name,
@@ -273,14 +274,6 @@ class Factories(FactoriesBase):
         if not user:
             return self.create_officer()
         return user
-
-    def _make_auto_username(self):
-        self._user_counter += 1
-        return f"auto_user_{self._user_counter}"
-
-    def _make_auto_email(self, username=None):
-        username = username or self._make_auto_username()
-        return f"{username}@example.com"
 
     def add_officers_to_camp(self, camp, officers):
         for officer in officers:

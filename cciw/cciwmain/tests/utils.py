@@ -1,5 +1,4 @@
 from datetime import datetime, time
-from typing import Any
 from unittest import mock
 
 from django.contrib.sites.models import Site
@@ -69,15 +68,3 @@ def date_to_datetime(date_value):
     if date_value is None:
         return None
     return ensure_timezone_aware(datetime.combine(date_value, time(0, 0, 0)))
-
-
-class _Auto:
-    """
-    Sentinel value used when 'None' would be allowed due to a nullable database field.
-    """
-
-    def __bool__(self):
-        return False
-
-
-Auto: Any = _Auto()

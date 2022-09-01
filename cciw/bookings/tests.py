@@ -49,7 +49,6 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spread
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
-from cciw.cciwmain.tests.utils import Auto
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests.base import (
     BOOKING_SECRETARY,
@@ -61,9 +60,12 @@ from cciw.officers.tests.base import (
 from cciw.officers.tests.base import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
-from cciw.utils.tests.base import AtomicChecksMixin, FactoriesBase, TestBase, disable_logging
+from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
+from cciw.utils.tests.factories import Auto, FactoriesBase, sequence
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
+
+BOOKING_ACCOUNT_EMAIL_SEQUENCE = sequence(lambda n: f"booker_{n}@example.com")
 
 
 class Factories(FactoriesBase):
@@ -164,18 +166,13 @@ class Factories(FactoriesBase):
     ) -> BookingAccount:
 
         if email is None:
-            email = f"booker_{self._get_next_booking_account_counter()}@example.com"
+            email = next(BOOKING_ACCOUNT_EMAIL_SEQUENCE)
         return BookingAccount.objects.create(
             name=name,
             email=email,
             address_line1=address_line1,
             address_post_code=address_post_code,
         )
-
-    def _get_next_booking_account_counter(self):
-        num = getattr(self, "_booking_account_counter", 0) + 1
-        self._booking_account_counter = num
-        return num
 
     def create_processed_payment(
         self,

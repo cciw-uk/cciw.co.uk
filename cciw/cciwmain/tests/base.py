@@ -9,7 +9,7 @@ from django.contrib.sites.models import Site as DjangoSite
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.sitecontent.models import HtmlChunk, MenuLink
-from cciw.utils.tests.base import FactoriesBase
+from cciw.utils.tests.factories import FactoriesBase
 
 
 class Factories(FactoriesBase):
