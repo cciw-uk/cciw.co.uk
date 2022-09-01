@@ -13,7 +13,7 @@ from cciw.accounts.models import (
     setup_auth_roles,
 )
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.utils import NotPassed, set_thisyear
+from cciw.cciwmain.tests.utils import Auto, set_thisyear
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Reference
 from cciw.utils.tests.base import FactoriesBase
@@ -237,7 +237,7 @@ class Factories(FactoriesBase):
         is_superuser=False,
         is_staff=True,
         email=None,
-        password=NotPassed,
+        password=Auto,
         roles=None,
         contact_phone_number="",
     ):
@@ -253,7 +253,7 @@ class Factories(FactoriesBase):
             email=email,
             contact_phone_number=contact_phone_number,
         )
-        if password is NotPassed:
+        if password is Auto:
             password = OFFICER_PASSWORD
         if password is not None:
             user.set_password(password)

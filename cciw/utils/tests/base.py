@@ -99,9 +99,9 @@ class FactoriesBase:
         # when the object is re-used for the next test, but the record
         # doesn't exist in the database.
 
-        # We cannot easily delete instances, because there are references to
-        # them in other modules. But we can reset them to a pristine
-        # condition, by creating a new instance and assigning __dict__
+        # We cannot easily delete factory instances, because there are
+        # references to them in other modules. But we can reset them to a
+        # pristine condition, by creating a new instance and assigning __dict__
 
         # Avoid infinite loop by making a copy of _all_factory_instances
         instances = FactoriesBase._all_factory_instances[:]

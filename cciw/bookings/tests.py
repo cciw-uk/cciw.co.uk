@@ -49,7 +49,7 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spread
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
-from cciw.cciwmain.tests.utils import NotPassed
+from cciw.cciwmain.tests.utils import Auto
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests.base import (
     BOOKING_SECRETARY,
@@ -71,14 +71,14 @@ class Factories(FactoriesBase):
         self,
         # From user fields, order same as booking form.
         # TODO we are missing a few (non required) fields here
-        account=None,
-        camp=None,
-        price_type=PriceType.FULL,
-        first_name=None,
-        last_name=None,
-        name=None,
-        sex="m",
-        date_of_birth=None,
+        account: BookingAccount = Auto,
+        camp: Camp = Auto,
+        price_type: PriceType = PriceType.FULL,
+        first_name: str = Auto,
+        last_name: str = Auto,
+        name: str = Auto,
+        sex: str = "m",
+        date_of_birth: date = Auto,
         address_line1="123 My street",
         address_city="Metrocity",
         address_country="GB",
@@ -96,29 +96,28 @@ class Factories(FactoriesBase):
         gp_post_code="SW1 1PQ",
         gp_phone_number="01234 456789",
         medical_card_number="asdfasdf",
-        last_tetanus_injection_date=NotPassed,
+        last_tetanus_injection_date=Auto,
         serious_illness=False,
         agreement=True,
         # Internal fields
         state=BookingState.INFO_COMPLETE,
-        amount_due=None,
+        amount_due=Auto,
     ) -> Booking:
         account = account or self.create_booking_account()
         camp = camp or camps_factories.get_any_camp()
-        if date_of_birth is None:
+        if date_of_birth is Auto:
             date_of_birth = date(date.today().year - camp.minimum_age - 2, 1, 1)
         # Prices are pre-condition for creating booking in normal situation
         self.create_prices(camp.year)
-        if name is not None:
-            assert first_name is None
-            assert last_name is None
+        if name is not Auto:
+            assert first_name is Auto
+            assert last_name is Auto
             first_name, last_name = name.split(" ")
         else:
             first_name = first_name or "Frédéric"
             last_name = last_name or "Bloggs"
-        amount_due_not_passed = amount_due is None
-        if last_tetanus_injection_date is NotPassed:
-            last_tetanus_injection_date = f"{camp.year - 5}-02-03"
+        if last_tetanus_injection_date is Auto:
+            last_tetanus_injection_date = date(camp.year - 5, 2, 3)
 
         booking: Booking = Booking.objects.create(
             account=account,
@@ -149,9 +148,9 @@ class Factories(FactoriesBase):
             serious_illness=serious_illness,
             agreement=agreement,
             state=state,
-            amount_due=amount_due or Decimal(0),
+            amount_due=Decimal(0) if amount_due is Auto else amount_due,
         )
-        if amount_due_not_passed:
+        if amount_due is Auto:
             booking.auto_set_amount_due()
             booking.save()
         return booking
