@@ -4,6 +4,7 @@ from decimal import Decimal
 from unittest import mock
 
 import pytest
+import time_machine
 import vcr
 import xlrd
 from django.conf import settings
@@ -369,11 +370,26 @@ class BookingLogInMixin:
             return self.app.set_cookie(key, value)
 
 
-class CreateBookingWebMixin(BookingLogInMixin):
+class FreezeTimeMixin:
+    today = NotImplemented
+
+    def setUp(self):
+        super().setUp()
+        self.traveller = time_machine.travel(self.today)
+        self.traveller.start()
+
+    def tearDown(self):
+        self.traveller.stop()
+        super().tearDown()
+
+
+class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
     """
     Mixin to be used for functional testing of creating bookings online. It
     creates `self.camp` and `self.camp_2` and provides other utility methods.
     """
+
+    today = date(2020, 2, 1)
 
     # For other, model level tests, we prefer explicit use of factories
     # for the things under test.
@@ -388,7 +404,6 @@ class CreateBookingWebMixin(BookingLogInMixin):
     def create_camps(self):
         if hasattr(self, "camp"):
             return
-        self.today = date.today()
         # Need to create a Camp that we can choose i.e. is in the future.
         # We also need it so that payments can be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE.days
