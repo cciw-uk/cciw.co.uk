@@ -41,12 +41,16 @@
     <tr>
       <th scope="row">Leaders:</th>
       <td>
-        {% for leader in camp.leaders.all %}
-          <h3>{{ leader.name }}</h3>
-          <p>
-            {{ leader.info|linebreaksbr }}
-          </p>
-        {% endfor %}
+        {% if camp.leaders.all %}
+          {% for leader in camp.leaders.all %}
+            <h3>{{ leader.name }}</h3>
+            <p>
+              {{ leader.info|linebreaksbr }}
+            </p>
+          {% endfor %}
+        {% else %}
+          TBA
+        {% endif %}
       </td>
     </tr>
     <tr>
