@@ -1,6 +1,5 @@
 import os
 import time
-from typing import Union
 from urllib.parse import urlparse
 
 import pytest
@@ -16,7 +15,7 @@ from cciw.utils.tests.base import TestBase, TestBaseMixin
 
 
 class CommonMixin:
-    def officer_login(self, user_or_creds: Union[User, Person, tuple[str, str], None] = None):
+    def officer_login(self, user_or_creds: User | Person | tuple[str, str] | None = None):
         """
         Log in an officer, using the given User, Person, or (username, password) combo,
         or None for any officer.

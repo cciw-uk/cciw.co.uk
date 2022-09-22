@@ -3,7 +3,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from functools import reduce
-from typing import Optional
 
 from django.utils import timezone
 
@@ -16,7 +15,7 @@ from cciw.officers.models import Application, DBSActionLog, DBSCheck, Invitation
 @dataclass
 class DBSNumber:
     number: str
-    previous_check_good: Optional[bool]  # True = good, False = bad, None = unknown
+    previous_check_good: bool | None  # True = good, False = bad, None = unknown
 
 
 @dataclass
@@ -26,13 +25,13 @@ class DBSInfo:
     application_id: int
     has_dbs: bool
     has_recent_dbs: bool
-    last_dbs_form_sent: Optional[datetime]
-    last_leader_alert_sent: Optional[datetime]
-    last_form_request_sent: Optional[datetime]
+    last_dbs_form_sent: datetime | None
+    last_leader_alert_sent: datetime | None
+    last_form_request_sent: datetime | None
     address: str
     birth_date: date
     dbs_check_consent: bool
-    update_enabled_dbs_number: Optional[str]
+    update_enabled_dbs_number: str | None
     last_dbs_rejected: bool
 
     @property

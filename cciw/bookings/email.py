@@ -2,7 +2,6 @@ import base64
 import binascii
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Union
 
 import mailer as queued_mail
 from django.conf import settings
@@ -39,7 +38,7 @@ class EmailVerifyTokenGenerator:
         """
         return self.url_safe_encode(self.signer.sign(email))
 
-    def email_from_token(self, token, max_age=None) -> Union[str, VerifyFailed, VerifyExpired]:
+    def email_from_token(self, token, max_age=None) -> str | VerifyFailed | VerifyExpired:
         """
         Extracts the verified email address from the token, or a VerifyFailed
         constant if verification failed, or VerifyExpired if the link expired.

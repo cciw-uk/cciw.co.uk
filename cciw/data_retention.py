@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import date, datetime, timedelta
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 
 import parsy
 import pydantic.dataclasses
@@ -91,9 +91,9 @@ class ModelDetail:
         cls,
         *,
         name: str,
-        field_names: Optional[list[str]] = None,
+        field_names: list[str] | None = None,
         all_fields: bool = False,
-        erasure_method_names: Optional[dict[str, str]] = None,
+        erasure_method_names: dict[str, str] | None = None,
         delete_row: bool = False,
     ):
         model = apps.get_model(name)
@@ -169,7 +169,7 @@ ModelDetail.__pydantic_model__.update_forward_refs()
 # --- Parsing and checking ---
 
 
-def get_data_retention_policy_issues(policy: Optional[Policy] = None):
+def get_data_retention_policy_issues(policy: Policy | None = None):
     if policy is None:
         policy = load_data_retention_policy()
     return _check_exhaustiveness(policy) + _check_erasable_records(policy)

@@ -1,7 +1,6 @@
 import contextlib
 import logging
 from email.mime.base import MIMEBase
-from typing import Optional
 from urllib.parse import quote as urlquote
 
 from django.conf import settings
@@ -178,12 +177,12 @@ This was an automated response by the CCiW website.
     send_mail(subject, user_msg, settings.SERVER_EMAIL, [user_email, application.address_email], fail_silently=True)
 
 
-def make_ref_form_url_hash(referee_id: int, prev_ref_id: Optional[int]):
+def make_ref_form_url_hash(referee_id: int, prev_ref_id: int | None):
     prev_ref_id_str = "" if prev_ref_id is None else str(int)
     return salted_hmac("cciw.officers.create_reference", f"{referee_id}:{prev_ref_id_str}").hexdigest()[::2]
 
 
-def make_ref_form_url(referee_id: int, prev_ref_id: Optional[int]):
+def make_ref_form_url(referee_id: int, prev_ref_id: int | None):
     return "https://{domain}{path}".format(
         domain=common.get_current_domain(),
         path=reverse(

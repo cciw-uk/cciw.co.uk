@@ -2,7 +2,7 @@ import contextlib
 import enum
 from datetime import date, datetime, timedelta
 from functools import wraps
-from typing import Iterable, Optional
+from typing import Iterable
 from urllib.parse import urlparse
 
 import furl
@@ -743,7 +743,7 @@ def initial_reference_form_data(referee, prev_reference):
     return retval
 
 
-def create_reference(request, referee_id: int, hash: str, prev_ref_id: Optional[int] = None):
+def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | None = None):
     """
     View for allowing referee to submit reference (create the Reference object)
     """

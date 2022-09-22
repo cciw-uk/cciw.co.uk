@@ -6,7 +6,6 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from functools import lru_cache
-from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -447,7 +446,7 @@ class BookingAccount(models.Model):
 
         return total - self.total_received
 
-    def get_balance_full(self, *, price_checker: Optional[PriceChecker] = None):
+    def get_balance_full(self, *, price_checker: PriceChecker | None = None):
         return self.get_balance(
             confirmed_only=False, allow_deposits=False, price_checker=price_checker or PriceChecker()
         )

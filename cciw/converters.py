@@ -1,6 +1,5 @@
 # URL path converters
 
-from typing import Optional
 
 from .cciwmain.common import CampId
 
@@ -56,7 +55,7 @@ class OptInt:
 
     regex = r"\d*"
 
-    def to_python(self, value) -> Optional[int]:
+    def to_python(self, value) -> int | None:
         return None if value == "" else int(value)
 
     def to_url(self, value):

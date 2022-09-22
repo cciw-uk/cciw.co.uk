@@ -1,6 +1,5 @@
 import logging
 import subprocess
-from typing import Optional
 
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -45,7 +44,7 @@ _STATUS_MAP = {
 }
 
 
-def get_bogofilter_classification(msg_bytes) -> tuple[BogofilterStatus, Optional[float]]:
+def get_bogofilter_classification(msg_bytes) -> tuple[BogofilterStatus, float | None]:
     result = subprocess.run(_bogofilter_command(["-T"]), input=msg_bytes, capture_output=True)
     if result.returncode > 2:
         logger.error("Error running bogofilter: %r", result.stderr)

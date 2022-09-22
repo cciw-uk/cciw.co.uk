@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import date, timedelta
 from functools import lru_cache
-from typing import Union
 
 from django.conf import settings
 from django.contrib.sites.models import Site as DjangoSite
@@ -169,7 +168,7 @@ class Factories(FactoriesBase):
             person = self.make_into_person(user)
         return person
 
-    def make_into_person(self, user_or_person: Union[User, Person]) -> Person:
+    def make_into_person(self, user_or_person: User | Person) -> Person:
         if isinstance(user_or_person, User):
             user = user_or_person
             matching_people = [p for p in user.people.all() if set(p.users.all()) == {user}]
