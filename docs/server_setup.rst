@@ -110,9 +110,9 @@ the process works.
      fab -H cciw2.digitalocean.com download-usermedia get-live-db
 
 8. Upload media and DB to new server - make sure -H is correct, and change
-   ``filename`` to the file downloaded in step 7::
+   ``<filename>`` to the file downloaded in step 7::
 
-     fab -H cciw3.digitalocean.com upload-usermedia stop-all migrate-upload-db filename
+     fab -H cciw3.digitalocean.com upload-usermedia stop-all migrate-upload-db <filename>
 
    This may return some errors, while still being successful. Restart webserver::
 
@@ -132,7 +132,7 @@ Now we'll repeat some steps, with changes:
 
 11. Stop the old server (or set to “maintenance mode” somehow, TODO)::
 
-    fab stop-all
+    fab -H cciw2.digitalocean.com stop-all
 
 12. Same as step 7 - download media and DB from old server
 
@@ -153,6 +153,10 @@ Done!
 Ensure you remove entries from your local /etc/hosts so that you are seeing what
 everyone else sees.
 
+Copy anything else from the old server you might want e.g. goaccess logs?
+
+Stop the old droplet, and eventually destroy it once you are sure everything is
+working.
 
 Upgrading
 ---------

@@ -574,7 +574,7 @@ def start_webserver(c):
     """
     Starts the webserver that is running the Django instance
     """
-    supervisorctl(c, f"start {PROJECT_NAME}_uwsgi")
+    supervisorctl(c, f"start {PROJECT_NAME}_uwsgi", ignore_errors="already started")
 
 
 @root_task()
@@ -584,16 +584,21 @@ def restart_webserver(c):
     """
     pidfile = f"/tmp/{PROJECT_NAME}_uwsgi.pid"
     if files.exists(c, pidfile):
-        output = c.run(f"kill -HUP `cat {pidfile}`", warn_only=True)
-        if output.failed:
+        # This is the graceful way that reduces downtime to minimum
+        result = c.run(f"kill -HUP `cat {pidfile}`", warn=True)
+
+        # Fall back to worse method
+        if result.failed:
+            stop_webserver(c)
             start_webserver(c)
     else:
+        stop_webserver(c)
         start_webserver(c)
 
 
 @root_task()
 def restart_all(c):
-    supervisorctl(c, "reload")
+    supervisorctl(c, "reread")  # for first time, to ensure it can see webserver conf
     restart_webserver(c)
 
 
@@ -709,7 +714,7 @@ must be deleted immediately after.
 
 
 @local_task()
-def local_restore_db_from_dump(context, filename):
+def local_restore_db_from_dump(c, filename):
     _local_django_setup()
     from django.conf import settings
 
@@ -723,11 +728,11 @@ def local_restore_db_from_dump(context, filename):
     )
 
     filename = os.path.abspath(filename)
-    if not postgresql.check_user_exists(context, db, db.user):
-        postgresql.create_default_user(context, db)
-    postgresql.drop_db_if_exists(context, db)
-    postgresql.create_db(context, db)
-    postgresql.restore_db(context, db, filename)
+    if not postgresql.check_user_exists(c, db, db.user):
+        postgresql.create_default_user(c, db)
+    postgresql.drop_db_if_exists(c, db)
+    postgresql.create_db(c, db)
+    postgresql.restore_db(c, db, filename)
 
 
 def make_django_db_filename(db: Database):
@@ -772,7 +777,6 @@ def initial_dev_setup(c):
         c.local(f"mkdir -p {LOCAL_SECURE_DOWNLOAD_ROOT}")
     if not os.path.exists("../logs"):
         c.local("mkdir ../logs")
-    install_requirements_with(c.local)
     get_non_vcs_sources(c)
 
 

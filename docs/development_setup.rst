@@ -10,8 +10,8 @@ actually being using for deployment).
 
 Assuming a Linux/Unix machine, the requirements are:
 
-* Python 3.9
-* Postgres 12
+* Python 3.10
+* Postgres 14
 * bogofilter
 
 For tests, see also:
@@ -30,13 +30,13 @@ These steps have only been tested on Ubuntu-based Linux installations.
   Edit your ``.git/config`` and ensure the gitlab remote is called ``origin``
   - this is needed for deploying.
 
-* Make a virtualenv using Python 3.9 e.g. using mkvirtualenv/virtualenv_wrapper::
+* Make a virtualenv using Python 3.10 e.g. using mkvirtualenv/virtualenv_wrapper::
 
-    mkvirtualenv --python=`which python3.9` -a `pwd` cciw
+    mkvirtualenv --python=`which python3.10` -a `pwd` cciw
 
   Add project path to the venv::
 
-    pwd > $VIRTUAL_ENV/lib/python3.9/site-packages/project.pth
+    pwd > $VIRTUAL_ENV/lib/python3.10/site-packages/project.pth
 
 * Create an alias for 'cciw.local' that points to localhost, 127.0.0.1. On
   Linux, you do this by adding the following line to /etc/hosts::
@@ -45,9 +45,9 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 * Install the requirements using the fabfile::
 
-    pip install --upgrade pip
-    pip install fabric3 fabtools3
-    fab initial_dev_setup
+    pip install --upgrade pip wheel
+    pip install -r requirements.txt
+    fab initial-dev-setup
 
 * Make any local changes needed in ``cciw/settings_local.py``.
 
