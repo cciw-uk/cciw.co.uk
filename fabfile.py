@@ -37,6 +37,7 @@ join = os.path.join
 rel = lambda *x: os.path.normpath(join(os.path.abspath(os.path.dirname(__file__)), *x))
 
 LOCAL_DB_BACKUPS = rel("..", "db_backups")
+LOCAL_APP_DATA = rel("..", "app_data")
 LOCAL_USERMEDIA = rel("..", "usermedia")
 LOCAL_SECURE_DOWNLOAD_ROOT = rel("..", "secure_downloads_src")
 
@@ -265,7 +266,7 @@ class Version:
 
     def project_run(self, c: Connection, cmd: str, **kwargs):
         with c.cd(self.SRC_ROOT), c.prefix(f"source {self.VENV_ROOT}/bin/activate"):
-            c.run(cmd, **kwargs)
+            return c.run(cmd, **kwargs)
 
 
 def secrets():
@@ -639,7 +640,49 @@ def _local_django_setup():
     django.setup()
 
 
-# -- User media --
+# -- User media and other files --
+
+
+@task()
+def download_app_data(c):
+    """
+    Download app data not stored in the main DB
+    """
+    c.local(f"mkdir -p {LOCAL_APP_DATA}")
+    download_bogofilter_data(c)
+    download_usermedia(c)
+
+
+@task()
+def upload_app_data(c):
+    upload_bogofilter_data(c)
+    upload_usermedia(c)
+
+
+@task()
+def download_bogofilter_data(c):
+    bogofilter_dir = _get_bogofilter_dir(c)
+    c.local(f"rsync -z -r {PROJECT_USER}@{c.host}:{bogofilter_dir}/ {LOCAL_APP_DATA}/bogofilter/", echo=True)
+
+
+@task()
+def upload_bogofilter_data(c):
+    if os.path.exists(f"{LOCAL_APP_DATA}/bogofilter"):
+        bogofilter_dir = _get_bogofilter_dir(c)
+        c.local(f"rsync -z -r {LOCAL_APP_DATA}/bogofilter/ {PROJECT_USER}@{c.host}:{bogofilter_dir}/", echo=True)
+
+
+def _get_bogofilter_dir(c):
+    target = Version.current()
+    return target.project_run(
+        c, "./manage.py shell -c 'from django.conf import settings; print(settings.BOGOFILTER_DIR)'", hide="both"
+    ).stdout.strip()
+
+
+@task()
+def download_usermedia(c):
+    target = Version.current()
+    c.local(f"rsync -z -r {PROJECT_USER}@{c.host}:{target.MEDIA_ROOT}/ {LOCAL_USERMEDIA}", echo=True)
 
 
 @task()
@@ -651,12 +694,6 @@ def upload_usermedia(c):
     c.local(f"rsync -z -r --progress {LOCAL_USERMEDIA}/ {PROJECT_USER}@{c.host}:{target.MEDIA_ROOT}", echo=True)
     c.run(f"find -L {target.MEDIA_ROOT} -type f -exec chmod ugo+r {{}} ';'", echo=True)
     c.run(f"find {target.MEDIA_ROOT_SHARED} -type d -exec chmod ugo+rx {{}} ';'", echo=True)
-
-
-@task()
-def download_usermedia(c):
-    target = Version.current()
-    c.local(f"rsync -z -r {PROJECT_USER}@{c.host}:{target.MEDIA_ROOT}/ {LOCAL_USERMEDIA}", echo=True)
 
 
 # --- SSL ---

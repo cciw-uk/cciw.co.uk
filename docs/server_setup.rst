@@ -107,12 +107,12 @@ the process works.
 7. Download DB and media from old server. Note use of ``-H`` flag to point to old
    server temporarily::
 
-     fab -H cciw2.digitalocean.com download-usermedia get-live-db
+     fab -H cciw2.digitalocean.com download-app-data get-live-db
 
 8. Upload media and DB to new server - make sure -H is correct, and change
    ``<filename>`` to the file downloaded in step 7::
 
-     fab -H cciw3.digitalocean.com upload-usermedia stop-all migrate-upload-db <filename>
+     fab -H cciw3.digitalocean.com upload-app-data stop-all migrate-upload-db <filename>
 
    This may return some errors, while still being successful. Restart webserver::
 
