@@ -28,7 +28,7 @@ to be changed.
 
 2. Fetch old SSL certificates::
 
-     fab download-letscencrypt-config
+     fab download-letsencrypt-conf
 
 3. Create new VPS:
 

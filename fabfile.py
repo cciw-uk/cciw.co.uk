@@ -610,7 +610,7 @@ def stop_all(c):
 
 @root_task()
 def supervisorctl(c, command, ignore_errors=None):
-    result = c.run(f"supervisorctl {command}", echo=True, warn=True)
+    result = c.run(f"supervisorctl {command}", echo=True, warn=True, pty=True)
     if result.failed:
         if ignore_errors and any(err in result.stdout or err in result.stderr for err in ignore_errors):
             pass
@@ -655,6 +655,9 @@ def download_app_data(c):
 
 @task()
 def upload_app_data(c):
+    """
+    Upload app data not stored in the main DB, from local copy downloaded previously
+    """
     upload_bogofilter_data(c)
     upload_usermedia(c)
 
