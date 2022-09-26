@@ -160,24 +160,21 @@ class Factories(FactoriesBase):
 
     def create_booking_account(
         self,
-        name="A Booker",
-        address_line1="",
-        address_post_code="XYZ",
-        email=None,
+        name: str = "A Booker",
+        address_line1: str = "",
+        address_post_code: str = "XYZ",
+        email: str = Auto,
     ) -> BookingAccount:
-
-        if email is None:
-            email = next(BOOKING_ACCOUNT_EMAIL_SEQUENCE)
         return BookingAccount.objects.create(
             name=name,
-            email=email,
+            email=email or next(BOOKING_ACCOUNT_EMAIL_SEQUENCE),
             address_line1=address_line1,
             address_post_code=address_post_code,
         )
 
     def create_processed_payment(
         self,
-        account=None,
+        account: BookingAccount = Auto,
         amount=1,
     ):
         manual_payment = self.create_manual_payment(account=account, amount=amount)
@@ -188,7 +185,7 @@ class Factories(FactoriesBase):
 
     def create_manual_payment(
         self,
-        account=None,
+        account: BookingAccount = Auto,
         amount=1,
     ):
         return ManualPayment.objects.create(
@@ -199,7 +196,7 @@ class Factories(FactoriesBase):
 
     def create_refund_payment(
         self,
-        account=None,
+        account: BookingAccount = Auto,
         amount=1,
     ):
         return RefundPayment.objects.create(
@@ -210,7 +207,7 @@ class Factories(FactoriesBase):
 
     def create_write_off_debt_payment(
         self,
-        account=None,
+        account: BookingAccount = Auto,
         amount=0,
     ):
         return WriteOffDebt.objects.create(
@@ -218,8 +215,8 @@ class Factories(FactoriesBase):
             amount=amount,
         )
 
-    def create_ipn(self, account=None, **kwargs):
-        if account is not None:
+    def create_ipn(self, account: BookingAccount | None = None, **kwargs):
+        if account:
             custom = build_paypal_custom_field(account)
         else:
             custom = ""
@@ -245,16 +242,16 @@ class Factories(FactoriesBase):
             active=True,
         )
 
-    def create_prices(self, year, deposit=None, early_bird_discount=None, full_price=None):
-        if deposit is None:
+    def create_prices(self, year, deposit=Auto, early_bird_discount=Auto, full_price=Auto):
+        if deposit is Auto:
             deposit = Decimal(20)
         else:
             deposit = Decimal(deposit)
-        if early_bird_discount is None:
+        if early_bird_discount is Auto:
             early_bird_discount = Decimal(10)
         else:
             early_bird_discount = Decimal(early_bird_discount)
-        if full_price is None:
+        if full_price is Auto:
             full_price = Decimal(100)
         else:
             full_price = Decimal(full_price)
@@ -281,21 +278,21 @@ class Factories(FactoriesBase):
 
     def create_supporting_information(
         self,
-        booking=None,
-        information_type=None,
-        from_name="Some Person",
-        document_filename=None,
-        document_content=None,
-        document_mimetype=None,
+        booking: Booking = Auto,
+        information_type: SupportingInformationType = Auto,
+        from_name: str = "Some Person",
+        document_filename: str = Auto,
+        document_content: bytes = Auto,
+        document_mimetype: str = Auto,
     ):
-        if booking is None:
+        if booking is Auto:
             booking = self.create_booking()
         if any([document_content, document_filename, document_mimetype]):
-            if document_filename is None:
+            if document_filename is Auto:
                 document_filename = "test.txt"
-            if document_mimetype is None:
+            if document_mimetype is Auto:
                 document_mimetype = "text/plain"
-            if document_content is None:
+            if document_content is Auto:
                 document_content = b"Hello"
             doc = SupportingInformationDocument.objects.create(
                 filename=document_filename,
@@ -304,7 +301,7 @@ class Factories(FactoriesBase):
             )
         else:
             doc = None
-        if information_type is None:
+        if information_type is Auto:
             information_type = self.get_or_create_supporting_information_type()
         supporting_information = SupportingInformation.objects.create(
             booking=booking,
@@ -370,8 +367,12 @@ class BookingLogInMixin:
             return self.app.set_cookie(key, value)
 
 
-class FreezeTimeMixin:
-    today = NotImplemented
+class TimeTravelMixin:
+    """
+    Run all tests as if on on the day specified by `today` attribute
+    """
+
+    today: date = NotImplemented
 
     def setUp(self):
         super().setUp()
@@ -383,7 +384,7 @@ class FreezeTimeMixin:
         super().tearDown()
 
 
-class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
+class CreateBookingWebMixin(TimeTravelMixin, BookingLogInMixin):
     """
     Mixin to be used for functional testing of creating bookings online. It
     creates `self.camp` and `self.camp_2` and provides other utility methods.
@@ -408,24 +409,20 @@ class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
         # We also need it so that payments can be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE.days
         start_date = self.today + timedelta(delta_days)
-        camp_name = camps_factories.get_or_create_camp_name("Blue")
-        camp_name_2 = camps_factories.get_or_create_camp_name("Red")
         self.camp = camps_factories.create_camp(
-            year=start_date.year,
-            camp_name=camp_name,
+            camp_name="Blue",
             minimum_age=self.camp_minimum_age,
             maximum_age=self.camp_maximum_age,
             start_date=start_date,
         )
         self.camp_2 = camps_factories.create_camp(
-            year=start_date.year,
-            camp_name=camp_name_2,
+            camp_name="Red",
             minimum_age=self.camp_minimum_age,
             maximum_age=self.camp_maximum_age,
             start_date=start_date + timedelta(days=7),
         )
 
-    def add_prices(self, deposit=None, early_bird_discount=None):
+    def add_prices(self, deposit=Auto, early_bird_discount=Auto):
         if hasattr(self, "price_full"):
             return
         year = self.camp.year
@@ -439,20 +436,20 @@ class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
 
     def create_booking(
         self,
-        shortcut=None,
-        camp=None,
-        first_name=None,
-        last_name=None,
-        name=None,
+        shortcut: bool = Auto,
+        camp: Camp = Auto,
+        first_name: str = Auto,
+        last_name: str = Auto,
+        name: str = Auto,
         sex="m",
-        date_of_birth=None,
-        serious_illness=False,
+        date_of_birth: date = Auto,
+        serious_illness: bool = False,
         price_type=PriceType.FULL,
     ) -> Booking:
         """
         Creates a booking, normally using views.
         """
-        if shortcut is None:
+        if shortcut is Auto:
             # To speed up full browser test, we create booking using the shortcut
             shortcut = self.is_full_browser_test
 
@@ -477,7 +474,7 @@ class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
             )
             return factories.create_booking(**data)
 
-        # Otherwise, we use public views to create place, to ensure that they
+        # Normally we use public views to create place, to ensure that they
         # are created in the same way that a user would.
         old_booking_ids = list(Booking.objects.values_list("id", flat=True))
 
@@ -493,28 +490,28 @@ class CreateBookingWebMixin(FreezeTimeMixin, BookingLogInMixin):
     def get_place_details(
         self,
         *,
-        first_name=None,
-        last_name=None,
-        name=None,
-        camp=None,
-        date_of_birth=None,
-        serious_illness=False,
+        first_name: str = Auto,
+        last_name: str = Auto,
+        name: str = Auto,
+        camp: Camp = Auto,
+        date_of_birth: date = Auto,
+        serious_illness: bool = False,
         price_type=PriceType.FULL,
         sex="m",
     ) -> dict:
 
-        if name is not None:
-            assert first_name is None
-            assert last_name is None
+        if name is not Auto:
+            assert first_name is Auto
+            assert last_name is Auto
             first_name, last_name = name.split(" ")
         else:
             first_name = first_name or "Frédéric"
             last_name = last_name or "Bloggs"
-        if camp is None:
+        if camp is Auto:
             camp = self.camp
-        if date_of_birth is None:
+        if date_of_birth is Auto:
             date_of_birth = date(camp.year - 14, 1, 1)
-        if sex is None:
+        if sex is Auto:
             sex = "m"
         return {
             # Order follows order in form.

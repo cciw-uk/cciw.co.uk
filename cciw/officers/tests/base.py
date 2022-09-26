@@ -19,6 +19,11 @@ from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Referee, Reference
 from cciw.utils.tests.factories import Auto, FactoriesBase, sequence
 
+# A lot of this stuff should be rewritten as per https://gitlab.com/cciw/cciw.co.uk/-/issues/6
+
+# Then we wouldn't need all these constants. Plus we shouldn't need passwords
+# due to improvements in django_functest shortcut_login
+
 OFFICER_USERNAME = "joebloggs"
 OFFICER_PASSWORD = "test_normaluser_password"
 OFFICER_EMAIL = "joebloggs@somewhere.com"

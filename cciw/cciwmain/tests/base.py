@@ -233,6 +233,7 @@ class BasicSetupMixin(SiteSetupMixin):
         )
         HtmlChunk.objects.create(name="bookingform_post_to", menu_link=None)
 
+        # A lot of this stuff below should be removed as per https://gitlab.com/cciw/cciw.co.uk/-/issues/6
         self.default_site = Site.objects.create(
             info="Lots of info about this camp site, including: <address>Llys Andreas Camp Site, Wales</address>",
             long_name="Llys Andreas, Barmouth",
