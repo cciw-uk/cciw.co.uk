@@ -19,20 +19,20 @@ class Factories(FactoriesBase):
     def create_camp(
         self,
         *,
-        start_date=None,
-        end_date=None,
-        site=None,
-        camp_name=None,
-        minimum_age=None,
-        maximum_age=None,
-        year=None,
-        leader=None,
-        leaders=None,
-        chaplain=None,
-        future=None,
-        officers=None,
+        start_date: date = Auto,
+        end_date: date = Auto,
+        site: Site = Auto,
+        camp_name: str | CampName = Auto,
+        minimum_age: int = Auto,
+        maximum_age: int = Auto,
+        year: int = Auto,
+        leader: Person | User | bool = Auto,
+        leaders: list[Person | User] = Auto,
+        chaplain: Person | User = Auto,
+        future: bool = Auto,
+        officers: list[User] = Auto,
     ) -> Camp:
-        assert not (leader is not None and leaders is not None), "Only supply one of 'leaders' and 'leader'"
+        assert not (leader is not Auto and leaders is not Auto), "Only supply one of 'leaders' and 'leader'"
         if leader:
             if leader is True:
                 from cciw.officers.tests.base import factories as officers_factories
@@ -42,14 +42,14 @@ class Factories(FactoriesBase):
         elif not leaders:
             leaders = []
 
-        if future is not None:
-            assert start_date is None and end_date is None and year is None
+        if future is not Auto:
+            assert start_date is Auto and end_date is Auto and year is Auto
 
-        if start_date is None:
-            if end_date is not None:
+        if start_date is Auto:
+            if end_date is not Auto:
                 start_date = end_date - timedelta(days=7)
             else:
-                if year is not None:
+                if year is not Auto:
                     # Some date in the summer
                     start_date = date(year, 8, 1)
                 else:
@@ -57,24 +57,24 @@ class Factories(FactoriesBase):
                         start_date = date.today() + timedelta(days=365)
                     else:
                         start_date = date.today()
-        if end_date is None:
+        if end_date is Auto:
             end_date = start_date + timedelta(days=7)
         site = site or self.get_any_site()
-        if minimum_age is None:
-            if maximum_age is not None:
+        if minimum_age is Auto:
+            if maximum_age is not Auto:
                 minimum_age = maximum_age - 6
             else:
                 minimum_age = 11
-        if maximum_age is None:
+        if maximum_age is Auto:
             maximum_age = minimum_age + 6
-        if year is not None:
+        if year is not Auto:
             assert year == start_date.year
         else:
             year = start_date.year
 
         if isinstance(camp_name, str):
             camp_name = self.get_or_create_camp_name(camp_name)
-        elif camp_name is None:
+        elif camp_name is Auto:
             camp_name = self._get_non_clashing_camp_name(year)
 
         camp = Camp.objects.create(

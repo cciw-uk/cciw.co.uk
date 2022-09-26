@@ -70,7 +70,7 @@ class IndexPage(BasicSetupMixin, TestBase):
 
 class DetailPage(BasicSetupMixin, TestBase):
     def test_get(self):
-        camp = factories.create_camp(leader=factories.create_person(leader_name := "Joe Bloggs"))
+        camp = factories.create_camp(leader=factories.create_person(name=(leader_name := "Joe Bloggs")))
         resp = self.client.get(reverse("cciw-cciwmain-camps_detail", kwargs=dict(year=camp.year, slug=camp.slug_name)))
         self.assertContains(resp, leader_name)
         self.assertContains(resp, camp.camp_name.name)
