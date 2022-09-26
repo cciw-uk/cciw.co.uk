@@ -13,7 +13,7 @@ TEMPLATE_DEBUG = False
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
 PASSWORD_HASHERS = [
-    "django_plainpasswordhasher.PlainPasswordHasher",
+    "cciw.utils.tests.hashers.PlainPasswordHasher",
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
 

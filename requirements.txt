@@ -83,7 +83,6 @@ django==4.0.7
     #   django-mailer
     #   django-nyt
     #   django-paypal
-    #   django-plainpasswordhasher
     #   django-ranged-response
     #   django-sekizai
     #   django-simple-captcha
@@ -121,8 +120,6 @@ django-nyt==1.2.2
     # via wiki
 django-paypal==2.0
     # via -r requirements.in
-django-plainpasswordhasher==0.3
-    # via -r requirements-dev.in
 django-ranged-response==0.2.0
     # via django-simple-captcha
 django-sekizai==4.0.0

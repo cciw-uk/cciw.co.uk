@@ -1,7 +1,6 @@
 beautifulsoup4==4.11.1
 django-debug-toolbar==3.5
 django-functest==1.5.1
-django-plainpasswordhasher==0.3
 flake8==5.0.4
 hypothesis==6.54.6
 ipython==8.5.0
