@@ -1,5 +1,5 @@
 import time
-from datetime import timedelta
+from datetime import date, timedelta
 
 import xlrd
 from django.conf import settings
@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
 from cciw.officers.tests.base import DefaultApplicationsMixin, factories
@@ -84,19 +84,12 @@ class TestExport(DefaultApplicationsMixin, TestBase):
         assert app.address_firstline in wksh.col_values(4)
 
 
-class TestSlackers(BasicSetupMixin, TestBase):
+class TestSlackers(TestBase):
     def test_serious_slackers(self):
-        camp1 = self.default_camp_1
-        camp2 = self.default_camp_2
-
-        officer1 = User.objects.create(username="joe", email="joe@example.com")
-        officer2 = User.objects.create(username="mary", email="mary@example.com")
-
-        camp1.invitations.create(officer=officer1)
-        camp1.invitations.create(officer=officer2)
-
-        camp2.invitations.create(officer=officer1)
-        camp2.invitations.create(officer=officer2)
+        officer1 = factories.create_officer()
+        officer2 = factories.create_officer()
+        camp1 = camp_factories.create_camp(year=date.today().year - 2, officers=[officer1, officer2])
+        camp2 = camp_factories.create_camp(year=date.today().year - 1, officers=[officer1, officer2])
 
         # Officer 1 submitted an Application, but officer 2 did not
         app = officer1.applications.create(
