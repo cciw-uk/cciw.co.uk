@@ -8,7 +8,7 @@ from django.contrib.sites.models import Site as DjangoSite
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.sitecontent.models import HtmlChunk, MenuLink
-from cciw.utils.tests.factories import FactoriesBase
+from cciw.utils.tests.factories import Auto, FactoriesBase
 
 
 class Factories(FactoriesBase):
@@ -96,27 +96,27 @@ class Factories(FactoriesBase):
         self._camp_cache[year].append(camp)
         return camp
 
-    def _get_non_clashing_camp_name(self, year):
+    def _get_non_clashing_camp_name(self, year: int) -> CampName:
         # We have a unique constraint on name/year that we
         # need to respect to be able to create new camps.
         years_camps = self._camp_cache[year]
         name = self._get_next_camp_name(excluding=[camp.camp_name.name for camp in years_camps])
         return self.get_or_create_camp_name(name)
 
-    def _get_next_camp_name(self, excluding=None) -> str:
+    def _get_next_camp_name(self, excluding: list[str] | None = None) -> str:
         available_names = set(COLORS.keys())
         if excluding:
             available_names -= set(excluding)
         return sorted(available_names)[0]
 
     @lru_cache
-    def get_any_camp(self):
+    def get_any_camp(self) -> Camp:
         camp = Camp.objects.order_by("id").first()
         if camp is not None:
             return camp
         return self.create_camp()
 
-    def create_camp_name(self, name=None, color=None):
+    def create_camp_name(self, name: str = Auto, color: str = Auto) -> CampName:
         name = name or self._get_next_camp_name()
         color = color or COLORS.get(name, "#ff0000")
         camp_name = CampName.objects.create(
@@ -134,13 +134,13 @@ class Factories(FactoriesBase):
         return self.create_camp_name()
 
     @lru_cache
-    def get_or_create_camp_name(self, name):
+    def get_or_create_camp_name(self, name: str) -> CampName:
         try:
             return CampName.objects.get(name=name)
         except CampName.DoesNotExist:
             return self.create_camp_name(name=name)
 
-    def create_site(self):
+    def create_site(self) -> Site:
         return Site.objects.create(
             short_name="The Farm",
             long_name="The Farm in the Valley",
@@ -149,13 +149,13 @@ class Factories(FactoriesBase):
         )
 
     @lru_cache
-    def get_any_site(self):
+    def get_any_site(self) -> Site:
         site = Site.objects.order_by("id").first()
         if site is not None:
             return site
         return self.create_site()
 
-    def set_camp_leaders(self, camp, leaders):
+    def set_camp_leaders(self, camp: Camp, leaders: list[User | Person]) -> None:
         camp.leaders.set([self.make_into_person(leader) for leader in leaders])
 
     @lru_cache
@@ -168,7 +168,7 @@ class Factories(FactoriesBase):
             person = self.make_into_person(user)
         return person
 
-    def make_into_person(self, user_or_person: User | Person) -> Person:
+    def make_into_person(self, user_or_person: Person | User) -> Person:
         if isinstance(user_or_person, User):
             user = user_or_person
             matching_people = [p for p in user.people.all() if set(p.users.all()) == {user}]
@@ -182,13 +182,13 @@ class Factories(FactoriesBase):
         else:
             raise NotImplementedError(f"Don't know what to do with {user_or_person}")
 
-    def create_person(self, name=None) -> Person:
+    def create_person(self, *, name: str = Auto) -> Person:
         return Person.objects.create(
-            name=name,
+            name=name or "A Person",
         )
 
     def create_and_add_leaders(
-        self, camp, *, count, email_template="leader{n}@example.com", username_template="leader{n}"
+        self, camp: Camp, *, count: int, email_template="leader{n}@example.com", username_template="leader{n}"
     ) -> list[tuple[Person, User]]:
         retval = []
         for n in range(1, count + 1):
@@ -200,7 +200,7 @@ class Factories(FactoriesBase):
 
         return retval
 
-    def add_camp_leader(self, camp, user_or_person):
+    def add_camp_leader(self, camp: Camp, user_or_person: Person | User) -> None:
         person = self.make_into_person(user_or_person)
         camp.leaders.add(person)
 

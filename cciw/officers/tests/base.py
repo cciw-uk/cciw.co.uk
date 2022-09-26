@@ -12,10 +12,11 @@ from cciw.accounts.models import (
     User,
     setup_auth_roles,
 )
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.contact_us.models import Message
-from cciw.officers.models import Application, QualificationType, Reference
+from cciw.officers.models import Application, QualificationType, Referee, Reference
 from cciw.utils.tests.factories import Auto, FactoriesBase, sequence
 
 OFFICER_USERNAME = "joebloggs"
@@ -47,7 +48,7 @@ DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
 
 
 class CreateQualificationTypesMixin:
-    def create_qualification_types(self):
+    def create_qualification_types(self) -> None:
         self.first_aid_qualification, _ = QualificationType.objects.get_or_create(name="First Aid (1 day)")
 
 
@@ -140,7 +141,7 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
 
 
 class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
-    def create_default_applications(self):
+    def create_default_applications(self) -> None:
         # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
         # Application 4 is for 2001
         self.application1 = factories.create_application(
@@ -230,17 +231,17 @@ USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
 class Factories(FactoriesBase):
     def create_officer(
         self,
-        username=None,
-        first_name="Joe",
-        last_name="Bloggs",
-        is_active=True,
-        is_superuser=False,
-        is_staff=True,
-        email=None,
-        password=Auto,
-        roles=None,
-        contact_phone_number="",
-    ):
+        username: str = Auto,
+        first_name: str = "Joe",
+        last_name: str = "Bloggs",
+        is_active: bool = True,
+        is_superuser: bool = False,
+        is_staff: bool = True,
+        email: str = Auto,
+        password: str = Auto,
+        roles: list[Role] = Auto,
+        contact_phone_number: str = "",
+    ) -> User:
         username = username or next(USERNAME_SEQUENCE)
         email = email or f"{username}@example.com"
 
@@ -263,23 +264,23 @@ class Factories(FactoriesBase):
             user.roles.set(roles)
         return user
 
-    def create_leader(self, **kwargs):
+    def create_leader(self, **kwargs) -> User:
         # A leader is just an officer. No special roles are involved,
         # only the association to a camp via a `Person` record.
         return self.create_officer(**kwargs)
 
     @lru_cache
-    def get_any_officer(self):
+    def get_any_officer(self) -> User:
         user = User.objects.filter(is_staff=True).first()
         if not user:
             return self.create_officer()
         return user
 
-    def add_officers_to_camp(self, camp, officers):
+    def add_officers_to_camp(self, camp: Camp, officers: list[User]) -> None:
         for officer in officers:
             camp.invitations.create(officer=officer)
 
-    def _get_standard_role(self, name):
+    def _get_standard_role(self, name: str) -> Role:
         try:
             return Role.objects.get(name=name)
         except Role.DoesNotExist:
@@ -289,21 +290,21 @@ class Factories(FactoriesBase):
             setup_auth_roles()
             return Role.objects.get(name=name)
 
-    def create_booking_secretary(self):
+    def create_booking_secretary(self) -> User:
         return self.create_officer(
             username=BOOKING_SECRETARY_USERNAME,
             roles=[self._get_standard_role(BOOKING_SECRETARY_ROLE_NAME)],
             password=BOOKING_SECRETARY_PASSWORD,
         )
 
-    def create_secretary(self):
+    def create_secretary(self) -> User:
         return self.create_officer(
             username=SECRETARY_USERNAME,
             roles=[self._get_standard_role(SECRETARY_ROLE_NAME)],
             password=SECRETARY_PASSWORD,
         )
 
-    def create_dbs_officer(self):
+    def create_dbs_officer(self) -> User:
         return self.create_officer(
             username=DBSOFFICER_USERNAME,
             email=DBSOFFICER_EMAIL,
@@ -311,7 +312,7 @@ class Factories(FactoriesBase):
             password=DBSOFFICER_PASSWORD,
         )
 
-    def create_safeguarding_coordinator(self):
+    def create_safeguarding_coordinator(self) -> User:
         return self.create_officer(
             username="safeguarder",
             first_name="Safe",
@@ -322,36 +323,35 @@ class Factories(FactoriesBase):
 
     def create_application(
         self,
-        officer=None,
+        officer: User = Auto,
         *,
-        year=None,
-        date_saved=None,
-        full_name=None,
-        address_firstline=None,
-        birth_date=None,
-        dbs_number=None,
-        dbs_check_consent=True,
-        referee1_overrides=None,
-        referee2_overrides=None,
+        year: int = Auto,
+        date_saved: date = Auto,
+        full_name: str = Auto,
+        address_firstline: str = Auto,
+        birth_date: date = Auto,
+        dbs_number: str = "",
+        dbs_check_consent: bool = True,
+        referee1_overrides: dict = Auto,
+        referee2_overrides: dict = Auto,
         finished=True,
     ) -> Application:
-        if year is not None:
-            date_saved = datetime(year, 1, 1)
-        elif date_saved is None:
-            date_saved = timezone.now().date()
+        if date_saved is Auto:
+            if year is not Auto:
+                date_saved = datetime(year, 1, 1)
+            else:
+                date_saved = timezone.now().date()
 
-        if officer is None:
+        if officer is Auto:
             officer = self.get_any_officer()
-        if full_name is None:
+        if full_name is Auto:
             full_name = "Joe Winston Bloggs"
-        if dbs_number is None:
-            dbs_number = ""
         fields = dict(
             officer=officer,
             address_country="UK",
             address_county="Yorkshire",
             address_email="hey@boo.com",
-            address_firstline="654 Stupid Way" if address_firstline is None else address_firstline,
+            address_firstline="654 Stupid Way" if address_firstline is Auto else address_firstline,
             address_mobile="",
             address_postcode="XY9 8WN",
             address_tel="01048378569",
@@ -393,7 +393,7 @@ class Factories(FactoriesBase):
             application.referee_set.create(**referee_fields)
         return application
 
-    def create_complete_reference(self, referee):
+    def create_complete_reference(self, referee: Referee) -> Reference:
         return Reference.objects.create(
             referee=referee,
             referee_name="Referee1 Name",
@@ -407,7 +407,7 @@ class Factories(FactoriesBase):
             date_created=datetime(2000, 2, 20),
         )
 
-    def create_contact_us_message(self):
+    def create_contact_us_message(self) -> Message:
         return Message.objects.create(
             email="example@example.com",
             message="hello",
