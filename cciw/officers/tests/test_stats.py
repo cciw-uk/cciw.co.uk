@@ -1,6 +1,6 @@
-from cciw.cciwmain.tests.base import factories as camp_factories
+from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.stats import get_camp_officer_stats, get_camp_officer_stats_trend
-from cciw.officers.tests.base import factories as officer_factories
+from cciw.officers.tests import factories as officer_factories
 from cciw.utils.tests.base import TestBase
 
 

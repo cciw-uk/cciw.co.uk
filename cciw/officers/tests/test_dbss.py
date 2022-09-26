@@ -6,13 +6,13 @@ from django.utils import timezone
 from django_functest import FuncBaseMixin
 
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.tests.base import factories as camp_factories
+from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.dbs import get_officers_with_dbs_info_for_camps
 from cciw.officers.models import DBSActionLog, DBSCheck
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import factories
+from . import factories
 
 
 class DbsInfoTests(TestBase):

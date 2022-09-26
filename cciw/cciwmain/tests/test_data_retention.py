@@ -10,7 +10,7 @@ from time_machine import travel
 from cciw.accounts.models import User
 from cciw.bookings.models import Booking, BookingAccount, BookingState
 from cciw.bookings.tests import factories as bookings_factories
-from cciw.cciwmain.tests.base import factories as camps_factories
+from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us.models import Message
 from cciw.data_retention import (
@@ -27,7 +27,7 @@ from cciw.data_retention import (
 )
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
-from cciw.officers.tests.base import factories as officers_factories
+from cciw.officers.tests import factories as officers_factories
 from cciw.utils.tests.base import TestBase
 
 

@@ -3,8 +3,8 @@ from django.core import mail
 from django.urls import reverse
 
 from cciw.cciwmain.common import CampId
+from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.base import SiteSetupMixin
-from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction
 from cciw.officers.tests.base import ReferenceSetupMixin, RolesSetupMixin, factories

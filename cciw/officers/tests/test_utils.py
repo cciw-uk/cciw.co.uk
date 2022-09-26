@@ -1,5 +1,5 @@
-from cciw.cciwmain.tests.base import factories as camp_factories
-from cciw.officers.tests.base import factories as factories
+from cciw.cciwmain.tests import factories as camp_factories
+from cciw.officers.tests import factories as factories
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.utils.tests.base import TestBase
 

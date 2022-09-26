@@ -21,7 +21,7 @@ class CommonMixin:
         or None for any officer.
         """
         if user_or_creds is None:
-            from cciw.officers.tests.base import factories as officers_factories
+            from cciw.officers.tests import factories as officers_factories
 
             user_or_creds = officers_factories.get_any_officer()
         if isinstance(user_or_creds, User):

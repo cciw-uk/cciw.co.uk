@@ -5,8 +5,8 @@ from django.urls import reverse
 
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
+from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import (

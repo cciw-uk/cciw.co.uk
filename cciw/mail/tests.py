@@ -13,9 +13,9 @@ from mailer.models import Message
 from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import Role, User
-from cciw.cciwmain.tests.base import factories as camp_factories
+from cciw.cciwmain.tests import factories as camp_factories
+from cciw.officers.tests import factories as officer_factories
 from cciw.officers.tests.base import RolesSetupMixin
-from cciw.officers.tests.base import factories as officer_factories
 from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 

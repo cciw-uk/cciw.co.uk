@@ -7,7 +7,7 @@ from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.tests.base import TestBase
 
-from .base import factories
+from . import factories
 
 
 class CampModel(TestBase):

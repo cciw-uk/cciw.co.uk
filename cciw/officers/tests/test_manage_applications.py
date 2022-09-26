@@ -1,7 +1,7 @@
 from django.urls import reverse
 
-from cciw.cciwmain.tests.base import factories as camps_factories
-from cciw.officers.tests.base import factories
+from cciw.cciwmain.tests import factories as camps_factories
+from cciw.officers.tests import factories
 from cciw.utils.tests.webtest import WebTestBase
 
 

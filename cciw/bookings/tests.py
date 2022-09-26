@@ -16,7 +16,6 @@ from django.utils import timezone
 from django_functest import FuncBaseMixin, Upload
 from hypothesis import example, given
 from hypothesis import strategies as st
-from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
 from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
@@ -29,7 +28,6 @@ from cciw.bookings.models import (
     Booking,
     BookingAccount,
     BookingState,
-    CustomAgreement,
     ManualPayment,
     ManualPaymentType,
     Payment,
@@ -38,19 +36,16 @@ from cciw.bookings.models import (
     PriceChecker,
     PriceType,
     RefundPayment,
-    SupportingInformation,
-    SupportingInformationDocument,
-    SupportingInformationType,
-    WriteOffDebt,
     book_basket_now,
     build_paypal_custom_field,
     expire_bookings,
 )
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.tests.base import factories as camps_factories
+from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.mail.tests import send_queued_mail
+from cciw.officers.tests import factories as officers_factories
 from cciw.officers.tests.base import (
     BOOKING_SECRETARY,
     BOOKING_SECRETARY_PASSWORD,
@@ -58,262 +53,14 @@ from cciw.officers.tests.base import (
     OFFICER,
     OfficersSetupMixin,
 )
-from cciw.officers.tests.base import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
-from cciw.utils.tests.factories import Auto, FactoriesBase, sequence
+from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-BOOKING_ACCOUNT_EMAIL_SEQUENCE = sequence(lambda n: f"booker_{n}@example.com")
-
-
-class Factories(FactoriesBase):
-    def create_booking(
-        self,
-        # From user fields, order same as booking form.
-        # TODO we are missing a few (non required) fields here
-        account: BookingAccount = Auto,
-        camp: Camp = Auto,
-        price_type: PriceType = PriceType.FULL,
-        first_name: str = Auto,
-        last_name: str = Auto,
-        name: str = Auto,
-        sex: str = "m",
-        date_of_birth: date = Auto,
-        address_line1="123 My street",
-        address_city="Metrocity",
-        address_country="GB",
-        address_post_code="ABC 123",
-        contact_name="Mr Father",
-        contact_line1="98 Main Street",
-        contact_city="Metrocity",
-        contact_country="GB",
-        contact_post_code="ABC 456",
-        contact_phone_number="01982 987654",
-        gp_name="Doctor Who",
-        gp_line1="The Tardis",
-        gp_city="London",
-        gp_country="GB",
-        gp_post_code="SW1 1PQ",
-        gp_phone_number="01234 456789",
-        medical_card_number="asdfasdf",
-        last_tetanus_injection_date=Auto,
-        serious_illness=False,
-        agreement=True,
-        # Internal fields
-        state=BookingState.INFO_COMPLETE,
-        amount_due=Auto,
-    ) -> Booking:
-        account = account or self.create_booking_account()
-        camp = camp or camps_factories.get_any_camp()
-        if date_of_birth is Auto:
-            date_of_birth = date(date.today().year - camp.minimum_age - 2, 1, 1)
-        # Prices are pre-condition for creating booking in normal situation
-        self.create_prices(camp.year)
-        if name is not Auto:
-            assert first_name is Auto
-            assert last_name is Auto
-            first_name, last_name = name.split(" ")
-        else:
-            first_name = first_name or "Frédéric"
-            last_name = last_name or "Bloggs"
-        if last_tetanus_injection_date is Auto:
-            last_tetanus_injection_date = date(camp.year - 5, 2, 3)
-
-        booking: Booking = Booking.objects.create(
-            account=account,
-            camp=camp,
-            price_type=price_type,
-            first_name=first_name,
-            last_name=last_name,
-            sex=sex,
-            date_of_birth=date_of_birth,
-            address_line1=address_line1,
-            address_city=address_city,
-            address_country=address_country,
-            address_post_code=address_post_code,
-            contact_name=contact_name,
-            contact_line1=contact_line1,
-            contact_city=contact_city,
-            contact_country=contact_country,
-            contact_post_code=contact_post_code,
-            contact_phone_number=contact_phone_number,
-            gp_name=gp_name,
-            gp_line1=gp_line1,
-            gp_city=gp_city,
-            gp_country=gp_country,
-            gp_post_code=gp_post_code,
-            gp_phone_number=gp_phone_number,
-            medical_card_number=medical_card_number,
-            last_tetanus_injection_date=last_tetanus_injection_date,
-            serious_illness=serious_illness,
-            agreement=agreement,
-            state=state,
-            amount_due=Decimal(0) if amount_due is Auto else amount_due,
-        )
-        if amount_due is Auto:
-            booking.auto_set_amount_due()
-            booking.save()
-        return booking
-
-    def create_booking_account(
-        self,
-        name: str = "A Booker",
-        address_line1: str = "",
-        address_post_code: str = "XYZ",
-        email: str = Auto,
-    ) -> BookingAccount:
-        return BookingAccount.objects.create(
-            name=name,
-            email=email or next(BOOKING_ACCOUNT_EMAIL_SEQUENCE),
-            address_line1=address_line1,
-            address_post_code=address_post_code,
-        )
-
-    def create_processed_payment(
-        self,
-        account: BookingAccount = Auto,
-        amount=1,
-    ):
-        manual_payment = self.create_manual_payment(account=account, amount=amount)
-        payment = manual_payment.paymentsource.payment
-        payment.refresh_from_db()
-        assert payment.processed  # should have been done via process_all_payments via signals
-        return payment
-
-    def create_manual_payment(
-        self,
-        account: BookingAccount = Auto,
-        amount=1,
-    ):
-        return ManualPayment.objects.create(
-            account=account or self.create_booking_account(),
-            amount=amount,
-            payment_type=ManualPaymentType.CHEQUE,
-        )
-
-    def create_refund_payment(
-        self,
-        account: BookingAccount = Auto,
-        amount=1,
-    ):
-        return RefundPayment.objects.create(
-            account=account or self.create_booking_account(),
-            amount=amount,
-            payment_type=ManualPaymentType.CHEQUE,
-        )
-
-    def create_write_off_debt_payment(
-        self,
-        account: BookingAccount = Auto,
-        amount=0,
-    ):
-        return WriteOffDebt.objects.create(
-            account=account or self.create_booking_account(),
-            amount=amount,
-        )
-
-    def create_ipn(self, account: BookingAccount | None = None, **kwargs):
-        if account:
-            custom = build_paypal_custom_field(account)
-        else:
-            custom = ""
-        defaults = dict(
-            mc_gross=Decimal("1.00"),
-            custom=custom,
-            ipaddress="127.0.0.1",
-            payment_status="Completed",
-            txn_id="1",
-            business=settings.PAYPAL_RECEIVER_EMAIL,
-            payment_date=timezone.now(),
-        )
-        defaults.update(kwargs)
-        ipn = PayPalIPN.objects.create(**defaults)
-        ipn.send_signals()
-        return ipn
-
-    def create_custom_agreement(self, *, year, name, text_html="Text"):
-        return CustomAgreement.objects.create(
-            year=year,
-            name=name,
-            text_html=text_html,
-            active=True,
-        )
-
-    def create_prices(self, year, deposit=Auto, early_bird_discount=Auto, full_price=Auto):
-        if deposit is Auto:
-            deposit = Decimal(20)
-        else:
-            deposit = Decimal(deposit)
-        if early_bird_discount is Auto:
-            early_bird_discount = Decimal(10)
-        else:
-            early_bird_discount = Decimal(early_bird_discount)
-        if full_price is Auto:
-            full_price = Decimal(100)
-        else:
-            full_price = Decimal(full_price)
-        price_full = Price.objects.get_or_create(year=year, price_type=PriceType.FULL, price=full_price)[0].price
-        price_2nd_child = Price.objects.get_or_create(
-            year=year, price_type=PriceType.SECOND_CHILD, price=Decimal("75")
-        )[0].price
-        price_3rd_child = Price.objects.get_or_create(year=year, price_type=PriceType.THIRD_CHILD, price=Decimal("50"))[
-            0
-        ].price
-        price_deposit = Price.objects.get_or_create(
-            year=year, price_type=PriceType.DEPOSIT, defaults={"price": deposit}
-        )[0].price
-        price_early_bird_discount = Price.objects.get_or_create(
-            year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT, defaults={"price": early_bird_discount}
-        )[0].price
-        return price_full, price_2nd_child, price_3rd_child, price_deposit, price_early_bird_discount
-
-    def create_supporting_information_type(self, name="Test"):
-        return SupportingInformationType.objects.create(name=name)
-
-    def get_or_create_supporting_information_type(self):
-        return SupportingInformationType.objects.first() or self.create_supporting_information_type()
-
-    def create_supporting_information(
-        self,
-        booking: Booking = Auto,
-        information_type: SupportingInformationType = Auto,
-        from_name: str = "Some Person",
-        document_filename: str = Auto,
-        document_content: bytes = Auto,
-        document_mimetype: str = Auto,
-    ):
-        if booking is Auto:
-            booking = self.create_booking()
-        if any([document_content, document_filename, document_mimetype]):
-            if document_filename is Auto:
-                document_filename = "test.txt"
-            if document_mimetype is Auto:
-                document_mimetype = "text/plain"
-            if document_content is Auto:
-                document_content = b"Hello"
-            doc = SupportingInformationDocument.objects.create(
-                filename=document_filename,
-                content=document_content,
-                mimetype=document_mimetype,
-            )
-        else:
-            doc = None
-        if information_type is Auto:
-            information_type = self.get_or_create_supporting_information_type()
-        supporting_information = SupportingInformation.objects.create(
-            booking=booking,
-            from_name=from_name,
-            information_type=information_type,
-            document=doc,
-        )
-
-        return supporting_information
-
-
-factories = Factories()
+from . import factories
 
 
 class IpnMock:
