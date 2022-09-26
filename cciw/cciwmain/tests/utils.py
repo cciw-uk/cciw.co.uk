@@ -31,33 +31,26 @@ class FuzzyInt(int):
         return f"[{self.lowest}, {self.highest}]"
 
 
-def set_thisyear(year):
-    """
-    Return mixin that monkey patches get_thisyear in tests
-    """
-    # This relies on modules doing:
-    #
-    #   from cciw.cciwmain import common
-    #   ...
-    #   common.get_thisyear()
-    #
-    # rather than:
-    #
-    #   from cciw.cciwmain.common import get_thisyear
+# This relies on modules doing:
+#
+#   from cciw.cciwmain import common
+#   ...
+#   common.get_thisyear()
+#
+# rather than:
+#
+#   from cciw.cciwmain.common import get_thisyear
+class SetThisYearMixin:
+    def setUp(self):
+        super().setUp()
+        thisyear_patcher = mock.patch("cciw.cciwmain.common.get_thisyear")
+        mocked = thisyear_patcher.start()
+        mocked.return_value = self.thisyear
+        self.thisyear_patcher = thisyear_patcher
 
-    class ThisYearMixin:
-        def setUp(self):
-            super().setUp()
-            thisyear_patcher = mock.patch("cciw.cciwmain.common.get_thisyear")
-            mocked = thisyear_patcher.start()
-            mocked.return_value = year
-            self.thisyear_patcher = thisyear_patcher
-
-        def tearDown(self):
-            self.thisyear_patcher.stop()
-            super().tearDown()
-
-    return ThisYearMixin
+    def tearDown(self):
+        self.thisyear_patcher.stop()
+        super().tearDown()
 
 
 def make_datetime(year, month, day, hour=0, minute=0, second=0):

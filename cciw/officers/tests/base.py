@@ -14,7 +14,7 @@ from cciw.accounts.models import (
 )
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.utils import set_thisyear
+from cciw.cciwmain.tests.utils import SetThisYearMixin
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Referee, Reference
 from cciw.utils.tests.factories import Auto, FactoriesBase, sequence
@@ -217,7 +217,9 @@ class CurrentCampsMixin(BasicSetupMixin):
         self.default_camp_2.save()
 
 
-class ReferenceSetupMixin(set_thisyear(2000), RequireApplicationsMixin):
+class ReferenceSetupMixin(SetThisYearMixin, RequireApplicationsMixin):
+    thisyear = 2000
+
     def setUp(self):
         super().setUp()
         self.reference1_1 = factories.create_complete_reference(self.application1.referees[0])

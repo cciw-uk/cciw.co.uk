@@ -14,8 +14,7 @@ from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import Role, User
 from cciw.cciwmain.tests.base import factories as camp_factories
-from cciw.cciwmain.tests.utils import set_thisyear
-from cciw.officers.tests.base import ExtraOfficersSetupMixin
+from cciw.officers.tests.base import RolesSetupMixin
 from cciw.officers.tests.base import factories as officer_factories
 from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
@@ -33,20 +32,14 @@ def partition_mailing_list_rejections(messages):
     return partition(lambda m: re.match(r"\[CCIW\] Access to mailing list .* denied", m.subject), messages)
 
 
-class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
+class TestMailingLists(RolesSetupMixin, TestBase):
     # Tests for mailing list sending. Note that because we are forwarding on raw
     # MIME objects with minimal changes, we are using
     # cciw.mail.smtp.RawEmailMessage, and that means we have to test most things
     # about messages using `email.message().as_bytes()`
 
-    def setUp(self):
-        super().setUp()
-        User.objects.filter(is_superuser=True).update(is_superuser=False)
-        User.objects.create(username="admin1", email="admin1@admin.com", is_superuser=True)
-        User.objects.create(username="admin2", email="admin2@admin.com", is_superuser=True)
-        User.objects.create(username="joe", email="joe@example.com")
-
     def test_invalid_list(self):
+        camp_factories.create_camp(camp_name="Blue", year=2000)
         with pytest.raises(NoSuchList):
             find_list("everyone@mailtest.cciw.co.uk", "joe@random.com")
         with pytest.raises(NoSuchList):
@@ -55,15 +48,21 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             find_list("camp-2000-neon-officers@mailtest.cciw.co.uk", "joe@random.com")
 
     def test_officer_list(self):
+        camp_factories.create_camp(
+            camp_name="Blue",
+            year=2000,
+            leader=(leader := officer_factories.create_leader()),
+            officers=[(officer := officer_factories.create_officer())],
+        )
         with pytest.raises(MailAccessDenied):
             find_list("camp-2000-blue-officers@mailtest.cciw.co.uk", "joe@random.com")
 
         with pytest.raises(MailAccessDenied):
-            find_list("camp-2000-blue-officers@mailtest.cciw.co.uk", self.officer1.email)
+            find_list("camp-2000-blue-officers@mailtest.cciw.co.uk", officer.email)
 
-        officer_list = find_list("camp-2000-blue-officers@mailtest.cciw.co.uk", "LEADER@SOMEWHERE.COM")
-
-        assert [u.username for u in officer_list.get_members()] == ["fredjones", "joebloggs", "petersmith"]
+        for email_address in (leader.email.upper(), leader.email.lower()):
+            officer_list = find_list("camp-2000-blue-officers@mailtest.cciw.co.uk", email_address)
+            assert list(officer_list.get_members()) == [officer]
 
     def test_leader_lists(self):
         camp = camp_factories.create_camp(year=2020, camp_name="Blue")
@@ -87,13 +86,15 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             find_list("camps-2020-leaders@mailtest.cciw.co.uk", officer.email)
 
         # superuser:
-        l1 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "ADMIN1@ADMIN.COM")
+        superuser = officer_factories.create_officer(is_superuser=True)
+        l1 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", superuser.email)
 
         # leader:
         l2 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", leader_1_user.email)
 
         # DBS officer
-        l3 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", "DBSOFFICER@somewhere.com")
+        dbs_officer = officer_factories.create_dbs_officer()
+        l3 = find_list("camp-2020-blue-leaders@mailtest.cciw.co.uk", dbs_officer.email.upper())
 
         # Contents
         expected_members = {leader_1_user, leader_2_user}
@@ -125,12 +126,10 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             email="committee@mailtest.cciw.co.uk",
             recipients=[("aperson1", "a.person.1@example.com"), ("aperson2", "a.person.2@example.com")],
         )
+        other_user = User.objects.create(username="joe", email="joe@example.com")
 
         # Email address without permission
-        msg1 = make_message(
-            to_email=role.email,
-            from_email="joe@example.com",
-        )
+        msg1 = make_message(to_email=role.email, from_email=other_user.email)
         handle_mail(msg1)
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
@@ -368,6 +367,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
     # to ensure no regressions.
 
     def test_ses_bounce_for_reference(self):
+        camp_factories.create_camp(camp_name="Blue", year=2000)  # Matches X-CCIW-Camp header below
         request = make_plain_text_request("/", AWS_BOUNCE_NOTIFICATION["body"], AWS_BOUNCE_NOTIFICATION["headers"])
         with mock.patch("cciw.aws.verify_sns_notification") as m1:
             m1.side_effect = [True]  # fake verify
