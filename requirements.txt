@@ -106,7 +106,7 @@ django-debug-toolbar==3.5
     # via -r requirements-dev.in
 django-decorator-include==3.0
     # via -r requirements.in
-django-functest==1.5.1
+django-functest==1.5.2
     # via -r requirements-dev.in
 django-js-asset==2.0.0
     # via django-mptt

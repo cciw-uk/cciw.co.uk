@@ -25,13 +25,8 @@ class CommonMixin:
 
             user_or_creds = officers_factories.get_any_officer()
         if isinstance(user_or_creds, User):
-            # Due to PlainPasswordHasher, we can get password from `password`
-            # field.
-            user = user_or_creds
-            algo, password = user.password.split("$$")
-            assert algo == "plain"
-            self.shortcut_login(username=user_or_creds.username, password=password)
-            return user
+            self.shortcut_login(user_or_creds)
+            return user_or_creds
         elif isinstance(user_or_creds, Person):
             users = user_or_creds.users.all()
             if not users:
@@ -163,13 +158,3 @@ class SeleniumBase(
         self.wait_until(
             lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)')
         )
-
-    def accept_alert(self):
-        self._driver.switch_to.alert.accept()
-        time.sleep(0.2)
-
-    def click_expecting_alert(self, css_selector):
-        # TODO - fix django-functest so this isn't needed
-
-        # Don't do wait_until_finished
-        self._find(css_selector).click()

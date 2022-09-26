@@ -196,11 +196,10 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Action:
-        self.click_expecting_alert(self.resend_email_button_selector(officer))
+        self.click(self.resend_email_button_selector(officer), expect_alert=True)
         self.accept_alert()
-
-        assert len(mail.outbox) == 1
-        m = mail.outbox[0]
+        self.wait_until(lambda *args: len(mail.outbox) > 0)
+        (m,) = mail.outbox
         assert officer.first_name in m.body
         assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
 
@@ -249,7 +248,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
 
         self.click(self.edit_button_selector(officer))
         self.fill({"#id_officer_email": "bademail"})
-        self.click_expecting_alert("#id_officer_save")
+        self.click("#id_officer_save", expect_alert=True)
 
         # Test DB
         officer = User.objects.get(id=officer.id)

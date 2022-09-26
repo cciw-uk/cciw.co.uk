@@ -1618,7 +1618,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
 
         if self.is_full_browser_test:
-            self.click_expecting_alert(f"[name=delete_{booking.id}]")
+            self.click(f"[name=delete_{booking.id}]", expect_alert=True)
             self.accept_alert()
             self.wait_until_loaded("body")
         else:
