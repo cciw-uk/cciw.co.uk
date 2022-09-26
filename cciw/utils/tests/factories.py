@@ -41,6 +41,7 @@ class _Auto:
     """
 
     def __bool__(self):
+        # Allow `Auto` to be used like `None` or `False` in boolean expressions
         return False
 
 
@@ -51,7 +52,7 @@ T = TypeVar("T")
 
 def sequence(func: Callable[[int], T]) -> Generator[T, None, None]:
     """
-    Generates a sequence of values from the passed in lambda that takes an integer,
-    and a sequence of integers started at zero.
+    Generates a sequence of values from a sequence of integers starting at zero,
+    passed through the callable, which must take an integer argument.
     """
     return (func(n) for n in itertools.count())
