@@ -1,10 +1,7 @@
 from datetime import date, timedelta
 
-from django.utils import timezone
-
 from cciw.accounts.models import setup_auth_roles
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.utils import SetThisYearMixin
 from cciw.officers.models import Application, QualificationType
 
 from . import factories
@@ -85,7 +82,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
 
     def setUp(self):
         super().setUp()
-        self.leader_user = factories.create_leader(
+        self.leader_user = factories.create_officer(
             username=LEADER_USERNAME,
             first_name="Kevin",
             last_name="Smith",
@@ -138,43 +135,33 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
         self.application1 = factories.create_application(
             self.officer1,
             year=2000,
-            referee2_overrides=dict(
-                address="1267a Somewhere Road\r\nThereyougo",
-                name="Mr Referee2 Name",
-            ),
+            referee2_address="1267a Somewhere Road\r\nThereyougo",
+            referee2_name="Mr Referee2 Name",
         )
 
         self.application2 = factories.create_application(
             self.officer2,
             year=2000,
             full_name="Peter Smith",
-            referee1_overrides=dict(
-                address="Referee 3 Address\r\nLine 2",
-                email="referee3@email.co.uk",
-                name="Mr Referee3 Name",
-            ),
-            referee2_overrides=dict(
-                address="Referee 4 adddress",
-                email="referee4@email.co.uk",
-                name="Mr Referee4 Name",
-            ),
+            referee1_address="Referee 3 Address\r\nLine 2",
+            referee1_email="referee3@email.co.uk",
+            referee1_name="Mr Referee3 Name",
+            referee2_address="Referee 4 adddress",
+            referee2_email="referee4@email.co.uk",
+            referee2_name="Mr Referee4 Name",
         )
 
         self.application3 = factories.create_application(
             self.officer3,
             year=2000,
             full_name="Fred Jones",
-            referee1_overrides=dict(
-                address="Referee 5 Address\r\nLine 2",
-                email="referee5@email.co.uk",
-                name="Mr Refere5 Name",
-            ),
-            referee2_overrides=dict(
-                address="Referee 6 adddress",
-                email="",
-                name="Mr Referee6 Name",
-                tel="01234 567890",
-            ),
+            referee1_address="Referee 5 Address\r\nLine 2",
+            referee1_email="referee5@email.co.uk",
+            referee1_name="Mr Refere5 Name",
+            referee2_address="Referee 6 adddress",
+            referee2_email="",
+            referee2_name="Mr Referee6 Name",
+            referee2_tel="01234 567890",
         )
 
         # Application 4 is like 1 but a year later
@@ -189,12 +176,6 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
             self.application4.referee_set.create(referee_number=r.referee_number, name=r.name, email=r.email)
 
 
-class RequireApplicationsMixin(DefaultApplicationsMixin):
-    def setUp(self):
-        super().setUp()
-        self.create_default_applications()
-
-
 class CurrentCampsMixin(BasicSetupMixin):
     def setUp(self):
         super().setUp()
@@ -206,13 +187,3 @@ class CurrentCampsMixin(BasicSetupMixin):
         self.default_camp_2.start_date = date.today() + timedelta(100)
         self.default_camp_2.end_date = date.today() + timedelta(107)
         self.default_camp_2.save()
-
-
-class ReferenceSetupMixin(SetThisYearMixin, RequireApplicationsMixin):
-    thisyear = 2000
-
-    def setUp(self):
-        super().setUp()
-        self.reference1_1 = factories.create_complete_reference(self.application1.referees[0])
-        self.application1.referees[1].log_request_made(None, timezone.now())
-        self.application2.referees[1].log_request_made(None, timezone.now())

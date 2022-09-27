@@ -25,7 +25,7 @@ def create_camp(
         if leader is True:
             from cciw.officers.tests import factories as officers_factories
 
-            leader = officers_factories.create_leader()
+            leader = officers_factories.create_officer()
         leaders = [leader]
     elif not leaders:
         leaders = []

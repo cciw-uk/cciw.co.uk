@@ -438,7 +438,7 @@ def normalized_name(name):
     return name
 
 
-def close_enough_referee_match(referee1, referee2):
+def close_enough_referee_match(referee1: Referee, referee2: Referee):
     if (
         normalized_name(referee1.name).lower() == normalized_name(referee2.name).lower()
         and referee1.email.lower() == referee2.email.lower()
@@ -448,10 +448,10 @@ def close_enough_referee_match(referee1, referee2):
     return False
 
 
-def add_previous_references(referee):
+def add_previous_references(referee: Referee):
     """
     Adds the attributes:
-    - 'previous_reference' (which is None if no exact match
+    - 'previous_reference' (which is None if no exact match)
     - 'possible_previous_references' (list ordered by relevance)
     """
     # Look for References for same officer, within the previous five

@@ -176,10 +176,9 @@ class DbsInfoTests(TestBase):
 class ManageDbsPageBase(FuncBaseMixin):
     def setUp(self):
         super().setUp()
-        self.camp = camp_factories.create_camp(leader=factories.create_leader())
-        self.year = self.camp.year
         self.officer_user = factories.create_officer()
-        self.camp.invitations.create(officer=self.officer_user)
+        self.camp = camp_factories.create_camp(leader=factories.create_officer(), officers=[self.officer_user])
+        self.year = self.camp.year
         self.dbs_officer = factories.create_dbs_officer()
 
     def test_view_no_application_forms(self):

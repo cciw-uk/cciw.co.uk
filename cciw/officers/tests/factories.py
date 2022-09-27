@@ -70,12 +70,6 @@ def create_officer(
     return user
 
 
-def create_leader(**kwargs) -> User:
-    # A leader is just an officer. No special roles are involved,
-    # only the association to a camp via a `Person` record.
-    return create_officer(**kwargs)
-
-
 def get_any_officer() -> User:
     user = User.objects.filter(is_staff=True).first()
     if not user:
@@ -144,8 +138,14 @@ def create_application(
     birth_date: date = Auto,
     dbs_number: str = "",
     dbs_check_consent: bool = True,
-    referee1_overrides: dict = Auto,
-    referee2_overrides: dict = Auto,
+    referee1_name: str = Auto,
+    referee1_email: str = Auto,
+    referee1_address: str = Auto,
+    referee1_tel: str = Auto,
+    referee2_name: str = Auto,
+    referee2_email: str = Auto,
+    referee2_address: str = Auto,
+    referee2_tel: str = Auto,
     finished=True,
 ) -> Application:
     if date_saved is Auto:
@@ -190,26 +190,30 @@ def create_application(
         youth_work_declined_details="",
     )
     application = Application.objects.create(**fields)
-    for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
-        referee_fields = dict(
-            referee_number=referee_number,
-            address=f"Referee {referee_number} Address\r\nLine 2",
-            email=f"referee{referee_number}@email.co.uk",
-            mobile="",
-            name=f"Referee{referee_number} Name",
-            tel="01222 666666",
-        )
-        if ref_overrides:
-            referee_fields.update(ref_overrides)
+    application.referee_set.create(
+        referee_number=1,
+        address=referee1_address or "Referee 1 Address\r\nLine 2",
+        email=f"{officer.username}-referee1@email.co.uk" if referee1_email is Auto else referee1_email,
+        mobile="",
+        name="Referee1 Name" if referee1_name is Auto else referee1_name,
+        tel="01222 666661" if referee1_tel is Auto else referee1_tel,
+    )
+    application.referee_set.create(
+        referee_number=2,
+        address=referee2_address or "Referee 2 Address\r\nLine 2",
+        email=f"{officer.username}-referee2@email.co.uk" if referee2_email is Auto else referee2_email,
+        mobile="",
+        name="Referee2 Name" if referee2_name is Auto else referee2_name,
+        tel="01222 666662" if referee2_tel is Auto else referee2_tel,
+    )
 
-        application.referee_set.create(**referee_fields)
     return application
 
 
 def create_complete_reference(referee: Referee) -> Reference:
     return Reference.objects.create(
         referee=referee,
-        referee_name="Referee1 Name",
+        referee_name=referee.name,
         how_long_known="A long time",
         capacity_known="Pastor",
         known_offences=False,
@@ -217,7 +221,7 @@ def create_complete_reference(referee: Referee) -> Reference:
         character="Almost sinless",
         concerns="Perhaps too good for camp",
         comments="",
-        date_created=datetime(2000, 2, 20),
+        date_created=date.today(),
     )
 
 

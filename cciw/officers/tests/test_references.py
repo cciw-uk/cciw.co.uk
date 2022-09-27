@@ -1,24 +1,36 @@
+from datetime import date
+
 from django.conf import settings
 from django.core import mail
 from django.urls import reverse
+from time_machine import travel
 
-from cciw.cciwmain.common import CampId
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.officers.email import make_ref_form_url
-from cciw.officers.models import Application, ReferenceAction
-from cciw.officers.tests.base import ReferenceSetupMixin, RolesSetupMixin, factories
+from cciw.officers.models import Referee, ReferenceAction
+from cciw.officers.tests.base import RolesSetupMixin, factories
 from cciw.officers.views import add_previous_references, close_enough_referee_match
+from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import WebTestBase
 
-from .base import LEADER, LEADER_EMAIL
+
+def create_camp_leader_officer(year=Auto, future=Auto):
+    """
+    Creates a camp with a leader and officer for testing reference requests
+    """
+    camp = camps_factories.create_camp(
+        leader=(leader := factories.create_officer()),
+        officers=[(officer := factories.create_officer())],
+        year=year,
+        future=future,
+    )
+    return camp, leader, officer
 
 
 class ReferencesPage(WebTestBase):
     def test_page_ok(self):
-        leader = factories.create_leader()
-        officer = factories.create_officer()
-        camp = camps_factories.create_camp(leaders=[leader], officers=[officer])
+        camp, leader, officer = create_camp_leader_officer()
         application = factories.create_application(officer=officer, year=camp.year)
         factories.create_complete_reference(application.referees[0])  # Just one
 
@@ -43,15 +55,15 @@ class ReferencesPage(WebTestBase):
         self.assertTextAbsent("For camp {camp.year}")
 
     def test_page_officers_denied(self):
-        camp = camps_factories.create_camp()
-        self.officer_login()
+        camp, leader, officer = create_camp_leader_officer()
+        self.officer_login(officer)
         self.get_literal_url(
             reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id)), expect_errors=[403]
         )
         self.assertCode(403)
 
 
-class RequestReference(ReferenceSetupMixin, WebTestBase):
+class RequestReference(RolesSetupMixin, WebTestBase):
     """
     Tests for page where reference is requested, and referee email can be updated.
     """
@@ -60,14 +72,12 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         """
         Ensure page allows you to proceed if there is an email address for referee
         """
-        # Application 3 has an email address for first referee
-        app = self.application3
-        assert app.referees[0].email != ""
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer, referee1_email="an_email@example.com")
         referee = app.referees[0]
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2000, "blue")))
-            + f"?referee_id={referee.id}"
+            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
         )
         self.assertCode(200)
         self.assertTextAbsent("No email address")
@@ -75,48 +85,40 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.submit("#id_request_reference_send input[name=send]")
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         assert len(msgs) == 1
-        assert msgs[0].extra_headers.get("Reply-To", "") == LEADER_EMAIL
-        assert msgs[0].extra_headers.get("X-CCIW-Camp", "") == "2000-blue"
+        assert msgs[0].extra_headers.get("Reply-To", "") == leader.email
+        assert msgs[0].extra_headers.get("X-CCIW-Camp", "") == str(camp.url_id)
 
     def test_no_email(self):
         """
         Ensure page requires an email address to be entered if it isn't set.
         """
-        # Application 3 has no email address for second referee
-        app = self.application3
-        assert app.referees[1].email == ""
-        referee = app.referees[1]
-        self.officer_login(LEADER)
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer, referee1_email="")
+        referee = app.referees[0]
+        self.officer_login(leader)
         self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2000, "blue")))
-            + f"?referee_id={referee.id}"
+            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
         )
         self.assertCode(200)
         self.assertTextPresent("No email address")
         self.assertTextAbsent("This field is required")  # Don't want errors on first view
         self.assertTextAbsent("The following email")
 
-    def test_add_email(self):
-        """
-        Ensure we can add the email address
-        """
-        self.test_no_email()
+        # Ensure we can add the email address
         self.fill_by_name({"email": "addedemail@example.com", "name": "Added Name"})
         self.submit("[name=setemail]")
-        app = Application.objects.get(id=self.application3.id)
-        assert app.referees[1].email == "addedemail@example.com"
-        assert app.referees[1].name == "Added Name"
+        app.refresh_from_db()
+        assert app.referees[0].email == "addedemail@example.com"
+        assert app.referees[0].name == "Added Name"
         self.assertTextPresent("Name/email address updated.")
 
     def test_cancel(self):
-        # Application 3 has an email address for first referee
-        app = self.application3
-        assert app.referees[0].email != ""
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer, referee1_email="an_email@example.com")
         referee = app.referees[0]
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2000, "blue")))
-            + f"?referee_id={referee.id}"
+            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
         )
         self.assertCode(200)
         self.submit("#id_request_reference_send [name=cancel]")
@@ -126,12 +128,12 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         """
         Test the error that should appear if the link is removed or altered
         """
-        app = self.application3
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer)
         referee = app.referees[0]
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2000, "blue")))
-            + f"?referee_id={referee.id}"
+            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
         )
         self.assertCode(200)
         self.fill_by_name({"message": "I removed the link! Haha"})
@@ -145,63 +147,97 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         """
         Test the case where we ask for an update, and there is an exact match
         """
-        app = self.application4
-        referee = app.referees[0]
-        add_previous_references(referee)
-        assert referee.previous_reference is not None
-        self.officer_login(LEADER)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2001, "blue")))
-            + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.previous_reference.id)
-        )
-        self.assertCode(200)
-        self.assertTextPresent("Referee1 Name has done a reference for Joe in the past.")
+        # First year setup
+        with travel(date(2010, 1, 1)):
+            camp1, leader, officer = create_camp_leader_officer(year=2010)
+            app1 = factories.create_application(officer=officer)
+            factories.create_complete_reference(app1.referees[0])
+        # Second year setup
+        with travel(date(2011, 1, 1)):
+            camp2 = camps_factories.create_camp(year=2011, officers=[officer], leader=leader)
+            app2 = factories.create_application(
+                officer=officer,
+                referee1_name=app1.referees[0].name,
+                referee1_email=app1.referees[0].email,
+            )
+
+            referee = app2.referees[0]
+            add_previous_references(referee)
+            assert referee.previous_reference is not None
+            self.officer_login(leader)
+            self.get_literal_url(
+                reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp2.url_id))
+                + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.previous_reference.id)
+            )
+            self.assertCode(200)
+            self.assertTextPresent("Referee1 Name has done a reference for Joe in the past.")
 
     def test_exact_match_with_title(self):
-        app1 = self.application4
-        app2 = Application.objects.get(id=app1.id)
+        assert close_enough_referee_match(
+            Referee(name="Joe Bloggs", email="me@example.com"),
+            Referee(name="Rev. Joe Bloggs", email="me@example.com"),
+        )
 
-        # Modify to add "Rev."
-        app2.referees[0].name = "Rev. " + app2.referees[0].name
-        assert close_enough_referee_match(app1.referees[0], app2.referees[0])
-
-        app2.referees[0].name = "Someone else entirely"
-        assert not close_enough_referee_match(app1.referees[0], app2.referees[0])
+        assert not close_enough_referee_match(
+            Referee(name="Joe Bloggs", email="me@example.com"),
+            Referee(name="Someone else entirely", email="me@example.com"),
+        )
 
     def test_update_with_no_exact_match(self):
         """
         Test the case where we ask for an update, and there is no exact match
         """
-        app = self.application4
-        # We make a change, so we don't get exact match
-        app.referees[0].email = "a_new_email_for_ref1@example.com"
-        app.referees[0].save()
-        referee = app.referees[0]
-        add_previous_references(referee)
-        assert referee.previous_reference is None
-        assert referee.possible_previous_references[0].referee_name == "Referee1 Name"
-        self.officer_login(LEADER)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2001, "blue")))
-            + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.possible_previous_references[0].id)
-        )
-        self.assertCode(200)
-        self.assertTextAbsent("Referee1 Name has done a reference for Joe in the past.")
-        self.assertHtmlPresent(
-            """<p>In the past,"""
-            """<b>"Referee1 Name &lt;referee1@email.co.uk&gt;"</b>"""
-            """did a reference for Joe. If you have confirmed that this person's name/email address is now"""
-            """<b>"Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",</b>"""
-            """you can ask them to update their reference.</p>"""
-        )
+        # First year setup
+        with travel(date(2010, 1, 1)):
+            camp, leader, officer = create_camp_leader_officer(year=2010)
+        with travel(date(2010, 2, 1)):
+            app1 = factories.create_application(
+                officer=officer,
+                referee1_name="Referee1 Name",
+                referee1_email="email_for_ref1@example.com",
+            )
+        with travel(date(2010, 3, 1)):
+            factories.create_complete_reference(referee=app1.referees[0])
+
+        # Second year setup
+        with travel(date(2011, 1, 1)):
+            camp_2 = camps_factories.create_camp(year=2011, officers=[officer], leader=leader)
+        with travel(date(2011, 4, 1)):
+            app2 = factories.create_application(
+                officer=officer,
+                referee1_name="Referee1 Name",
+                # We make a change, so we don't get exact match
+                referee1_email="a_new_email_for_ref1@example.com",
+            )
+
+        # Tests
+        with travel(date(2011, 5, 1)):
+            referee = app2.referees[0]
+            add_previous_references(referee)
+            assert referee.previous_reference is None
+            assert referee.possible_previous_references[0].referee_name == "Referee1 Name"
+            self.officer_login(leader)
+            self.get_literal_url(
+                reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp_2.url_id))
+                + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.possible_previous_references[0].id)
+            )
+            self.assertCode(200)
+            self.assertTextAbsent(f"Referee1 Name has done a reference for {officer.first_name} in the past.")
+            self.assertHtmlPresent(
+                """<p>In the past,"""
+                """<b>"Referee1 Name &lt;email_for_ref1@example.com&gt;"</b>"""
+                f"""did a reference for {officer.first_name}. If you have confirmed that this person's name/email address is now"""
+                """<b>"Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",</b>"""
+                """you can ask them to update their reference.</p>"""
+            )
 
     def test_fill_in_manually(self):
-        app = self.application3
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer)
         referee = app.referees[0]
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=CampId(2000, "blue")))
-            + f"?referee_id={referee.id}"
+            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
         )
         self.assertCode(200)
         self.fill_by_name(
@@ -216,26 +252,26 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.submit("#id_request_reference_manual [name=save]")
         msgs = [e for e in mail.outbox if "Reference form for" in e.subject]
         assert len(msgs) >= 0
-        app = Application.objects.get(id=app.id)
+        app.refresh_from_db()
         assert app.referees[0].reference_is_received()
 
     def test_nag(self):
         """
         Tests for 'nag officer' page
         """
-        app = self.application1
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer)
         referee = app.referees[0]
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_literal_url(
-            reverse("cciw-officers-nag_by_officer", kwargs=dict(camp_id=CampId(2000, "blue")))
-            + f"?referee_id={referee.id}"
+            reverse("cciw-officers-nag_by_officer", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
         )
         self.assertCode(200)
         self.assertTextPresent("to nag their referee")
         self.submit("[name=send]")
         msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
         assert len(msgs) == 1
-        assert msgs[0].extra_headers.get("Reply-To", "") == LEADER_EMAIL
+        assert msgs[0].extra_headers.get("Reply-To", "") == leader.email
         assert referee.actions.filter(action_type=ReferenceAction.ActionType.NAG).count() == 1
 
 
@@ -268,12 +304,8 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         Check that a reference can be created using the page,
         and that the name on the application form is updated.
         """
-        camp = camps_factories.create_camp(leader=True)
-        officer = factories.create_officer()
-        factories.add_officers_to_camp(camp, [officer])
-        application = factories.create_application(
-            officer=officer, year=camp.year, referee1_overrides={"name": "Mr Referee Name"}
-        )
+        camp, leader, officer = create_camp_leader_officer()
+        application = factories.create_application(officer=officer, year=camp.year, referee1_name="Mr Referee Name")
         assert not application.referees[0].reference_is_received()
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
         self.get_literal_url(url)

@@ -51,7 +51,7 @@ class TestMailingLists(RolesSetupMixin, TestBase):
         camp_factories.create_camp(
             camp_name="Blue",
             year=2000,
-            leader=(leader := officer_factories.create_leader()),
+            leader=(leader := officer_factories.create_officer()),
             officers=[(officer := officer_factories.create_officer())],
         )
         with pytest.raises(MailAccessDenied):
@@ -207,7 +207,7 @@ class TestMailingLists(RolesSetupMixin, TestBase):
         camp = camp_factories.create_camp(
             year=2000,
             camp_name="Pink",
-            leader=officer_factories.create_leader(email=(leader_email := "kevin.smith@example.com")),
+            leader=officer_factories.create_officer(email=(leader_email := "kevin.smith@example.com")),
         )
         officer_factories.add_officers_to_camp(
             camp,
