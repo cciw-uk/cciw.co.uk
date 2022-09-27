@@ -1625,7 +1625,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             self.submit(f"[name=delete_{booking.id}]")
 
         # Should be gone
-        assert 0 == account.bookings.count()
+        if self.is_full_browser_test:
+            self.wait_until(lambda d: account.bookings.count() == 0)
+        else:
+            assert account.bookings.count() == 0
 
     def test_edit_place_btn(self):
         self.login()
