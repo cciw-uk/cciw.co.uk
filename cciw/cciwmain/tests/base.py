@@ -8,6 +8,9 @@ from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 from . import factories
 
+# TODO - a lot of this stuff should be rewritten as per https://gitlab.com/cciw/cciw.co.uk/-/issues/6
+# especially removal of `default_site`, `default_camp_1` etc
+
 
 class SiteSetupMixin:
     def setUp(self):

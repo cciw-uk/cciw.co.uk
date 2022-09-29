@@ -1,5 +1,6 @@
 # isort:skip_file
-
+import signal
+import faulthandler
 import json
 import os
 from datetime import timedelta
@@ -9,6 +10,7 @@ import subprocess
 import sys
 
 hostname = socket.gethostname()
+
 
 # resolve is important for removing symlinks, which can affect behaviour
 basepath = Path(os.path.abspath(__file__)).resolve().parent.parent
@@ -26,7 +28,8 @@ if CHECK_DEPLOY:
 else:
     LIVEBOX = hostname.startswith("cciw")
     DEVBOX = not LIVEBOX
-TESTS_RUNNING = False
+
+TESTS_RUNNING = not LIVEBOX and "pytest" in sys.modules
 
 
 if LIVEBOX and not CHECK_DEPLOY:
@@ -591,3 +594,35 @@ if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
 CAPTCHA_FONT_SIZE = 45
 CAPTCHA_LETTER_ROTATION = (-30, 30)
+
+
+if TESTS_RUNNING:
+    DATABASES["default"]["CONN_MAX_AGE"] = 0  # fix some deadlocks with DB flushing
+
+    DEBUG = False
+    TEMPLATE_DEBUG = False
+    DEBUG_PROPAGATE_EXCEPTIONS = True
+
+    PASSWORD_HASHERS = [
+        "cciw.utils.tests.hashers.PlainPasswordHasher",
+    ]
+
+    MIDDLEWARE = [
+        m
+        for m in MIDDLEWARE
+        if m not in ["debug_toolbar.middleware.DebugToolbarMiddleware", "cciw.middleware.debug.debug_middleware"]
+    ]
+
+    INSTALLED_APPS = [x for x in INSTALLED_APPS if x not in ["debug_toolbar"]]
+
+    SEND_BROKEN_LINK_EMAILS = False
+
+    ALLOWED_HOSTS = [
+        "localhost",
+    ]
+
+    # If the process receives signal SIGUSR1, dump a traceback
+    faulthandler.enable()
+    faulthandler.register(signal.SIGUSR1)
+
+    CAPTCHA_TEST_MODE = True
