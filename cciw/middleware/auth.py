@@ -28,13 +28,13 @@ def private_wiki(get_response):
     return middleware
 
 
-def bad_password_checks(get_reponse):
+def bad_password_checks(get_response):
     def middleware(request):
         user = request.user
         if user.is_authenticated and user.bad_password:
             redirect_response = redirect_to_password_change_with_next(request)
             if redirect_response is not None:
                 return redirect_response
-        return get_reponse(request)
+        return get_response(request)
 
     return middleware
