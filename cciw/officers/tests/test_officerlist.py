@@ -9,15 +9,14 @@ from django.urls import reverse
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
+from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
-from cciw.officers.tests.base import DefaultApplicationsMixin, factories
+from cciw.officers.tests import factories
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
-
-from .base import LEADER, CurrentCampsMixin, OfficersSetupMixin
 
 
 class TestCreate(TestBase):
@@ -30,23 +29,22 @@ class TestCreate(TestBase):
         assert user.last_login is None
 
 
-class TestExport(DefaultApplicationsMixin, TestBase):
+class TestExport(TestBase):
     def test_export_no_application(self):
         """
         Test that the export data view generates an Excel file with all the data
         we expect if there is no application form.
         """
-        c = Camp.objects.get(year=2000, camp_name__slug="blue")
-        officers = list(c.officers.all())
-        first_names = [o.first_name for o in officers]
+        camp = camp_factories.create_camp(officers=[officer := factories.create_officer()])
+        first_names = [o.first_name for o in [officer]]
 
         assert Application.objects.all().count() == 0
 
-        for i, inv in enumerate(c.invitations.all()):
+        for i, inv in enumerate(camp.invitations.all()):
             inv.notes = f"Some notes {i}"
             inv.save()
 
-        workbook = officer_data_to_spreadsheet(c, ExcelFormatter()).to_bytes()
+        workbook = officer_data_to_spreadsheet(camp, ExcelFormatter()).to_bytes()
 
         assert workbook is not None
         wkbk = xlrd.open_workbook(file_contents=workbook)
@@ -66,13 +64,8 @@ class TestExport(DefaultApplicationsMixin, TestBase):
         Test that the export data view generates an Excel file with all the data
         we expect if there are application forms.
         """
-        self.create_default_applications()
-        camp = self.default_camp_1
-
-        # Data from setup
-        u = self.officer1
-        app = self.application1
-        assert app.officer == u
+        camp = camp_factories.create_camp(officers=[officer := factories.create_officer()])
+        factories.create_application(year=camp.year, officer=officer, address_firstline="123 The Way")
 
         workbook = officer_data_to_spreadsheet(camp, ExcelFormatter()).to_bytes()
 
@@ -81,7 +74,7 @@ class TestExport(DefaultApplicationsMixin, TestBase):
 
         # Check data from Application model
         assert wksh.cell(0, 4).value == "Address"
-        assert app.address_firstline in wksh.col_values(4)
+        assert "123 The Way" in wksh.col_values(4)
 
 
 class TestSlackers(TestBase):
@@ -122,7 +115,7 @@ class TestSlackers(TestBase):
         ]
 
 
-class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
+class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
     def add_button_selector(self, officer):
         return f'[data-officer-id="{officer.id}"] [data-add-button]'
 
@@ -136,10 +129,11 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         return f'[data-officer-id="{officer.id}"] [data-email-button]'
 
     def test_add(self):
-        camp = self.default_camp_1
-        officer = self.officer_user
-
-        self.officer_login(LEADER)
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+        )
+        officer = factories.create_officer()
+        self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Check initial:
@@ -158,11 +152,12 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.assertTextPresent(officer.email)
 
     def test_remove(self):
-        camp = self.default_camp_1
-        officer = self.officer_user
-        camp.invitations.create(officer=officer)
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[officer := factories.create_officer()],
+        )
 
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Check initial:
@@ -181,11 +176,12 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.assertTextPresent(officer.email)
 
     def test_resend_email(self):
-        camp = self.default_camp_1
-        officer = self.officer_user
-        camp.invitations.create(officer=officer)
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[officer := factories.create_officer()],
+        )
 
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Action:
@@ -197,11 +193,12 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
 
     def test_edit(self):
-        camp = self.default_camp_1
-        officer = self.officer_user
-        camp.invitations.create(officer=officer)
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[officer := factories.create_officer()],
+        )
 
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
         assert not self.is_element_displayed("#id_officer_save")
 
@@ -219,7 +216,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.wait_for_ajax()
 
         # Test DB
-        officer = User.objects.get(id=officer.id)
+        officer.refresh_from_db()
         assert officer.first_name == "Altered"
         assert officer.last_name == "Name"
         assert officer.email == "alteredemail@somewhere.com"
@@ -232,11 +229,12 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.assertTextPresent("alteredemail@somewhere.com")
 
     def test_edit_validation(self):
-        camp = self.default_camp_1
-        officer = self.officer_user
-        camp.invitations.create(officer=officer)
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[officer := factories.create_officer()],
+        )
 
-        self.officer_login(LEADER)
+        self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         self.click(self.edit_button_selector(officer))
@@ -252,8 +250,8 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         assert self.is_element_displayed("#id_officer_save")
 
     def test_add_officer_button(self):
-        camp = self.default_camp_1
-        self.officer_login(LEADER)
+        camp = camp_factories.create_camp(leader=(leader := factories.create_officer()))
+        self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
         self.click("#id_new_officer_btn")
         self.wait_for_ajax()
@@ -266,7 +264,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         # Functionality of "New officer" popup is tested separately.
 
 
-class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
+class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
     # This is implemented as a popup from the officer list that shows an iframe
     # hosting a separate page, making it easiest to test using WebTest on the
     # separate page.
@@ -277,24 +275,26 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         super().setUp()
         mail.outbox = []
 
-    def get_page(self):
-        self.get_literal_url(reverse("cciw-officers-create_officer") + f"?camp_id={self.default_camp_1.id}")
-
-    def create_officer(self, *args):
-        create_officer(*args)
-        mail.outbox = []
+    def get_page(self, camp):
+        self.get_literal_url(reverse("cciw-officers-create_officer") + f"?camp_id={camp.id}")
 
     def test_permissions(self):
-        self.get_page()
+        camp = camp_factories.create_camp(leader=(leader := factories.create_officer()), future=True)
+        self.get_page(camp)
         assert self.is_element_present("body.login")
-        self.officer_login(LEADER)
-        self.get_page()
+        self.officer_login(leader)
+        self.get_page(camp)
         assert not self.is_element_present("body.login")
         self.assertTextPresent("Enter details for officer")
 
+    def _access_officer_list_page(self) -> Camp:
+        camp = camp_factories.create_camp(leader=(leader := factories.create_officer()), future=True)
+        self.officer_login(leader)
+        self.get_page(camp)
+        return camp
+
     def test_success(self):
-        self.officer_login(LEADER)
-        self.get_page()
+        camp = self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -303,12 +303,13 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
             }
         )
         self.submit("input[type=submit]")
-        self._assert_created()
+        self._assert_created(camp)
 
     def test_duplicate_user(self):
-        self.create_officer("Mary", "Andrews", "mary@andrews.com")
-        self.officer_login(LEADER)
-        self.get_page()
+        factories.create_officer(
+            username="maryandrews", first_name="Mary", last_name="Andrews", email="mary@andrews.com"
+        )
+        self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -321,9 +322,10 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         assert not self.is_element_present(self.CONFIRM_BUTTON)
 
     def test_duplicate_name(self):
-        self.create_officer("Mary", "Andrews", "mary.andrews@example.com")
-        self.officer_login(LEADER)
-        self.get_page()
+        factories.create_officer(
+            username="maryandrews", first_name="Mary", last_name="Andrews", email="mary@otheremail.com"
+        )
+        camp = self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -334,12 +336,13 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.submit("input[type=submit]")
         self.assertTextPresent("A user with that first name and last name already exists")
         self.submit(self.CONFIRM_BUTTON)
-        self._assert_created()
+        self._assert_created(camp)
 
     def test_duplicate_email(self):
-        self.create_officer("Mike", "Andrews", "mary@andrews.com")
-        self.officer_login(LEADER)
-        self.get_page()
+        factories.create_officer(
+            username="mikeandrews", first_name="Mike", last_name="Andrews", email="mary@andrews.com"
+        )
+        camp = self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -350,9 +353,9 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.submit("input[type=submit]")
         self.assertTextPresent("A user with that email address already exists")
         self.submit(self.CONFIRM_BUTTON)
-        self._assert_created()
+        self._assert_created(camp)
 
-    def _assert_created(self):
+    def _assert_created(self, camp):
         u = User.objects.get(email="mary@andrews.com", first_name="Mary")
         assert u.first_name == "Mary"
         assert u.last_name == "Andrews"
@@ -364,4 +367,4 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         m = mail.outbox[0]
         assert "Hi Mary" in m.body
         assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
-        assert u in self.default_camp_1.officers.all()
+        assert u in camp.officers.all()

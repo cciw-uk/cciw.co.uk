@@ -131,10 +131,13 @@ def get_or_create_camp_name(name: str) -> CampName:
         return create_camp_name(name=name)
 
 
-def create_site() -> Site:
+def create_site(
+    short_name: str = Auto,
+    long_name: str = Auto,
+) -> Site:
     return Site.objects.create(
-        short_name="The Farm",
-        long_name="The Farm in the Valley",
+        short_name=short_name or "The Farm",
+        long_name=long_name or "The Farm in the Valley",
         slug_name="the-farm",
         info="A really lovely farm.",
     )

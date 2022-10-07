@@ -4,54 +4,62 @@ from django.urls import reverse
 from furl import furl
 
 from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_MANAGER_ROLES, SECRETARY_ROLE_NAME, user_has_role
-from cciw.officers.tests.base import OFFICER, OfficersSetupMixin
+from cciw.officers.tests import factories
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
 
 
-class TestUserModel(OfficersSetupMixin, TestBase):
+class TestUserModel(TestBase):
     def test_user_in_group_true(self):
+        booking_secretary = factories.create_booking_secretary()
         with self.assertNumQueries(1):
-            assert user_has_role(self.booking_secretary, [BOOKING_SECRETARY_ROLE_NAME])
+            assert user_has_role(booking_secretary, [BOOKING_SECRETARY_ROLE_NAME])
 
     def test_user_in_group_true_for_one_item(self):
+        booking_secretary = factories.create_booking_secretary()
         with self.assertNumQueries(1):
-            assert user_has_role(self.booking_secretary, CAMP_MANAGER_ROLES)
+            assert user_has_role(booking_secretary, CAMP_MANAGER_ROLES)
 
     def test_user_in_group_false(self):
+        officer_user = factories.create_officer()
         with self.assertNumQueries(1):
-            assert not user_has_role(self.officer_user, [BOOKING_SECRETARY_ROLE_NAME])
+            assert not user_has_role(officer_user, [BOOKING_SECRETARY_ROLE_NAME])
 
     def test_user_in_group_multiple_performance(self):
+        officer_user = factories.create_officer()
         with self.assertNumQueries(1):
             # 1 query
-            assert not user_has_role(self.officer_user, [BOOKING_SECRETARY_ROLE_NAME])
+            assert not user_has_role(officer_user, [BOOKING_SECRETARY_ROLE_NAME])
         with self.assertNumQueries(0):
             # 0 query
-            assert not user_has_role(self.officer_user, [SECRETARY_ROLE_NAME])
-            assert not self.officer_user.is_booking_secretary
+            assert not user_has_role(officer_user, [SECRETARY_ROLE_NAME])
+            assert not officer_user.is_booking_secretary
 
     def test_user_role_performance(self):
+        officer_user = factories.create_officer()
         with self.assertNumQueries(1):
-            assert not self.officer_user.is_booking_secretary
+            assert not officer_user.is_booking_secretary
 
         # Delete the cache established by 'cached_property;
-        del self.officer_user.is_booking_secretary
+        del officer_user.is_booking_secretary
         # and it should still require zero queries, because it uses
         # user_has_role
         with self.assertNumQueries(0):
-            assert not self.officer_user.is_booking_secretary
+            assert not officer_user.is_booking_secretary
 
     def test_user_role_performance_2(self):
+        officer_user = factories.create_officer()
         with self.assertNumQueries(1):
             # Testing multiple different roles requires just one query
-            assert not self.officer_user.is_booking_secretary
-            assert not self.officer_user.is_committee_member
+            assert not officer_user.is_booking_secretary
+            assert not officer_user.is_committee_member
 
     def test_has_perm(self):
         # Depends on static_roles.yaml
-        assert self.booking_secretary.has_perm("bookings.add_booking")
-        assert not self.officer_user.has_perm("bookings.add_booking")
+        booking_secretary = factories.create_booking_secretary()
+        officer_user = factories.create_officer()
+        assert booking_secretary.has_perm("bookings.add_booking")
+        assert not officer_user.has_perm("bookings.add_booking")
 
 
 class PwnedPasswordPatcherMixin:
@@ -72,17 +80,17 @@ class PwnedPasswordPatcherMixin:
         return password in self.PWNED_PASSWORDS
 
 
-class TestSetPassword(OfficersSetupMixin, PwnedPasswordPatcherMixin, WebTestBase):
+class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
 
     good_password = "Jo6Ohmieooque5A"
 
     def test_disallow_too_common(self):
-        self.officer_login(OFFICER)
+        self.officer_login(factories.create_officer(password="old"))
         self.get_url("admin:password_change")
         new_password = self.PWNED_PASSWORDS[0]
         self.fill(
             {
-                "#id_old_password": OFFICER[1],
+                "#id_old_password": "old",
                 "#id_new_password1": new_password,
                 "#id_new_password2": new_password,
             }
@@ -91,27 +99,26 @@ class TestSetPassword(OfficersSetupMixin, PwnedPasswordPatcherMixin, WebTestBase
         self.assertTextPresent("This password is too common.")
 
     def test_allow_good_password(self):
-        self.officer_login(OFFICER)
+        self.officer_login(user := factories.create_officer(password="old"))
         self.get_url("admin:password_change")
         self.assertTextPresent("Use a password manager")
         new_password = self.good_password
         self.fill(
             {
-                "#id_old_password": OFFICER[1],
+                "#id_old_password": "old",
                 "#id_new_password1": new_password,
                 "#id_new_password2": new_password,
             }
         )
         self.submit("[type=submit]")
         self.assertTextPresent("Your password was changed")
-        user = self.officer_user
         user.refresh_from_db()
         assert user.check_password(new_password)
 
     def test_handle_unvalidated_bad_password(self):
         # When we log in, if the password doesn't pass new validation checks,
         # we should require them to set their password.
-        user = self.officer_user
+        user = factories.create_officer()
         bad_password = self.PWNED_PASSWORDS[0]
         user.set_password(bad_password)
         user.mark_password_validation_not_done()
@@ -122,7 +129,7 @@ class TestSetPassword(OfficersSetupMixin, PwnedPasswordPatcherMixin, WebTestBase
         self.assertTextPresent("Password:")
         self.fill(
             {
-                "#id_username": OFFICER[0],
+                "#id_username": user.username,
                 "#id_password": bad_password,
             }
         )
@@ -162,15 +169,15 @@ class TestSetPassword(OfficersSetupMixin, PwnedPasswordPatcherMixin, WebTestBase
         # When we log in, if their password hasn't been checked, and it does
         # pass new validation checks, we shouldn't require them to set password
         # again.
-        user = self.officer_user
+        user = factories.create_officer(password=self.good_password)
         user.mark_password_validation_not_done()
         user.save()
 
         self.get_url("cciw-officers-index")
         self.fill(
             {
-                "#id_username": OFFICER[0],
-                "#id_password": OFFICER[1],
+                "#id_username": user.username,
+                "#id_password": self.good_password,
             }
         )
         self.submit("[type=submit]")
@@ -183,12 +190,12 @@ class TestSetPassword(OfficersSetupMixin, PwnedPasswordPatcherMixin, WebTestBase
     def test_handle_validated_password(self):
         # When we log in, if their password has already been checked, we
         # shouldn't check it again.
-        user = self.officer_user
+        user = factories.create_officer(password=self.good_password)
         self.get_url("cciw-officers-index")
         self.fill(
             {
-                "#id_username": OFFICER[0],
-                "#id_password": OFFICER[1],
+                "#id_username": user.username,
+                "#id_password": self.good_password,
             }
         )
         self.submit("[type=submit]")

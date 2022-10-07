@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core import mail
 from django.urls import reverse
 
-from cciw.cciwmain.tests.base import BasicSetupMixin, SiteSetupMixin
+from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.contact_us.bogofilter import BogofilterStatus
 from cciw.officers.tests import factories as officer_factories
 from cciw.sitecontent.models import HtmlChunk
@@ -24,7 +24,7 @@ def create_message() -> Message:
     )
 
 
-class ContactUsPage(BasicSetupMixin, WebTestBase):
+class ContactUsPage(WebTestBase):
     def setUp(self):
         super().setUp()
         HtmlChunk.objects.create(

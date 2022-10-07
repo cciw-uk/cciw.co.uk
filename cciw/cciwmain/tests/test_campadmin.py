@@ -1,14 +1,14 @@
 from django.urls import reverse
 
-from cciw.cciwmain.models import Camp
-from cciw.officers.tests.base import LEADER, OFFICER, CurrentCampsMixin, OfficersSetupMixin
+from cciw.cciwmain.tests import factories as camp_factories
+from cciw.officers.tests import factories as officer_factories
 from cciw.utils.tests.webtest import WebTestBase
 
 
-class CampAdmin(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
+class CampAdmin(WebTestBase):
     def test_officer_cant_edit_camp(self):
-        self.officer_login(OFFICER)
-        camp = Camp.objects.first()
+        camp = camp_factories.create_camp()
+        self.officer_login(officer_factories.create_officer())
 
         self.get_literal_url(reverse("admin:cciwmain_camp_changelist"), expect_errors=True)
         self.assertCode(403)
@@ -16,24 +16,22 @@ class CampAdmin(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.assertCode(403)
 
     def test_leaders_can_edit_current_camp(self):
-        self.officer_login(LEADER)
-        leader = self.leader_user
-        (camp,) = leader.current_camps_as_admin_or_leader
-        other_camps = Camp.objects.all().exclude(id=camp.id)
+        camp = camp_factories.create_camp(leader=(leader := officer_factories.create_officer()))
+        old_camp = camp_factories.create_camp(leader=leader, year=camp.year - 1)
+        other_camp = camp_factories.create_camp()
+        self.officer_login(leader)
         self.get_url("admin:cciwmain_camp_changelist")
-        for c in other_camps:
-            if camp in leader.camps_as_admin_or_leader:
-                assert self.is_element_present(f'[href="/admin/cciwmain/camp/{c.id}/change/"]')
-            else:
-                assert not self.is_element_present(f'[href="/admin/cciwmain/camp/{c.id}/change/"]')
+        assert camp in leader.camps_as_admin_or_leader
+        assert other_camp not in leader.camps_as_admin_or_leader
+        assert self.is_element_present(f'[href="/admin/cciwmain/camp/{camp.id}/change/"]')
+        assert not self.is_element_present(f'[href="/admin/cciwmain/camp/{other_camp.id}/change/"]')
         self.follow_link(f'[href="/admin/cciwmain/camp/{camp.id}/change/"]')
+        assert camp.max_campers != 47  # sanity check
         self.fill({"#id_max_campers": 47})
         self.submit('[name="_save"]')
-        assert camp.max_campers != 47
         camp.refresh_from_db()
         assert camp.max_campers == 47
 
         # Old camp is not editable:
-        old_camp = leader.camps_as_admin_or_leader.exclude(id=camp.id).get()
         self.get_url("admin:cciwmain_camp_change", old_camp.id)
         assert not self.is_element_present('[name="_save"]')

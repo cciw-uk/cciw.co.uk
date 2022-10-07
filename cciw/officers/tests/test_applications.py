@@ -1,22 +1,13 @@
 from datetime import date, timedelta
 
 from django.core import mail
-from django.urls import reverse
 
 from cciw.accounts.models import User
-from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
-from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
-from cciw.officers.models import Application
-from cciw.officers.tests.base import (
-    OFFICER_PASSWORD,
-    OFFICER_USERNAME,
-    CurrentCampsMixin,
-    OfficersSetupMixin,
-    RequireQualificationTypesMixin,
-    factories,
-)
+from cciw.officers.models import Application, Qualification
+from cciw.officers.tests import factories
+from cciw.officers.tests.base import RequireQualificationTypesMixin
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
 
@@ -42,68 +33,100 @@ class ApplicationModel(TestBase):
             assert app.referees[1] == app.referee_set.get(referee_number=2)
 
 
-class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin, TestBase):
+class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
 
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
 
-    def setUp(self):
-        super().setUp()
-        self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
-        self.url = reverse("cciw-officers-applications")
-        self.user = User.objects.get(username=OFFICER_USERNAME)
-        self.user.applications.all().delete()
+    def _start(self, old=False, finished=False, unfinished=False, qualifications=None):
+        """
+        Create camp and officer, optionally with:
+        - a recent *finished* Application
+        - an *old* finished* Application
+        - a recent *unfinished* Application
+        - any specificed Qualifications in Applications
 
-    def test_get(self):
-        resp = self.client.get(self.url)
-        assert 200 == resp.status_code
-        self.assertContains(resp, "Your applications")
+        And go to Applications list page
+        """
+        officer = factories.create_officer()
+        # Ensure we have a future camp, but not too far in the future
+        camps_factories.create_camp(start_date=date.today() + timedelta(days=20))
+        if old:
+            factories.create_application(
+                officer=officer,
+                finished=True,
+                date_saved=date.today() - timedelta(days=365),
+                qualifications=qualifications,
+            )
+        if finished:
+            factories.create_application(
+                officer=officer,
+                finished=True,
+                date_saved=date.today() - timedelta(days=1),
+                qualifications=qualifications,
+            )
+        if unfinished:
+            factories.create_application(
+                officer=officer,
+                finished=False,
+                date_saved=date.today() - timedelta(days=1),
+                qualifications=qualifications,
+            )
+        self.officer_login(officer)
+        self.get_url("cciw-officers-applications")
+        return officer
 
     def test_no_existing_application(self):
-        resp = self.client.get(self.url)
-        self.assertNotContains(resp, self._create_button)
-        self.assertNotContains(resp, self._edit_button)
+        self._start(finished=False, unfinished=False, old=False)
+        self.assertTextPresent("Your applications")
+        assert self.is_element_present("input[type=submit][value=Start]")
+        assert not self.is_element_present("input[type=submit][value=Create]")
+        assert not self.is_element_present("input[type=submit][name=edit]")
 
-    def test_finished_application(self):
-        self.user.applications.create(finished=True, date_saved=date.today() - timedelta(365))
-        resp = self.client.get(self.url)
-        self.assertContains(resp, self._create_button)
+    def test_finished_application_old(self):
+        self._start(old=True)
+        assert not self.is_element_present("input[type=submit][value=Start]")
+        assert self.is_element_present("input[type=submit][value=Create]")
+        assert not self.is_element_present("input[type=submit][name=edit]")
 
     def test_finished_application_recent(self):
-        self.user.applications.create(finished=True, date_saved=date.today())
-        resp = self.client.get(self.url)
-        self.assertNotContains(resp, self._create_button)
+        self._start(finished=True)
+        assert not self.is_element_present("input[type=submit][value=Start]")
+        assert not self.is_element_present("input[type=submit][value=Create]")
+        assert not self.is_element_present("input[type=submit][name=edit]")
 
     def test_unfinished_application(self):
-        self.user.applications.create(finished=False, date_saved=date.today())
-        resp = self.client.get(self.url)
-        self.assertContains(resp, self._edit_button)
+        self._start(unfinished=True)
+        assert self.is_element_present("input[type=submit][name=edit]")
 
     def test_create_from_old(self):
-        app = self.user.applications.create(
-            finished=True, full_name="My Full Name", date_saved=date.today() - timedelta(365)
+        officer = self._start(
+            old=True,
+            qualifications=[Qualification(type=self.first_aid_qualification, date_issued=date(2016, 1, 1))],
         )
-        ref, _ = app.referee_set.get_or_create(referee_number=1)
-        ref.name = "Last Years Referee"
-        ref.save()
-        app.qualifications.create(type=self.first_aid_qualification, date_issued=date(2016, 1, 1))
-        resp = self.client.post(self.url, {"new": "Create"})
-        assert 302 == resp.status_code
-        assert len(self.user.applications.all()) == 2
+        application = officer.applications.get()
+
+        self.submit("input[type=submit][value=Create]")
+        assert len(officer.applications.all()) == 2
         # New should be a copy of old:
-        for a in self.user.applications.all():
-            assert a.full_name == app.full_name
-            assert a.referee_set.get(referee_number=1).name == app.referee_set.get(referee_number=1).name
+        for a in officer.applications.all():
+            assert a.full_name == application.full_name
+            assert a.referee_set.get(referee_number=1).name == application.referee_set.get(referee_number=1).name
             assert list([q.type, q.date_issued] for q in a.qualifications.all()) == list(
-                [q.type, q.date_issued] for q in app.qualifications.all()
+                [q.type, q.date_issued] for q in application.qualifications.all()
             )
 
     def test_create_when_already_done(self):
-        # Should not create a new application if a recent one is submitted
-        app = self.user.applications.create(finished=True, date_saved=date.today())
-        resp = self.client.post(self.url, {"new": "Create"})
-        assert 200 == resp.status_code
-        assert list(self.user.applications.all()) == [app]
+        officer = self._start(old=True)
+
+        # Page is already loaded, at this point we submit an application (e.g. in different tab)
+        factories.create_application(officer=officer, finished=True, date_saved=date.today() - timedelta(days=1))
+        assert officer.applications.count() == 2
+
+        # And then try to create.
+        # It should not create a new application since recent one is submitted
+        self.submit("input[type=submit][value=Create]")
+        assert officer.applications.count() == 2
 
 
 class PersonalApplicationView(WebTestBase):
@@ -155,7 +178,7 @@ class PersonalApplicationView(WebTestBase):
         assert ftype == "text/rtf"
 
 
-class ApplicationUtils(BasicSetupMixin, TestBase):
+class ApplicationUtils(TestBase):
     def test_date_saved_logic(self):
 
         # Setup::
@@ -172,7 +195,6 @@ class ApplicationUtils(BasicSetupMixin, TestBase):
         future_camp_start = date(date.today().year + 1, 8, 1)
         past_camp_start = future_camp_start - timedelta(30 * 11)
 
-        Camp.objects.all().delete()
         c1 = camps_factories.create_camp(
             year=past_camp_start.year,
             start_date=past_camp_start,

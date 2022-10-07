@@ -7,13 +7,14 @@ from cciw.accounts.models import (
     DBS_OFFICER_ROLE_NAME,
     REFERENCE_CONTACT_ROLE_NAME,
     SECRETARY_ROLE_NAME,
+    SITE_EDITOR_ROLE_NAME,
     Role,
     User,
     setup_auth_roles,
 )
 from cciw.cciwmain.models import Camp
 from cciw.contact_us.models import Message
-from cciw.officers.models import Application, Referee, Reference
+from cciw.officers.models import Application, Qualification, Referee, Reference
 from cciw.utils.tests.factories import Auto, sequence
 
 USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
@@ -70,6 +71,14 @@ def create_officer(
     return user
 
 
+def create_current_camp_leader():
+    from cciw.cciwmain.tests import factories as camps_factories
+
+    leader = create_officer()
+    camps_factories.create_camp(leader=leader)
+    return leader
+
+
 def get_any_officer() -> User:
     user = User.objects.filter(is_staff=True).first()
     if not user:
@@ -91,6 +100,12 @@ def _get_standard_role(name: str) -> Role:
         # fixtures:
         setup_auth_roles()
         return Role.objects.get(name=name)
+
+
+def create_site_editor() -> User:
+    return create_officer(
+        roles=[_get_standard_role(SITE_EDITOR_ROLE_NAME)],
+    )
 
 
 def create_booking_secretary() -> User:
@@ -142,11 +157,14 @@ def create_application(
     referee1_email: str = Auto,
     referee1_address: str = Auto,
     referee1_tel: str = Auto,
+    referee1_capacity_known: str = Auto,
     referee2_name: str = Auto,
     referee2_email: str = Auto,
     referee2_address: str = Auto,
     referee2_tel: str = Auto,
+    referee2_capacity_known: str = Auto,
     finished=True,
+    qualifications: list[Qualification] = Auto,
 ) -> Application:
     if date_saved is Auto:
         if year is not Auto:
@@ -197,6 +215,7 @@ def create_application(
         mobile="",
         name="Referee1 Name" if referee1_name is Auto else referee1_name,
         tel="01222 666661" if referee1_tel is Auto else referee1_tel,
+        capacity_known="Pastor" if referee1_capacity_known is Auto else referee1_capacity_known,
     )
     application.referee_set.create(
         referee_number=2,
@@ -205,7 +224,13 @@ def create_application(
         mobile="",
         name="Referee2 Name" if referee2_name is Auto else referee2_name,
         tel="01222 666662" if referee2_tel is Auto else referee2_tel,
+        capacity_known="Youth leader" if referee2_capacity_known is Auto else referee1_capacity_known,
     )
+    if qualifications:
+        for qual in qualifications:
+            if qual.application_id is None:
+                qual.application = application
+                qual.save()
 
     return application
 

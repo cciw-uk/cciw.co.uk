@@ -9,7 +9,8 @@ from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Referee, ReferenceAction
-from cciw.officers.tests.base import RolesSetupMixin, factories
+from cciw.officers.tests import factories
+from cciw.officers.tests.base import RolesSetupMixin
 from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import WebTestBase

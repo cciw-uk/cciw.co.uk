@@ -1,83 +1,43 @@
-from django.contrib.auth.models import Permission
-
-from cciw.accounts.models import Role, User
-from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.sitecontent.models import MenuLink
+from cciw.officers.tests import factories
+from cciw.sitecontent.models import HtmlChunk, MenuLink
 from cciw.utils.tests.base import TestBase
+from cciw.utils.tests.webtest import WebTestBase
 
 
-class HtmlChunkPage(BasicSetupMixin, TestBase):
-    def setUp(self):
-        super().setUp()
-        self.admin_user = User.objects.create(
-            username="admin",
-            first_name="Admin",
-            last_name="",
-            is_active=True,
-            is_superuser=True,
-            is_staff=True,
-            email="someone@somewhere.com",
-            password="plain$$test_admin_password",
-        )
-
-        self.normal_user = User.objects.create(
-            username="normaluser",
-            first_name="Some other user",
-            last_name="",
-            is_active=True,
-            is_superuser=False,
-            is_staff=False,
-            email="editor@somewhere.com",
-            password="plain$$test_normaluser_password",
-        )
-
-    def _create_site_editor(self):
-        editor_user = User.objects.create(
-            username="editor",
-            first_name="Editor",
-            last_name="",
-            is_active=True,
-            is_superuser=False,
-            is_staff=True,
-            email="editor@somewhere.com",
-            password="plain$$test_editor_password",
-        )
-        site_editor_role, created = Role.objects.get_or_create(name="Site editors")
-        if created:
-            site_editor_role.permissions.add(
-                Permission.objects.get_by_natural_key("add_htmlchunk", "sitecontent", "htmlchunk"),
-                Permission.objects.get_by_natural_key("change_htmlchunk", "sitecontent", "htmlchunk"),
-                Permission.objects.get_by_natural_key("delete_htmlchunk", "sitecontent", "htmlchunk"),
-            )
-        editor_user.roles.add(site_editor_role)
-        return editor_user
-
+class HtmlChunkPage(WebTestBase):
     def test_page_anonymous(self):
-        self._test_page(False)
+        self._test_page(should_see_edit_link=False)
 
     def test_page_normal_user(self):
-        assert self.client.login(username="normaluser", password="test_normaluser_password")
-        self._test_page(False)
+        self.officer_login(factories.create_officer())
+        self._test_page(should_see_edit_link=False)
 
     def test_page_editor(self):
-        self._create_site_editor()
-        assert self.client.login(username="editor", password="test_editor_password")
-        self._test_page(True)
+        self.officer_login(factories.create_site_editor())
+        self._test_page(should_see_edit_link=True)
 
     def test_page_admin(self):
-        assert self.client.login(username="admin", password="test_admin_password")
-        self._test_page(True)
+        self.officer_login(factories.create_officer(is_superuser=True))
+        self._test_page(should_see_edit_link=True)
 
-    def _test_page(self, should_see_edit_link):
-        response = self.client.get("/")
-        self.assertContains(response, "<p>CCiW is a charitable company")
+    def _test_page(self, *, should_see_edit_link: bool):
+        m = MenuLink.objects.create(visible=True, extra_title="", parent_item=None, title="Home", url="/", listorder=0)
+
+        HtmlChunk.objects.create(
+            menu_link=m,
+            html="<p>CCiW is a charitable company...</p>",
+            page_title="Christian Camps in Wales",
+            name="home_page",
+        )
+        self.get_literal_url("/")
+        self.assertTextPresent("CCiW is a charitable company")
         if should_see_edit_link:
-            self.assertContains(response, "Edit home_page")
+            self.assertTextPresent("Edit home_page")
         else:
-            self.assertNotContains(response, "Edit home_page")
+            self.assertTextAbsent("Edit home_page")
 
 
-class FindViewTests(BasicSetupMixin, TestBase):
+class FindViewTests(TestBase):
     def test_find(self):
         menu_link = MenuLink.objects.create(title="Menu link title", listorder=0, url="/my-page/")
         menu_link.htmlchunk_set.create(
