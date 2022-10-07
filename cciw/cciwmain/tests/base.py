@@ -8,7 +8,7 @@ from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 from . import factories
 
-# TODO - a lot of this stuff should be rewritten as per https://gitlab.com/cciw/cciw.co.uk/-/issues/6
+# TODO - a lot of this stuff should be rewritten as per https://github.com/cciw-uk/cciw.co.uk/issues/6
 # especially removal of `default_site`, `default_camp_1` etc
 
 
@@ -40,7 +40,7 @@ class BasicSetupMixin(SiteSetupMixin):
         )
         HtmlChunk.objects.create(name="bookingform_post_to", menu_link=None)
 
-        # A lot of this stuff below should be removed as per https://gitlab.com/cciw/cciw.co.uk/-/issues/6
+        # A lot of this stuff below should be removed as per https://github.com/cciw-uk/cciw.co.uk/issues/6
         self.default_site = Site.objects.create(
             info="Lots of info about this camp site, including: <address>Llys Andreas Camp Site, Wales</address>",
             long_name="Llys Andreas, Barmouth",

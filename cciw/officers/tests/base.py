@@ -18,7 +18,7 @@ from .factories import (  # noqa: F401
     SECRETARY_USERNAME,
 )
 
-# A lot of this stuff should be rewritten as per https://gitlab.com/cciw/cciw.co.uk/-/issues/6
+# A lot of this stuff should be rewritten as per https://github.com/cciw-uk/cciw.co.uk/issues/6
 
 # Then we wouldn't need all these constants. Plus we shouldn't need passwords
 # due to improvements in django_functest shortcut_login

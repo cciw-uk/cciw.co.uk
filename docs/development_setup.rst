@@ -24,10 +24,10 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 * Within a directory of your choice, checkout the CCiW source code into a folder 'src'::
 
-    git clone git@gitlab.com:cciw/cciw.co.uk.git src
+    git clone git@github.com:cciw-uk/cciw.co.uk.git src
     cd src
 
-  Edit your ``.git/config`` and ensure the gitlab remote is called ``origin``
+  Edit your ``.git/config`` and ensure the GitHub remote is called ``origin``
   - this is needed for deploying.
 
 * Make a virtualenv using Python 3.10 e.g. using mkvirtualenv/virtualenv_wrapper::

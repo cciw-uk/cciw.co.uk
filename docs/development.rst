@@ -31,7 +31,7 @@ See `pytest docs <https://docs.pytest.org/en/latest/>`_ for more info.
 The tests are currently written in a mixture of styles. We are migrating to
 using “factory“ functions to create any database model instances specifically
 under test, and moving away from setup mixins that create a bunch of objects we
-might need. See https://gitlab.com/cciw/cciw.co.uk/-/issues/6
+might need. See https://github.com/cciw-uk/cciw.co.uk/issues/6
 
 Tips
 ~~~~
@@ -49,4 +49,4 @@ See also:
 
 * `<security.rst>`_.
 * `<services.rst>`_.
-* `Issues list <https://gitlab.com/cciw/cciw.co.uk/-/issues>`_ for known bugs or technical debt.
+* `Issues list <https://github.com/cciw-uk/cciw.co.uk/issues>`_ for known bugs or technical debt.
