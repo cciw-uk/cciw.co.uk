@@ -28,10 +28,6 @@ Exclude slow and flaky Selenium tests like this::
 
 See `pytest docs <https://docs.pytest.org/en/latest/>`_ for more info.
 
-The tests are currently written in a mixture of styles. We are migrating to
-using “factory“ functions to create any database model instances specifically
-under test, and moving away from setup mixins that create a bunch of objects we
-might need. See https://github.com/cciw-uk/cciw.co.uk/issues/6
 
 Tips
 ~~~~

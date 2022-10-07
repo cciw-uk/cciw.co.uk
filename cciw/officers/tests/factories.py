@@ -20,22 +20,6 @@ from cciw.utils.tests.factories import Auto, sequence
 USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
 
 
-BOOKING_SECRETARY_USERNAME = "bookingsec"
-BOOKING_SECRETARY_PASSWORD = "a_password"
-BOOKING_SECRETARY = (BOOKING_SECRETARY_USERNAME, BOOKING_SECRETARY_PASSWORD)
-
-
-SECRETARY_USERNAME = "mrsecretary"
-SECRETARY_PASSWORD = "test_password"
-SECRETARY = (SECRETARY_USERNAME, SECRETARY_PASSWORD)
-
-
-DBSOFFICER_USERNAME = "mrsdbsofficer"
-DBSOFFICER_PASSWORD = "my_password"
-DBSOFFICER_EMAIL = "dbsofficer@somewhere.com"
-DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
-
-
 def create_officer(
     username: str = Auto,
     first_name: str = "Joe",
@@ -110,26 +94,19 @@ def create_site_editor() -> User:
 
 def create_booking_secretary() -> User:
     return create_officer(
-        username=BOOKING_SECRETARY_USERNAME,
         roles=[_get_standard_role(BOOKING_SECRETARY_ROLE_NAME)],
-        password=BOOKING_SECRETARY_PASSWORD,
     )
 
 
 def create_secretary() -> User:
     return create_officer(
-        username=SECRETARY_USERNAME,
         roles=[_get_standard_role(SECRETARY_ROLE_NAME)],
-        password=SECRETARY_PASSWORD,
     )
 
 
 def create_dbs_officer() -> User:
     return create_officer(
-        username=DBSOFFICER_USERNAME,
-        email=DBSOFFICER_EMAIL,
         roles=[_get_standard_role(DBS_OFFICER_ROLE_NAME)],
-        password=DBSOFFICER_PASSWORD,
     )
 
 
