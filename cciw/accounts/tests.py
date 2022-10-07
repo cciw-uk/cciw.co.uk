@@ -54,7 +54,7 @@ class TestUserModel(OfficersSetupMixin, TestBase):
         assert not self.officer_user.has_perm("bookings.add_booking")
 
 
-class PwnPasswordPatcherMixin:
+class PwnedPasswordPatcherMixin:
     PWNED_PASSWORDS = ["pwnedpassword"]
 
     def setUp(self):
@@ -72,7 +72,7 @@ class PwnPasswordPatcherMixin:
         return password in self.PWNED_PASSWORDS
 
 
-class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
+class TestSetPassword(OfficersSetupMixin, PwnedPasswordPatcherMixin, WebTestBase):
 
     good_password = "Jo6Ohmieooque5A"
 
