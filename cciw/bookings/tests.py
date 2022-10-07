@@ -4,7 +4,6 @@ from decimal import Decimal
 from unittest import mock
 
 import pytest
-import time_machine
 import vcr
 import xlrd
 from django.conf import settings
@@ -107,24 +106,7 @@ class BookingLogInMixin:
             return self.app.set_cookie(key, value)
 
 
-class TimeTravelMixin:
-    """
-    Run all tests as if on on the day specified by `today` attribute
-    """
-
-    today: date = NotImplemented
-
-    def setUp(self):
-        super().setUp()
-        self.traveller = time_machine.travel(self.today)
-        self.traveller.start()
-
-    def tearDown(self):
-        self.traveller.stop()
-        super().tearDown()
-
-
-class CreateBookingWebMixin(TimeTravelMixin, BookingLogInMixin):
+class CreateBookingWebMixin(BookingLogInMixin):
     """
     Mixin to be used for functional testing of creating bookings online. It
     creates `self.camp` and `self.camp_2` and provides other utility methods.
