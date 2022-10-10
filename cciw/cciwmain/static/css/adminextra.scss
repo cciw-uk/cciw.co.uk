@@ -55,28 +55,6 @@ a:hover {
     color: darkorange;
 }
 
-.refrow td
-{
-    border-bottom: 1px solid black;
-}
-
-.refrow table td
-{
-    border-bottom: 0px;
-}
-
-.refrow table
-{
-    width: 100%;
-}
-
-tr.refrow td.nopadding
-{
-
-    padding: 0px;
-    margin: 0px;
-}
-
 
 a[target=_blank] {
     &::after {
