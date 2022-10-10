@@ -1,0 +1,12 @@
+{% if breadcrumbs %}
+  <div class="breadcrumbs">
+    {% for url, caption in breadcrumbs %}
+      {% if url %}
+        <a href="{{ url }}">{{ caption }}</a>
+      {% else %}
+        {{ caption }}
+      {% endif %}
+      {% if not forloop.last %} › {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

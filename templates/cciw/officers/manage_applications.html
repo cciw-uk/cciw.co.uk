@@ -1,44 +1,43 @@
 {% extends "cciw/officers/base.html" %}
-{% block title %}Manage applications {{ camp.nice_name }} | CCiW Officers{% endblock %}
-{% block content %}<div id="content-main">
-  <h1>Manage applications</h1>
-  <h2>For camp {{ camp }}</h2>
+{% block content %}
+  <div id="content-main">
+    <h2>{{ camp.leaders_formatted }}</h2>
 
-  <p>This page allows you to view submitted applications. Normally the leaders
-    of the camps (and any 'admins' defined for the camp) will be automatically
-    emailed links to any submitted application forms and you will not need this
-    page.
-  </p>
+    <p>This page allows you to view submitted applications. Normally the leaders
+      of the camps (and any 'admins' defined for the camp) will be automatically
+      emailed links to any submitted application forms and you will not need this
+      page.
+    </p>
 
 
-  <h2>Edit</h2>
-  <p>If you need to view/edit applications to make corrections, use the
-    <a href="/admin/officers/application/">admin interface for applications</a>.</p>
+    <h2>Edit</h2>
+    <p>If you need to view/edit applications to make corrections, use the
+      <a href="/admin/officers/application/">admin interface for applications</a>.</p>
 
-  <h2>View</h2>
+    <h2>View</h2>
 
-  {% if finished_applications %}
+    {% if finished_applications %}
 
-    <form action="{% url 'cciw-officers-view_application_redirect' %}" method="get">
-      <div class="aligned">
-        <div class="form-row">
-          <label for="application">Choose application</label>
-          <select name="application_id" id="application">
-            {% for app in finished_applications %}
-              <option value="{{ app.id }}">{{ app.officer.full_name }}, submitted {{ app.date_saved|date:"Y-m-d" }}</option>
-            {% endfor %}
-          </select>
+      <form action="{% url 'cciw-officers-view_application_redirect' %}" method="get">
+        <div class="aligned">
+          <div class="form-row">
+            <label for="application">Choose application</label>
+            <select name="application_id" id="application">
+              {% for app in finished_applications %}
+                <option value="{{ app.id }}">{{ app.officer.full_name }}, submitted {{ app.date_saved|date:"Y-m-d" }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-row">
+            <input type="submit" name="view" value="View" />
+          </div>
         </div>
-        <div class="form-row">
-          <input type="submit" name="view" value="View" />
-        </div>
-      </div>
-    </form>
+      </form>
 
-  {% else %}
+    {% else %}
 
-    <p>No applications for your camps have been completed yet.</p>
+      <p>No applications for your camps have been completed yet.</p>
 
-  {% endif %}
-</div>
+    {% endif %}
+  </div>
 {% endblock %}

@@ -1,10 +1,6 @@
 {% extends "cciw/officers/stats_base.html" %}
-{% block title %}Booking progress stats {% if start_year %}{{ start_year }}-{{ end_year }}{% endif %} | CCiW Officers{% endblock %}
-
 {% block content %}
   <div id="content-main">
-    <h1>Booking progress {% if start_year %}{{ start_year }}-{{ end_year }}{% endif %}</h1>
-
     <div style="width:800px;height:400px;"
       data-chart="{{ dates_chart_data }}"
       data-booking-progress-stats-chart-placeholder="true"

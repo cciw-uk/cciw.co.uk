@@ -1,9 +1,16 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
+{% load officer_utils %}
 
-{% block breadcrumbs %}{% endblock %}
+{% block title %}{{ title }} | CCiW Officers{% endblock %}
 
-{% block title %}CCiW Officers{% endblock %}
+{% block branding %}
+  <h1 id="site-name">CCiW Officers</h1>
+{% endblock %}
+
+{% block breadcrumbs %}
+  {% officers_breadcrumbs %}
+{% endblock %}
 
 {% block extrahead %}
   {{ block.super }}

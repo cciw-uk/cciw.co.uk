@@ -3,7 +3,7 @@
 {% load compress %}
 {% load static %}
 
-{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block title %}{{ title }} | {{ site_title|default:"CCiW site administration" }}{% endblock %}
 
 {% block extrahead %}
   {{ block.super }}
@@ -21,7 +21,7 @@
 {% endblock %}
 
 {% block branding %}
-  <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:"CCiW Officers" }}</a></h1>
+  <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:"CCiW site administration" }}</a></h1>
 {% endblock %}
 
 {% block nav-global %}{% endblock %}

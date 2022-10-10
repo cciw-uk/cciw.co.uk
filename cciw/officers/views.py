@@ -2,7 +2,7 @@ import contextlib
 import enum
 from datetime import date, datetime, timedelta
 from functools import wraps
-from typing import Iterable
+from typing import Iterable, TypeAlias
 from urllib.parse import urlparse
 
 import furl
@@ -156,6 +156,24 @@ class DataRetentionNotice(enum.Enum):
     CAMPERS = "campers"
 
 
+NamedUrl: TypeAlias = str
+BreadCrumb = tuple[NamedUrl, str]
+
+
+def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs) -> HttpResponse:
+            retval = func(request, *args, **kwargs)
+            if isinstance(retval, TemplateResponse):
+                retval.context_data["breadcrumbs"] = breadcrumbs
+            return retval
+
+        return wrapper
+
+    return decorator
+
+
 def close_window_and_update_referee(ref_id):
     """
     HttpResponse that closes the current window, and updates the reference
@@ -224,7 +242,9 @@ def index(request):
             return HttpResponseRedirect(redirect_to)
 
     user = request.user
-    context = {}
+    context = {
+        "title": "Officer home page",
+    }
     context["thisyear"] = common.get_thisyear()
     context["lastyear"] = context["thisyear"] - 1
     if user.is_camp_admin or user.is_superuser:
@@ -249,8 +269,12 @@ def index(request):
     return TemplateResponse(request, "cciw/officers/index.html", context)
 
 
+officers_breadcrumbs = [("cciw-officers-index", "Officer home page")]
+
+
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(officers_breadcrumbs)
 def leaders_index(request):
     """Displays a list of links for actions for leaders"""
     user = request.user
@@ -265,6 +289,7 @@ def leaders_index(request):
         request,
         "cciw/officers/leaders_index.html",
         {
+            "title": "Leader's tools",
             "current_camps": [c for c in camps if c.year == thisyear],
             "old_camps": [c for c in camps if c.year < thisyear],
             "statsyears": list(range(last_existing_year, last_existing_year - 3, -1)),
@@ -275,13 +300,15 @@ def leaders_index(request):
     )
 
 
+leaders_breadcrumbs = officers_breadcrumbs + [("cciw-officers-leaders_index", "Leaders' tools")]
+
+
 @staff_member_required
 @never_cache
+@with_breadcrumbs(officers_breadcrumbs)
 def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
-    context = {"camps": [i.camp for i in user.invitations.filter(camp__year=common.get_thisyear())]}
-
     finished_applications = user.applications.filter(finished=True).order_by("-date_saved")
     # A NULL date_saved means they never pressed save, so there is no point
     # re-editing, so we ignore them.
@@ -291,10 +318,14 @@ def applications(request):
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
 
-    context["finished_applications"] = finished_applications
-    context["unfinished_applications"] = unfinished_applications
-    context["has_thisyears_app"] = has_thisyears_app
-    context["has_completed_app"] = has_completed_app
+    context = {
+        "camps": [i.camp for i in user.invitations.filter(camp__year=common.get_thisyear())],
+        "title": "Your applications",
+        "finished_applications": finished_applications,
+        "unfinished_applications": unfinished_applications,
+        "has_thisyears_app": has_thisyears_app,
+        "has_completed_app": has_completed_app,
+    }
 
     if not has_completed_app and unfinished_applications and "edit" in request.POST:
         # Edit existing application.
@@ -377,6 +408,7 @@ def view_application_redirect(request):
 
 @staff_member_required
 @cache_control(max_age=3600)
+@with_breadcrumbs(officers_breadcrumbs)
 def view_application(request, application_id: int):
     application = get_object_or_404(Application, id=application_id)
 
@@ -408,14 +440,16 @@ def _thisyears_camp_for_leader(user):
 @staff_member_required
 @camp_admin_required
 @never_cache
+@with_breadcrumbs(leaders_breadcrumbs)
 def manage_applications(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     return TemplateResponse(
         request,
         "cciw/officers/manage_applications.html",
         {
-            "finished_applications": applications_for_camp(camp).order_by("officer__first_name", "officer__last_name"),
+            "title": f"Manage applications: {camp.nice_name}",
             "camp": camp,
+            "finished_applications": applications_for_camp(camp).order_by("officer__first_name", "officer__last_name"),
         },
     )
 
@@ -492,8 +526,8 @@ def add_previous_references(referee: Referee):
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
+@with_breadcrumbs(leaders_breadcrumbs)
 def manage_references(request, camp_id: CampId):
-    context = {}
 
     # If referee_id is set, we just want to update part of the page.
     referee_id = request.GET.get("referee_id")
@@ -504,10 +538,7 @@ def manage_references(request, camp_id: CampId):
             officer = User.objects.get(id=int(officer_id))
         except (ValueError, User.DoesNotExist):
             raise Http404
-
-    context["officer"] = officer
     camp = _get_camp_or_404(camp_id)
-    context["camp"] = camp
 
     if referee_id is None:
         apps = applications_for_camp(camp, officer_ids=[officer_id] if officer is not None else None)
@@ -525,7 +556,6 @@ def manage_references(request, camp_id: CampId):
     all_referees = list(referees)
     if "ref_email" in request.GET:
         ref_email = request.GET["ref_email"]
-        context["ref_email_search"] = ref_email
         all_referees = [r for r in all_referees if r.email.lower() == ref_email.lower()]
     else:
         ref_email = None
@@ -539,6 +569,13 @@ def manage_references(request, camp_id: CampId):
             continue  # Don't need the following
         # decorate each Reference with suggested previous References.
         add_previous_references(referee)
+
+    context = {
+        "officer": officer,
+        "camp": camp,
+        "title": f"Manage references: {camp.nice_name}",
+        "ref_email_search": ref_email,
+    }
 
     if referee_id is None:
         context["notrequested"] = notrequested
@@ -818,18 +855,21 @@ def view_reference(request, reference_id: int):
 
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(leaders_breadcrumbs)
 def officer_list(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
 
-    context = {}
-    context["camp"] = camp
     invitation_list = camp.invitations.all()
     officer_list_ids = {i.officer_id for i in invitation_list}
-    context["invitations"] = invitation_list
-    context["officers_noapplicationform"] = camp_slacker_list(camp)
-    context["address_all"] = address_for_camp_officers(camp)
-    context["address_noapplicationform"] = address_for_camp_slackers(camp)
-    context["officers_serious_slackers"] = camp_serious_slacker_list(camp)
+    context = {
+        "camp": camp,
+        "title": f"Officer list: {camp.nice_name}",
+        "invitations": invitation_list,
+        "officers_noapplicationform": camp_slacker_list(camp),
+        "address_all": address_for_camp_officers(camp),
+        "address_noapplicationform": address_for_camp_slackers(camp),
+        "officers_serious_slackers": camp_serious_slacker_list(camp),
+    }
 
     # List for select
     available_officers = list(User.objects.filter(is_staff=True).order_by("first_name", "last_name", "email"))
@@ -848,6 +888,7 @@ def officer_list(request, camp_id: CampId):
     context["available_officers"] = available_officers
 
     # Different templates allow us to render just parts of the page, for AJAX calls
+    # TODO rewrite with htmx
     if "sections" in request.GET:
         tnames = [
             ("chosen", "cciw/officers/officer_list_table_editable.html"),
@@ -1065,6 +1106,7 @@ def officer_files(request, path: str):
 
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(leaders_breadcrumbs)
 def officer_stats(request, year: int):
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
     if len(camps) == 0:
@@ -1088,6 +1130,7 @@ def officer_stats(request, year: int):
         "cciw/officers/stats.html",
         {
             "camps": camps,
+            "title": f"Officer stats {year}",
             "year": year,
             "charts": charts,
         },
@@ -1096,6 +1139,7 @@ def officer_stats(request, year: int):
 
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(leaders_breadcrumbs)
 def officer_stats_trend(request, start_year: int, end_year: int):
     start_year = int(start_year)
     end_year = int(end_year)
@@ -1108,6 +1152,7 @@ def officer_stats_trend(request, start_year: int, end_year: int):
         request,
         "cciw/officers/stats_trend.html",
         {
+            "title": f"Officer stats {start_year}-{end_year}",
             "start_year": start_year,
             "end_year": end_year,
             "chart_data": pandas_highcharts.core.serialize(
@@ -1147,6 +1192,7 @@ def officer_stats_trend_download(request, start_year: int, end_year: int):
 @staff_member_required
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
+@with_breadcrumbs(officers_breadcrumbs)
 def manage_dbss(request, year: int):
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
@@ -1176,6 +1222,7 @@ def manage_dbss(request, year: int):
         request,
         template_name,
         {
+            "title": f"Manage DBSs {year}",
             "officers_and_dbs_info": officers_and_dbs_info,
             "camps": camps,
             "selected_camps": selected_camps,
@@ -1324,11 +1371,13 @@ def dbs_checked_online(request):
 
 
 @staff_member_required
+@with_breadcrumbs(officers_breadcrumbs)
 def officer_info(request):
     return TemplateResponse(
         request,
         "cciw/officers/info.html",
         {
+            "title": "Information for officers",
             "show_wiki_link": request.user.is_wiki_user,
         },
     )
@@ -1337,6 +1386,7 @@ def officer_info(request):
 # treasurer gets to see these to know how much money
 # to transfer to camp leaders.
 @booking_secretary_or_treasurer_required
+@with_breadcrumbs(officers_breadcrumbs)
 def booking_secretary_reports(request, year: int):
     from cciw.bookings.models import Booking, booking_report_by_camp, outstanding_bookings_with_fees
 
@@ -1359,6 +1409,7 @@ def booking_secretary_reports(request, year: int):
         request,
         "cciw/officers/booking_secretary_reports.html",
         {
+            "title": f"Bookings {year}",
             "year": year,
             "stats_start_year": year - BOOKING_STATS_PREVIOUS_YEARS,
             "camps": camps,
@@ -1405,6 +1456,7 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, **kw
 
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(officers_breadcrumbs)
 def booking_progress_stats(request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None):
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=True
@@ -1413,6 +1465,7 @@ def booking_progress_stats(request, start_year: int = None, end_year: int = None
         request,
         "cciw/officers/booking_progress_stats.html",
         {
+            "title": "Booking progress" + (f" {start_year}-{end_year}" if start_year else ""),
             "start_year": start_year,
             "end_year": end_year,
             "camps": camp_objs,
@@ -1449,6 +1502,7 @@ def booking_progress_stats_download(
 
 @staff_member_required
 @secretary_or_committee_required
+@with_breadcrumbs(officers_breadcrumbs)
 def booking_summary_stats(request, start_year: int, end_year: int):
     chart_data = get_booking_summary_stats(start_year, end_year)
     chart_data.pop("Total")
@@ -1456,6 +1510,7 @@ def booking_summary_stats(request, start_year: int, end_year: int):
         request,
         "cciw/officers/booking_summary_stats.html",
         {
+            "title": f"Booking summary {start_year}-{end_year}",
             "start_year": start_year,
             "end_year": end_year,
             "chart_data": pandas_highcharts.core.serialize(chart_data, output_type="json"),
@@ -1483,6 +1538,7 @@ def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids):
 
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(officers_breadcrumbs)
 def booking_ages_stats(
     request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None, single_year: int = None
 ):
@@ -1517,6 +1573,7 @@ def booking_ages_stats(
         request,
         "cciw/officers/booking_ages_stats.html",
         {
+            "title": "Camper ages stats" + (f" {start_year}-{end_year}" if start_year else ""),
             "start_year": start_year,
             "end_year": end_year,
             "camps": camps,

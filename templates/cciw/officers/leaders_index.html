@@ -1,50 +1,48 @@
 {% extends "cciw/officers/base.html" %}
-{% block title %}Leaders' tools | CCiW Officers {% endblock %}
-{% block content %}<div id="content-main">
-  <h1>Leaders' tools</h1>
 
-  {% if current_camps %}
-    {% with current_camps as camps %}
-      <h2>Current camps:</h2>
-      {% include "cciw/officers/camp_management_links.html" %}
-    {% endwith %}
-  {% endif %}
+{% block content %}
+  <div id="content-main">
+    {% if current_camps %}
+      {% with current_camps as camps %}
+        <h2>Current camps:</h2>
+        {% include "cciw/officers/camp_management_links.html" %}
+      {% endwith %}
+    {% endif %}
 
-  {% if old_camps %}
-    {% with old_camps as camps %}
-      <h2>Past camps:</h2>
-      {% include "cciw/officers/camp_management_links.html" %}
-    {% endwith %}
-  {% endif %}
+    {% if old_camps %}
+      {% with old_camps as camps %}
+        <h2>Past camps:</h2>
+        {% include "cciw/officers/camp_management_links.html" %}
+      {% endwith %}
+    {% endif %}
 
-  {% if not current_camps and not old_camps %}
-    <p>There are no camps found that you are a leader or admin for.</p>
-  {% endif %}
+    {% if not current_camps and not old_camps %}
+      <p>There are no camps found that you are a leader or admin for.</p>
+    {% endif %}
 
-  {% if show_all %}
-    <p><a href="?">Show only my camps</a>.</p>
-  {% else %}
-    <p><a href="?show_all=1">Show all camps</a>.</p>
-  {% endif %}
+    {% if show_all %}
+      <p><a href="?">Show only my camps</a>.</p>
+    {% else %}
+      <p><a href="?show_all=1">Show all camps</a>.</p>
+    {% endif %}
 
-  <h2>Stats</h2>
+    <h2>Stats</h2>
 
-  <p>Some statistics showing how we are doing with application forms and
-    references:</p>
-  <ul>
-    {% for year in statsyears %}
-      <li><a href="{% url 'cciw-officers-officer_stats' year=year %}">Stats {{ year }}</a></li>
-    {% endfor %}
-    <li><a href="{% url 'cciw-officers-officer_stats_trend' start_year=stats_start_year end_year=stats_end_year %}">
-      Trend {{ stats_start_year }}-{{ stats_end_year }}</a></li>
-  </ul>
+    <p>Some statistics showing how we are doing with application forms and
+      references:</p>
+    <ul>
+      {% for year in statsyears %}
+        <li><a href="{% url 'cciw-officers-officer_stats' year=year %}">Stats {{ year }}</a></li>
+      {% endfor %}
+      <li><a href="{% url 'cciw-officers-officer_stats_trend' start_year=stats_start_year end_year=stats_end_year %}">
+        Trend {{ stats_start_year }}-{{ stats_end_year }}</a></li>
+    </ul>
 
-  <h2>General</h2>
+    <h2>General</h2>
 
-  <p>Management of officers, camps, camp sites and various other parts
-    of the CCiW website can be done via the <a href="/admin/">CCiW admin
-      interface</a>.  The data that is shown and is editable depends on
-    your permissions.</p>
-
-</div>
+    <p>Management of officers, camps, camp sites and various other parts
+      of the CCiW website can be done via the <a href="/admin/">CCiW admin
+        interface</a>.  The data that is shown and is editable depends on
+      your permissions.</p>
+  </div>
 {% endblock %}

@@ -38,7 +38,7 @@ class ReferencesPage(WebTestBase):
         self.officer_login(leader)
         self.get_url("cciw-officers-manage_references", camp_id=camp.url_id)
         self.assertCode(200)
-        self.assertTextPresent(f"For camp {camp.year}-{camp.name.lower()}")
+        self.assertTextPresent(camp.nice_name)
         # Received:
         self.assertTextAbsent(application.referees[0].email)
         # Not received

@@ -1,10 +1,7 @@
 {% extends "cciw/officers/stats_base.html" %}
-{% block title %}Booking summary stats {{ start_year }}-{{ end_year }} | CCiW Officers{% endblock %}
 
 {% block content %}
   <div id="content-main">
-    <h1>Booking summary {{ start_year }}-{{ end_year }}</h1>
-
     <div style="width:800px;height:400px;"
       data-chart="{{ chart_data }}"
       data-booking-summary-stats-chart-placeholder="true"

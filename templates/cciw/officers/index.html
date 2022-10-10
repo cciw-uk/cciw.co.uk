@@ -1,60 +1,59 @@
 {% extends "cciw/officers/base.html" %}
 
-{% block content %}<div id="content-main">
-  <h1>Officer's home page</h1>
+{% block content %}
+  <div id="content-main">
 
-  <h2>Menu:</h2>
-  <ul>
-    {% if show_booking_secretary_links %}
-      <li><a href="{% url 'admin:app_list' 'bookings' %}">Manage bookings</a></li>
-    {% endif %}
-    {% if show_booking_report_links %}
-      <li><a href="{% url 'cciw-officers-booking_secretary_reports' thisyear %}">
-        Booking reports {{ thisyear }}</a></li>
-      <li><a href="{% url 'cciw-officers-booking_secretary_reports' lastyear %}">
-        Booking reports {{ lastyear }}</a></li>
-    {% endif %}
-    {% if show_secretary_and_committee_links %}
-      {% if booking_stats_start_year and booking_stats_end_year %}
-        <li>Stats:
-          <ul>
-            <li><a href="{% url 'cciw-officers-booking_summary_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">
-              Booking summary stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
-            <li><a href="{% url 'cciw-officers-booking_progress_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">
-              Booking progress stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
-            <li>Camper ages stats:
-              <a href="{% url 'cciw-officers-booking_ages_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">
-                {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a> |
-              <a href="{% url 'cciw-officers-booking_ages_stats_single_year' single_year=booking_stats_end_year %}">
-                All camps {{ booking_stats_end_year }}</a>
-            </li>
-          </ul>
-        </li>
+    <h2>Menu:</h2>
+    <ul>
+      {% if show_booking_secretary_links %}
+        <li><a href="{% url 'admin:app_list' 'bookings' %}">Manage bookings</a></li>
       {% endif %}
-    {% endif %}
-    <li><a href="{% url 'cciw-officers-applications' %}">Submit/view applications</a></li>
-    <li><a href="{% url 'cciw-officers-info' %}">Information about camp</a></li>
-    {% if show_leader_links %}
-      <li><a href="{% url 'cciw-officers-leaders_index' %}">Tools for leaders</a></li>
-    {% endif %}
-    {% if show_dbs_officer_links %}
-      <li><a href="{% url 'cciw-officers-manage_dbss' thisyear %}">Manage DBSs</a></li>
-    {% endif %}
-    {% if show_secretary_links or show_booking_secretary_links %}
-      <li>Download {{ thisyear }} brochure mailing list:
-        <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}?format=xls">XLS</a> |
-        <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}?format=ods">ODS</a>
-        (from bookings for {{ lastyear }})</li>
-      <li><a href="{% url 'cciw-officers-create_officer' %}">Add new officer to system</a></li>
-    {% endif %}
-    {% if show_admin_link %}
-      <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>
-    {% endif %}
-    {% if user.has_usable_password %}
-      <li><a href="{% url 'admin:password_change' %}">Change password</a></li>
-    {% endif %}
+      {% if show_booking_report_links %}
+        <li><a href="{% url 'cciw-officers-booking_secretary_reports' thisyear %}">
+          Booking reports {{ thisyear }}</a></li>
+        <li><a href="{% url 'cciw-officers-booking_secretary_reports' lastyear %}">
+          Booking reports {{ lastyear }}</a></li>
+      {% endif %}
+      {% if show_secretary_and_committee_links %}
+        {% if booking_stats_start_year and booking_stats_end_year %}
+          <li>Stats:
+            <ul>
+              <li><a href="{% url 'cciw-officers-booking_summary_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">
+                Booking summary stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
+              <li><a href="{% url 'cciw-officers-booking_progress_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">
+                Booking progress stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
+              <li>Camper ages stats:
+                <a href="{% url 'cciw-officers-booking_ages_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">
+                  {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a> |
+                <a href="{% url 'cciw-officers-booking_ages_stats_single_year' single_year=booking_stats_end_year %}">
+                  All camps {{ booking_stats_end_year }}</a>
+              </li>
+            </ul>
+          </li>
+        {% endif %}
+      {% endif %}
+      <li><a href="{% url 'cciw-officers-applications' %}">Submit/view applications</a></li>
+      <li><a href="{% url 'cciw-officers-info' %}">Information about camp</a></li>
+      {% if show_leader_links %}
+        <li><a href="{% url 'cciw-officers-leaders_index' %}">Tools for leaders</a></li>
+      {% endif %}
+      {% if show_dbs_officer_links %}
+        <li><a href="{% url 'cciw-officers-manage_dbss' thisyear %}">Manage DBSs</a></li>
+      {% endif %}
+      {% if show_secretary_links or show_booking_secretary_links %}
+        <li>Download {{ thisyear }} brochure mailing list:
+          <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}?format=xls">XLS</a> |
+          <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}?format=ods">ODS</a>
+          (from bookings for {{ lastyear }})</li>
+        <li><a href="{% url 'cciw-officers-create_officer' %}">Add new officer to system</a></li>
+      {% endif %}
+      {% if show_admin_link %}
+        <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>
+      {% endif %}
+      {% if user.has_usable_password %}
+        <li><a href="{% url 'admin:password_change' %}">Change password</a></li>
+      {% endif %}
 
-  </ul>
-
-</div>
+    </ul>
+  </div>
 {% endblock %}

@@ -2,8 +2,6 @@
 
 {% load reference_utils %}
 
-{% block title %}Manage references {{ camp.nice_name }} | CCiW Officers{% endblock %}
-
 {% block extrahead %}
   {{ block.super }}
   <script type="text/javascript">
@@ -85,88 +83,85 @@
   </script>
 {% endblock %}
 
-{% block content %}<div id="content-main">
+{% block content %}
+  <div id="content-main">
+    {% if officer %}
+      <h3>For officer {{ officer.full_name }} <a href=".">(view all)</a></h3>
 
-  <h1>Manage references</h1>
-  <h2>For camp {{ camp }}</h2>
+    {% endif %}
 
-  {% if officer %}
-    <h3>For officer {{ officer.full_name }} <a href=".">(view all)</a></h3>
+    {% if ref_email_search %}
+      <h3>Filtering for referee email address = “{{ ref_email_search }}”</h3>
+      <p><a href=".">(clear filter)</a></p> {# should use spurl to manipulate URLs but it doesn't support Python 3 yet #}
+    {% endif %}
 
-  {% endif %}
+    <p>This page allows you to request references for officers who have submitted
+      application forms. References that have not been requested are at the top,
+      those that have been requested are in the middle, and those that have been
+      received are at the bottom.  Within each section they are sorted
+      alphabetically by first name.
+    </p>
 
-  {% if ref_email_search %}
-    <h3>Filtering for referee email address = “{{ ref_email_search }}”</h3>
-    <p><a href=".">(clear filter)</a></p> {# should use spurl to manipulate URLs but it doesn't support Python 3 yet #}
-  {% endif %}
+    <p>For each reference that needs to be requested, choose from the options.  An
+      option only appears if it is possible, and the most likely option is listed
+      first.</p>
 
-  <p>This page allows you to request references for officers who have submitted
-    application forms. References that have not been requested are at the top,
-    those that have been requested are in the middle, and those that have been
-    received are at the bottom.  Within each section they are sorted
-    alphabetically by first name.
-  </p>
+    <p>All of the <button>Request...</button> action buttons open new windows in which you may need
+      to edit a default email and confirm. You will also be given the option to
+      fill in reference form manually if the referee can't use the online system.</p>
 
-  <p>For each reference that needs to be requested, choose from the options.  An
-    option only appears if it is possible, and the most likely option is listed
-    first.</p>
+    <p>If the referee does not respond quickly, you can request the reference again,
+      or ask the officer concerned to contact their referee and ask for the
+      reference.</p>
 
-  <p>All of the <button>Request...</button> action buttons open new windows in which you may need
-    to edit a default email and confirm. You will also be given the option to
-    fill in reference form manually if the referee can't use the online system.</p>
+    {% if message %}
+      <p><strong>{{ message }}</strong></p>
+    {% endif %}
 
-  <p>If the referee does not respond quickly, you can request the reference again,
-    or ask the officer concerned to contact their referee and ask for the
-    reference.</p>
+    <h2>References to be requested</h2>
 
-  {% if message %}
-    <p><strong>{{ message }}</strong></p>
-  {% endif %}
+    <div id="notrequestedrefs">
+      {% for referee in notrequested %}
 
-  <h2>References to be requested</h2>
-
-  <div id="notrequestedrefs">
-    {% for referee in notrequested %}
-
-      {% with "notrequested" as mode %}
-        {% include "cciw/officers/manage_reference.html" %}
-      {% endwith %}
-
-    {% empty %}
-      <p>No outstanding references to be requested.</p>
-    {% endfor %}
-    <div id="notrequestedend"></div>
-  </div>
-
-  {% if requested %}
-    <h2 class="ok">References requested</h2>
-
-    <div id="requestedrefs">
-      {% for referee in requested %}
-
-        {% with "requested" as mode %}
+        {% with "notrequested" as mode %}
           {% include "cciw/officers/manage_reference.html" %}
         {% endwith %}
 
+      {% empty %}
+        <p>No outstanding references to be requested.</p>
       {% endfor %}
-      <div id="requestedend"></div>
+      <div id="notrequestedend"></div>
     </div>
-  {% endif %}
 
-  <h2 class="good">References received</h2>
+    {% if requested %}
+      <h2 class="ok">References requested</h2>
 
-  <div id="receivedrefs">
-    {% for referee in received %}
+      <div id="requestedrefs">
+        {% for referee in requested %}
 
-      {% with "received" as mode %}
-        {% include "cciw/officers/manage_reference.html" %}
-      {% endwith %}
+          {% with "requested" as mode %}
+            {% include "cciw/officers/manage_reference.html" %}
+          {% endwith %}
 
-    {% empty %}
-      <p>No references received.</p>
-    {% endfor %}
-    <div id="receivedend"></div>
+        {% endfor %}
+        <div id="requestedend"></div>
+      </div>
+    {% endif %}
+
+    <h2 class="good">References received</h2>
+
+    <div id="receivedrefs">
+      {% for referee in received %}
+
+        {% with "received" as mode %}
+          {% include "cciw/officers/manage_reference.html" %}
+        {% endwith %}
+
+      {% empty %}
+        <p>No references received.</p>
+      {% endfor %}
+      <div id="receivedend"></div>
+    </div>
+
   </div>
-
-</div>
 {% endblock %}

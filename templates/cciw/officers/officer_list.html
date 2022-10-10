@@ -1,7 +1,6 @@
 {% extends "cciw/officers/base.html" %}
 {% load static %}
 {% load compress %}
-{% block title %}Officer list {{ camp.url_id }} | CCiW Officers{% endblock %}
 
 {% block extrahead %}
   {{ block.super }}
@@ -19,8 +18,7 @@
 
 {% block content %}
   <div id="content-main">
-    <h1>Officer list</h1>
-    <h2>For camp {{ camp }}</h2>
+    <h2>{{ camp.leaders_formatted }}</h2>
 
     <p>This page can be used for viewing and managing the officers on your list,
       and for viewing those who have not yet filled in an application form.</p>
