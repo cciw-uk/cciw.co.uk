@@ -1,4 +1,17 @@
 
+// Admin re-theme
+
+:root {
+    --primary: #1e913b;
+    --secondary: #065a1b;
+    --breadcrumbs-fg: #cce8c4;
+    --link-fg: #3b8439;
+    --link-hover-color: #0d6600;
+    --link-selected-fg: #0d5902;
+    --button-hover-bg: #6bb660;
+    --default-button-hover-bg: #226720;
+}
+
 /* Additional */
 
 #container
@@ -7,17 +20,11 @@
 }
 
 #header	{
-    background:black;
-    color:white;
     min-height:2.4em;
     overflow:auto;
 }
-#header a:link, #header a:visited {
-        color: #ff8900;
-}
-#header a:hover {
-        color: #ffa640;
-        text-decoration: underline;
+a:hover {
+    text-decoration: underline;
 }
 
 #helplink
