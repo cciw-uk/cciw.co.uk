@@ -65,14 +65,13 @@ class Document(models.Model):
     - subclass Document e.g. MyDocument(Document)
     - use DocumentManager to create the default `objects` Manager on MyDocument.
       The main purpose is to defer loading of the `content` field.
-      to defer loading of the `content` field
     - create a OneToOne field to it from another model, using `DocumentField`
       e.g.
             class MyInfo(models.Model):
                document = DocumentField(MyDocument)
 
       The purpose of this model will vary. The DocumentField link may have
-      `null=True` is allowed if the document is an optional part of MyInfo
+      `null=True` if the document is an optional part of MyInfo
 
     - In places you load MyInfo, if you load `MyDocument` at the same time (e.g.
       `select_related('document')`, then typically you'll need to you'll need to
