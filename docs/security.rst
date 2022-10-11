@@ -221,7 +221,6 @@ into our processes themselves:
 
 * Whenever sensitive data is about to be downloaded, we display short,
   digestible information regarding CCiW's policy on its use and disposal.
-  **TODO**
 
 * We do **not** attempt to ensure compliance by use of checkboxes that ask
   people if they have read a data protection policy, because we know that

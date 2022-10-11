@@ -46,7 +46,7 @@ def create_officer(
         contact_phone_number=contact_phone_number,
     )
     if password is Auto:
-        password = "test_normaluser_password"  # OFFICER_PASSWORD TODO needed?
+        password = "test_normaluser_password"
     if password is not None:
         user.set_password(password)
     user.save()
