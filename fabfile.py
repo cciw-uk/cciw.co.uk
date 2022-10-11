@@ -327,6 +327,7 @@ def deploy(c, skip_checks=False, test_host=False):
     """
     if not test_host:
         check_branch(c)
+    check_sentry_auth(c)
     deploy_checks(c)
     if not skip_checks:
         code_quality_checks(c)
@@ -380,6 +381,11 @@ def code_quality_checks(c):
 def check_branch(c: Connection):
     if c.local("git rev-parse --abbrev-ref HEAD").stdout.strip() != "master":
         raise AssertionError("Branch must be 'master' for deploying")
+
+
+def check_sentry_auth(c: Connection):
+    if "SENTRY_AUTH_TOKEN" not in os.environ:
+        raise AssertionError("SENTRY_AUTH_TOKEN not found in environment, see notes in development_setup.rst")
 
 
 def push_to_central_vcs(c: Connection):
