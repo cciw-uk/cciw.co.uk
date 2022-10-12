@@ -68,7 +68,7 @@ def _fill_gaps(series):
     return series
 
 
-def get_booking_summary_stats(start_year, end_year):
+def get_booking_summary_stats(start_year, end_year) -> pd.DataFrame:
     rows = (
         Booking.objects.confirmed()
         .select_related("camp")
@@ -92,7 +92,7 @@ def get_booking_summary_stats(start_year, end_year):
     return df
 
 
-def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_total=True):
+def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_total=True) -> pd.DataFrame:
     if camps:
         items = camps
         query_filter = lambda qs, camp: qs.filter(camp=camp)

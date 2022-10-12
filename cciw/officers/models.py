@@ -349,12 +349,11 @@ class Reference(models.Model):
         return f"Reference form for {officer.full_name} by {self.referee_name}"
 
     def save(self, *args, **kwargs):
-        retval = super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
         # Update application form data with name of referee
         referee = self.referee
         referee.name = self.referee_name
         referee.save()
-        return retval
 
     def reference_display_fields(self):
         """

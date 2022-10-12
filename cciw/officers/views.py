@@ -6,6 +6,7 @@ from typing import Iterable, TypeAlias
 from urllib.parse import urlparse
 
 import furl
+import pandas as pd
 import pandas_highcharts.core
 from django.conf import settings
 from django.contrib import messages
@@ -1536,7 +1537,7 @@ def booking_summary_stats_download(request, start_year: int, end_year: int):
     return spreadsheet_response(formatter, f"CCIW-booking-summary-stats-{start_year}-{end_year}")
 
 
-def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids):
+def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids) -> tuple[int, int, list[Camp], pd.DataFrame]:
     start_year, end_year, camps = _parse_year_or_camp_ids(start_year, end_year, camp_ids)
     if camps is not None:
         data = get_booking_ages_stats(camps=camps, include_total=True)

@@ -3,6 +3,7 @@ import io
 import re
 import warnings
 from datetime import datetime
+from typing import Any
 
 import attr
 import boto3
@@ -109,7 +110,7 @@ class Rule:
         }
 
 
-class Missing:
+class _Missing:
     """
     Sentinel object used to indicate attributes of an object that were not
     populated (e.g. when created from an API that didn't supply all details)
@@ -119,7 +120,7 @@ class Missing:
     # object mistakenly gets passed back to the wrong API - hopefully
     # we'll get an error when we try to serialize.
 
-    def __bool__(self):
+    def __bool__(self):  # pylint: disable=invalid-bool-returned
         self._raise()
 
     def __eq__(self, other):
@@ -132,7 +133,7 @@ class Missing:
         return "Missing"
 
 
-Missing = Missing()
+Missing: Any = _Missing()
 
 
 @attr.s(auto_attribs=True)

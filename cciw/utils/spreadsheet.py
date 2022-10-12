@@ -1,6 +1,8 @@
 # Simple spreadsheet abstraction that does what we need for returning data in
 # spreadsheets, supporting .xls and .ods
 
+from abc import ABC, abstractmethod
+
 import ezodf2
 import pandas as pd
 import xlwt
@@ -8,18 +10,21 @@ import xlwt
 from cciw.utils import xl
 
 
-class Formatter:
+class Formatter(ABC):
     mimetype: str
     file_ext: str
 
-    def add_sheet_with_header_row(self, name: str, headers: list[str], contents) -> None:
+    @abstractmethod
+    def add_sheet_with_header_row(self, name: str, headers: list[str], contents: list[list[str]]) -> None:
         raise NotImplementedError()
 
+    @abstractmethod
     def to_bytes(self) -> bytes:
         raise NotImplementedError()
 
 
 class DataFrameFormatter(Formatter):
+    @abstractmethod
     def add_sheet_from_dataframe(self, name: str, dataframe: pd.DataFrame) -> None:
         raise NotImplementedError()
 
@@ -33,11 +38,11 @@ class ExcelFormatter(DataFrameFormatter):
         self.pd_writer = None
         self.wkbk = None
 
-    def add_sheet_with_header_row(self, name, headers, contents):
+    def add_sheet_with_header_row(self, name: str, headers: list[str], contents: list[list[str]]):
         self.ensure_wkbk()
         xl.add_sheet_with_header_row(self.wkbk, name, headers, contents)
 
-    def add_sheet_from_dataframe(self, name, dataframe):
+    def add_sheet_from_dataframe(self, name: str, dataframe: pd.DataFrame):
         self.ensure_pd_writer()
         dataframe.to_excel(self.pd_writer, sheet_name=name)
 
@@ -58,7 +63,8 @@ class ExcelFormatter(DataFrameFormatter):
     def ensure_pd_writer(self):
         self.ensure_not_wkbk()
         if self.pd_writer is None:
-            self.pd_writer = pd.ExcelWriter("tmp.xls")  # filename to force _XlwtWriter
+            # filename passed to force _XlwtWriter
+            self.pd_writer = pd.ExcelWriter("tmp.xls")  # pylint: disable=abstract-class-instantiated
 
     def ensure_not_pd_writer(self):
         if self.pd_writer is not None:

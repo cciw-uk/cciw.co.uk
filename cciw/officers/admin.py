@@ -144,7 +144,7 @@ class QualificationInline(admin.TabularInline):
         if request.user.is_potential_camp_officer:
             return True
         else:
-            return super().has_add_permission(request)
+            return super().has_add_permission(request, obj=obj)
 
     def has_change_permission(self, request, obj=None):
         if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
@@ -438,9 +438,8 @@ have to fill in another DBS form.</p> """,
     def save_related(self, request, form, formsets, change):
         from cciw.officers import email
 
-        retval = super().save_related(request, form, formsets, change)
+        super().save_related(request, form, formsets, change)
         email.send_application_emails(request, form.instance)
-        return retval
 
 
 class InvitationAdmin(admin.ModelAdmin):
