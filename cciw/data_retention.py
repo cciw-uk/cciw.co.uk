@@ -81,7 +81,7 @@ class Rules:
 
 @dataclass
 class ModelDetail:
-    model: type  # Model subclass
+    model: type[models.Model]
     fields: list[Field]
     custom_erasure_methods: dict[Field, ErasureMethod] = dataclasses.field(default_factory=dict)
     delete_row: bool = False
