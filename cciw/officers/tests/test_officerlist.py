@@ -1,10 +1,12 @@
+import io
 import time
 from datetime import date, timedelta
 
-import xlrd
+import openpyxl
 from django.conf import settings
 from django.core import mail
 from django.urls import reverse
+from openpyxl.utils import get_column_letter
 
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
@@ -47,17 +49,17 @@ class TestExport(TestBase):
         workbook = officer_data_to_spreadsheet(camp, ExcelFormatter()).to_bytes()
 
         assert workbook is not None
-        wkbk = xlrd.open_workbook(file_contents=workbook)
-        wksh = wkbk.sheet_by_index(0)
+        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+        wksh = wkbk.worksheets[0]
 
         # Spot checks on different types of data
         # From User model
-        assert wksh.cell(0, 0).value == "First name"
-        assert wksh.cell(1, 0).value in first_names
+        assert wksh.cell(1, 1).value == "First name"
+        assert wksh.cell(2, 1).value in first_names
 
         # From Invitation model
-        assert wksh.cell(0, 3).value == "Notes"
-        assert wksh.cell(1, 3).value.startswith("Some notes")
+        assert wksh.cell(1, 4).value == "Notes"
+        assert wksh.cell(2, 4).value.startswith("Some notes")
 
     def test_export_with_application(self):
         """
@@ -69,12 +71,12 @@ class TestExport(TestBase):
 
         workbook = officer_data_to_spreadsheet(camp, ExcelFormatter()).to_bytes()
 
-        wkbk = xlrd.open_workbook(file_contents=workbook)
-        wksh = wkbk.sheet_by_index(0)
+        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+        wksh = wkbk.worksheets[0]
 
         # Check data from Application model
-        assert wksh.cell(0, 4).value == "Address"
-        assert "123 The Way" in wksh.col_values(4)
+        assert wksh.cell(1, 5).value == "Address"
+        assert "123 The Way" in [c.value for c in wksh[get_column_letter(5)]]
 
 
 class TestSlackers(TestBase):

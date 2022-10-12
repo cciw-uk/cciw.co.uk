@@ -1,11 +1,12 @@
+import io
 import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from unittest import mock
 
+import openpyxl
 import pytest
 import vcr
-import xlrd
 from django.conf import settings
 from django.core import mail, signing
 from django.db import models
@@ -2677,11 +2678,12 @@ class TestExportPlaces(TestBase):
         booking.save()
 
         workbook = camp_bookings_to_spreadsheet(booking.camp, ExcelFormatter()).to_bytes()
-        wkbk = xlrd.open_workbook(file_contents=workbook)
-        wksh_all = wkbk.sheet_by_index(0)
+        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
 
-        assert wksh_all.cell(0, 0).value == "First name"
-        assert wksh_all.cell(1, 0).value == booking.first_name
+        wksh_all = wkbk.worksheets[0]
+
+        assert wksh_all.cell(1, 1).value == "First name"
+        assert wksh_all.cell(2, 1).value == booking.first_name
 
     def test_birthdays(self):
         camp = camps_factories.create_camp()
@@ -2690,17 +2692,17 @@ class TestExportPlaces(TestBase):
         booking = factories.create_booking(date_of_birth=dob, camp=camp, state=BookingState.BOOKED)
 
         workbook = camp_bookings_to_spreadsheet(booking.camp, ExcelFormatter()).to_bytes()
-        wkbk = xlrd.open_workbook(file_contents=workbook)
-        wksh_bdays = wkbk.sheet_by_index(2)
+        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+        wksh_bdays = wkbk.worksheets[2]
 
-        assert wksh_bdays.cell(0, 0).value == "First name"
-        assert wksh_bdays.cell(1, 0).value == booking.first_name
+        assert wksh_bdays.cell(1, 1).value == "First name"
+        assert wksh_bdays.cell(2, 1).value == booking.first_name
 
-        assert wksh_bdays.cell(0, 2).value == "Birthday"
-        assert wksh_bdays.cell(1, 2).value == bday.strftime("%A %d %B")
+        assert wksh_bdays.cell(1, 3).value == "Birthday"
+        assert wksh_bdays.cell(2, 3).value == bday.strftime("%A %d %B")
 
-        assert wksh_bdays.cell(0, 3).value == "Age"
-        assert wksh_bdays.cell(1, 3).value == "12"
+        assert wksh_bdays.cell(1, 4).value == "Age"
+        assert wksh_bdays.cell(2, 4).value == "12"
 
 
 class TestExportPaymentData(TestBase):
@@ -2719,9 +2721,9 @@ class TestExportPaymentData(TestBase):
             now - timedelta(days=3), now + timedelta(days=3), ExcelFormatter()
         ).to_bytes()
 
-        wkbk = xlrd.open_workbook(file_contents=workbook)
-        wksh = wkbk.sheet_by_index(0)
-        data = [[c.value for c in r] for r in wksh.get_rows()]
+        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+        wksh = wkbk.worksheets[0]
+        data = [[c.value for c in r] for r in wksh.rows]
         assert data[0] == ["Account name", "Account email", "Amount", "Date", "Type"]
 
         # Excel dates are a pain, so we ignore them

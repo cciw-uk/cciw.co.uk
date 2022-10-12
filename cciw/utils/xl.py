@@ -1,70 +1,82 @@
 """
 Simplified xlwt interface
 """
-from copy import deepcopy
 from datetime import date, datetime
 from io import BytesIO
 
-import xlwt
 from django.utils import timezone
+from openpyxl import Workbook, styles
+from openpyxl.cell import Cell
+from openpyxl.styles.fonts import DEFAULT_FONT
+from openpyxl.worksheet.worksheet import Worksheet
 from pytz import UTC
 
 
-def add_sheet_with_header_row(wkbk, name: str, headers: list[str], contents: list[list[str]]):
+def empty_workbook():
+    wkbk: Workbook = Workbook()
+    wkbk.remove_sheet(wkbk.worksheets[0])
+    return wkbk
+
+
+def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], contents: list[list[str]]):
     """
     Utility function for adding sheet to xlwt workbook.
     """
-    wksh = wkbk.add_sheet(name)
+    wksh: Worksheet = wkbk.create_sheet(title=name)
 
-    normal_style = xlwt.XFStyle()
-    normal_style.alignment.vert = xlwt.Alignment.VERT_CENTER
-    normal_style.borders.left = xlwt.Borders.THIN
-    normal_style.borders.right = xlwt.Borders.THIN
-    normal_style.borders.top = xlwt.Borders.THIN
-    normal_style.borders.bottom = xlwt.Borders.THIN
+    font_size = 12
 
-    wrapped_style = deepcopy(normal_style)
-    wrapped_style.alignment.wrap = True
+    border = styles.Border(
+        left=styles.Side(border_style="thin"),
+        right=styles.Side(border_style="thin"),
+        top=styles.Side(border_style="thin"),
+        bottom=styles.Side(border_style="thin"),
+    )
 
-    url_style = deepcopy(normal_style)
-    url_style.font.colour_index = 12  # blue
+    alignment = styles.Alignment(vertical="center")
+    wrapped_alignment = styles.Alignment(vertical="center", wrapText=True)
+    # TODO check
+    url_font = styles.Font(color=styles.colors.BLUE, size=font_size, name=DEFAULT_FONT.name)
+    date_format = "YYYY/MM/DD"
+    header_font = styles.Font(bold=True, size=font_size, name=DEFAULT_FONT.name)
 
-    date_style = deepcopy(normal_style)
-    date_style.num_format_str = "YYYY/MM/DD"
+    for c_idx, header in enumerate(headers, start=1):
+        cell: Cell = wksh.cell(row=1, column=c_idx, value=header)
+        cell.font = header_font
+        cell.border = border
 
-    style_header = deepcopy(normal_style)
-    font_header = xlwt.Font()
-    font_header.bold = True
-    style_header.font = font_header
+    header_row_count = 1
 
-    for c, header in enumerate(headers):
-        wksh.write(0, c, header, style=style_header)
+    for r_idx, row in enumerate(contents, start=1 + header_row_count):
+        # TODO row_height is not working correctly
+        normal_row_height = font_size
+        row_height = normal_row_height
+        for c_idx, val in enumerate(row, start=1):
+            cell: Cell = wksh.cell(row=r_idx, column=c_idx)
+            cell.border = border
+            cell.alignment = alignment
 
-    for r, row in enumerate(contents):
-        row_height = normal_style.font.height
-        for c, val in enumerate(row):
             if isinstance(val, str):
                 # normalise newlines to style expected by Excel
                 val = val.replace("\r\n", "\n")
 
             if isinstance(val, (datetime, date)):
-                style = date_style
+                cell.number_format = date_format
                 if isinstance(val, datetime):
                     if timezone.is_aware(val):
                         val = timezone.make_naive(val, UTC)
             else:
-                style = normal_style
                 if isinstance(val, str) and "\n" in val:
-                    # This is needed or Excel displays box character for
-                    # newlines.
-                    style = wrapped_style
+                    # This is needed or Excel displays box character for newlines.
+                    cell.alignment = wrapped_alignment
                     # Set height to be able to see all lines
-                    row_height = max(row_height, normal_style.font.height * (val.count("\n") + 1))
+                    row_height = max(row_height, font_size * (val.count("\n") + 1))
                 if looks_like_url(val):
-                    val = xlwt.Formula(f'HYPERLINK("{val}"; "{val}")')
-                    style = url_style
-            wksh.write(r + 1, c, val, style=style)
-        wksh.rows[r + 1].height = row_height + 100  # fudge for margin, based on OpenOffice
+                    val = f'=HYPERLINK("{val}"; "{val}")'
+                    cell.font = url_font
+            cell.value = val
+        if row_height > normal_row_height:
+            wksh.row_dimensions[r_idx].height = row_height
 
 
 def looks_like_url(val):

@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 
 import ezodf2
 import pandas as pd
-import xlwt
 
 from cciw.utils import xl
 
@@ -30,11 +29,11 @@ class DataFrameFormatter(Formatter):
 
 
 class ExcelFormatter(DataFrameFormatter):
-    mimetype = "application/vnd.ms-excel"
-    file_ext = "xls"
+    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    file_ext = "xlsx"
 
     def __init__(self):
-        # A formatter is only be used once
+        # A formatter is only used once, we can initialize now:
         self.pd_writer = None
         self.wkbk = None
 
@@ -54,7 +53,7 @@ class ExcelFormatter(DataFrameFormatter):
     def ensure_wkbk(self):
         self.ensure_not_pd_writer()
         if self.wkbk is None:
-            self.wkbk = xlwt.Workbook(encoding="utf8")
+            self.wkbk = xl.empty_workbook()
 
     def ensure_not_wkbk(self):
         if self.wkbk is not None:
