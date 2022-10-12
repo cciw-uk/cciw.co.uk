@@ -5,11 +5,12 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
 
-from cciw.utils.spreadsheet import ExcelFormatter, OdsFormatter
+from cciw.utils.spreadsheet import DataFrameFormatter, ExcelFormatter, Formatter, OdsFormatter
 
 
 def close_window_response(request=None, clear_messages=False):
@@ -105,14 +106,19 @@ def redirect_to_url_with_next(next_url, url, redirect_field_name):
     return HttpResponseRedirect(f.url)
 
 
-formatters = {
+formatters: dict[str, type[Formatter]] = {
     "xls": ExcelFormatter,
     "ods": OdsFormatter,
 }
 
 
-def get_spreadsheet_formatter(request):
+def get_spreadsheet_formatter(request: HttpRequest) -> Formatter:
     format = request.GET.get("format", "xls")
     if format not in formatters:
         raise Http404()
     return formatters[format]()
+
+
+def get_spreadsheet_dataframe_formatter(request: HttpRequest) -> DataFrameFormatter:
+    # We only have one choice at the moment:
+    return ExcelFormatter()

@@ -8,7 +8,23 @@ import xlwt
 from cciw.utils import xl
 
 
-class ExcelFormatter:
+class Formatter:
+    mimetype: str
+    file_ext: str
+
+    def add_sheet_with_header_row(self, name: str, headers: list[str], contents) -> None:
+        raise NotImplementedError()
+
+    def to_bytes(self) -> bytes:
+        raise NotImplementedError()
+
+
+class DataFrameFormatter(Formatter):
+    def add_sheet_from_dataframe(self, name: str, dataframe: pd.DataFrame) -> None:
+        raise NotImplementedError()
+
+
+class ExcelFormatter(DataFrameFormatter):
     mimetype = "application/vnd.ms-excel"
     file_ext = "xls"
 
@@ -25,7 +41,7 @@ class ExcelFormatter:
         self.ensure_pd_writer()
         dataframe.to_excel(self.pd_writer, sheet_name=name)
 
-    def to_bytes(self):
+    def to_bytes(self) -> bytes:
         if self.pd_writer:
             return xl.workbook_to_bytes(self.pd_writer.book)  # using ExcelWriter internals
         return xl.workbook_to_bytes(self.wkbk)
@@ -49,7 +65,7 @@ class ExcelFormatter:
             raise Exception("User either add_sheet_with_header_row or add_sheet_from_dataframe, not both")
 
 
-class OdsFormatter:
+class OdsFormatter(Formatter):
     mimetype = "application/vnd.oasis.opendocument.spreadsheet"
     file_ext = "ods"
 
@@ -68,8 +84,5 @@ class OdsFormatter:
                 if val is not None:
                     sheet[r + 1, c].set_value(val)
 
-    def add_sheet_from_dataframe(self, name, dataframe):
-        raise NotImplementedError()
-
-    def to_bytes(self):
+    def to_bytes(self) -> bytes:
         return self.wkbk.tobytes()

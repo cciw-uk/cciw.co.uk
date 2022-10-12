@@ -9,7 +9,7 @@ from cciw.officers.models import DBSCheck, Reference
 from cciw.utils.stats import accumulate_dates
 
 
-def get_camp_officer_stats(camp):
+def get_camp_officer_stats(camp) -> pd.DataFrame:
     # For efficiency, we are careful about what DB queries we do and what is
     # done in Python. Some logic from DBSCheck.get_for_camp duplicated here
 
@@ -75,7 +75,7 @@ def get_camp_officer_stats(camp):
     return df
 
 
-def get_camp_officer_stats_trend(start_year, end_year):
+def get_camp_officer_stats_trend(start_year, end_year) -> pd.DataFrame:
     years = list(range(start_year, end_year + 1))
     officer_counts = []
     application_counts = []

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from itertools import groupby
 
 from dateutil.relativedelta import relativedelta
@@ -6,7 +6,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django_countries.fields import Country
 
+from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
+from cciw.utils.spreadsheet import Formatter
 
 from .models import ACCOUNT_PUBLIC_ATTRS, BOOKING_PLACE_PUBLIC_ATTRS, Booking, BookingAccount, Payment
 
@@ -15,7 +17,7 @@ def format_address(*args):
     return "\n".join(arg.strip() for arg in args)
 
 
-def camp_bookings_to_spreadsheet(camp, spreadsheet):
+def camp_bookings_to_spreadsheet(camp: Camp, spreadsheet: Formatter) -> Formatter:
     bookings = list(camp.bookings.confirmed().order_by("first_name", "last_name"))
 
     columns = [
@@ -105,7 +107,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
     return spreadsheet
 
 
-def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
+def camp_sharable_transport_details_to_spreadsheet(camp: Camp, spreadsheet: Formatter):
     accounts = (
         BookingAccount.objects.filter(share_phone_number=True).filter(bookings__in=camp.bookings.confirmed()).distinct()
     )
@@ -122,7 +124,7 @@ def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
 
 
 # Spreadsheet needed by booking secretary
-def year_bookings_to_spreadsheet(year, spreadsheet):
+def year_bookings_to_spreadsheet(year: int, spreadsheet: Formatter) -> Formatter:
     bookings = (
         Booking.objects.filter(camp__year=year)
         .confirmed()
@@ -149,7 +151,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
     return spreadsheet
 
 
-def payments_to_spreadsheet(date_start, date_end, spreadsheet):
+def payments_to_spreadsheet(date_start: date, date_end: date, spreadsheet: Formatter) -> Formatter:
     # Add one day to the date_end, since it is defined inclusively
     date_end = date_end + timedelta(days=1)
 
@@ -175,7 +177,7 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
     return spreadsheet
 
 
-def addresses_for_mailing_list(year, spreadsheet):
+def addresses_for_mailing_list(year: int, spreadsheet: Formatter) -> Formatter:
     # We get the postal addresses that we have for the *previous* year
     # to generate the mailing list for the given year.
     bookings = (

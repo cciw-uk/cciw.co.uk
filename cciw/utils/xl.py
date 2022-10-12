@@ -10,11 +10,9 @@ from django.utils import timezone
 from pytz import UTC
 
 
-def add_sheet_with_header_row(wkbk, name, headers, contents):
+def add_sheet_with_header_row(wkbk, name: str, headers: list[str], contents: list[list[str]]):
     """
     Utility function for adding sheet to xlwt workbook.
-    sheet_header is an iterable of strings
-    sheet_contents is an iterable of rows, where each row is an interable of strings
     """
     wksh = wkbk.add_sheet(name)
 
