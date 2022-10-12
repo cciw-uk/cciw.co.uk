@@ -18,7 +18,7 @@ from cciw.utils.spreadsheet import (
 )
 
 
-def close_window_response(request=None, clear_messages=False):
+def close_window_response(request: HttpRequest, *, clear_messages=False):
     # First we clear any messages, because, due to the closed window, these will
     # otherwise appear in another window at an unrelated moment, confusing the
     # user.
@@ -32,14 +32,14 @@ def close_window_response(request=None, clear_messages=False):
     )
 
 
-def reroute_response(request, default_to_close=True):
+def reroute_response(request: HttpRequest, default_to_close=True):
     """
     Utility for rerouting (or closing window) at the end of a page being used.
     """
     # if '_temporary_window=1 in query string, that overrides everything
     # - we should close the window.
     if request.GET.get("_temporary_window", "") == "1":
-        return close_window_response(request=request, clear_messages=True)
+        return close_window_response(request, clear_messages=True)
 
     # if we have a safe return to URL, do a redirect
     if "_return_to" in request.GET:
@@ -49,7 +49,7 @@ def reroute_response(request, default_to_close=True):
 
     # Otherwise close the window
     if default_to_close:
-        return close_window_response(request=request, clear_messages=True)
+        return close_window_response(request, clear_messages=True)
     else:
         return None
 
@@ -62,7 +62,7 @@ def user_passes_test_improved(test_func):
 
     def decorator(view_func):
         @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
+        def _wrapped_view(request: HttpRequest, *args, **kwargs):
             user = request.user
             if user.is_authenticated:
                 if user.is_superuser or test_func(user):
@@ -79,13 +79,13 @@ def user_passes_test_improved(test_func):
     return decorator
 
 
-def redirect_to_login_with_next(request):
+def redirect_to_login_with_next(request: HttpRequest) -> HttpResponseRedirect:
     login_url = settings.LOGIN_URL
     path = get_current_url_for_redirection(request, login_url)
     return redirect_to_url_with_next(path, login_url, REDIRECT_FIELD_NAME)
 
 
-def redirect_to_password_change_with_next(request):
+def redirect_to_password_change_with_next(request: HttpRequest) -> HttpResponseRedirect | None:
     password_change_url = reverse("admin:password_change")
     if furl(request.build_absolute_uri()).path == password_change_url:
         return None  # loop breaker
@@ -105,7 +105,7 @@ def get_current_url_for_redirection(request, redirect_url):
     return url
 
 
-def redirect_to_url_with_next(next_url, url, redirect_field_name):
+def redirect_to_url_with_next(next_url, url, redirect_field_name) -> HttpResponseRedirect:
     f = furl(url)
     f.args[redirect_field_name] = next_url
     return HttpResponseRedirect(f.url)

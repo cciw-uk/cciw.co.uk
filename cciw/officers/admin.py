@@ -4,6 +4,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.forms.utils import ErrorList
+from django.http.response import HttpResponse
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -494,10 +495,10 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             return db_field.formfield(**defaults)
         return super().formfield_for_dbfield(db_field, **kwargs)
 
-    def response_change(self, request, obj):
+    def response_change(self, request, obj) -> HttpResponse:
         # Little hack to allow popups for changing References
         if "_popup" in request.POST:
-            return close_window_response()
+            return close_window_response(request)
         else:
             return super().response_change(request, obj)
 
