@@ -45,10 +45,10 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.utils.spreadsheet import Formatter
+from cciw.utils.spreadsheet import SpreadsheetBuilder
 from cciw.utils.views import (
-    get_spreadsheet_dataframe_formatter,
-    get_spreadsheet_formatter,
+    get_spreadsheet_from_dataframe_builder,
+    get_spreadsheet_simple_builder,
     reroute_response,
     user_passes_test_improved,
 )
@@ -1073,9 +1073,9 @@ def resend_email(request):
 @show_data_retention_notice(DataRetentionNotice.OFFICERS, "Officer data")
 def export_officer_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
-    formatter = get_spreadsheet_formatter(request)
+    builder = get_spreadsheet_simple_builder(request)
     return spreadsheet_response(
-        officer_data_to_spreadsheet(camp, formatter),
+        officer_data_to_spreadsheet(camp, builder),
         f"CCIW-camp-{camp.url_id}-officers",
     )
 
@@ -1085,16 +1085,16 @@ def export_officer_data(request, camp_id: CampId):
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
-    formatter = get_spreadsheet_formatter(request)
-    return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter), f"CCIW-camp-{camp.url_id}-campers")
+    builder = get_spreadsheet_simple_builder(request)
+    return spreadsheet_response(camp_bookings_to_spreadsheet(camp, builder), f"CCIW-camp-{camp.url_id}-campers")
 
 
 @staff_member_required
 @booking_secretary_required
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data_for_year(request, year: int):
-    formatter = get_spreadsheet_formatter(request)
-    return spreadsheet_response(year_bookings_to_spreadsheet(year, formatter), f"CCIW-bookings-{year}")
+    builder = get_spreadsheet_simple_builder(request)
+    return spreadsheet_response(year_bookings_to_spreadsheet(year, builder), f"CCIW-bookings-{year}")
 
 
 @staff_member_required
@@ -1102,9 +1102,9 @@ def export_camper_data_for_year(request, year: int):
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper sharable transport details")
 def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
-    formatter = get_spreadsheet_formatter(request)
+    builder = get_spreadsheet_simple_builder(request)
     return spreadsheet_response(
-        camp_sharable_transport_details_to_spreadsheet(camp, formatter), f"CCIW-camp-{camp.url_id}-transport-details"
+        camp_sharable_transport_details_to_spreadsheet(camp, builder), f"CCIW-camp-{camp.url_id}-transport-details"
     )
 
 
@@ -1185,18 +1185,18 @@ def fraction_to_percent(data):
 @camp_admin_required
 def officer_stats_download(request, year: int) -> HttpResponse:
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
-    formatter = get_spreadsheet_dataframe_formatter(request)
+    builder = get_spreadsheet_from_dataframe_builder(request)
     for camp in camps:
-        formatter.add_sheet_from_dataframe(str(camp.url_id), get_camp_officer_stats(camp))
-    return spreadsheet_response(formatter, f"CCIW-officer-stats-{year}")
+        builder.add_sheet_from_dataframe(str(camp.url_id), get_camp_officer_stats(camp))
+    return spreadsheet_response(builder, f"CCIW-officer-stats-{year}")
 
 
 @staff_member_required
 @camp_admin_required
 def officer_stats_trend_download(request, start_year: int, end_year: int) -> HttpResponse:
-    formatter = get_spreadsheet_dataframe_formatter(request)
-    formatter.add_sheet_from_dataframe("Officer stats trend", get_camp_officer_stats_trend(start_year, end_year))
-    return spreadsheet_response(formatter, f"CCIW-officer-stats-trend-{start_year}-{end_year}")
+    builder = get_spreadsheet_from_dataframe_builder(request)
+    builder.add_sheet_from_dataframe("Officer stats trend", get_camp_officer_stats_trend(start_year, end_year))
+    return spreadsheet_response(builder, f"CCIW-officer-stats-trend-{start_year}-{end_year}")
 
 
 @staff_member_required
@@ -1440,9 +1440,9 @@ def export_payment_data(request):
         tzinfo=timezone.get_default_timezone()
     )
     date_end = datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT).replace(tzinfo=timezone.get_default_timezone())
-    formatter = get_spreadsheet_formatter(request)
+    builder = get_spreadsheet_simple_builder(request)
     return spreadsheet_response(
-        payments_to_spreadsheet(date_start, date_end, formatter),
+        payments_to_spreadsheet(date_start, date_end, builder),
         f"CCIW-payments-{date_start:%Y-%m-%d}-to-{date_end:%Y-%m-%d}",
     )
 
@@ -1500,14 +1500,14 @@ def booking_progress_stats_download(
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=False
     )
-    formatter = get_spreadsheet_dataframe_formatter(request)
-    formatter.add_sheet_from_dataframe("Bookings against date", data_dates)
-    formatter.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
+    builder = get_spreadsheet_from_dataframe_builder(request)
+    builder.add_sheet_from_dataframe("Bookings against date", data_dates)
+    builder.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
     if camp_ids is not None:
         filename = f"CCIW-booking-progress-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
         filename = f"CCIW-booking-progress-stats-{start_year}-{end_year}"
-    return spreadsheet_response(formatter, filename)
+    return spreadsheet_response(builder, filename)
 
 
 @staff_member_required
@@ -1532,9 +1532,9 @@ def booking_summary_stats(request, start_year: int, end_year: int):
 @secretary_or_committee_required
 def booking_summary_stats_download(request, start_year: int, end_year: int):
     data = get_booking_summary_stats(start_year, end_year)
-    formatter = get_spreadsheet_dataframe_formatter(request)
-    formatter.add_sheet_from_dataframe("Bookings", data)
-    return spreadsheet_response(formatter, f"CCIW-booking-summary-stats-{start_year}-{end_year}")
+    builder = get_spreadsheet_from_dataframe_builder(request)
+    builder.add_sheet_from_dataframe("Bookings", data)
+    return spreadsheet_response(builder, f"CCIW-booking-summary-stats-{start_year}-{end_year}")
 
 
 def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids) -> tuple[int, int, list[Camp], pd.DataFrame]:
@@ -1599,24 +1599,24 @@ def booking_ages_stats(
 @camp_admin_required
 def booking_ages_stats_download(request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None):
     start_year, end_year, camps, data = _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
-    formatter = get_spreadsheet_dataframe_formatter(request)
-    formatter.add_sheet_from_dataframe("Age of campers", data)
+    builder = get_spreadsheet_from_dataframe_builder(request)
+    builder.add_sheet_from_dataframe("Age of campers", data)
     if camp_ids is not None:
         filename = f"CCIW-booking-ages-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
         filename = f"CCIW-booking-ages-stats-{start_year}-{end_year}"
-    return spreadsheet_response(formatter, filename)
+    return spreadsheet_response(builder, filename)
 
 
 @cciw_secretary_or_booking_secretary_required
 def brochure_mailing_list(request, year: int):
-    formatter = get_spreadsheet_formatter(request)
-    return spreadsheet_response(addresses_for_mailing_list(year, formatter), f"CCIW-mailing-list-{year}")
+    builder = get_spreadsheet_simple_builder(request)
+    return spreadsheet_response(addresses_for_mailing_list(year, builder), f"CCIW-mailing-list-{year}")
 
 
-def spreadsheet_response(formatter: Formatter, filename: str):
-    response = HttpResponse(formatter.to_bytes(), content_type=formatter.mimetype)
-    response["Content-Disposition"] = f"attachment; filename={filename}.{formatter.file_ext}"
+def spreadsheet_response(builder: SpreadsheetBuilder, filename: str):
+    response = HttpResponse(builder.to_bytes(), content_type=builder.mimetype)
+    response["Content-Disposition"] = f"attachment; filename={filename}.{builder.file_ext}"
     return response
 
 

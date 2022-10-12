@@ -10,7 +10,12 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
 
-from cciw.utils.spreadsheet import DataFrameFormatter, ExcelFormatter, Formatter, OdsFormatter
+from cciw.utils.spreadsheet import (
+    ExcelFromDataFrameBuilder,
+    SpreadsheetFromDataFrameBuilder,
+    SpreadsheetSimpleBuilder,
+    spreadsheet_simple_builders,
+)
 
 
 def close_window_response(request=None, clear_messages=False):
@@ -106,19 +111,13 @@ def redirect_to_url_with_next(next_url, url, redirect_field_name):
     return HttpResponseRedirect(f.url)
 
 
-formatters: dict[str, type[Formatter]] = {
-    "xls": ExcelFormatter,
-    "ods": OdsFormatter,
-}
-
-
-def get_spreadsheet_formatter(request: HttpRequest) -> Formatter:
+def get_spreadsheet_simple_builder(request: HttpRequest) -> SpreadsheetSimpleBuilder:
     format = request.GET.get("format", "xls")
-    if format not in formatters:
+    if format not in spreadsheet_simple_builders:
         raise Http404()
-    return formatters[format]()
+    return spreadsheet_simple_builders[format]()
 
 
-def get_spreadsheet_dataframe_formatter(request: HttpRequest) -> DataFrameFormatter:
+def get_spreadsheet_from_dataframe_builder(request: HttpRequest) -> SpreadsheetFromDataFrameBuilder:
     # We only have one choice at the moment:
-    return ExcelFormatter()
+    return ExcelFromDataFrameBuilder()

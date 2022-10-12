@@ -9,68 +9,57 @@ import pandas as pd
 from cciw.utils import xl
 
 
-class Formatter(ABC):
+class SpreadsheetBuilder(ABC):
     mimetype: str
     file_ext: str
-
-    @abstractmethod
-    def add_sheet_with_header_row(self, name: str, headers: list[str], contents: list[list[str]]) -> None:
-        raise NotImplementedError()
 
     @abstractmethod
     def to_bytes(self) -> bytes:
         raise NotImplementedError()
 
 
-class DataFrameFormatter(Formatter):
+class SpreadsheetSimpleBuilder(SpreadsheetBuilder):
+    @abstractmethod
+    def add_sheet_with_header_row(self, name: str, headers: list[str], contents: list[list[str]]) -> None:
+        raise NotImplementedError()
+
+
+class SpreadsheetFromDataFrameBuilder(SpreadsheetBuilder):
     @abstractmethod
     def add_sheet_from_dataframe(self, name: str, dataframe: pd.DataFrame) -> None:
         raise NotImplementedError()
 
 
-class ExcelFormatter(DataFrameFormatter):
+class ExcelBuilder(SpreadsheetSimpleBuilder):
     mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     file_ext = "xlsx"
 
     def __init__(self):
-        # A formatter is only used once, we can initialize now:
-        self.pd_writer = None
-        self.wkbk = None
+        self.wkbk = xl.empty_workbook()
 
     def add_sheet_with_header_row(self, name: str, headers: list[str], contents: list[list[str]]):
-        self.ensure_wkbk()
         xl.add_sheet_with_header_row(self.wkbk, name, headers, contents)
 
+    def to_bytes(self) -> bytes:
+        return xl.workbook_to_bytes(self.wkbk)
+
+
+class ExcelFromDataFrameBuilder(SpreadsheetFromDataFrameBuilder):
+    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    file_ext = "xlsx"
+
+    def __init__(self):
+        # filename passed to force correct writer
+        self.pd_writer = pd.ExcelWriter("tmp.xlsx")  # pylint: disable=abstract-class-instantiated
+
     def add_sheet_from_dataframe(self, name: str, dataframe: pd.DataFrame):
-        self.ensure_pd_writer()
         dataframe.to_excel(self.pd_writer, sheet_name=name)
 
     def to_bytes(self) -> bytes:
-        if self.pd_writer:
-            return xl.workbook_to_bytes(self.pd_writer.book)  # using ExcelWriter internals
-        return xl.workbook_to_bytes(self.wkbk)
-
-    def ensure_wkbk(self):
-        self.ensure_not_pd_writer()
-        if self.wkbk is None:
-            self.wkbk = xl.empty_workbook()
-
-    def ensure_not_wkbk(self):
-        if self.wkbk is not None:
-            raise Exception("User either add_sheet_with_header_row or add_sheet_from_dataframe, not both")
-
-    def ensure_pd_writer(self):
-        self.ensure_not_wkbk()
-        if self.pd_writer is None:
-            # filename passed to force _XlwtWriter
-            self.pd_writer = pd.ExcelWriter("tmp.xls")  # pylint: disable=abstract-class-instantiated
-
-    def ensure_not_pd_writer(self):
-        if self.pd_writer is not None:
-            raise Exception("User either add_sheet_with_header_row or add_sheet_from_dataframe, not both")
+        return xl.workbook_to_bytes(self.pd_writer.book)  # using ExcelWriter internals
 
 
-class OdsFormatter(Formatter):
+class OdsBuilder(SpreadsheetSimpleBuilder):
     mimetype = "application/vnd.oasis.opendocument.spreadsheet"
     file_ext = "ods"
 
@@ -91,3 +80,9 @@ class OdsFormatter(Formatter):
 
     def to_bytes(self) -> bytes:
         return self.wkbk.tobytes()
+
+
+spreadsheet_simple_builders: dict[str, type[SpreadsheetSimpleBuilder]] = {
+    "xls": ExcelBuilder,
+    "ods": OdsBuilder,
+}
