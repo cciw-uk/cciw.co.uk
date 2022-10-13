@@ -6,6 +6,7 @@ from typing import Iterable, TypeAlias
 from urllib.parse import urlparse
 
 import furl
+import openpyxl
 import pandas as pd
 import pandas_highcharts.core
 from django.conf import settings
@@ -45,6 +46,7 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
+from cciw.utils import xl
 from cciw.utils.spreadsheet import ExcelBuilder
 from cciw.utils.views import (
     get_spreadsheet_from_dataframe_builder,
@@ -196,9 +198,38 @@ DATA_RETENTION_NOTICES = {
     DataRetentionNotice.CAMPERS: "cciw/officers/camper_data_retention_rules_inc.html",
 }
 
+DATA_RETENTION_NOTICES_TXT = {
+    DataRetentionNotice.OFFICERS: """
+Share this data only with leaders or the designated CCiW officers
+who assist leaders with tasks relating to officers, and no third parties.
+All such people must be aware of and abide by these rules.
+
+Keep downloaded data secure and well organised, stored only on devices that
+unauthorised people do not have access to. You must be able to find and delete it later.
+
+Delete officer addresses within 1 year of the end of the camp they
+pertain to. They must be fully erased from your electronic devices and
+online storage, including any copies you have made, such as attachments in
+emails and backups.
+
+""".strip(),
+    DataRetentionNotice.CAMPERS: """
+Share this data only with leaders and assistant leaders and no third parties.
+All these people must be aware of and abide by these rules.
+
+Keep downloaded data secure and well organised, stored only on devices that
+unauthorised people do not have access to. You must be able to find and delete it later.
+
+Delete camper information within 1 month of the end of the camp it relates to.
+It must be fully erased from your electronic devices and online storage, including any
+copies you have made, such as attachments in emails and backups.
+
+""".strip(),
+}
 
 for val in DataRetentionNotice:
     assert val in DATA_RETENTION_NOTICES, f"Need to add {val} to DATA_RETENTION_NOTICES"
+    assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
 
 def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title):
@@ -1077,6 +1108,7 @@ def export_officer_data(request, camp_id: CampId):
     return spreadsheet_response(
         officer_data_to_spreadsheet(camp, builder),
         f"CCIW-camp-{camp.url_id}-officers",
+        notice=DataRetentionNotice.OFFICERS,
     )
 
 
@@ -1086,7 +1118,11 @@ def export_officer_data(request, camp_id: CampId):
 def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     builder = get_spreadsheet_simple_builder(request)
-    return spreadsheet_response(camp_bookings_to_spreadsheet(camp, builder), f"CCIW-camp-{camp.url_id}-campers")
+    return spreadsheet_response(
+        camp_bookings_to_spreadsheet(camp, builder),
+        f"CCIW-camp-{camp.url_id}-campers",
+        notice=DataRetentionNotice.CAMPERS,
+    )
 
 
 @staff_member_required
@@ -1094,7 +1130,11 @@ def export_camper_data(request, camp_id: CampId):
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data_for_year(request, year: int):
     builder = get_spreadsheet_simple_builder(request)
-    return spreadsheet_response(year_bookings_to_spreadsheet(year, builder), f"CCIW-bookings-{year}")
+    return spreadsheet_response(
+        year_bookings_to_spreadsheet(year, builder),
+        f"CCIW-bookings-{year}",
+        notice=DataRetentionNotice.CAMPERS,
+    )
 
 
 @staff_member_required
@@ -1104,7 +1144,9 @@ def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     builder = get_spreadsheet_simple_builder(request)
     return spreadsheet_response(
-        camp_sharable_transport_details_to_spreadsheet(camp, builder), f"CCIW-camp-{camp.url_id}-transport-details"
+        camp_sharable_transport_details_to_spreadsheet(camp, builder),
+        f"CCIW-camp-{camp.url_id}-transport-details",
+        notice=DataRetentionNotice.CAMPERS,
     )
 
 
@@ -1188,7 +1230,11 @@ def officer_stats_download(request, year: int) -> HttpResponse:
     builder = get_spreadsheet_from_dataframe_builder(request)
     for camp in camps:
         builder.add_sheet_from_dataframe(str(camp.url_id), get_camp_officer_stats(camp))
-    return spreadsheet_response(builder, f"CCIW-officer-stats-{year}")
+    return spreadsheet_response(
+        builder,
+        f"CCIW-officer-stats-{year}",
+        notice=None,
+    )
 
 
 @staff_member_required
@@ -1196,7 +1242,7 @@ def officer_stats_download(request, year: int) -> HttpResponse:
 def officer_stats_trend_download(request, start_year: int, end_year: int) -> HttpResponse:
     builder = get_spreadsheet_from_dataframe_builder(request)
     builder.add_sheet_from_dataframe("Officer stats trend", get_camp_officer_stats_trend(start_year, end_year))
-    return spreadsheet_response(builder, f"CCIW-officer-stats-trend-{start_year}-{end_year}")
+    return spreadsheet_response(builder, f"CCIW-officer-stats-trend-{start_year}-{end_year}", notice=None)
 
 
 @staff_member_required
@@ -1444,6 +1490,7 @@ def export_payment_data(request):
     return spreadsheet_response(
         payments_to_spreadsheet(date_start, date_end, builder),
         f"CCIW-payments-{date_start:%Y-%m-%d}-to-{date_end:%Y-%m-%d}",
+        notice=DataRetentionNotice.CAMPERS,
     )
 
 
@@ -1507,7 +1554,11 @@ def booking_progress_stats_download(
         filename = f"CCIW-booking-progress-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
         filename = f"CCIW-booking-progress-stats-{start_year}-{end_year}"
-    return spreadsheet_response(builder, filename)
+    return spreadsheet_response(
+        builder,
+        filename,
+        notice=None,
+    )
 
 
 @staff_member_required
@@ -1534,7 +1585,7 @@ def booking_summary_stats_download(request, start_year: int, end_year: int):
     data = get_booking_summary_stats(start_year, end_year)
     builder = get_spreadsheet_from_dataframe_builder(request)
     builder.add_sheet_from_dataframe("Bookings", data)
-    return spreadsheet_response(builder, f"CCIW-booking-summary-stats-{start_year}-{end_year}")
+    return spreadsheet_response(builder, f"CCIW-booking-summary-stats-{start_year}-{end_year}", notice=None)
 
 
 def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids) -> tuple[int, int, list[Camp], pd.DataFrame]:
@@ -1605,19 +1656,47 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
         filename = f"CCIW-booking-ages-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
         filename = f"CCIW-booking-ages-stats-{start_year}-{end_year}"
-    return spreadsheet_response(builder, filename)
+    return spreadsheet_response(builder, filename, notice=None)
 
 
 @cciw_secretary_or_booking_secretary_required
 def brochure_mailing_list(request, year: int):
     builder = get_spreadsheet_simple_builder(request)
-    return spreadsheet_response(addresses_for_mailing_list(year, builder), f"CCIW-mailing-list-{year}")
+    return spreadsheet_response(
+        addresses_for_mailing_list(year, builder), f"CCIW-mailing-list-{year}", notice=DataRetentionNotice.CAMPERS
+    )
 
 
-def spreadsheet_response(builder: ExcelBuilder, filename: str) -> HttpResponse:
-    response = HttpResponse(builder.to_bytes(), content_type=builder.mimetype)
+def spreadsheet_response(
+    builder: ExcelBuilder,
+    filename: str,
+    *,
+    notice: DataRetentionNotice | None,
+) -> HttpResponse:
+    output = builder.to_bytes()
+
+    if notice is not None:
+        workbook: openpyxl.Workbook = xl.workbook_from_bytes(builder.to_bytes())
+        sheet = workbook.create_sheet("Notice", 0)
+        c_header = sheet.cell(1, 1)
+        c_header.value = "Data retention notice:"
+        c_header.font = xl.header_font
+
+        for row_idx, line in enumerate(notice_to_lines(notice), start=3):
+            c = sheet.cell(row_idx, 1)
+            c.value = line
+            c.font = xl.default_font
+        sheet.column_dimensions["A"].width = 100
+
+        output = xl.workbook_to_bytes(workbook)
+    response = HttpResponse(output, content_type=builder.mimetype)
     response["Content-Disposition"] = f"attachment; filename={filename}.{builder.file_ext}"
     return response
+
+
+def notice_to_lines(notice: DataRetentionNotice) -> list[str]:
+    txt = DATA_RETENTION_NOTICES_TXT[notice]
+    return list(txt.split("\n"))
 
 
 @booking_secretary_required

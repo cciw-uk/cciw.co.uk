@@ -5,7 +5,7 @@ from datetime import date, datetime
 from io import BytesIO
 
 from django.utils import timezone
-from openpyxl import Workbook, styles
+from openpyxl import Workbook, load_workbook, styles
 from openpyxl.cell import Cell
 from openpyxl.styles.fonts import DEFAULT_FONT
 from openpyxl.worksheet.worksheet import Worksheet
@@ -18,13 +18,17 @@ def empty_workbook():
     return wkbk
 
 
+font_size = 12
+default_font = styles.Font(size=font_size, name=DEFAULT_FONT.name)
+header_font = styles.Font(bold=True, size=font_size, name=DEFAULT_FONT.name)
+url_font = styles.Font(color=styles.colors.BLUE, size=font_size, name=DEFAULT_FONT.name)
+
+
 def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], contents: list[list[str]]):
     """
     Utility function for adding sheet to xlwt workbook.
     """
     wksh: Worksheet = wkbk.create_sheet(title=name)
-
-    font_size = 12
 
     border = styles.Border(
         left=styles.Side(border_style="thin"),
@@ -36,9 +40,7 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
     alignment = styles.Alignment(vertical="center")
     wrapped_alignment = styles.Alignment(vertical="center", wrapText=True)
     # TODO check
-    url_font = styles.Font(color=styles.colors.BLUE, size=font_size, name=DEFAULT_FONT.name)
     date_format = "YYYY/MM/DD"
-    header_font = styles.Font(bold=True, size=font_size, name=DEFAULT_FONT.name)
 
     for c_idx, header in enumerate(headers, start=1):
         cell: Cell = wksh.cell(row=1, column=c_idx, value=header)
@@ -55,6 +57,7 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
             cell: Cell = wksh.cell(row=r_idx, column=c_idx)
             cell.border = border
             cell.alignment = alignment
+            cell.font = default_font
 
             if isinstance(val, str):
                 # normalise newlines to style expected by Excel
@@ -88,8 +91,13 @@ def looks_like_url(val):
     )
 
 
-def workbook_to_bytes(wkbk):
+def workbook_to_bytes(wkbk: Workbook) -> bytes:
     s = BytesIO()
     wkbk.save(s)
     s.seek(0)
     return s.read()
+
+
+def workbook_from_bytes(content: bytes) -> Workbook:
+    s = BytesIO(content)
+    return load_workbook(s)

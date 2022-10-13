@@ -231,7 +231,7 @@ into our processes themselves:
   distribution (as is needed for some purposes), we include cover sheets that
   remind users of data protection responsibilities, and remind leaders to
   briefly train other people who will receive the data (such as officers)
-  regarding these principles. **TODO**
+  regarding these principles.
 
 * After the end of camps, we send reminders to relevant people who have
   downloaded sensitive data, prompting them to delete them. **TODO**
