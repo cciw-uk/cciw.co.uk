@@ -14,33 +14,21 @@
         <li><a href="{% url 'cciw-officers-officer_stats' year=camp.year %}">Officer stats {{ camp.year }}</a></li>
         <li>Campers:
           <a
-            href="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}?format=xls"
-            hx-get="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}?format=xls"
+            href="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}"
+            hx-get="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}"
             hx-target="#camp-download-notice-{{ camp.id }}"
             hx-indicator="#camp-download-notice-{{ camp.id }}"
           >XLS</a> |
-          <a
-            href="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}?format=ods"
-            hx-get="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}?format=ods"
-            hx-target="#camp-download-notice-{{ camp.id }}"
-            hx-indicator="#camp-download-notice-{{ camp.id }}"
-          >ODS</a> |
           <a href="{% url 'cciw-officers-booking_progress_stats_custom' camp_ids=camp.camp_ids_for_stats %}">Booking progress chart</a> |
           <a href="{% url 'cciw-officers-booking_ages_stats_custom' camp_ids=camp.camp_ids_for_stats %}">Camper ages chart</a>
         </li>
         <li>Sharable transport details:
           <a
-            href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}?format=xls"
-            hx-get="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}?format=xls"
+            href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}"
+            hx-get="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}"
             hx-target="#camp-download-notice-{{ camp.id }}"
             hx-indicator="#camp-download-notice-{{ camp.id }}"
-          >XLS</a> |
-          <a
-            href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}?format=ods"
-            hx-get="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}?format=ods"
-            hx-target="#camp-download-notice-{{ camp.id }}"
-            hx-indicator="#camp-download-notice-{{ camp.id }}"
-          >ODS</a>
+          >XLS</a>
         </li>
         <li>Leaders list email: <a href="mailto:{{ camp.leaders_email_list_address }}">{{ camp.leaders_email_list_address }}</a>
           <br />&nbsp;(you can only send to it from your registered email address: <b>{{ request.user.email }}</b>)

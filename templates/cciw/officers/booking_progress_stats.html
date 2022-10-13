@@ -17,9 +17,9 @@
 
     <p>Download raw data:
       {% if camp_ids %}
-        <a href="{% url 'cciw-officers-booking_progress_stats_custom_download' camp_ids=camp_ids %}?format=xls">XLS</a></p>
+        <a href="{% url 'cciw-officers-booking_progress_stats_custom_download' camp_ids=camp_ids %}">XLS</a></p>
       {% else %}
-        <a href="{% url 'cciw-officers-booking_progress_stats_download' start_year=start_year end_year=end_year %}?format=xls">XLS</a></p>
+        <a href="{% url 'cciw-officers-booking_progress_stats_download' start_year=start_year end_year=end_year %}">XLS</a></p>
       {% endif %}
     </div>
 {% endblock %}

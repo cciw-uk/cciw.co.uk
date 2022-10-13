@@ -1,9 +1,8 @@
 # Simple spreadsheet abstraction that does what we need for returning data in
-# spreadsheets, supporting .xls and .ods
+# spreadsheets, supporting .xlsx
 
 from abc import ABC, abstractmethod
 
-import ezodf2
 import pandas as pd
 
 from cciw.utils import xl
@@ -57,32 +56,3 @@ class ExcelFromDataFrameBuilder(SpreadsheetFromDataFrameBuilder):
 
     def to_bytes(self) -> bytes:
         return xl.workbook_to_bytes(self.pd_writer.book)  # using ExcelWriter internals
-
-
-class OdsBuilder(SpreadsheetSimpleBuilder):
-    mimetype = "application/vnd.oasis.opendocument.spreadsheet"
-    file_ext = "ods"
-
-    def __init__(self):
-        self.wkbk = ezodf2.newdoc("ods", "workbook")
-
-    def add_sheet_with_header_row(self, name, headers, contents):
-        headers = list(headers)
-        contents = list(contents)
-        sheet = ezodf2.Sheet(name, size=(len(contents) + 1, len(headers)))
-        self.wkbk.sheets += sheet
-        for c, header in enumerate(headers):
-            sheet[0, c].set_value(header)
-        for r, row in enumerate(contents):
-            for c, val in enumerate(row):
-                if val is not None:
-                    sheet[r + 1, c].set_value(val)
-
-    def to_bytes(self) -> bytes:
-        return self.wkbk.tobytes()
-
-
-spreadsheet_simple_builders: dict[str, type[SpreadsheetSimpleBuilder]] = {
-    "xls": ExcelBuilder,
-    "ods": OdsBuilder,
-}

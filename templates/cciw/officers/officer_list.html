@@ -176,19 +176,12 @@
     <ul>
       <li>Officer data, camp {{ camp.name }}, {{ camp.year }}:
         <a
-          href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=xls"
-          hx-get="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=xls"
+          href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}"
+          hx-get="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}"
           hx-indicator="#officer-download-notice"
           hx-target="#officer-download-notice"
           hx-swap="innerHTML show:bottom">
-          XLS</a> |
-        <a
-          href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=ods"
-          hx-get="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=ods"
-          hx-indicator="#officer-download-notice"
-          hx-target="#officer-download-notice"
-          hx-swap="innerHTML show:bottom">
-          ODS</a>
+          XLS</a>
       </li>
     </ul>
     <div id="officer-download-notice"></div>

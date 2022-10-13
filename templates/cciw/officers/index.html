@@ -42,8 +42,7 @@
       {% endif %}
       {% if show_secretary_links or show_booking_secretary_links %}
         <li>Download {{ thisyear }} brochure mailing list:
-          <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}?format=xls">XLS</a> |
-          <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}?format=ods">ODS</a>
+          <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}">XLS</a>
           (from bookings for {{ lastyear }})</li>
         <li><a href="{% url 'cciw-officers-create_officer' %}">Add new officer to system</a></li>
       {% endif %}
