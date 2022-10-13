@@ -14,7 +14,7 @@ from pytz import UTC
 
 def empty_workbook():
     wkbk: Workbook = Workbook()
-    wkbk.remove_sheet(wkbk.worksheets[0])
+    wkbk.remove(wkbk.worksheets[0])
     return wkbk
 
 
