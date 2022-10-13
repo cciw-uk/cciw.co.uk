@@ -1,0 +1,3 @@
+[submodule "submodules/fabutils"]
+	path = submodules/fabutils
+	url = git@github.com:cciw-uk/fabutils.git
