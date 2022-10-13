@@ -10,7 +10,7 @@ from typing import Callable
 from fabric.connection import Connection
 from fabric.transfer import Transfer
 
-from fabutils import apt, disks, files, locales, postgresql, ssl, users
+from fabutils import apt, disks, files, locales, postgresql, ssh, ssl, users
 from fabutils.connections import local_task, managed_connection_task
 from fabutils.templates import Template, upload_template_and_reload
 
@@ -158,10 +158,8 @@ def initial_secure(c):
     """
     Lock down server and secure. Run this after creating new server.
     """
-    c.run("apt update -q", echo=True)
-    c.run("apt upgrade -y -q", echo=True)
-    c.run("sed -i 's:RootLogin yes:RootLogin without-password:' /etc/ssh/sshd_config", echo=True)
-    c.run("service ssh restart", echo=True)
+    apt.update_upgrade(c)
+    ssh.disable_root_login_with_password(c)
     print("Security steps completed.")
 
 
