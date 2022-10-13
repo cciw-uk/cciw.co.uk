@@ -10,12 +10,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
 
-from cciw.utils.spreadsheet import (
-    ExcelBuilder,
-    ExcelFromDataFrameBuilder,
-    SpreadsheetFromDataFrameBuilder,
-    SpreadsheetSimpleBuilder,
-)
+from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder, ExcelSimpleBuilder
 
 
 def close_window_response(request: HttpRequest, *, clear_messages=False):
@@ -111,9 +106,9 @@ def redirect_to_url_with_next(next_url, url, redirect_field_name) -> HttpRespons
     return HttpResponseRedirect(f.url)
 
 
-def get_spreadsheet_simple_builder(request: HttpRequest) -> SpreadsheetSimpleBuilder:
-    return ExcelBuilder()
+def get_spreadsheet_simple_builder(request: HttpRequest) -> ExcelSimpleBuilder:
+    return ExcelSimpleBuilder()
 
 
-def get_spreadsheet_from_dataframe_builder(request: HttpRequest) -> SpreadsheetFromDataFrameBuilder:
+def get_spreadsheet_from_dataframe_builder(request: HttpRequest) -> ExcelFromDataFrameBuilder:
     return ExcelFromDataFrameBuilder()

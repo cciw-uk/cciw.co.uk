@@ -8,7 +8,7 @@ from django_countries.fields import Country
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
-from cciw.utils.spreadsheet import SpreadsheetSimpleBuilder
+from cciw.utils.spreadsheet import ExcelSimpleBuilder
 
 from .models import ACCOUNT_PUBLIC_ATTRS, BOOKING_PLACE_PUBLIC_ATTRS, Booking, BookingAccount, Payment
 
@@ -17,7 +17,7 @@ def format_address(*args):
     return "\n".join(arg.strip() for arg in args)
 
 
-def camp_bookings_to_spreadsheet(camp: Camp, spreadsheet: SpreadsheetSimpleBuilder) -> SpreadsheetSimpleBuilder:
+def camp_bookings_to_spreadsheet(camp: Camp, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
     bookings = list(camp.bookings.confirmed().order_by("first_name", "last_name"))
 
     columns = [
@@ -107,7 +107,7 @@ def camp_bookings_to_spreadsheet(camp: Camp, spreadsheet: SpreadsheetSimpleBuild
     return spreadsheet
 
 
-def camp_sharable_transport_details_to_spreadsheet(camp: Camp, spreadsheet: SpreadsheetSimpleBuilder):
+def camp_sharable_transport_details_to_spreadsheet(camp: Camp, spreadsheet: ExcelSimpleBuilder):
     accounts = (
         BookingAccount.objects.filter(share_phone_number=True).filter(bookings__in=camp.bookings.confirmed()).distinct()
     )
@@ -124,7 +124,7 @@ def camp_sharable_transport_details_to_spreadsheet(camp: Camp, spreadsheet: Spre
 
 
 # Spreadsheet needed by booking secretary
-def year_bookings_to_spreadsheet(year: int, spreadsheet: SpreadsheetSimpleBuilder) -> SpreadsheetSimpleBuilder:
+def year_bookings_to_spreadsheet(year: int, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
     bookings = (
         Booking.objects.filter(camp__year=year)
         .confirmed()
@@ -151,9 +151,7 @@ def year_bookings_to_spreadsheet(year: int, spreadsheet: SpreadsheetSimpleBuilde
     return spreadsheet
 
 
-def payments_to_spreadsheet(
-    date_start: date, date_end: date, spreadsheet: SpreadsheetSimpleBuilder
-) -> SpreadsheetSimpleBuilder:
+def payments_to_spreadsheet(date_start: date, date_end: date, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
     # Add one day to the date_end, since it is defined inclusively
     date_end = date_end + timedelta(days=1)
 
@@ -179,7 +177,7 @@ def payments_to_spreadsheet(
     return spreadsheet
 
 
-def addresses_for_mailing_list(year: int, spreadsheet: SpreadsheetSimpleBuilder) -> SpreadsheetSimpleBuilder:
+def addresses_for_mailing_list(year: int, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
     # We get the postal addresses that we have for the *previous* year
     # to generate the mailing list for the given year.
     bookings = (

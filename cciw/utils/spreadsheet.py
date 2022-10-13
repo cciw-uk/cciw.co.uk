@@ -8,31 +8,16 @@ import pandas as pd
 from cciw.utils import xl
 
 
-class SpreadsheetBuilder(ABC):
-    mimetype: str
-    file_ext: str
+class ExcelBuilder(ABC):
+    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    file_ext = "xlsx"
 
     @abstractmethod
     def to_bytes(self) -> bytes:
         raise NotImplementedError()
 
 
-class SpreadsheetSimpleBuilder(SpreadsheetBuilder):
-    @abstractmethod
-    def add_sheet_with_header_row(self, name: str, headers: list[str], contents: list[list[str]]) -> None:
-        raise NotImplementedError()
-
-
-class SpreadsheetFromDataFrameBuilder(SpreadsheetBuilder):
-    @abstractmethod
-    def add_sheet_from_dataframe(self, name: str, dataframe: pd.DataFrame) -> None:
-        raise NotImplementedError()
-
-
-class ExcelBuilder(SpreadsheetSimpleBuilder):
-    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    file_ext = "xlsx"
-
+class ExcelSimpleBuilder(ExcelBuilder):
     def __init__(self):
         self.wkbk = xl.empty_workbook()
 
@@ -43,10 +28,7 @@ class ExcelBuilder(SpreadsheetSimpleBuilder):
         return xl.workbook_to_bytes(self.wkbk)
 
 
-class ExcelFromDataFrameBuilder(SpreadsheetFromDataFrameBuilder):
-    mimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    file_ext = "xlsx"
-
+class ExcelFromDataFrameBuilder(ExcelBuilder):
     def __init__(self):
         # filename passed to force correct writer
         self.pd_writer = pd.ExcelWriter("tmp.xlsx")  # pylint: disable=abstract-class-instantiated

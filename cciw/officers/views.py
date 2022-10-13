@@ -45,7 +45,7 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.utils.spreadsheet import SpreadsheetBuilder
+from cciw.utils.spreadsheet import ExcelBuilder
 from cciw.utils.views import (
     get_spreadsheet_from_dataframe_builder,
     get_spreadsheet_simple_builder,
@@ -1614,7 +1614,7 @@ def brochure_mailing_list(request, year: int):
     return spreadsheet_response(addresses_for_mailing_list(year, builder), f"CCIW-mailing-list-{year}")
 
 
-def spreadsheet_response(builder: SpreadsheetBuilder, filename: str):
+def spreadsheet_response(builder: ExcelBuilder, filename: str) -> HttpResponse:
     response = HttpResponse(builder.to_bytes(), content_type=builder.mimetype)
     response["Content-Disposition"] = f"attachment; filename={filename}.{builder.file_ext}"
     return response

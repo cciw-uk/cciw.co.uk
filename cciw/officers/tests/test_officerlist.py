@@ -16,7 +16,7 @@ from cciw.officers.create import create_officer
 from cciw.officers.models import Application
 from cciw.officers.tests import factories
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
-from cciw.utils.spreadsheet import ExcelBuilder
+from cciw.utils.spreadsheet import ExcelSimpleBuilder
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
@@ -46,7 +46,7 @@ class TestExport(TestBase):
             inv.notes = f"Some notes {i}"
             inv.save()
 
-        workbook = officer_data_to_spreadsheet(camp, ExcelBuilder()).to_bytes()
+        workbook = officer_data_to_spreadsheet(camp, ExcelSimpleBuilder()).to_bytes()
 
         assert workbook is not None
         wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
@@ -69,7 +69,7 @@ class TestExport(TestBase):
         camp = camp_factories.create_camp(officers=[officer := factories.create_officer()])
         factories.create_application(year=camp.year, officer=officer, address_firstline="123 The Way")
 
-        workbook = officer_data_to_spreadsheet(camp, ExcelBuilder()).to_bytes()
+        workbook = officer_data_to_spreadsheet(camp, ExcelSimpleBuilder()).to_bytes()
 
         wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
         wksh = wkbk.worksheets[0]
