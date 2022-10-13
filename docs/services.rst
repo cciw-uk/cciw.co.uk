@@ -75,16 +75,16 @@ An S3 bucket for backups is configured with the following properties:
 
   * Lifecycle rule:
 
-    * Name: "Delete after 30 days"
+    * Name: "Delete after 60 days"
     * Scope: "This rule applies to all objects in the bucket"
     * Action: "Expire current versions of objects"
 
-      * Number of days after object creation: 30
+      * Number of days after object creation: 60
 
     * Action: "Delete expired delete markers or incomplete multipart uploads"
 
       * Delete incomplete multipart uploads: checked
-      * Numbers of days: 30
+      * Numbers of days: 60
 
 Note that the lifecycle policy is an important part of our data retention and
 data privacy policy - old data that we want to delete will be expunged from our
