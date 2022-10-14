@@ -734,7 +734,7 @@ def get_and_load_production_db(c):
     Dump current production Django DB and load into dev environment
     """
     filename = get_live_db(c)
-    local_restore_db_from_dump(filename)
+    local_restore_db_from_dump(c, filename)
 
 
 @task()
