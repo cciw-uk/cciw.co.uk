@@ -17,3 +17,5 @@ skip = ['settings.py', 'node_modules', '.git']
 [tool.mypy]
 ignore_missing_imports = true
 plugins = ['pydantic.mypy']
+check_untyped_defs = true
+exclude = ['submodules']
