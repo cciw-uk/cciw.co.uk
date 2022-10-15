@@ -38,7 +38,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("officers", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -92,7 +91,7 @@ class Migration(migrations.Migration):
                         unique=True,
                     ),
                 ),
-                ("color", colorful.fields.RGBColorField(default="#ffffff")),
+                ("color", colorful.fields.RGBColorField()),
             ],
         ),
         migrations.CreateModel(
@@ -141,7 +140,6 @@ class Migration(migrations.Migration):
                         blank=True, related_name="camps_as_leader", to="cciwmain.person", verbose_name="leaders"
                     ),
                 ),
-                ("officers", models.ManyToManyField(through="officers.Invitation", to=settings.AUTH_USER_MODEL)),
                 ("site", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="cciwmain.site")),
                 (
                     "last_booking_date",
