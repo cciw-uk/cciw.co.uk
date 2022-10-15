@@ -49,5 +49,6 @@ class Migration(migrations.Migration):
         WHERE created IS NULL;
         """,
             "",
+            elidable=True,
         )
     ]

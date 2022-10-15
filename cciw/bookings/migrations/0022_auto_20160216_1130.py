@@ -52,4 +52,4 @@ class Migration(migrations.Migration):
         ("bookings", "0021_auto_20160216_1128"),
     ]
 
-    operations = [migrations.RunPython(forwards, backwards)]
+    operations = [migrations.RunPython(forwards, backwards, elidable=True)]

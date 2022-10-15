@@ -55,6 +55,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            fix_empty_values, lambda apps, schema_editor: None
+            fix_empty_values, lambda apps, schema_editor: None, elidable=True
         )  # allowing reverse migration is harmless)
     ]

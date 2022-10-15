@@ -30,4 +30,4 @@ class Migration(migrations.Migration):
         ("contenttypes", "0001_initial"),
     ]
 
-    operations = [migrations.RunPython(populate_created_online)]
+    operations = [migrations.RunPython(populate_created_online, elidable=True)]

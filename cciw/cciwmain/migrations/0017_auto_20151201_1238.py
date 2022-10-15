@@ -26,4 +26,4 @@ class Migration(migrations.Migration):
         ("cciwmain", "0016_remove_camp_previous_camp"),
     ]
 
-    operations = [migrations.RunPython(forwards, backwards)]
+    operations = [migrations.RunPython(forwards, backwards, elidable=True)]

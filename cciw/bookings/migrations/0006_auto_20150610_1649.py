@@ -56,5 +56,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_ipn_dates, lambda apps, schema_editor: None)  # allowing reverse migration is harmless)
+        migrations.RunPython(
+            fix_ipn_dates, lambda apps, schema_editor: None, elidable=True
+        )  # allowing reverse migration is harmless)
     ]

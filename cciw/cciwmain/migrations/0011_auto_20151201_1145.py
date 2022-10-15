@@ -16,4 +16,4 @@ class Migration(migrations.Migration):
         ("cciwmain", "0010_auto_20151201_1145"),
     ]
 
-    operations = [migrations.RunPython(forwards, backwards)]
+    operations = [migrations.RunPython(forwards, backwards, elidable=True)]

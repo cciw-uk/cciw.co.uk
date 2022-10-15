@@ -40,5 +40,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_reference_actions, remove),
+        migrations.RunPython(create_reference_actions, remove, elidable=True),
     ]
