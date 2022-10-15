@@ -38,6 +38,6 @@ parsy==2.0
 django-decorator-include==3.0
 django-spurl==0.6.8
 django-libsass==0.9
-makefun==1.15.0
 patchwork==1.0.1
 git+https://github.com/spookylukey/django-urlconfchecks.git@3ec85d0aa8225e76542799455c8dd33c9b602222#django-urlconfchecks
+-r submodules/fabutils/requirements.in

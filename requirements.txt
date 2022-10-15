@@ -188,7 +188,7 @@ lxml==4.9.1
     #   -r requirements-dev.in
     #   pyquery
 makefun==1.15.0
-    # via -r requirements.in
+    # via -r submodules/fabutils/requirements.in
 markdown==3.3.7
     # via wiki
 matplotlib-inline==0.1.6
@@ -224,7 +224,9 @@ parso==0.8.3
 parsy==2.0
     # via -r requirements.in
 patchwork==1.0.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   -r submodules/fabutils/requirements.in
 pathlib2==2.3.7.post1
     # via fabric
 pep517==0.13.0
