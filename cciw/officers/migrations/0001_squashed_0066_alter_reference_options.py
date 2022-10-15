@@ -78,7 +78,6 @@ class Migration(migrations.Migration):
         ("officers", "0063_auto_20210506_0806"),
         ("officers", "0064_auto_20210818_1235"),
         ("officers", "0065_reference_given_in_confidence"),
-        ("officers", "0066_alter_reference_options"),
     ]
 
     initial = True

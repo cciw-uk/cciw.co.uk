@@ -13,6 +13,11 @@ class Migration(migrations.Migration):
         ("officers", "0002_invitation"),
     ]
 
+    # Hack to make sure this migration isn't applied
+    replaces = [
+        ("cciwmain", "0024_auto_20210818_1235"),
+    ]
+
     operations = [
         migrations.AddField(
             model_name="camp",

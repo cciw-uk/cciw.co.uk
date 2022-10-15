@@ -32,7 +32,6 @@ class Migration(migrations.Migration):
         ("cciwmain", "0021_camp_special_info_html"),
         ("cciwmain", "0022_auto_20200729_1928"),
         ("cciwmain", "0023_auto_20210412_0837"),
-        ("cciwmain", "0024_auto_20210818_1235"),
     ]
 
     initial = True

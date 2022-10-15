@@ -14,6 +14,10 @@ class Migration(migrations.Migration):
         ("officers", "0001_squashed_0066_alter_reference_options"),
     ]
 
+    replaces = [
+        ("officers", "0066_alter_reference_options"),
+    ]
+
     operations = [
         migrations.CreateModel(
             name="Invitation",
