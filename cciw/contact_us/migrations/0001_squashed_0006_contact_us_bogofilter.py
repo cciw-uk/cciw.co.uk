@@ -44,12 +44,11 @@ class Migration(migrations.Migration):
                         choices=[
                             ("website", "Web site problems"),
                             ("bookingform", "Paper booking form request"),
-                            ("bookings", "Bookings"),
+                            ("bookings", "Camp bookings and places"),
                             ("data_protection", "Data protection and related"),
                             ("volunteering", "Volunteering"),
                             ("general", "Other"),
                         ],
-                        default="",
                         max_length=15,
                     ),
                 ),
