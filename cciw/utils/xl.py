@@ -39,7 +39,6 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
 
     alignment = styles.Alignment(vertical="center")
     wrapped_alignment = styles.Alignment(vertical="center", wrapText=True)
-    # TODO check
     date_format = "YYYY/MM/DD"
 
     for c_idx, header in enumerate(headers, start=1):
@@ -50,7 +49,6 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
     header_row_count = 1
 
     for r_idx, row in enumerate(contents, start=1 + header_row_count):
-        # TODO row_height is not working correctly
         normal_row_height = font_size
         row_height = normal_row_height
         for c_idx, val in enumerate(row, start=1):

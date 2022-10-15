@@ -395,7 +395,7 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
 
 
 def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_detail: ModelDetail):
-    if rules.keep is Forever:
+    if isinstance(rules.keep, _Forever):
         return []
 
     erase_before_datetime = now - rules.keep
