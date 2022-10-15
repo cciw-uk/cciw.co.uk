@@ -1020,9 +1020,7 @@
             "is_staff": true,
             "is_active": true,
             "date_joined": "2020-10-09T18:21:39.311Z",
-            "contact_phone_number": "",
-            "groups": [],
-            "user_permissions": []
+            "contact_phone_number": ""
         }
     },
     {
