@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 
 import mailer as queued_mail
 import pytest
+from django.db.models.base import Model
 from django.utils import timezone
 from mailer import models as mailer_models
 from paypal.standard.ipn.models import PayPalIPN
@@ -51,7 +52,7 @@ def test_parse_keep_other():
 
 def make_policy(
     *,
-    model: type,
+    model: type[Model],
     fields: list[str] = None,
     keep: Keep,
     delete_row=False,
@@ -451,7 +452,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             ipn.refresh_from_db()
             assert ipn.payer_business_name == "[deleted]"
 
-    def _assert_instance_deleted_after(self, *, instance: object, start: datetime, policy: Policy, days: int):
+    def _assert_instance_deleted_after(self, *, instance: Model, start: datetime, policy: Policy, days: int):
         model = instance.__class__
         with travel(start + timedelta(days=days) - timedelta(seconds=10)):
             apply_partial_policy(policy)
