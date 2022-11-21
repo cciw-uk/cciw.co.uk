@@ -10,18 +10,10 @@ from cciw.officers.tests import factories as officer_factories
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.tests.webtest import WebTestBase
 
-from .models import ContactType, Message, SpamStatus
+from ..models import Message, SpamStatus
+from .factories import create_message
 
 CONTACT_US_URL = reverse("cciw-contact_us-send")
-
-
-def create_message() -> Message:
-    return Message.objects.create(
-        subject=ContactType.WEBSITE,
-        email="someemail@example.com",
-        name="Some Person",
-        message="This is an important message please read it",
-    )
 
 
 class ContactUsPage(WebTestBase):

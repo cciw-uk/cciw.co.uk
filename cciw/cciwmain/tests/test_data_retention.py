@@ -13,6 +13,7 @@ from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us.models import Message
+from cciw.contact_us.tests import factories as contact_us_factories
 from cciw.data_retention import (
     ErasureMethod,
     Forever,
@@ -91,14 +92,14 @@ class TestApplyDataRetentionPolicy(TestBase):
         )
 
         with travel("2017-01-01 00:05:00"):
-            Message.objects.create(email="bob@example.com", name="Bob", message="Hello")
+            contact_us_factories.create_message(message="Hello")
             apply_partial_policy(policy)
             assert Message.objects.count() == 1
 
         with travel("2017-12-31 23:00:00"):
             apply_partial_policy(policy)
             assert Message.objects.count() == 1
-            Message.objects.create(email="bob@example.com", name="Bob", message="Hello 2")
+            contact_us_factories.create_message(message="Hello 2")
             apply_partial_policy(policy)
             assert Message.objects.count() == 2  # neither is deleted
 
@@ -158,7 +159,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             keep=timedelta(days=365),
         )
         start = timezone.now()
-        message = officers_factories.create_contact_us_message()
+        message = contact_us_factories.create_message()
         self._assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
 
     def test_erase_mailer_Message(self):

@@ -13,7 +13,6 @@ from cciw.accounts.models import (
     setup_auth_roles,
 )
 from cciw.cciwmain.models import Camp
-from cciw.contact_us.models import Message
 from cciw.officers.models import Application, Qualification, Referee, Reference
 from cciw.utils.tests.factories import Auto, sequence
 
@@ -224,11 +223,4 @@ def create_complete_reference(referee: Referee) -> Reference:
         concerns="Perhaps too good for camp",
         comments="",
         date_created=date.today(),
-    )
-
-
-def create_contact_us_message() -> Message:
-    return Message.objects.create(
-        email="example@example.com",
-        message="hello",
     )
