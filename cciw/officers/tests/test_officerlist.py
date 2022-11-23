@@ -1,15 +1,12 @@
 import io
-import time
 from datetime import date, timedelta
 
 import openpyxl
 from django.conf import settings
 from django.core import mail
-from django.urls import reverse
 from openpyxl.utils import get_column_letter
 
 from cciw.accounts.models import User
-from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.officers.create import create_officer
@@ -117,20 +114,41 @@ class TestSlackers(TestBase):
         ]
 
 
-class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
-    def add_button_selector(self, officer):
-        return f'[data-officer-id="{officer.id}"] [data-add-button]'
+class TestApplicationFormStatusPAge(SiteSetupMixin, WebTestBase):
+    def test_page(self):
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[(officer := factories.create_officer())],
+        )
+        self.officer_login(leader)
+        self.get_url("cciw-officers-officer_application_status", camp_id=camp.url_id)
+        self.assertTextPresent(officer.full_name, within="#id_noapplicationform")
 
+
+class CampRoleSetupMixin:
+    def setUp(self):
+        super().setUp()
+        self.camp_role1 = factories.create_camp_role(name="Tent Officer")
+        self.camp_role2 = factories.create_camp_role(name="Assistant Leader")
+
+
+class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
     def remove_button_selector(self, officer):
-        return f'[data-officer-id="{officer.id}"] [data-remove-button]'
+        return f'[data-officer-id="{officer.id}"] [name="remove"]'
 
     def edit_button_selector(self, officer):
-        return f'[data-officer-id="{officer.id}"] [data-edit-button]'
+        return f'[data-officer-id="{officer.id}"] [name="edit"]'
+
+    def save_button_selector(self, officer):
+        return f'[data-officer-id="{officer.id}"] [name="save"]'
+
+    def cancel_button_selector(self, officer):
+        return f'[data-officer-id="{officer.id}"] [name="cancel"]'
 
     def resend_email_button_selector(self, officer):
-        return f'[data-officer-id="{officer.id}"] [data-email-button]'
+        return f'[data-officer-id="{officer.id}"] [name="resend_email"]'
 
-    def test_add(self):
+    def test_add_with_new_role(self):
         camp = camp_factories.create_camp(
             leader=(leader := factories.create_officer()),
         )
@@ -140,23 +158,57 @@ class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
 
         # Check initial:
         assert officer not in camp.officers.all()
-        assert not self.is_element_present(self.remove_button_selector(officer))
         self.assertTextPresent(officer.email)
+        self.assertTextPresent("No officers added yet")
 
         # Action:
-        self.click(self.add_button_selector(officer))
-        self.wait_for_ajax()
+        self.fill(
+            {
+                f"#id_chooseofficer_{ officer.id }": True,
+                "#id_chooseofficer-role": str(self.camp_role1.id),
+            }
+        )
+        self.click("input[name=add_new_role]")
 
         # DB check:
         assert officer in camp.officers.all()
+        assert camp.invitations.get(officer=officer).role == self.camp_role1
+
         # UI check:
-        assert self.is_element_present(self.remove_button_selector(officer))
-        self.assertTextPresent(officer.email)
+        self.assertTextPresent(self.camp_role1.name, within=f'[data-officer-id="{officer.id}"]')
+
+    def test_add_with_previous_role(self):
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+        )
+        officer = factories.create_officer()
+        previous_camp = camp_factories.create_camp(camp_name=camp.camp_name, leader=leader, year=camp.year - 1)
+        factories.add_officers_to_camp(
+            previous_camp, [officer], role=factories.get_or_create_camp_role(name="Kitchen helper")
+        )
+        assert not camp.invitations.all()
+
+        self.officer_login(leader)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
+
+        # Check initial:
+        self.assertTextPresent("No officers added yet")
+
+        # Action:
+        self.fill({f"#id_chooseofficer_{ officer.id }": True})
+        self.click("input[name=add_previous_role]")
+
+        # DB check:
+        assert officer in camp.officers.all()
+        assert camp.invitations.get(officer=officer).role.name == "Kitchen helper"
+
+        # UI check:
+        self.assertTextPresent("Kitchen helper", within=f'[data-officer-id="{officer.id}"]')
 
     def test_remove(self):
         camp = camp_factories.create_camp(
             leader=(leader := factories.create_officer()),
-            officers=[officer := factories.create_officer()],
+            officers=[officer := factories.create_officer(first_name="Zog", last_name="The Dragon")],
         )
 
         self.officer_login(leader)
@@ -164,18 +216,18 @@ class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
 
         # Check initial:
         assert officer in camp.officers.all()
-        assert not self.is_element_present(self.add_button_selector(officer))
-        self.assertTextPresent(officer.email)
+        self.assertTextAbsent(officer.full_name, within=".chooseofficers")
+        self.assertTextPresent(officer.full_name, within=f'[data-officer-id="{officer.id}"]')
+        self.assertTextPresent(officer.email, within=f'[data-officer-id="{officer.id}"]')
 
         # Action:
         self.click(self.remove_button_selector(officer))
-        self.wait_for_ajax()
 
-        # DB check:
+        # Assert
+        self.assertTextPresent(officer.full_name, within=".chooseofficers")
+        assert not self.is_element_present(f'[data-officer-id="{officer.id}"]')
+
         assert officer not in camp.officers.all()
-        # UI check:
-        assert self.is_element_present(self.add_button_selector(officer))
-        self.assertTextPresent(officer.email)
 
     def test_resend_email(self):
         camp = camp_factories.create_camp(
@@ -190,6 +242,7 @@ class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
         self.click(self.resend_email_button_selector(officer), expect_alert=True)
         self.accept_alert()
         self.wait_until(lambda *args: len(mail.outbox) > 0)
+        self.assertTextPresent("Sent!", within=f'[data-officer-id="{officer.id}"]')
         (m,) = mail.outbox
         assert officer.first_name in m.body
         assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
@@ -197,38 +250,48 @@ class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
     def test_edit(self):
         camp = camp_factories.create_camp(
             leader=(leader := factories.create_officer()),
-            officers=[officer := factories.create_officer()],
         )
+        officer = factories.create_officer()
+
+        (invitation,) = factories.add_officers_to_camp(camp, [officer], role=self.camp_role1)
 
         self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
-        assert not self.is_element_displayed("#id_officer_save")
 
+        # Change officer details, not role (checking that role is propagated)
         self.click(self.edit_button_selector(officer))
-        assert self.is_element_displayed("#id_officer_save")
         self.fill(
             {
-                "#id_officer_first_name": "Altered",
-                "#id_officer_last_name": "Name",
-                "#id_officer_email": "alteredemail@somewhere.com",
-                "#id_officer_notes": "A New Note",
+                "#id_first_name": "Altered",
+                "#id_last_name": "Name",
+                "#id_email": "alteredemail@somewhere.com",
             }
         )
-        self.click("#id_officer_save")
-        self.wait_for_ajax()
+        self.click(self.save_button_selector(officer))
+
+        self.wait_until_loaded(self.edit_button_selector(officer))
 
         # Test DB
         officer.refresh_from_db()
         assert officer.first_name == "Altered"
         assert officer.last_name == "Name"
         assert officer.email == "alteredemail@somewhere.com"
-        invitation = camp.invitations.get(officer=officer)
-        assert invitation.notes == "A New Note"
+        invitation.refresh_from_db()
+        assert invitation.role == self.camp_role1  # unchanged
 
         # Test UI:
-        assert not self.is_element_displayed("#id_officer_save")
-        assert not self.is_element_displayed("#id_officer_first_name")
         self.assertTextPresent("alteredemail@somewhere.com")
+
+        # Change role, not user details (checking user details are propagated)
+        self.click(self.edit_button_selector(officer))
+        self.fill({"#id_role": str(self.camp_role2.id)})
+        self.click(self.save_button_selector(officer))
+        self.wait_until_loaded(self.edit_button_selector(officer))
+
+        officer.refresh_from_db()
+        assert officer.email == "alteredemail@somewhere.com"
+        invitation.refresh_from_db()
+        assert invitation.role == self.camp_role2
 
     def test_edit_validation(self):
         camp = camp_factories.create_camp(
@@ -240,36 +303,43 @@ class TestOfficerListPage(SiteSetupMixin, SeleniumBase):
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         self.click(self.edit_button_selector(officer))
-        self.fill({"#id_officer_email": "bademail"})
-        self.click("#id_officer_save", expect_alert=True)
+        self.fill({"#id_email": "bademail"})
+        self.click(self.save_button_selector(officer))
 
         # Test DB
         officer = User.objects.get(id=officer.id)
         assert officer.email != "bademail"
 
         # Test UI:
-        self.accept_alert()
-        assert self.is_element_displayed("#id_officer_save")
+        assert self.is_element_displayed(self.save_button_selector(officer))
 
-    def test_add_officer_button(self):
-        camp = camp_factories.create_camp(leader=(leader := factories.create_officer()))
+    def test_edit_cancel(self):
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[(officer := factories.create_officer())],
+        )
+
         self.officer_login(leader)
         self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
-        self.click("#id_new_officer_btn")
-        self.wait_for_ajax()
-        time.sleep(5.0)
-        assert self.is_element_displayed("#id_add_officer_popup")
-        self.click("#id_popup_close_btn")
-        self.wait_for_ajax()
-        time.sleep(1.5)
-        assert not self.is_element_displayed("#id_add_officer_popup")
-        # Functionality of "New officer" popup is tested separately.
+
+        self.click(self.edit_button_selector(officer))
+        self.fill(
+            {
+                "#id_first_name": "Altered",
+                "#id_last_name": "Name",
+            }
+        )
+        self.click(self.cancel_button_selector(officer))
+
+        self.wait_until_loaded(self.edit_button_selector(officer))
+
+        # Test DB
+        officer.refresh_from_db()
+        assert officer.first_name != "Altered"
+        assert officer.last_name != "Name"
 
 
-class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
-    # This is implemented as a popup from the officer list that shows an iframe
-    # hosting a separate page, making it easiest to test using WebTest on the
-    # separate page.
+class TestNewOfficerPage(SiteSetupMixin, WebTestBase):
 
     CONFIRM_BUTTON = "input[name=confirm]"
 
@@ -277,26 +347,25 @@ class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
         super().setUp()
         mail.outbox = []
 
-    def get_page(self, camp):
-        self.get_literal_url(reverse("cciw-officers-create_officer") + f"?camp_id={camp.id}")
+    def get_page(self):
+        self.get_url("cciw-officers-create_officer")
 
     def test_permissions(self):
-        camp = camp_factories.create_camp(leader=(leader := factories.create_officer()), future=True)
-        self.get_page(camp)
+        camp_factories.create_camp(leader=(leader := factories.create_officer()), future=True)
+        self.get_page()
         assert self.is_element_present("body.login")
         self.officer_login(leader)
-        self.get_page(camp)
+        self.get_page()
         assert not self.is_element_present("body.login")
         self.assertTextPresent("Enter details for officer")
 
-    def _access_officer_list_page(self) -> Camp:
-        camp = camp_factories.create_camp(leader=(leader := factories.create_officer()), future=True)
+    def _access_officer_list_page(self):
+        camp_factories.create_camp(leader=(leader := factories.create_officer()), future=True)
         self.officer_login(leader)
-        self.get_page(camp)
-        return camp
+        self.get_page()
 
     def test_success(self):
-        camp = self._access_officer_list_page()
+        self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -305,7 +374,7 @@ class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
             }
         )
         self.submit("input[type=submit]")
-        self._assert_created(camp)
+        self._assert_created()
 
     def test_duplicate_user(self):
         factories.create_officer(
@@ -327,7 +396,7 @@ class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
         factories.create_officer(
             username="maryandrews", first_name="Mary", last_name="Andrews", email="mary@otheremail.com"
         )
-        camp = self._access_officer_list_page()
+        self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -338,13 +407,13 @@ class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
         self.submit("input[type=submit]")
         self.assertTextPresent("A user with that first name and last name already exists")
         self.submit(self.CONFIRM_BUTTON)
-        self._assert_created(camp)
+        self._assert_created()
 
     def test_duplicate_email(self):
         factories.create_officer(
             username="mikeandrews", first_name="Mike", last_name="Andrews", email="mary@andrews.com"
         )
-        camp = self._access_officer_list_page()
+        self._access_officer_list_page()
         self.fill(
             {
                 "#id_first_name": "Mary",
@@ -355,9 +424,9 @@ class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
         self.submit("input[type=submit]")
         self.assertTextPresent("A user with that email address already exists")
         self.submit(self.CONFIRM_BUTTON)
-        self._assert_created(camp)
+        self._assert_created()
 
-    def _assert_created(self, camp):
+    def _assert_created(self):
         u = User.objects.get(email="mary@andrews.com", first_name="Mary")
         assert u.first_name == "Mary"
         assert u.last_name == "Andrews"
@@ -369,4 +438,3 @@ class TestNewOfficerPopup(SiteSetupMixin, WebTestBase):
         m = mail.outbox[0]
         assert "Hi Mary" in m.body
         assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
-        assert u in camp.officers.all()

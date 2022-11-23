@@ -1,55 +1,39 @@
-
-.innerleft {
-    margin: 0px 10px 0px 0px;
-}
-
-.innerright {
-    margin: 0px 10px;
-}
-
-.leftcolumnwrapper {
-    float: left;
-    width: 100%;
-}
-
-$addToListBlockWidth: 30em;  // see also officer_list.js
-.leftcolumn {
-    margin-right: $addToListBlockWidth;
-}
-
-.rightcolumn {
-    float: left;
-    width: $addToListBlockWidth;
-    margin-left: -$addToListBlockWidth;
-    background-color: #f0f0f0;
-}
-
-table.tablesorter {
-    thead {
-        th {
-            background-color: #f0f0f0;
-            background-image: none;
-        }
-
-        .header {
-            background-image: url(/static/images/ascdesc.gif);
-            background-repeat: no-repeat;
-            background-position: center right;
-            cursor: pointer;
-            &.headerSortDown {
-                background-image: url(/static/images/desc.gif);
-            }
-
-            &.headerSortUp {
-                background-image: url(/static/images/asc.gif);
-            }
-        }
+.currentofficers {
+    form {
+        display: inline;
+    }
+    input:not(:focus):invalid {
+        border-color: red;
     }
 }
 
-#id_officer_list_div table thead th:nth-child(3) {
-    min-width:25ex;
+.chooseofficers__tablewrapper {
+    height: 18em;
+    resize: both;
+    max-width: fit-content;
+    overflow-y: auto;
+    thead tr {
+        position: sticky;
+        top: 0;
+    }
+    margin-top: 1em;
+    margin-bottom: 1em;
+
 }
+
+.chooseofficers__officer--previous {
+    font-weight: bold;
+}
+
+.chooseofficers, .newofficers {
+    margin-top: 1em;
+    margin-bottom: 1em;
+
+    > details > summary  {
+        font-size: 16px;
+    }
+}
+
 
 th.rightbreak, td.rightbreak {
     border-right: 1px solid #888;

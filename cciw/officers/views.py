@@ -1,9 +1,9 @@
 import contextlib
 import enum
+import re
 from datetime import date, datetime, timedelta
 from functools import wraps
 from typing import Iterable, TypeAlias
-from urllib.parse import urlparse
 
 import furl
 import openpyxl
@@ -12,21 +12,19 @@ import pandas_highcharts.core
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import PasswordResetView
 from django.core import signing
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
-from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
-from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 
 from cciw.accounts.models import User
 from cciw.bookings.models import Booking, BookingAccount, Price, is_booking_open, most_recent_booking_year
@@ -44,11 +42,13 @@ from cciw.cciwmain import common
 from cciw.cciwmain.common import CampId
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
+from cciw.cciwmain.utils import get_protected_download, is_valid_email
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.utils import xl
 from cciw.utils.spreadsheet import ExcelBuilder
 from cciw.utils.views import (
+    for_htmx,
+    get_redirect_from_request,
     get_spreadsheet_from_dataframe_builder,
     get_spreadsheet_simple_builder,
     reroute_response,
@@ -89,6 +89,8 @@ from .forms import (
 )
 from .models import (
     Application,
+    CampOfficerCollection,
+    CampRole,
     DBSActionLog,
     DBSCheck,
     Invitation,
@@ -271,13 +273,9 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
 
     # Handle redirects, since this page is LOGIN_URL
-    redirect_to = request.GET.get(REDIRECT_FIELD_NAME, "")
-    if redirect_to:
-        netloc = urlparse(redirect_to)[1]
-        # Heavier security check -- don't allow redirection to a different
-        # host.
-        if netloc == "" or netloc == request.get_host():
-            return HttpResponseRedirect(redirect_to)
+    redirect_resp = get_redirect_from_request(request)
+    if redirect_resp is not None:
+        return redirect_resp
 
     user = request.user
     context = {
@@ -492,7 +490,7 @@ def manage_applications(request, camp_id: CampId):
     )
 
 
-def _get_camp_or_404(camp_id: CampId):
+def _get_camp_or_404(camp_id: CampId) -> Camp:
     try:
         return Camp.objects.get(year=camp_id.year, camp_name__slug=camp_id.slug)
     except (Camp.DoesNotExist, ValueError):
@@ -893,89 +891,122 @@ def view_reference(request, reference_id: int):
 
 @staff_member_required
 @camp_admin_required
+@for_htmx(use_block_from_params=True)
 @with_breadcrumbs(leaders_breadcrumbs)
 def officer_list(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
 
-    invitation_list = camp.invitations.all()
-    officer_list_ids = {i.officer_id for i in invitation_list}
+    # We need CampOfficerCollection due to the complexities of the officer list page,
+    # and particularly the facts that:
+
+    # - an action can partially succeed
+    # - we don't want to reset checkboxes when actions didn't succeed.
+    # - this means we can't just do a full redirect after buttons are pressed.
+    # - but we need to ensure our different lists are kept in sync.
+
+    collection = CampOfficerCollection(camp)
+
+    camp_roles = CampRole.objects.all()
+
+    selected_officer_ids = set()
+    chosen_officer_ids = set()
+    add_officer_message = ""
+
+    selected_role = None
+
+    if request.method == "POST":
+        # "Add officer" functionality
+        chosen_officer_ids = {
+            int(input_name.split("_")[1]) for input_name in request.POST if re.match(r"chooseofficer_\d+", input_name)
+        }
+        add_previous_role = "add_previous_role" in request.POST
+        add_new_role = "add_new_role" in request.POST
+        if add_previous_role or add_new_role:
+            if add_new_role:
+                new_role = CampRole.objects.get(id=int(request.POST["new_role"]))
+                added_officers = collection.add_officers_with_role(chosen_officer_ids, new_role)
+            elif add_previous_role:
+                added_officers = collection.add_officers_with_previous_role(chosen_officer_ids)
+            else:
+                added_officers = []
+            # if we successfully process, we remove from chosen_officer_ids,
+            # but preserve the state of checkboxes we weren't able to handle.
+            selected_officer_ids = set(chosen_officer_ids) - {o.id for o in added_officers}
+            if selected_officer_ids:
+                add_officer_message = "Some officers could not be added because their previous role is not known"
+
+        # "Remove officer" functionality
+        if "remove" in request.POST:
+            collection.remove_officers([int(request.POST["officer_id"])])
+
+        if "new_role" in request.POST:
+            selected_role = int(request.POST["new_role"])
+
+    # If they didn't choose any yet, or just chose some, keep that component open.
+    open_chooseofficers = len(collection.invitations) == 0 or chosen_officer_ids
     context = {
         "camp": camp,
         "title": f"Officer list: {camp.nice_name}",
-        "invitations": invitation_list,
-        "officers_noapplicationform": camp_slacker_list(camp),
+        "invitations": collection.invitations,
+        "candidate_officers": collection.candidate_officers,
+        "open_chooseofficers": open_chooseofficers,
+        "selected_officer_ids": selected_officer_ids,
+        "add_officer_message": add_officer_message,
+        "camp_roles": camp_roles,
+        "selected_role": selected_role,
         "address_all": address_for_camp_officers(camp),
-        "address_noapplicationform": address_for_camp_slackers(camp),
-        "officers_serious_slackers": camp_serious_slacker_list(camp),
     }
 
-    # List for select
-    available_officers = list(User.objects.filter(is_staff=True).order_by("first_name", "last_name", "email"))
-    # decorate with info about previous camp
-    prev_camp = camp.previous_camp
-    if prev_camp is not None:
-        prev_officer_list_ids = {u.id for u in prev_camp.officers.all()}
-        for u in available_officers:
-            if u.id in prev_officer_list_ids:
-                u.on_previous_camp = True
-    # Filter out officers who are already chosen for this camp.
-    # Since the total number of officers >> officers chosen for a camp
-    # there is no need to do this filtering in the database.
-    available_officers = [u for u in available_officers if u.id not in officer_list_ids]
-    available_officers.sort(key=lambda u: not getattr(u, "on_previous_camp", False))
-    context["available_officers"] = available_officers
-
-    # Different templates allow us to render just parts of the page, for AJAX calls
-    # TODO rewrite with htmx
-    if "sections" in request.GET:
-        tnames = [
-            ("chosen", "cciw/officers/officer_list_table_editable.html"),
-            ("available", "cciw/officers/officer_list_available.html"),
-            ("noapplicationform", "cciw/officers/officer_list_noapplicationform.html"),
-        ]
-        retval = {}
-        for section, tname in tnames:
-            retval[section] = render_to_string(tname, context, request=request)
-        return HttpResponse(python_to_json(retval), content_type="text/javascript")
-    else:
-        return TemplateResponse(request, "cciw/officers/officer_list.html", context)
+    return TemplateResponse(request, "cciw/officers/officer_list.html", context)
 
 
 @staff_member_required
 @camp_admin_required
-@json_response
-def remove_officer(request, camp_id: CampId):
-    camp = _get_camp_or_404(camp_id)
-    officer_id = request.POST["officer_id"]
-    Invitation.objects.filter(camp=camp.id, officer=int(officer_id)).delete()
-    return {"status": "success"}
-
-
-@staff_member_required
-@camp_admin_required
-@json_response
-def add_officers(request, camp_id: CampId):
-    camp = _get_camp_or_404(camp_id)
-    for officer_id in request.POST["officer_ids"].split(","):
-        try:
-            Invitation.objects.get(camp=camp, officer=User.objects.get(id=int(officer_id)))
-        except Invitation.DoesNotExist:
-            Invitation.objects.create(camp=camp, officer=User.objects.get(id=int(officer_id)), date_added=date.today())
-    return {"status": "success"}
-
-
-@staff_member_required
-@camp_admin_required
-@json_response
 def update_officer(request):
-    form = UpdateOfficerForm(request.POST)
-    if form.is_valid():
-        officer_id = int(request.POST["officer_id"])
-        camp_id = int(request.POST["camp_id"])
-        form.save(officer_id, camp_id)
-        return {"status": "success"}
+    # Partial page, via htmx
+    invitation = Invitation.objects.get(id=int(request.GET["invitation_id"]))
+    officer = invitation.officer
+    mode = "edit"
+    if request.method == "POST":
+        if "save" in request.POST:
+            form = UpdateOfficerForm(data=request.POST, instance=officer, invitation=invitation)
+            if form.is_valid():
+                form.save()
+                mode = "display"
+        else:
+            # Cancel
+            mode = "display"
+            form = None
     else:
-        raise ValidationError(form.errors)
+        form = UpdateOfficerForm(instance=officer, invitation=invitation)
+
+    return TemplateResponse(
+        request,
+        "cciw/officers/officer_list_officer_row_inc.html",
+        {
+            "mode": mode,
+            "form": form,
+            "invitation": invitation,
+        },
+    )
+
+
+@staff_member_required
+@camp_admin_required
+@with_breadcrumbs(leaders_breadcrumbs)
+def officer_application_status(request, camp_id: CampId):
+    camp = _get_camp_or_404(camp_id)
+    return TemplateResponse(
+        request,
+        "cciw/officers/officer_application_status.html",
+        {
+            "camp": camp,
+            "title": f"Application form status: {camp.nice_name}",
+            "officers_noapplicationform": camp_slacker_list(camp),
+            "address_noapplicationform": address_for_camp_slackers(camp),
+            "officers_serious_slackers": camp_serious_slacker_list(camp),
+        },
+    )
 
 
 def correct_email(request):
@@ -1020,58 +1051,40 @@ def correct_application(request):
     return TemplateResponse(request, "cciw/officers/email_update.html", context)
 
 
-@xframe_options_sameorigin  # This is displayed in an iframe
 @staff_member_required
 @camp_admin_required
+@with_breadcrumbs(leaders_breadcrumbs)
 def create_officer(request):
-    allow_confirm = True
-    duplicate_message = ""
-    existing_users = None
+    duplicate_message, allow_confirm, existing_users = "", True, []
     message = ""
     if request.method == "POST":
         form = CreateOfficerForm(request.POST)
         process_form = False
         if form.is_valid():
+            duplicate_message, allow_confirm, existing_users = form.check_duplicates()
             if "add" in request.POST:
-                same_name_users = User.objects.filter(
-                    first_name__iexact=form.cleaned_data["first_name"], last_name__iexact=form.cleaned_data["last_name"]
-                )
-                same_email_users = User.objects.filter(email__iexact=form.cleaned_data["email"])
-                same_user = same_name_users & same_email_users
-                if same_user.exists():
-                    allow_confirm = False
-                    duplicate_message = "A user with that name and email address already exists. You can change the details above and try again."
-                elif len(same_name_users) > 0:
-                    existing_users = same_name_users
-                    if len(existing_users) == 1:
-                        duplicate_message = "A user with that first name and last name " + "already exists:"
-                    else:
-                        duplicate_message = (
-                            f"{len(existing_users)} users with that first name and last name already exist:"
-                        )
-                elif len(same_email_users):
-                    existing_users = same_email_users
-                    if len(existing_users) == 1:
-                        duplicate_message = "A user with that email address already exists:"
-                    else:
-                        duplicate_message = f"{len(existing_users)} users with that email address already exist:"
-
-                else:
+                # If no duplicates, we can process without confirmation
+                if not duplicate_message:
                     process_form = True
 
-            elif "confirm" in request.POST:
+            elif allow_confirm and "confirm" in request.POST:
                 process_form = True
 
             if process_form:
                 u = form.save()
-                form = CreateOfficerForm()
-                messages.info(
-                    request,
-                    f"Officer {u.username} has been added and emailed.  You can add another if required, or close this popup to continue.",
-                )
-                camp_id = request.GET.get("camp_id")
-                if camp_id is not None:
-                    Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)
+                redirect_resp = get_redirect_from_request(request)
+                if redirect_resp:
+                    messages.info(
+                        request,
+                        f"Officer {u.username} has been added to the system and emailed.",
+                    )
+                    return redirect_resp
+                else:
+                    messages.info(
+                        request,
+                        f"Officer {u.username} has been added and emailed.  You can add another if required.",
+                    )
+                return HttpResponseRedirect(".")
 
     else:
         form = CreateOfficerForm()
@@ -1080,23 +1093,31 @@ def create_officer(request):
         request,
         "cciw/officers/create_officer.html",
         {
+            "title": "Add officer to system",
             "form": form,
             "duplicate_message": duplicate_message,
             "existing_users": existing_users,
             "allow_confirm": allow_confirm,
             "message": message,
-            "is_popup": True,
         },
     )
 
 
 @staff_member_required
 @camp_admin_required
-@json_response
+@require_POST
 def resend_email(request):
-    user = User.objects.get(pk=int(request.POST["officer_id"]))
+    officer_id = int(request.POST["officer_id"])
+    user = User.objects.get(pk=officer_id)
     create.email_officer(user, update=True)
-    return {"status": "success"}
+    return TemplateResponse(
+        request,
+        "cciw/officers/resend_email_form_inc.html",
+        {
+            "officer_id": officer_id,
+            "caption": "Sent!",
+        },
+    )
 
 
 @staff_member_required

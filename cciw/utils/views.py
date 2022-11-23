@@ -9,6 +9,7 @@ from django.http.request import HttpRequest
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
+from render_block import render_block_to_string
 
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder, ExcelSimpleBuilder
 
@@ -100,6 +101,19 @@ def get_current_url_for_redirection(request, redirect_url):
     return url
 
 
+def get_redirect_from_request(request):
+    redirect_to = request.GET.get(REDIRECT_FIELD_NAME, "")
+    if redirect_to:
+        url_is_safe = url_has_allowed_host_and_scheme(
+            url=redirect_to,
+            allowed_hosts=request.get_host(),
+            require_https=request.is_secure(),
+        )
+        if url_is_safe and urlparse(redirect_to).path != request.path:
+            return HttpResponseRedirect(redirect_to)
+    return None
+
+
 def redirect_to_url_with_next(next_url, url, redirect_field_name) -> HttpResponseRedirect:
     f = furl(url)
     f.args[redirect_field_name] = next_url
@@ -112,3 +126,73 @@ def get_spreadsheet_simple_builder(request: HttpRequest) -> ExcelSimpleBuilder:
 
 def get_spreadsheet_from_dataframe_builder(request: HttpRequest) -> ExcelFromDataFrameBuilder:
     return ExcelFromDataFrameBuilder()
+
+
+def for_htmx(
+    *,
+    if_hx_target: str | None = None,
+    use_template: str | None = None,
+    use_block: str | list[str] | None = None,
+    use_block_from_params: bool = False,
+):
+    """
+    If the request is from htmx, then render a partial page, using either:
+    - the template specified in `use_template` param
+    - the block specified in `use_block` param
+    - the block specified in GET/POST parameter "use_block", if `use_block_from_params=True` is passed
+    If the optional `if_hx_target` parameter is supplied, the
+    hx-target header must match the supplied value as well in order
+    for this decorator to be applied.
+    """
+    if len([p for p in [use_block, use_template, use_block_from_params] if p]) != 1:
+        raise ValueError("You must pass exactly one of 'use_template', 'use_block' or 'use_block_from_params=True'")
+
+    def decorator(view):
+        @wraps(view)
+        def _view(request, *args, **kwargs):
+            resp = view(request, *args, **kwargs)
+            if request.headers.get("Hx-Request", False):
+                if if_hx_target is None or request.headers.get("Hx-Target", None) == if_hx_target:
+                    blocks_to_use = use_block
+                    if not hasattr(resp, "render"):
+                        raise ValueError("Cannot modify a response that isn't a TemplateResponse")
+                    if resp.is_rendered:
+                        raise ValueError("Cannot modify a response that has already been rendered")
+
+                    if use_block_from_params:
+                        use_block_from_params_val = _get_param_from_request(request, "use_block")
+                        if use_block_from_params_val is None:
+                            return HttpResponse("No `use_block` in request params", status="400")
+
+                        blocks_to_use = use_block_from_params_val
+
+                    if use_template is not None:
+                        resp.template_name = use_template
+                    elif blocks_to_use is not None:
+                        if not isinstance(blocks_to_use, list):
+                            blocks_to_use = list(blocks_to_use)
+                        rendered_blocks = [
+                            render_block_to_string(resp.template_name, b, context=resp.context_data, request=request)
+                            for b in blocks_to_use
+                        ]
+                        # Create new simple HttpResponse as replacement
+                        resp = HttpResponse(
+                            content="".join(rendered_blocks), status=resp.status_code, headers=resp.headers
+                        )
+
+            return resp
+
+        return _view
+
+    return decorator
+
+
+def _get_param_from_request(request: HttpRequest, param) -> list[str] | None:
+    """
+    Checks GET then POST params for specified param
+    """
+    if param in request.GET:
+        return request.GET.getlist(param)
+    elif request.method == "POST" and param in request.POST:
+        return request.POST.getlist(param)
+    return None

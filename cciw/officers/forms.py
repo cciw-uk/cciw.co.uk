@@ -2,13 +2,14 @@ from datetime import date
 
 from django import forms
 from django.contrib.auth.forms import PasswordResetForm
+from django.forms.models import ModelForm
 from django.template.loader import render_to_string
 from django.utils import timezone
 
 from cciw.accounts.models import User, get_reference_contact_users
 from cciw.officers import create
 from cciw.officers.email import send_leaders_reference_email
-from cciw.officers.models import Invitation, Reference
+from cciw.officers.models import CampRole, Invitation, Reference
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 
 
@@ -38,21 +39,51 @@ class CreateOfficerForm(BaseForm):
             self.cleaned_data["first_name"], self.cleaned_data["last_name"], self.cleaned_data["email"]
         )
 
+    def check_duplicates(self) -> tuple[str, bool, list[User]]:
+        duplicate_message, allow_confirm, existing_users = "", True, []
 
-class UpdateOfficerForm(BaseForm):
-    first_name = forms.CharField(max_length=fml(User, "first_name"))
-    last_name = forms.CharField(max_length=fml(User, "last_name"))
-    email = forms.EmailField(max_length=fml(User, "email"))
-    notes = forms.CharField(max_length=fml(Invitation, "notes"), required=False)
-
-    def save(self, officer_id, camp_id):
-        User.objects.filter(pk=officer_id).update(
-            first_name=self.cleaned_data["first_name"],
-            last_name=self.cleaned_data["last_name"],
-            email=self.cleaned_data["email"],
+        same_name_users = User.objects.filter(
+            first_name__iexact=self.cleaned_data["first_name"], last_name__iexact=self.cleaned_data["last_name"]
         )
-        notes = self.cleaned_data["notes"]
-        Invitation.objects.filter(camp=camp_id, officer=officer_id).update(notes=notes)
+        same_email_users = User.objects.filter(email__iexact=self.cleaned_data["email"])
+        same_user = same_name_users & same_email_users
+        if same_user.exists():
+            allow_confirm = False
+            duplicate_message = "A user with that name and email address already exists. You can change the details above and try again."
+        elif len(same_name_users) > 0:
+            existing_users = same_name_users
+            if len(existing_users) == 1:
+                duplicate_message = "A user with that first name and last name " + "already exists:"
+            else:
+                duplicate_message = f"{len(existing_users)} users with that first name and last name already exist:"
+        elif len(same_email_users):
+            existing_users = same_email_users
+            if len(existing_users) == 1:
+                duplicate_message = "A user with that email address already exists:"
+            else:
+                duplicate_message = f"{len(existing_users)} users with that email address already exist:"
+        return duplicate_message, allow_confirm, existing_users
+
+
+class UpdateOfficerForm(ModelForm):
+    role = forms.ModelChoiceField(queryset=CampRole.objects.all(), required=True)
+
+    class Meta:
+        # Based on User because we have just one field from Invitation
+        model = User
+        fields = ["first_name", "last_name", "email", "role"]
+
+    def __init__(self, *args, invitation: Invitation, **kwargs):
+        self.invitation = invitation
+        initial = {"role": invitation.role}
+        super().__init__(*args, initial=initial, **kwargs)
+
+    def save(self, **kwargs):
+        user: User = self.instance
+        user.save(update_fields=["first_name", "last_name", "email"])
+        role = self.cleaned_data["role"]
+        self.invitation.role = role
+        self.invitation.save()
 
 
 class SetEmailForm(BaseForm):

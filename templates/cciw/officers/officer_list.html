@@ -4,10 +4,6 @@
 
 {% block extrahead %}
   {{ block.super }}
-  {% compress js %}
-    <script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "js/officer_list.js" %}"></script>
-  {% endcompress %}
 
   {% compress css %}
     <link rel="stylesheet" type="text/x-scss" href="{% static "css/officer_list.scss" %}" />
@@ -17,156 +13,144 @@
 {% block bodyclass%}change-form{% endblock %}
 
 {% block content %}
-  <div id="content-main">
+  <div id="content-main" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <h2>{{ camp.leaders_formatted }}</h2>
 
-    <p>This page can be used for viewing and managing the officers on your list,
-      and for viewing those who have not yet filled in an application form.</p>
+    <p>This page can be used for viewing and managing the officers on your list.</p>
 
-    <div class="leftcolumnwrapper">
-      <div class="leftcolumn" id="id_officer_list_div">
-        <div class="innerleft">
-          <h2>Current list</h2>
+    {% block currentofficers %}
+      <div
+        class="currentofficers"
+        id="id_currentofficers"
+        hx-swap-oob="true"
+      >
+        <h2>Current officers</h2>
+        {% csrf_token %}
+        <p>Total: {{ invitations|length }}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for invitation in invitations %}
+              {% include "cciw/officers/officer_list_officer_row_inc.html" with invitation=invitation mode="display" %}
+            {% empty %}
+              <tr>
+                <td colspan="4">
+                  No officers added yet. Use the section below to add officers to your list.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
 
-          {% include "cciw/officers/officer_list_table_editable.html" %}
-
-          <p><br/>(You can sort the list by clicking on the headers. Hold down shift while clicking to sort by multiple columns)</p>
-        </div>
       </div>
+    {% endblock %}
+
+    <div class="chooseofficers">
+      {# TODO quick filter #}
+      <details {% if open_chooseofficers %}open{% endif %} >
+        <summary>
+          Available officers
+        </summary>
+        {% block chooseofficers__form %}
+          <form
+            id="id_chooseofficer__form"
+            method="POST"
+            action="."
+            hx-post="."
+            hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
+            hx-swap-oob="true"
+          >
+            {% csrf_token %}
+            <div
+              class="chooseofficers__tablewrapper"
+            >
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Previous role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for officer in candidate_officers %}
+                    <tr class="chooseofficers__officer
+                      {% if officer.is_previous %}
+                        chooseofficers__officer--previous
+                      {% endif %}
+                      ">
+                      <td><input type="checkbox"
+                        name="chooseofficer_{{ officer.id }}"
+                        id="id_chooseofficer_{{ officer.id }}"
+                        {% if officer.id in selected_officer_ids %}checked{% endif %}
+                      ></td>
+                      <td><label for="id_chooseofficer_{{ officer.id }}">{{ officer.full_name }}</label></td>
+                      <td>{{ officer.email }}</td>
+                      <td>
+                        {% if officer.previous_role %}
+                          {{ officer.previous_role.name }}
+                        {% elif officer.is_previous %}
+                          <i>Unknown</i>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div>
+              {% if add_officer_message %}
+                <p class="errornote">
+                  {{ add_officer_message }}
+                </p>
+              {% endif %}
+              <input type="submit" name="add_previous_role" value="Add with previous role">
+              &nbsp;
+              <input type="submit" name="add_new_role" value="Add with new role:">
+              <select name="new_role" id="id_chooseofficer-role">
+                {% for role in camp_roles %}
+                  <option value="{{ role.id }}"
+                    {% if role.id == selected_role %}
+                      selected
+                    {% endif %}
+                  >{{ role.name }}</option>
+                {% endfor %}
+              </select>
+              <p>Roles are displayed when collecting references, and not used otherwise.</p>
+            </div>
+          </form>
+        {% endblock %}
+      </details>
     </div>
 
-    <div class="rightcolumn" id="id_add_officer_div">
-      <div style="text-align: right;"><small><a href="#" id="id_hide_add_officer_div">(hide)</a></small></div>
-      <div class="innerright">
-        <h2>Add to list</h2>
-
-        <div class="selector-filter">
-          &nbsp;&nbsp;&nbsp;
-          <input type="text" id="id_available_officers_filter" />
-          <img style="vertical-align: middle" alt="search" src="{% static "admin/img/search.svg" %}" />
-        </div>
-        <div id="id_available_officers">
-          {% include "cciw/officers/officer_list_available.html" %}
-        </div>
-
-        <h3>Help</h3>
-        <ul>
-          <li>Add an officer from above using the arrow buttons.</li>
-          <li>Type in the search box to quickly find an officer.</li>
-          <li>Officers from last year are at the start of the list and highlighted (if the information is available)</li>
-        </ul>
-
-        <h2>New officers</h2>
-        <p>Got a new officer who isn't in the list above?</p>
-        <ul>
-          <li><p><a class="button" id="id_new_officer_btn" href="#">Add new officer</a></p></li>
-          <li>If you have a list on a computer, you can
-            <a href="mailto:webmaster@cciw.co.uk">email the webmaster</a>
-            to have them imported more quickly.</li>
-        </ul>
-      </div>
+    <div class="newofficers">
+      <details>
+        <summary>
+          New officers
+        </summary>
+        <p>Got a new officer who isn't in the list above? <a href="{% url 'cciw-officers-create_officer' %}?next={{ request.get_full_path|urlencode }}">Add new officer</a></p>
+        <p>If you have a list on a computer, you can
+          <a href="mailto:webmaster@cciw.co.uk">email the webmaster</a>
+          to have them imported more quickly.
+        </p>
+      </details>
     </div>
 
-    <br style="clear: left;" />
-    <script type="text/javascript">
-      <!--
-      var cciw = (function(pub) {
-        // Add some things to cciw object that we will need. Rest of javascript in officer_list.js
-        pub.campId = {{ camp.id }};
-        pub.updateOfficerUrl = "{% url 'cciw-officers-update_officer' %}";
-        pub.removeOfficerUrl = "{% url 'cciw-officers-remove_officer' camp_id=camp.url_id %}";
-        pub.resendEmailUrl = "{% url 'cciw-officers-resend_email' %}";
-        pub.addOfficersUrl =  "{% url 'cciw-officers-add_officers' camp_id=camp.url_id %}";
-        pub.createOfficerUrl = "{% url 'cciw-officers-create_officer' %}";
+    <h2>Email list</h2>
 
-        return pub;
-      })(cciw || {});
-      -->
-    </script>
-
-    <h3>List address:</h3>
     <p>The above list of officers can be emailed at:
       <strong><a href="mailto:{{ address_all }}">{{ address_all }}</a></strong>
     </p>
 
     {% include "cciw/officers/email_list_note.html" %}
-
-    <div id="id_noapplicationform">
-      {% include "cciw/officers/officer_list_noapplicationform.html" %}
-    </div>
-
-
-    {% if officers_serious_slackers %}
-
-      <div id="id_seriousslackers">
-
-        <h2>Application form/references track record</h2>
-
-        <p>A number of officers need attention regarding their <b>recent</b> track record with
-          application forms, references or DBS. (If they didn't actually come on the camps
-          listed, it will help to remove them from the officer lists for those camps).
-        </p>
-        <table>
-          <tr>
-            <th class="rightbreak">Officer</th>
-            <th>Missing application forms</th>
-            <th class="rightbreak">Last good year</th>
-            <th>Missing references</th>
-            <th class="rightbreak">Last good year</th>
-            <th>Missing DBS</th>
-            <th class="rightbreak">Last good year</th>
-            <th>History</th>
-          </tr>
-          {% for officer_data in officers_serious_slackers %}
-            {% with officer=officer_data.officer %}
-              <tr>
-                <td class="rightbreak">{{ officer.full_name }}</td>
-                <td>
-                  {% for camp in officer_data.missing_application_forms %}
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">{{ camp.url_id }}</a><br/>
-                  {% endfor %}
-                </td>
-                <td class="rightbreak">
-                  {% if officer_data.missing_application_forms %}
-                    {{ officer_data.last_good_apps_year|default:"Never" }}
-                  {% endif %}
-                </td>
-                <td>
-                  {% for camp in officer_data.missing_references %}
-                    {{ camp.url_id }}
-                    (<a target="_blank" href="{% url 'cciw-officers-manage_references' camp_id=camp.url_id %}?officer_id={{ officer.id }}">references</a>,
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
-                    <br/>
-                  {% endfor %}
-                </td>
-                <td class="rightbreak">
-                  {% if officer_data.missing_references %}
-                    {{ officer_data.last_good_refs_year|default:"Never" }}
-                  {% endif %}
-                </td>
-                <td>
-                  {% for camp in officer_data.missing_dbss %}
-                    {{ camp.url_id }}
-                    (<a target="_blank" href="{% url 'cciw-officers-manage_dbss' year=camp.year %}?camp={{ camp.slug_name }}">DBSs</a>,
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
-                    <br/>
-                  {% endfor %}
-                </td>
-                <td class="rightbreak">
-                  {% if officer_data.missing_dbss %}
-                    {{ officer_data.last_good_dbss_year|default:"Never" }}
-                  {% endif %}
-                </td>
-                <td>
-                  <a target="_blank" href="{% url 'cciw-officers-officer_history' officer_id=officer.id %}">View history</a>
-                </td>
-              </tr>
-            {% endwith %}
-          {% endfor %}
-        </table>
-      </div>
-    {% endif %}
-
 
     <h2>Export officer data</h2>
 
@@ -189,20 +173,7 @@
       {% csrf_token %}{# Ensure cookie is set for AJAX #}
     </form>
 
-  </div> {# id=content-main #}
 
-  <div id="id_add_officer_popup" class="inlinepopup">
-    <div class="closebar">
-      <a href="#" id="id_popup_close_btn">Close</a>
-    </div>
-    <div class="iframe_container">
-    </div>
   </div>
 
-  <div class="inlinepopup_background" id="id_popup_background"></div>
-
-  <div id="loading" style="text-align: center; background-color: white; border: 1px solid #888; position: fixed; bottom: 0px; right: 0px; width: 224px; height: 40px; display: none;">
-    <img src="{% static "images/loading.gif" %}" alt="" />
-    <br/>Loading...
-  </div>
 {% endblock %}

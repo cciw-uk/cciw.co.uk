@@ -34,9 +34,8 @@ a:hover {
     padding: 2px 10px;
 }
 
-#id_officer_list_table button {
-    cursor: pointer;
-    padding: 0px 2px;
+input[type=submit].button--compact {
+    padding: 3px 6px;
 }
 
 

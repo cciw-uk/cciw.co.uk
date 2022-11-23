@@ -65,6 +65,9 @@ if DEVBOX:
         if "-stats" in request.get_full_path():
             # debug toolbar slows down the stats pages for some reason
             return False
+        if request.headers.get("Hx-Request", False):
+            return False
+
         return True
 
     DEBUG = True

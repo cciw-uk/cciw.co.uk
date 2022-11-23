@@ -9,7 +9,8 @@
 
         {% endif %}
         <li><a href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">Officer list</a></li>
-        <li><a href="{% url 'cciw-officers-manage_applications' camp_id=camp.url_id %}">Applications</a></li>
+        <li><a href="{% url 'cciw-officers-officer_application_status' camp_id=camp.url_id %}">Application form status</a></li>
+        <li><a href="{% url 'cciw-officers-manage_applications' camp_id=camp.url_id %}">View applications</a></li>
         <li><a href="{% url 'cciw-officers-manage_references' camp_id=camp.url_id %}">References</a></li>
         <li><a href="{% url 'cciw-officers-officer_stats' year=camp.year %}">Officer stats {{ camp.year }}</a></li>
         <li>Campers:

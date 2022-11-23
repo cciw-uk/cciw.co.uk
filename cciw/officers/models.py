@@ -1,10 +1,13 @@
 from datetime import date, timedelta
+from typing import Iterable
 
+from attr import dataclass
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import (
     RequiredAddressField,
@@ -410,14 +413,21 @@ class CampRole(models.Model):
         return self.name
 
 
-class InvitationManager(models.Manager):
+class InvitationQuerySet(models.QuerySet):
+    def name_order(self):
+        return self.order_by("officer__first_name", "officer__last_name", "officer__email")
+
+
+class InvitationManager(models.Manager.from_queryset(InvitationQuerySet)):
     def get_queryset(self):
+        # TODO we should work out if we really need to select all this always...
         return super().get_queryset().select_related("officer", "camp", "camp__chaplain")
 
 
 class Invitation(models.Model):
     officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="invitations")
     camp = models.ForeignKey(Camp, on_delete=models.CASCADE, related_name="invitations")
+    role = models.ForeignKey(CampRole, on_delete=models.PROTECT, null=True, blank=True, related_name="invitations")
     date_added = models.DateField(default=date.today)
     notes = models.CharField(max_length=255, blank=True)
 
@@ -430,6 +440,114 @@ class Invitation(models.Model):
 
     def __str__(self):
         return f"{self.officer.full_name} — camp {self.camp}"
+
+
+@dataclass(kw_only=True)
+class CandidateOfficer:
+    officer: User
+    is_previous: bool
+    previous_role: CampRole | None = None
+
+    def __getattr__(self, attr):
+        return getattr(self.officer, attr)
+
+
+class CampOfficerCollection:
+    """
+    Utility to manage officers for a camp.
+    Provides list of:
+    - current invitations
+    - chooseable officers, with previous role info
+
+    Each user appears in only one list.
+    """
+
+    def __init__(self, camp: Camp) -> None:
+        self.camp = camp
+        self._refresh()
+
+    def _refresh(self):
+        # This camp
+        camp = self.camp
+        invitations = camp.invitations.all().name_order().select_related("role")
+        invitation_officer_ids = [i.officer_id for i in invitations]
+
+        # Previous camp
+        previous_camp = camp.previous_camp
+        if previous_camp is not None:
+            previous_invitations = (
+                previous_camp.invitations.all()
+                .name_order()
+                .select_related("role")
+                .exclude(officer__in=invitation_officer_ids)
+                .name_order()
+            )
+        else:
+            previous_invitations = []
+        previous_invitation_officer_ids = [i.officer_id for i in previous_invitations]
+
+        # Other officers
+        other_officers = (
+            User.objects.potential_officers()
+            .exclude(id__in=invitation_officer_ids + previous_invitation_officer_ids)
+            .name_order()
+        )
+
+        self.invitations = invitations
+        self.candidate_officers = [
+            CandidateOfficer(
+                officer=inv.officer,
+                is_previous=True,
+                previous_role=inv.role,
+            )
+            for inv in previous_invitations
+        ] + [
+            CandidateOfficer(
+                officer=officer,
+                is_previous=False,
+            )
+            for officer in other_officers
+        ]
+
+        self._previous_invitations = previous_invitations
+        self._other_officers = other_officers
+
+    def add_officers_with_role(self, officer_ids: Iterable[int], role: CampRole) -> list[User]:
+        """
+        Add officers to camp using CampRole. Returns list of officers added successfully.
+        """
+        return self._add_officers(officer_ids, role=role)
+
+    def add_officers_with_previous_role(self, officer_ids: Iterable[int]) -> list[User]:
+        """
+        Add officers to camp using previous invitations. Returns list of officers added successfully.
+        """
+        return self._add_officers(officer_ids, role=None)
+
+    def remove_officers(self, officer_ids: Iterable[int]) -> None:
+        self.camp.invitations.filter(officer__in=officer_ids).delete()
+        self._refresh()
+
+    def _add_officers(self, officer_ids, role=None) -> list[User]:
+        addable_officers = list(self._other_officers) + [inv.officer for inv in self._previous_invitations]
+        officers_to_add = [o for o in addable_officers if o.id in officer_ids]
+        previous_invitation_dict = {inv.officer_id: inv for inv in self._previous_invitations}
+
+        invites = []
+        for officer in officers_to_add:
+            role_to_use = None
+            if role:
+                role_to_use = role
+            else:
+                previous_invite = previous_invitation_dict.get(officer.id, None)
+                if previous_invite and previous_invite.role is not None:
+                    role_to_use = previous_invite.role
+
+            if role_to_use is not None:
+                inv = Invitation.objects.create(camp=self.camp, officer=officer, role=role_to_use)
+                invites.append(inv)
+        self._refresh()
+        return [inv.officer for inv in invites]
 
 
 # CRBs/DBSs - Criminal Records Bureau/Disclosure and Barring Service

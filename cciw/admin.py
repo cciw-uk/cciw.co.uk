@@ -1,9 +1,9 @@
 from django.contrib import admin, messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
+
+from cciw.utils.views import get_redirect_from_request
 
 
 class CciwAdminSite(admin.AdminSite):
@@ -34,14 +34,9 @@ class CciwAdminSite(admin.AdminSite):
         return PasswordChangeView.as_view(**defaults)(request)
 
     def password_change_done(self, request, extra_context=None):
-        redirect_to = request.GET.get(REDIRECT_FIELD_NAME, "")
-        url_is_safe = url_has_allowed_host_and_scheme(
-            url=redirect_to,
-            allowed_hosts=request.get_host(),
-            require_https=request.is_secure(),
-        )
-        if url_is_safe and redirect_to != request.get_full_path():
+        redirect_resp = get_redirect_from_request(request)
+        if redirect_resp:
             messages.info(request, "Your password has been changed.")
-            return HttpResponseRedirect(redirect_to)
+            return redirect_resp
 
         return super().password_change_done(request, extra_context=extra_context)

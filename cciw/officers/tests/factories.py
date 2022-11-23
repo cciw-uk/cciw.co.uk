@@ -13,10 +13,11 @@ from cciw.accounts.models import (
     setup_auth_roles,
 )
 from cciw.cciwmain.models import Camp
-from cciw.officers.models import Application, Qualification, Referee, Reference
+from cciw.officers.models import Application, CampRole, Invitation, Qualification, Referee, Reference
 from cciw.utils.tests.factories import Auto, sequence
 
 USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
+CAMPROLE_NAME_SEQUENCE = sequence(lambda n: f"Camp Role {n}")
 
 
 def create_officer(
@@ -70,9 +71,28 @@ def get_any_officer() -> User:
     return user
 
 
-def add_officers_to_camp(camp: Camp, officers: list[User]) -> None:
+def create_camp_role(*, name=Auto) -> CampRole:
+    name = name or next(CAMPROLE_NAME_SEQUENCE)
+    return CampRole.objects.create(name=name)
+
+
+def get_or_create_camp_role(*, name=Auto) -> CampRole:
+    roles = CampRole.objects.all()
+    if name is not Auto:
+        roles = roles.filter(name=name)
+    role = roles.first()
+    if role:
+        return role
+    return create_camp_role(name=name)
+
+
+def add_officers_to_camp(camp: Camp, officers: list[User], *, role: CampRole = Auto) -> list[Invitation]:
+    if role is Auto:
+        role = get_or_create_camp_role()
+    retval = []
     for officer in officers:
-        camp.invitations.create(officer=officer)
+        retval.append(camp.invitations.create(officer=officer, role=role))
+    return retval
 
 
 def _get_standard_role(name: str) -> Role:

@@ -16,6 +16,11 @@ urlpatterns = [
     path("leaders/applications/<campid:camp_id>/", views.manage_applications, name="cciw-officers-manage_applications"),
     path("leaders/references/<campid:camp_id>/", views.manage_references, name="cciw-officers-manage_references"),
     path("leaders/officer-list/<campid:camp_id>/", views.officer_list, name="cciw-officers-officer_list"),
+    path(
+        "leaders/officer-application-status/<campid:camp_id>/",
+        views.officer_application_status,
+        name="cciw-officers-officer_application_status",
+    ),
     path("leaders/officer/<int:officer_id>/", views.officer_history, name="cciw-officers-officer_history"),
     path("add-officer/", views.create_officer, name="cciw-officers-create_officer"),
     path(
@@ -38,8 +43,6 @@ urlpatterns = [
         views.export_sharable_transport_details,
         name="cciw-officers-export_sharable_transport_details",
     ),
-    path("leaders/remove-officer/<campid:camp_id>/", views.remove_officer, name="cciw-officers-remove_officer"),
-    path("leaders/add-officers/<campid:camp_id>/", views.add_officers, name="cciw-officers-add_officers"),
     path("leaders/update-officer/", views.update_officer, name="cciw-officers-update_officer"),
     path("leaders/resend-email/", views.resend_email, name="cciw-officers-resend_email"),
     path(

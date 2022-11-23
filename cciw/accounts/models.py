@@ -92,6 +92,12 @@ class UserQuerySet(models.QuerySet):
     def older_than(self, before_datetime):
         return self.filter(date_joined__lt=before_datetime)
 
+    def potential_officers(self):
+        return self.filter(is_staff=True)
+
+    def name_order(self):
+        return self.order_by("first_name", "last_name", "email")
+
 
 class UserManager(UserManagerDjango.from_queryset(UserQuerySet)):
     pass

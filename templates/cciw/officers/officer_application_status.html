@@ -1,0 +1,94 @@
+{% extends "cciw/officers/base.html" %}
+{% load static %}
+{% load compress %}
+
+
+{% block content %}
+  <div id="content-main">
+
+    <div id="id_noapplicationform">
+      {% include "cciw/officers/officer_list_noapplicationform.html" %}
+    </div>
+
+    <h2>Using email lists</h2>
+
+    {% include "cciw/officers/email_list_note.html" %}
+
+    {% if officers_serious_slackers %}
+
+      <div id="id_seriousslackers">
+
+        <h2>Application form/references track record</h2>
+
+        <p>A number of officers need attention regarding their <b>recent</b> track record with
+          application forms, references or DBS. (If they didn't actually come on the camps
+          listed, it will help to remove them from the officer lists for those camps).
+        </p>
+        <table>
+          <tr>
+            <th class="rightbreak">Officer</th>
+            <th>Missing application forms</th>
+            <th class="rightbreak">Last good year</th>
+            <th>Missing references</th>
+            <th class="rightbreak">Last good year</th>
+            <th>Missing DBS</th>
+            <th class="rightbreak">Last good year</th>
+            <th>History</th>
+          </tr>
+          {% for officer_data in officers_serious_slackers %}
+            {% with officer=officer_data.officer %}
+              <tr>
+                <td class="rightbreak">{{ officer.full_name }}</td>
+                <td>
+                  {% for camp in officer_data.missing_application_forms %}
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">{{ camp.url_id }}</a><br/>
+                  {% endfor %}
+                </td>
+                <td class="rightbreak">
+                  {% if officer_data.missing_application_forms %}
+                    {{ officer_data.last_good_apps_year|default:"Never" }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% for camp in officer_data.missing_references %}
+                    {{ camp.url_id }}
+                    (<a target="_blank" href="{% url 'cciw-officers-manage_references' camp_id=camp.url_id %}?officer_id={{ officer.id }}">references</a>,
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
+                    <br/>
+                  {% endfor %}
+                </td>
+                <td class="rightbreak">
+                  {% if officer_data.missing_references %}
+                    {{ officer_data.last_good_refs_year|default:"Never" }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% for camp in officer_data.missing_dbss %}
+                    {{ camp.url_id }}
+                    (<a target="_blank" href="{% url 'cciw-officers-manage_dbss' year=camp.year %}?camp={{ camp.slug_name }}">DBSs</a>,
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
+                    <br/>
+                  {% endfor %}
+                </td>
+                <td class="rightbreak">
+                  {% if officer_data.missing_dbss %}
+                    {{ officer_data.last_good_dbss_year|default:"Never" }}
+                  {% endif %}
+                </td>
+                <td>
+                  <a target="_blank" href="{% url 'cciw-officers-officer_history' officer_id=officer.id %}">View history</a>
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </table>
+      </div>
+    {% endif %}
+
+
+  </div> {# id=content-main #}
+
+
+
+
+{% endblock %}

@@ -1,0 +1,63 @@
+<tr data-officer-id="{{ invitation.officer.id }}">
+  {% if mode == "display" %}
+    <td>{{ invitation.officer.full_name }}</td>
+    <td><a href="mailto:{{ invitation.officer.email }}">{{ invitation.officer.email }}</a></td>
+    <td>{{ invitation.role.name }}</td>
+    <td>
+      <form
+        hx-get="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
+        hx-target="[data-officer-id='{{ invitation.officer.id }}']"
+        hx-swap="outerHTML"
+      >
+        <input type="submit" class="button--compact" name="edit" value="Edit">
+      </form>
+
+      <form
+        method="POST"
+        action="."
+        hx-post="."
+        hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
+        {# propagate selected 'role': #}
+        hx-include="#id_chooseofficer__form"
+      >
+        {% csrf_token %}
+        {# htmx issue 1132 - use form instead of putting things on button #}
+        <input type="hidden" name="officer_id" value="{{ invitation.officer.id }}">
+        <input
+          type="submit"
+          class="button--compact"
+          name="remove"
+          value="Remove"
+        >
+      </form>
+
+      {% include "cciw/officers/resend_email_form_inc.html" with caption="Resend email" officer_id=invitation.officer_id %}
+
+    </td>
+  {% elif mode == "edit" %}
+    <td>{{ form.first_name }} {{ form.last_name }}</td>
+    <td>{{ form.email }}</td>
+    <td>{{ form.role }}</td>
+    <td>
+      <form
+        hx-post="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
+        hx-include="[data-officer-id='{{ invitation.officer.id }}'] input:not([type=submit]), [data-officer-id='{{ invitation.officer.id }}'] select"
+        hx-target="[data-officer-id='{{ invitation.officer.id }}']"
+        hx-swap="outerHTML"
+      >
+        <input
+          type="submit"
+          class="button--compact"
+          name="save"
+          value="Save"
+        >
+        <input
+          type="submit"
+          class="button--compact"
+          name="cancel"
+          value="Cancel"
+        >
+      </form>
+    </td>
+  {% endif %}
+</tr>
