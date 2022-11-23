@@ -16,6 +16,7 @@ from cciw.officers.models import (
     REFEREE_DATA_FIELDS,
     REFEREE_NUMBERS,
     Application,
+    CampRole,
     DBSActionLog,
     DBSCheck,
     Invitation,
@@ -554,3 +555,4 @@ admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(DBSCheck, DBSCheckAdmin)
 admin.site.register(DBSActionLog, DBSActionLogAdmin)
 admin.site.register(QualificationType)
+admin.site.register(CampRole)

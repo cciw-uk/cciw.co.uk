@@ -111,6 +111,9 @@ Roles:
       - officers.QualificationType/add
       - officers.QualificationType/change
       - officers.QualificationType/delete
+      # Need to manage camp roles that leaders can use
+      - officers.CampRole/add
+      - officers.CampRole/change
       # View references
       - officers.Reference/change
   Chairperson:

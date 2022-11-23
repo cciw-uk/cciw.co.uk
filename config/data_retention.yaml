@@ -464,6 +464,8 @@
       columns: all
     - name: sitecontent.HtmlChunk
       columns: all
+    - name: officers.CampRole
+      columns: all
     - name: officers.QualificationType
       columns: all
     - name: officers.ReferenceAction

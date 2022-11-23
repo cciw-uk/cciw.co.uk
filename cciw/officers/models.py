@@ -400,6 +400,16 @@ class Qualification(models.Model):
         unique_together = [("application", "type")]
 
 
+class CampRole(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class InvitationManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("officer", "camp", "camp__chaplain")
