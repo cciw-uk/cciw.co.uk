@@ -485,29 +485,36 @@ class Role(models.Model):
         return (self.name,)
 
 
-def get_or_create_perm(app_label, model, codename):
-    ct = ContentType.objects.get_by_natural_key(app_label, model)
+def get_or_create_perm(app_label, model, codename, create_if_missing=True):
+    content_type = ContentType.objects.get_by_natural_key(app_label, model)
     try:
-        return Permission.objects.get(codename=codename, content_type=ct)
+        return Permission.objects.get(codename=codename, content_type=content_type)
     except Permission.DoesNotExist:
         # This branch is generally only reached when running tests.
-        return Permission.objects.create(codename=codename, name=codename, content_type=ct)
+        if create_if_missing:
+            return Permission.objects.create(codename=codename, name=codename, content_type=content_type)
+        else:
+            raise RuntimeError(f"Permission match {codename=}, {content_type=} does not exist")
 
 
-def setup_auth_roles():
+def setup_auth_roles(check_only=False):
     permissions_conf = yaml.load(open(settings.ROLES_CONFIG_FILE), Loader=yaml.SafeLoader)
     roles = permissions_conf["Roles"]
     for role_name, role_details in roles.items():
-        role, _ = Role.objects.get_or_create(name=role_name)
+        if check_only:
+            role = None
+        else:
+            role, _ = Role.objects.get_or_create(name=role_name)
         permission_details = role_details["Permissions"]
         perms = []
         for p in permission_details:
             app_and_model, perm = p.split("/")
             app_name, model = app_and_model.lower().split(".")
             perm = f"{perm}_{model}"
-            perms.append(get_or_create_perm(app_name, model, perm))
+            perms.append(get_or_create_perm(app_name, model, perm, create_if_missing=not check_only))
         with transaction.atomic():
-            role.permissions.set(perms)
+            if role is not None and not check_only:
+                role.permissions.set(perms)
 
 
 def _current_password_validators_as_string():
