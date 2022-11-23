@@ -1534,8 +1534,8 @@ def book_basket_now(bookings):
     bookings = list(bookings)
 
     now = timezone.now()
+    fetcher = AgreementFetcher()
     for b in bookings:
-        fetcher = AgreementFetcher()
         if len(b.get_booking_problems(agreement_fetcher=fetcher)[0]) > 0:
             return False
 
