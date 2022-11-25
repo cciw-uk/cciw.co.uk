@@ -31,6 +31,7 @@ BOOKING_ACCOUNT_EMAIL_SEQUENCE = sequence(lambda n: f"booker_{n}@example.com")
 def create_booking(
     # From user fields, order same as booking form.
     # TODO we are missing a few (non required) fields here
+    *,
     account: BookingAccount = Auto,
     camp: Camp = Auto,
     price_type: PriceType = PriceType.FULL,
@@ -68,7 +69,7 @@ def create_booking(
     if date_of_birth is Auto:
         date_of_birth = date(date.today().year - camp.minimum_age - 2, 1, 1)
     # Prices are pre-condition for creating booking in normal situation
-    create_prices(camp.year)
+    create_prices(year=camp.year)
     if name is not Auto:
         assert first_name is Auto
         assert last_name is Auto
@@ -117,6 +118,7 @@ def create_booking(
 
 
 def create_booking_account(
+    *,
     name: str = "A Booker",
     address_line1: str = "",
     address_post_code: str = "XYZ",
@@ -131,6 +133,7 @@ def create_booking_account(
 
 
 def create_processed_payment(
+    *,
     account: BookingAccount = Auto,
     amount=1,
 ):
@@ -142,6 +145,7 @@ def create_processed_payment(
 
 
 def create_manual_payment(
+    *,
     account: BookingAccount = Auto,
     amount=1,
 ):
@@ -153,6 +157,7 @@ def create_manual_payment(
 
 
 def create_refund_payment(
+    *,
     account: BookingAccount = Auto,
     amount=1,
 ):
@@ -164,6 +169,7 @@ def create_refund_payment(
 
 
 def create_write_off_debt_payment(
+    *,
     account: BookingAccount = Auto,
     amount=0,
 ):
@@ -173,7 +179,7 @@ def create_write_off_debt_payment(
     )
 
 
-def create_ipn(account: BookingAccount | None = None, **kwargs):
+def create_ipn(*, account: BookingAccount | None = None, **kwargs):
     if account:
         custom = build_paypal_custom_field(account)
     else:
@@ -202,7 +208,7 @@ def create_custom_agreement(*, year, name, text_html="Text"):
     )
 
 
-def create_prices(year, deposit=Auto, early_bird_discount=Auto, full_price=Auto):
+def create_prices(*, year, deposit=Auto, early_bird_discount=Auto, full_price=Auto):
     if deposit is Auto:
         deposit = Decimal(20)
     else:
@@ -231,7 +237,7 @@ def create_prices(year, deposit=Auto, early_bird_discount=Auto, full_price=Auto)
     return price_full, price_2nd_child, price_3rd_child, price_deposit, price_early_bird_discount
 
 
-def create_supporting_information_type(name="Test"):
+def create_supporting_information_type(*, name="Test"):
     return SupportingInformationType.objects.create(name=name)
 
 
@@ -240,6 +246,7 @@ def get_or_create_supporting_information_type():
 
 
 def create_supporting_information(
+    *,
     booking: Booking = Auto,
     information_type: SupportingInformationType = Auto,
     from_name: str = "Some Person",

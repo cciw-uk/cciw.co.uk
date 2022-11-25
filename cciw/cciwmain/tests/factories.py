@@ -106,7 +106,7 @@ def get_any_camp() -> Camp:
     return create_camp()
 
 
-def create_camp_name(name: str = Auto, color: str = Auto) -> CampName:
+def create_camp_name(*, name: str = Auto, color: str = Auto) -> CampName:
     name = name or _get_next_camp_name()
     color = color or COLORS.get(name, "#ff0000")
     camp_name = CampName.objects.create(
@@ -132,6 +132,7 @@ def get_or_create_camp_name(name: str) -> CampName:
 
 
 def create_site(
+    *,
     short_name: str = Auto,
     long_name: str = Auto,
 ) -> Site:

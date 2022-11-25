@@ -20,6 +20,7 @@ USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
 
 
 def create_officer(
+    *,
     username: str = Auto,
     first_name: str = "Joe",
     last_name: str = "Bloggs",

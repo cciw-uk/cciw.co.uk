@@ -155,7 +155,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             self.price_3rd_child,
             self.price_deposit,
             self.price_early_bird_discount,
-        ) = factories.create_prices(year, deposit=deposit, early_bird_discount=early_bird_discount)
+        ) = factories.create_prices(year=year, deposit=deposit, early_bird_discount=early_bird_discount)
 
     def create_booking(
         self,
@@ -422,7 +422,7 @@ class TestBookingIndex(BookingBaseMixin, WebTestBase):
 
     def test_show_with_prices(self):
         camp = camps_factories.create_camp()
-        factories.create_prices(camp.year, full_price=100, deposit=20)
+        factories.create_prices(year=camp.year, full_price=100, deposit=20)
         self.get_url("cciw-bookings-index")
         self.assertTextPresent("£100")
         self.assertTextPresent("£20")
@@ -2011,7 +2011,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         account = factories.create_booking_account()
         assert account.total_received == Decimal(0)
 
-        ipn_1 = factories.create_ipn(account)
+        ipn_1 = factories.create_ipn(account=account)
 
         # Test for Payment objects
         assert Payment.objects.count() == 1
@@ -2023,7 +2023,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # Test refund is wired up
         ipn_2 = factories.create_ipn(
-            account,
+            account=account,
             parent_txn_id="1",
             txn_id="2",
             mc_gross=-1 * ipn_1.mc_gross,
@@ -2042,7 +2042,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         book_basket_now([booking])
 
         mail.outbox = []
-        factories.create_ipn(account, mc_gross=booking.amount_due)
+        factories.create_ipn(account=account, mc_gross=booking.amount_due)
 
         mails = send_queued_mail()
         assert len(mails) == 1
@@ -2099,7 +2099,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # Send payment that doesn't complete immediately
         ipn_1 = factories.create_ipn(
-            account,
+            account=account,
             txn_id="8DX10782PJ789360R",
             mc_gross=Decimal("20.00"),
             payment_status="Pending",
@@ -2137,7 +2137,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # A different payment doesn't affect whether pending ones are completed:
         factories.create_ipn(
-            account,
+            account=account,
             txn_id="ABCDEF123",  # DIFFERENT txn_id
             mc_gross=Decimal("10.00"),
             payment_status="Completed",
@@ -2148,7 +2148,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # But the same TXN id is recognised as cancelling the pending payment
         factories.create_ipn(
-            account,
+            account=account,
             txn_id=ipn_1.txn_id,  # SAME txn_id
             mc_gross=ipn_1.mc_gross,
             payment_status="Completed",
@@ -2709,7 +2709,7 @@ class TestExportPaymentData(TestBase):
     def test_export(self):
         account1 = BookingAccount.objects.create(name="Joe Bloggs", email="joe@foo.com")
         account2 = BookingAccount.objects.create(name="Mary Muddle", email="mary@foo.com")
-        factories.create_ipn(account1, mc_gross=Decimal("10.00"))
+        factories.create_ipn(account=account1, mc_gross=Decimal("10.00"))
         ManualPayment.objects.create(account=account1, amount=Decimal("11.50"))
         RefundPayment.objects.create(account=account1, amount=Decimal("0.25"))
         AccountTransferPayment.objects.create(from_account=account2, to_account=account1, amount=Decimal("100.00"))
@@ -2782,7 +2782,7 @@ class TestPaymentModels(TestBase):
 class SupportingInformationAdminBase(fix_autocomplete_fields("booking"), FuncBaseMixin):
     def test_separate_supporting_information_admin(self):
         booking = factories.create_booking()
-        information_type = factories.create_supporting_information_type("test")
+        information_type = factories.create_supporting_information_type(name="test")
         self.officer_login(officers_factories.create_booking_secretary())
         self.get_url("admin:bookings_supportinginformation_add")
         self.fill_by_name(
@@ -2867,7 +2867,7 @@ class SupportingInformationAdminBase(fix_autocomplete_fields("booking"), FuncBas
 
     def test_supporting_information_inline(self):
         booking = factories.create_booking()
-        information_type = factories.create_supporting_information_type("test")
+        information_type = factories.create_supporting_information_type(name="test")
         self.officer_login(officers_factories.create_booking_secretary())
         self.get_url("admin:bookings_booking_change", booking.id)
         if self.is_full_browser_test:
