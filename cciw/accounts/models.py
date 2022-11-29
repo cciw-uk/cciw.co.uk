@@ -121,9 +121,9 @@ class User(AbstractBaseUser):
             "unique": "A user with that username already exists.",
         },
     )
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
-    email = models.EmailField("email address", blank=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=150)
+    email = models.EmailField("email address")
     is_staff = models.BooleanField(
         "staff status",
         default=False,
