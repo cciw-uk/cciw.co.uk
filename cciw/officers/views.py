@@ -64,6 +64,7 @@ from .applications import (
     application_txt_filename,
     applications_for_camp,
     camps_for_application,
+    invitations_for_application,
     thisyears_applications,
 )
 from .dbs import get_officers_with_dbs_info_for_camps
@@ -825,7 +826,7 @@ def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | Non
     if hash != make_ref_form_url_hash(referee_id, prev_ref_id):
         context["incorrect_url"] = True
     else:
-        referee = get_object_or_404(Referee.objects.filter(id=referee_id))
+        referee: Referee = get_object_or_404(Referee.objects.filter(id=referee_id))
         prev_reference = None
         if prev_ref_id is not None:
             prev_reference = get_object_or_404(Reference.objects.filter(id=prev_ref_id))
@@ -836,6 +837,9 @@ def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | Non
             context["last_empty"] = empty_reference(prev_reference)
 
         reference = referee.reference if hasattr(referee, "reference") else None
+        relevant_invitations = invitations_for_application(referee.application)
+        role_names = sorted(list({i.role.name for i in relevant_invitations}))
+        context["roles"] = role_names
 
         if reference is not None and not empty_reference(reference):
             # It's possible that empty references have been created in the past,

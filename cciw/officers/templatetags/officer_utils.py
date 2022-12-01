@@ -13,3 +13,12 @@ def officers_breadcrumbs(context):
         breadcrumbs.append((None, context["title"]))
 
     return {"breadcrumbs": [(reverse(url) if url else None, caption) for url, caption in breadcrumbs]}
+
+
+@register.filter
+def pretty_join(values: list[str]):
+    if not values:
+        return ""
+    if len(values) == 1:
+        return values[0]
+    return ", ".join(values[0:-1]) + " and " + values[-1]

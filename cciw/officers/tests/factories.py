@@ -86,9 +86,11 @@ def get_or_create_camp_role(*, name=Auto) -> CampRole:
     return create_camp_role(name=name)
 
 
-def add_officers_to_camp(camp: Camp, officers: list[User], *, role: CampRole = Auto) -> list[Invitation]:
+def add_officers_to_camp(camp: Camp, officers: list[User], *, role: CampRole | str = Auto) -> list[Invitation]:
     if role is Auto:
         role = get_or_create_camp_role()
+    elif isinstance(role, str):
+        role = get_or_create_camp_role(name=role)
     retval = []
     for officer in officers:
         retval.append(camp.invitations.create(officer=officer, role=role))

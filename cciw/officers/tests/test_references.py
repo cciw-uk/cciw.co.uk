@@ -16,16 +16,17 @@ from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import WebTestBase
 
 
-def create_camp_leader_officer(year=Auto, future=Auto):
+def create_camp_leader_officer(year=Auto, future=Auto, officer_role: str = Auto):
     """
     Creates a camp with a leader and officer for testing reference requests
     """
     camp = camps_factories.create_camp(
         leader=(leader := factories.create_officer()),
-        officers=[(officer := factories.create_officer())],
         year=year,
         future=future,
     )
+    officer = factories.create_officer()
+    factories.add_officers_to_camp(camp, [officer], role=officer_role)
     return camp, leader, officer
 
 
@@ -293,12 +294,35 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         """
         safeguarding_coordinator = factories.create_safeguarding_coordinator()
         application = factories.create_application()
+        officer = application.officer
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
         self.get_literal_url(url)
         self.assertCode(200)
         # Safeguarding coordinator details should be present:
         self.assertTextPresent(safeguarding_coordinator.full_name)
         self.assertTextPresent(safeguarding_coordinator.contact_phone_number)
+
+        # No 'role' set in this case:
+        self.assertTextPresent(f"{officer.full_name} has requested we collect a reference from you")
+
+    def test_role_name_present(self):
+        camp, leader, officer = create_camp_leader_officer(officer_role="Tent Officer")
+        application = factories.create_application(officer=officer, year=camp.year, referee1_name="Mr Referee Name")
+        url = make_local_url(make_ref_form_url(application.referees[0].id, None))
+        self.get_literal_url(url)
+        self.assertCode(200)
+
+        self.assertTextPresent(f"{officer.full_name} will be on camp in the role of Tent Officer")
+        self.assertTextPresent("has requested we collect a reference from you")
+
+        # Add some more roles
+        camp2 = camps_factories.create_camp(year=camp.year)
+        factories.add_officers_to_camp(camp2, [officer], role="Tent Officer")
+        camp3 = camps_factories.create_camp(year=camp.year)
+        factories.add_officers_to_camp(camp3, [officer], role="Kitchen Helper")
+
+        self.get_literal_url(url)
+        self.assertTextPresent(f"{officer.full_name} will be on camp in the role of Kitchen Helper and Tent Officer")
 
     def test_page_submit(self):
         """

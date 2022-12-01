@@ -1,16 +1,29 @@
 {% extends "cciw/officers/create_reference_base.html" %}
 
+{% load officer_utils %}
+
 
 {% block title %}Submit reference | CCiW Officers{% endblock %}
 {% block content %}
-  <h1>Submit reference for {{ officer.full_name }}</h1>
   {% if incorrect_url %}
-    <p>The address is not correct.  Please ensure you have used the complete URL
+    <h1>Submit reference</h1>
+
+    <p>The link used was not correct.  Please ensure you have used the complete URL
       from the email</p>
   {% else %}
+    <h1>Submit reference for {{ officer.full_name }}</h1>
     {% if already_submitted %}
       <p>The reference has already been submitted, thank you.</p>
     {% else %}
+      {% if roles %}
+        <p>{{ officer.full_name }} will be on camp in the role of {{ roles|pretty_join }},
+          and has requested we collect a reference from you.
+        </p>
+      {% else %}
+        <p>{{ officer.full_name }} has requested we collect a reference from you.</p>
+      {% endif %}
+
+
       {% if update %}
         <p>Please check and update the following information.
           {% if last_form_date %}

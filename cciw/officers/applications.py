@@ -42,29 +42,44 @@ def thisyears_applications(user):
     return apps
 
 
-def camps_for_application(application):
+def invitations_for_application(application: Application) -> list[Invitation]:
+    """
+    Relevant Invitation objects for an application
+    """
+    if application.date_saved is None:
+        return []
+    # The connection between applications and camps is fuzzy,
+    # because we want applications to be re-usable for multiple camps.
+
+    # This means we have to "guess" based on date, which works fine in practice
+    # because camps are all clumped together in summer.
+
+    # Return invitations for camps that are after the application was submitted,
+    # but not more than a year after.
+    invitations = list(
+        application.officer.invitations.filter(
+            camp__start_date__gte=application.date_saved, camp__start_date__lt=application.date_saved + timedelta(365)
+        ).select_related("camp", "role")
+    )
+    # For old applications, this could potentially return 2 years of invitations,
+    # if the camp for the second year was earlier in the year than the first year.
+    # So we filter for the first year.
+    if len(invitations) > 0:
+        invitations.sort(key=lambda i: i.camp.start_date)
+        first_year = invitations[0].camp.year
+        invitations = [i for i in invitations if i.camp.year == first_year]
+    return invitations
+
+
+def camps_for_application(application: Application):
     """
     For an Application, returns the camps it is relevant to, in terms of
     notifying people.
     """
     # We get all camps that are in the year following the application form
     # submitted date.
-    if application.date_saved is None:
-        return []
-    invites = application.officer.invitations.filter(
-        camp__start_date__gte=application.date_saved, camp__start_date__lt=application.date_saved + timedelta(365)
-    )
-    # In some cases, the above query can catch two years of camps.  We only want
-    # to the first year. (This doesn't matter very much, as
-    # camps_for_application is used for notifications, and they only happen when
-    # application forms are completed, and the following camps don't exist in
-    # the database). But we try to handle correctly anyway.
-    camps = [i.camp for i in invites]
-    if len(camps) > 0:
-        camps.sort(key=lambda c: c.start_date)
-        first_year = camps[0].year
-        camps = [c for c in camps if c.year == first_year]
-    return camps
+    invites = invitations_for_application(application)
+    return [i.camp for i in invites]
 
 
 def applications_for_camp(camp, officer_ids=None):
