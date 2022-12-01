@@ -170,12 +170,12 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
         )
         self.click("input[name=add_new_role]")
 
+        # UI check (first, because assertTextPresent does a helpful wait for us)
+        self.assertTextPresent(self.camp_role1.name, within=f'[data-officer-id="{officer.id}"]')
+
         # DB check:
         assert officer in camp.officers.all()
         assert camp.invitations.get(officer=officer).role == self.camp_role1
-
-        # UI check:
-        self.assertTextPresent(self.camp_role1.name, within=f'[data-officer-id="{officer.id}"]')
 
     def test_add_with_previous_role(self):
         camp = camp_factories.create_camp(
@@ -198,12 +198,12 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
         self.fill({f"#id_chooseofficer_{ officer.id }": True})
         self.click("input[name=add_previous_role]")
 
+        # UI check:
+        self.assertTextPresent("Kitchen helper", within=f'[data-officer-id="{officer.id}"]')
+
         # DB check:
         assert officer in camp.officers.all()
         assert camp.invitations.get(officer=officer).role.name == "Kitchen helper"
-
-        # UI check:
-        self.assertTextPresent("Kitchen helper", within=f'[data-officer-id="{officer.id}"]')
 
     def test_remove(self):
         camp = camp_factories.create_camp(
@@ -337,6 +337,38 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
         officer.refresh_from_db()
         assert officer.first_name != "Altered"
         assert officer.last_name != "Name"
+
+    def test_new_officer_roundtrip(self):
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+        )
+        self.officer_login(leader)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
+        self.click(".newofficers summary")
+        self.follow_link(".newofficers a")
+
+        self.fill(
+            {
+                "#id_first_name": "Mary",
+                "#id_last_name": "Andrews",
+                "#id_email": "mary@andrews.com",
+            }
+        )
+        self.submit("input[type=submit]")
+        self.assertTextPresent("Officer Mary Andrews has been added to the system")
+        self.assertTextPresent("Don't forget to choose a role and add them")
+        officer = User.objects.get(email="mary@andrews.com")
+
+        # Officer should be selected already, just need to choose a role
+        self.fill({"#id_chooseofficer-role": str(self.camp_role1.id)})
+        self.click("input[name=add_new_role]")
+
+        # UI check:
+        self.assertTextPresent("Mary Andrews", within=f'[data-officer-id="{officer.id}"]')
+
+        # DB check:
+        assert officer in camp.officers.all()
+        assert camp.invitations.get(officer=officer).role == self.camp_role1
 
 
 class TestNewOfficerPage(SiteSetupMixin, WebTestBase):

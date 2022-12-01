@@ -21,6 +21,7 @@ from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.urls.resolvers import ResolverMatch, get_resolver
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -908,6 +909,12 @@ def officer_list(request, camp_id: CampId):
 
     camp_roles = CampRole.objects.all()
 
+    try:
+        # From create_officer view
+        created_officer = User.objects.get(id=int(request.GET.get("created_officer_id", "")))
+    except (ValueError, User.DoesNotExist):
+        created_officer = None
+
     selected_officer_ids = set()
     chosen_officer_ids = set()
     add_officer_message = ""
@@ -943,7 +950,11 @@ def officer_list(request, camp_id: CampId):
             selected_role = int(request.POST["new_role"])
 
     # If they didn't choose any yet, or just chose some, keep that component open.
-    open_chooseofficers = len(collection.invitations) == 0 or chosen_officer_ids
+    open_chooseofficers = (
+        len(collection.invitations) == 0  # no officers added yet
+        or chosen_officer_ids  # just added some, probably want to add more
+        or created_officer is not None  # just created one in system, will want to add them
+    )
     context = {
         "camp": camp,
         "title": f"Officer list: {camp.nice_name}",
@@ -955,6 +966,7 @@ def officer_list(request, camp_id: CampId):
         "camp_roles": camp_roles,
         "selected_role": selected_role,
         "address_all": address_for_camp_officers(camp),
+        "created_officer": created_officer,
     }
 
     return TemplateResponse(request, "cciw/officers/officer_list.html", context)
@@ -1074,15 +1086,19 @@ def create_officer(request):
                 u = form.save()
                 redirect_resp = get_redirect_from_request(request)
                 if redirect_resp:
-                    messages.info(
-                        request,
-                        f"Officer {u.username} has been added to the system and emailed.",
-                    )
+                    redirect_url = redirect_resp["Location"]
+                    message = f"Officer {u.full_name} has been added to the system and emailed."
+                    match: ResolverMatch = get_resolver().resolve(redirect_url)
+                    if match is not None and match.func == officer_list:
+                        message += " Don't forget to choose a role and add them to your officer list!"
+
+                    redirect_resp["Location"] = furl.furl(redirect_url).add({"created_officer_id": u.id}).url
+                    messages.info(request, message)
                     return redirect_resp
                 else:
                     messages.info(
                         request,
-                        f"Officer {u.username} has been added and emailed.  You can add another if required.",
+                        f"Officer {u.full_name} has been added and emailed.  You can add another if required.",
                     )
                 return HttpResponseRedirect(".")
 

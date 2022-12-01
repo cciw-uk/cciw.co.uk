@@ -90,7 +90,7 @@
                       <td><input type="checkbox"
                         name="chooseofficer_{{ officer.id }}"
                         id="id_chooseofficer_{{ officer.id }}"
-                        {% if officer.id in selected_officer_ids %}checked{% endif %}
+                        {% if officer.id in selected_officer_ids or officer.id == created_officer.id %}checked{% endif %}
                       ></td>
                       <td><label for="id_chooseofficer_{{ officer.id }}">{{ officer.full_name }}</label></td>
                       <td>{{ officer.email }}</td>
