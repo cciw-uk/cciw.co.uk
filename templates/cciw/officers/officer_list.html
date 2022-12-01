@@ -53,7 +53,7 @@
     {% endblock %}
 
     <div class="chooseofficers">
-      {# TODO quick filter #}
+
       <details {% if open_chooseofficers %}open{% endif %} >
         <summary>
           Available officers
@@ -74,13 +74,34 @@
               <table>
                 <thead>
                   <tr>
+                    <th colspan="4">
+                      <input type="search" placeholder="Search officers"
+                        {% if created_officer %}
+                          value="{{ created_officer.full_name }}"
+                        {% endif %}
+                        _="on keyup
+                        if the event's key is 'Escape'
+                        set my value to ''
+                        trigger keyup
+                        else
+                        show <tr/> in #id-chooseofficers__tablebody when its textContent.toLowerCase() contains (my value).toLowerCase()
+                      end
+
+                      on load
+                      trigger keyup
+                      end
+
+                      ">
+                    </th>
+                  </tr>
+                  <tr>
                     <th></th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Previous role</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="id-chooseofficers__tablebody">
                   {% for officer in candidate_officers %}
                     <tr class="chooseofficers__officer
                       {% if officer.is_previous %}
