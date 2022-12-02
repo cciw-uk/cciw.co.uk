@@ -84,6 +84,7 @@ django==4.0.7
     #   django-nyt
     #   django-paypal
     #   django-ranged-response
+    #   django-render-block
     #   django-sekizai
     #   django-simple-captcha
     #   django-urlconfchecks
@@ -121,6 +122,8 @@ django-paypal==2.0
     # via -r requirements.in
 django-ranged-response==0.2.0
     # via django-simple-captcha
+django-render-block==0.9.2
+    # via -r requirements.in
 django-sekizai==4.0.0
     # via wiki
 django-simple-captcha==0.5.17
