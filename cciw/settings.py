@@ -21,6 +21,8 @@ PROJECT_ROOT = basepath
 HOME_PATH = Path(os.environ["HOME"]).resolve()
 BASE_PATH = basepath
 
+# We use `check --deploy` only from local development machine,
+# to check deployment settings, so need to switch on that.
 CHECK_DEPLOY = "manage.py check --deploy" in " ".join(sys.argv)
 if CHECK_DEPLOY:
     LIVEBOX = True
@@ -334,7 +336,7 @@ PASSWORD_RESET_TIMEOUT = 7 * 24 * 3600
 
 # == DATABASE ==
 
-if LIVEBOX:
+if LIVEBOX and not CHECK_DEPLOY:
     DB_NAME = SECRETS["PRODUCTION_DB_NAME"]
     DB_USER = SECRETS["PRODUCTION_DB_USER"]
     DB_PASSWORD = SECRETS["PRODUCTION_DB_PASSWORD"]
