@@ -961,7 +961,7 @@ def officer_list(request, camp_id: CampId):
     )
     context = {
         "camp": camp,
-        "title": f"Officer list: {camp.nice_name}",
+        "title": f"Officer list: {camp.nice_name}, {camp.leaders_formatted}",
         "invitations": collection.invitations,
         "candidate_officers": collection.candidate_officers,
         "open_chooseofficers": open_chooseofficers,
