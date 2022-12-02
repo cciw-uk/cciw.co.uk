@@ -364,6 +364,12 @@ def deploy(c, skip_checks=False, test_host=False):
 @task()
 def deploy_checks(c):
     c.local("./manage.py check --deploy", echo=True, pty=True)
+    # setup_auth_roles check is not implemented as a Django check because of
+    # dependencies on ContentType being set up and migrations being
+    # run in production, nor as a test for the same reason.
+    # Here we are assuming that the local DB already has migrations applied
+    # and so has ContentType set up correctly.
+    c.local("./manage.py setup_auth_roles --check-only")
 
 
 @task()

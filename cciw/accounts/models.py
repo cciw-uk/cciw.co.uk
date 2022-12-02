@@ -500,7 +500,7 @@ def get_or_create_perm(app_label, model, codename, create_if_missing=True):
         if create_if_missing:
             return Permission.objects.create(codename=codename, name=codename, content_type=content_type)
         else:
-            raise RuntimeError(f"Permission match {codename=}, {content_type=} does not exist")
+            raise RuntimeError(f"Permission matching {codename=}, {content_type=} does not exist")
 
 
 def setup_auth_roles(check_only=False):
