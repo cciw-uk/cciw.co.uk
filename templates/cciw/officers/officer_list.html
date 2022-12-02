@@ -74,11 +74,15 @@
                 <thead>
                   <tr>
                     <th colspan="4">
-                      <input type="search" placeholder="Search officers"
+                      <input name="search" type="search" placeholder="Search officers"
+
                         {% if created_officer %}
                           value="{{ created_officer.full_name }}"
+                        {% elif search_query %}
+                          value="{{ search_query }}"
                         {% endif %}
-                        _="on keyup
+                        _="
+                        on keyup
                         if the event's key is 'Escape'
                         set my value to ''
                         trigger keyup

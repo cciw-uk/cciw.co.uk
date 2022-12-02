@@ -924,6 +924,7 @@ def officer_list(request, camp_id: CampId):
     add_officer_message = ""
 
     selected_role = None
+    search_query = ""
 
     if request.method == "POST":
         # "Add officer" functionality
@@ -953,6 +954,9 @@ def officer_list(request, camp_id: CampId):
         if "new_role" in request.POST:
             selected_role = int(request.POST["new_role"])
 
+        # Propagate search to maintain state
+        search_query = request.POST.get("search", "")
+
     # If they didn't choose any yet, or just chose some, keep that component open.
     open_chooseofficers = (
         len(collection.invitations) == 0  # no officers added yet
@@ -971,6 +975,7 @@ def officer_list(request, camp_id: CampId):
         "selected_role": selected_role,
         "address_all": address_for_camp_officers(camp),
         "created_officer": created_officer,
+        "search_query": search_query,
     }
 
     return TemplateResponse(request, "cciw/officers/officer_list.html", context)
