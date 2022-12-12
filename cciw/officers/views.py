@@ -17,6 +17,7 @@ from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
@@ -52,6 +53,7 @@ from cciw.utils.views import (
     get_redirect_from_request,
     get_spreadsheet_from_dataframe_builder,
     get_spreadsheet_simple_builder,
+    make_get_request,
     reroute_response,
     user_passes_test_improved,
 )
@@ -898,19 +900,26 @@ def view_reference(request, reference_id: int):
 @camp_admin_required
 @for_htmx(use_block_from_params=True)
 @with_breadcrumbs(leaders_breadcrumbs)
-def officer_list(request, camp_id: CampId):
+def officer_list(
+    request: HttpRequest,
+    camp_id: CampId,
+) -> HttpResponse:
+    return _officer_list(request, camp_id)
+
+
+# undecorated for internal redirect use
+def _officer_list(
+    request: HttpRequest,
+    camp_id: CampId,
+    *,
+    selected_officer_ids: set[int] | None = None,
+    open_chooseofficers: bool | None = None,
+    search_query: str = "",
+    selected_role: int | None = None,
+    add_officer_message: str = "",
+) -> TemplateResponse:
     camp = _get_camp_or_404(camp_id)
-
-    # We need CampOfficerCollection due to the complexities of the officer list page,
-    # and particularly the facts that:
-
-    # - an action can partially succeed
-    # - we don't want to reset checkboxes when actions didn't succeed.
-    # - this means we can't just do a full redirect after buttons are pressed.
-    # - but we need to ensure our different lists are kept in sync.
-
     collection = CampOfficerCollection(camp)
-
     camp_roles = CampRole.objects.all()
 
     try:
@@ -919,12 +928,7 @@ def officer_list(request, camp_id: CampId):
     except (ValueError, User.DoesNotExist):
         created_officer = None
 
-    selected_officer_ids = set()
-    chosen_officer_ids = set()
-    add_officer_message = ""
-
-    selected_role = None
-    search_query = ""
+    selected_officer_ids = selected_officer_ids or set()
 
     if request.method == "POST":
         # "Add officer" functionality
@@ -951,18 +955,24 @@ def officer_list(request, camp_id: CampId):
         if "remove" in request.POST:
             collection.remove_officers([int(request.POST["officer_id"])])
 
-        if "new_role" in request.POST:
-            selected_role = int(request.POST["new_role"])
+        # Internal redirect, to refresh data from DB
+        return _officer_list(
+            make_get_request(request),
+            camp_id=camp.url_id,
+            # Propagate some state from POST:
+            selected_officer_ids=selected_officer_ids,
+            open_chooseofficers=bool(chosen_officer_ids),  # if we just added some, probably want to add more
+            search_query=request.POST.get("search", ""),
+            selected_role=int(request.POST["new_role"]) if ("new_role" in request.POST) else None,
+            add_officer_message=add_officer_message,
+        )
 
-        # Propagate search to maintain state
-        search_query = request.POST.get("search", "")
-
-    # If they didn't choose any yet, or just chose some, keep that component open.
-    open_chooseofficers = (
-        len(collection.invitations) == 0  # no officers added yet
-        or chosen_officer_ids  # just added some, probably want to add more
-        or created_officer is not None  # just created one in system, will want to add them
-    )
+    # Should the 'choose officers' component default to open?
+    if open_chooseofficers is None:
+        open_chooseofficers = (
+            len(collection.invitations) == 0  # no officers added yet
+            or created_officer is not None  # just created one in system, will want to add them
+        )
     context = {
         "camp": camp,
         "title": f"Officer list: {camp.nice_name}, {camp.leaders_formatted}",

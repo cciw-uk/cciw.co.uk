@@ -1,3 +1,4 @@
+import copy
 from functools import wraps
 from urllib.parse import urlparse
 
@@ -5,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.http.request import HttpRequest
+from django.http.request import HttpRequest, QueryDict
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
@@ -155,7 +156,7 @@ def for_htmx(
                 if if_hx_target is None or request.headers.get("Hx-Target", None) == if_hx_target:
                     blocks_to_use = use_block
                     if not hasattr(resp, "render"):
-                        raise ValueError("Cannot modify a response that isn't a TemplateResponse")
+                        raise ValueError(f"Cannot modify a response of type {type(resp)} that isn't a TemplateResponse")
                     if resp.is_rendered:
                         raise ValueError("Cannot modify a response that has already been rendered")
 
@@ -196,3 +197,13 @@ def _get_param_from_request(request: HttpRequest, param) -> list[str] | None:
     elif request.method == "POST" and param in request.POST:
         return request.POST.getlist(param)
     return None
+
+
+def make_get_request(request: HttpRequest) -> HttpRequest:
+    """
+    Returns a new GET request based on passed in request.
+    """
+    new_request = copy.copy(request)
+    new_request.POST = QueryDict()
+    new_request.method = "GET"
+    return new_request

@@ -464,11 +464,6 @@ class CampOfficerCollection:
 
     def __init__(self, camp: Camp) -> None:
         self.camp = camp
-        self._refresh()
-
-    def _refresh(self):
-        # This camp
-        camp = self.camp
         invitations = camp.invitations.all().name_order().select_related("role")
         invitation_officer_ids = [i.officer_id for i in invitations]
 
@@ -526,7 +521,6 @@ class CampOfficerCollection:
 
     def remove_officers(self, officer_ids: Iterable[int]) -> None:
         self.camp.invitations.filter(officer__in=officer_ids).delete()
-        self._refresh()
 
     def _add_officers(self, officer_ids, role=None) -> list[User]:
         addable_officers = list(self._other_officers) + [inv.officer for inv in self._previous_invitations]
@@ -546,7 +540,6 @@ class CampOfficerCollection:
             if role_to_use is not None:
                 inv = Invitation.objects.create(camp=self.camp, officer=officer, role=role_to_use)
                 invites.append(inv)
-        self._refresh()
         return [inv.officer for inv in invites]
 
 
