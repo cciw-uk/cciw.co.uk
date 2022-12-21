@@ -146,7 +146,7 @@ class Camp(models.Model):
         return f"{self.url_id} ({leadertext})"
 
     @cached_property
-    def previous_camp(self):
+    def previous_camp(self) -> "Camp | None":
         if self._state.fields_cache.get("camp_name", None) is not None:
             camp_name = self.camp_name
             if hasattr(camp_name, "_prefetched_objects_cache"):
@@ -162,7 +162,7 @@ class Camp(models.Model):
         return Camp.objects.filter(year__lt=self.year, camp_name=self.camp_name).order_by("-year").first()
 
     @cached_property
-    def next_camp(self):
+    def next_camp(self) -> "Camp | None":
         return Camp.objects.filter(year__gt=self.year, camp_name=self.camp_name).order_by("year").first()
 
     def _format_leaders(self, leaders):
@@ -172,45 +172,45 @@ class Camp(models.Model):
             return ""
 
     @property
-    def leaders_formatted(self):
+    def leaders_formatted(self) -> str:
         return self._format_leaders(list(self.leaders.all()))
 
     @property
-    def leaders_email_list_address(self):
+    def leaders_email_list_address(self) -> str:
         from cciw.mail.lists import address_for_camp_leaders
 
         return address_for_camp_leaders(self)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.camp_name.name
 
     @property
-    def slug_name(self):
+    def slug_name(self) -> str:
         return self.camp_name.slug
 
     @property
-    def url_id(self):
+    def url_id(self) -> CampId:
         """
         'camp_id' used in URLs
         """
         return CampId(self.year, self.slug_name)
 
     @property
-    def camp_ids_for_stats(self):
+    def camp_ids_for_stats(self) -> list[CampId]:
         camps = [self.previous_camp, self] if self.previous_camp else [self]
         return [c.url_id for c in camps]
 
     @property
-    def nice_name(self):
+    def nice_name(self) -> str:
         return f"Camp {self.name}, year {self.year}"
 
     @property
-    def bracketted_old_name(self):
+    def bracketted_old_name(self) -> str:
         return f" (Camp {self.old_name})" if self.old_name else ""
 
     @property
-    def nice_dates(self):
+    def nice_dates(self) -> str:
         if self.start_date.month == self.end_date.month:
             return "{} - {} {}".format(
                 self.start_date.strftime("%e").strip(),
@@ -226,14 +226,14 @@ class Camp(models.Model):
     def get_absolute_url(self):
         return reverse("cciw-cciwmain-camps_detail", kwargs=dict(year=self.year, slug=self.slug_name))
 
-    def is_past(self):
+    def is_past(self) -> bool:
         return self.end_date <= date.today()
 
     @property
-    def age(self):
+    def age(self) -> str:
         return f"{self.minimum_age}-{self.maximum_age}"
 
-    def get_places_left(self):
+    def get_places_left(self) -> tuple[int, int, int]:
         """
         Return 3 tuple containing (places left, places left for boys, places left for girls).
         Note that the first isn't necessarily the sum of 2nd and 3rd.
@@ -257,14 +257,14 @@ class Camp(models.Model):
         )
 
     @property
-    def closes_for_bookings_on(self):
+    def closes_for_bookings_on(self) -> date:
         return self.last_booking_date if self.last_booking_date is not None else self.start_date
 
-    def open_for_bookings(self, on_date):
+    def open_for_bookings(self, on_date: date) -> bool:
         return on_date <= self.closes_for_bookings_on
 
     @property
-    def is_open_for_bookings(self):
+    def is_open_for_bookings(self) -> bool:
         return self.open_for_bookings(date.today())
 
 
