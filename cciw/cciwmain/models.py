@@ -1,4 +1,5 @@
 import os.path
+from dataclasses import dataclass
 from datetime import date
 
 from colorful.fields import RGBColorField
@@ -60,6 +61,13 @@ class CampName(models.Model):
 
     def __str__(self):
         return self.name
+
+
+@dataclass
+class PlacesLeft:
+    total: int
+    male: int
+    female: int
 
 
 class CampManager(models.Manager):
@@ -233,9 +241,9 @@ class Camp(models.Model):
     def age(self) -> str:
         return f"{self.minimum_age}-{self.maximum_age}"
 
-    def get_places_left(self) -> tuple[int, int, int]:
+    def get_places_left(self) -> PlacesLeft:
         """
-        Return 3 tuple containing (places left, places left for boys, places left for girls).
+        Return the number of places left total and for male/female campers.
         Note that the first isn't necessarily the sum of 2nd and 3rd.
         """
         from cciw.bookings.models import Sex
@@ -250,10 +258,10 @@ class Camp(models.Model):
                 females_booked = c
         total_booked = males_booked + females_booked
         # negative numbers of places available is confusing for our purposes, so use max
-        return (
-            max(self.max_campers - total_booked, 0),
-            max(self.max_male_campers - males_booked, 0),
-            max(self.max_female_campers - females_booked, 0),
+        return PlacesLeft(
+            total=max(self.max_campers - total_booked, 0),
+            male=max(self.max_male_campers - males_booked, 0),
+            female=max(self.max_female_campers - females_booked, 0),
         )
 
     @property

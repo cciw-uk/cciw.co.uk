@@ -72,7 +72,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
         def render_camp(c):
             availability_msg = (
-                ("Places available" if c.get_places_left()[0] > 0 else "No places available!")
+                ("Places available" if c.get_places_left().total > 0 else "No places available!")
                 if c.is_open_for_bookings
                 else "Closed for bookings"
             )

@@ -361,7 +361,7 @@ def account_json(request):
 def place_availability_json(request):
     retval = {"status": "success"}
     camp_id = int(request.GET["camp_id"])
-    camp = Camp.objects.get(id=camp_id)
+    camp: Camp = Camp.objects.get(id=camp_id)
     places = camp.get_places_left()
     retval["result"] = dict(total=places[0], male=places[1], female=places[2])
     return retval

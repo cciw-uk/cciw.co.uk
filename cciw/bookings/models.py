@@ -1076,12 +1076,13 @@ class Booking(models.Model):
 
     def get_booking_errors(self, booking_sec=False, agreement_fetcher=None):
         errors = []
+        camp: Camp = self.camp
 
         # Custom price - not auto bookable
         if self.price_type == PriceType.CUSTOM:
             errors.append("A custom discount needs to be arranged by the booking secretary")
 
-        relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
+        relevant_bookings = self.account.bookings.for_year(camp.year).in_basket_or_booked()
         relevant_bookings_excluding_self = relevant_bookings.exclude(
             first_name=self.first_name, last_name=self.last_name
         )
@@ -1178,16 +1179,16 @@ class Booking(models.Model):
         age_base = self.age_base_date().strftime("%e %B %Y")
         if self.is_too_young():
             errors.append(
-                f"Camper will be {camper_age} which is below the minimum age ({self.camp.minimum_age}) on {age_base}"
+                f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}"
             )
 
         if self.is_too_old():
             errors.append(
-                f"Camper will be {camper_age} which is above the maximum age ({self.camp.maximum_age}) on {age_base}"
+                f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}"
             )
 
         # Check place availability
-        places_left, places_left_male, places_left_female = self.camp.get_places_left()
+        places_left = camp.get_places_left()
 
         # We only want one message about places not being available, and the
         # order here is important - if there are no places full stop, we don't
@@ -1205,13 +1206,13 @@ class Booking(models.Model):
             )
 
         # Simple - no places left
-        if places_left <= 0:
+        if places_left.total <= 0:
             errors.append(no_places_available_message("There are no places left on this camp."))
             places_available = False
 
         SEXES = [
-            (Sex.MALE, "boys", places_left_male),
-            (Sex.FEMALE, "girls", places_left_female),
+            (Sex.MALE, "boys", places_left.male),
+            (Sex.FEMALE, "girls", places_left.female),
         ]
 
         if places_available:
@@ -1227,10 +1228,10 @@ class Booking(models.Model):
             # Complex - need to check the other places that are about to be booked.
             # (if there is one place left, and two campers for it, we can't say that
             # there are enough places)
-            same_camp_bookings = self.account.bookings.filter(camp=self.camp).in_basket()
+            same_camp_bookings = self.account.bookings.filter(camp=camp).in_basket()
             places_to_be_booked = len(same_camp_bookings)
 
-            if places_left < places_to_be_booked:
+            if places_left.total < places_to_be_booked:
                 errors.append(
                     no_places_available_message(
                         "There are not enough places left on this camp " "for the campers in this set of bookings."
@@ -1252,7 +1253,7 @@ class Booking(models.Model):
                             places_available = False
                             break
 
-        if self.south_wales_transport and not self.camp.south_wales_transport_available:
+        if self.south_wales_transport and not camp.south_wales_transport_available:
             errors.append(
                 "Transport from South Wales is not available for this camp, or all places have been taken already."
             )
@@ -1270,10 +1271,10 @@ class Booking(models.Model):
         # after the cutoff date, so we allow self.booked_at to be used here:
         on_date = self.booked_at if self.is_booked and self.booked_at is not None else date.today()
 
-        if not self.camp.open_for_bookings(on_date):
-            if on_date >= self.camp.end_date:
+        if not camp.open_for_bookings(on_date):
+            if on_date >= camp.end_date:
                 msg = "This camp has already finished."
-            elif on_date >= self.camp.start_date:
+            elif on_date >= camp.start_date:
                 msg = "This camp is closed for bookings because it has already started."
             else:
                 msg = "This camp is closed for bookings."
@@ -1286,18 +1287,19 @@ class Booking(models.Model):
         return errors
 
     def get_booking_warnings(self, booking_sec=False):
+        camp: Camp = self.camp
         warnings = []
 
-        if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(
+        if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=camp).exclude(
             id=self.id
         ):
             warnings.append(
                 f"You have entered another set of place details for a camper "
-                f"called '{self.name}' on camp {self.camp.name}. Please ensure you don't book multiple "
+                f"called '{self.name}' on camp {camp.name}. Please ensure you don't book multiple "
                 f"places for the same camper!"
             )
 
-        relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
+        relevant_bookings = self.account.bookings.for_year(camp.year).in_basket_or_booked()
 
         if self.price_type == PriceType.FULL:
             full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)
@@ -1584,7 +1586,7 @@ def early_bird_is_available(year, booked_at_date):
 
 def any_bookings_possible(year):
     camps = Camp.objects.filter(year=year)
-    return any(c.get_places_left()[0] > 0 and c.is_open_for_bookings for c in camps)
+    return any(c.get_places_left().total > 0 and c.is_open_for_bookings for c in camps)
 
 
 def is_booking_open(year):
