@@ -1301,7 +1301,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_show_bookings(self):
         self.booking_login()
-        self.create_booking("Frédéric Bloggs")
+        self.create_booking(name="Frédéric Bloggs")
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")
@@ -1379,14 +1379,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
         # minimum_age == 11
         self.booking_login()
-        self.create_booking(date_of_birth="%d-08-31" % (self.camp.year - self.camp_minimum_age))
+        self.create_booking(date_of_birth=date(year=self.camp.year - self.camp_minimum_age, month=8, day=31))
         self.get_url(self.urlname)
         self.assertTextAbsent(self.BELOW_MINIMUM_AGE)
 
         # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
-        self.create_booking(date_of_birth="%d-09-01" % (self.camp.year - self.camp_minimum_age))
+        self.create_booking(date_of_birth=date(year=self.camp.year - self.camp_minimum_age, month=9, day=1))
         self.get_url(self.urlname)
         self.assertTextPresent(self.BELOW_MINIMUM_AGE)
 
@@ -1394,14 +1394,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
         # maximum_age == 17
         self.booking_login()
-        self.create_booking(date_of_birth="%d-09-01" % (self.camp.year - (self.camp_maximum_age + 1)))
+        self.create_booking(date_of_birth=date(year=self.camp.year - (self.camp_maximum_age + 1), month=9, day=1))
         self.get_url(self.urlname)
         self.assertTextAbsent(self.ABOVE_MAXIMUM_AGE)
 
         # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
-        self.create_booking(date_of_birth="%d-08-31" % (self.camp.year - (self.camp_maximum_age + 1)))
+        self.create_booking(date_of_birth=date(year=self.camp.year - (self.camp_maximum_age + 1), month=8, day=31))
         self.get_url(self.urlname)
         self.assertTextPresent(self.ABOVE_MAXIMUM_AGE)
 
