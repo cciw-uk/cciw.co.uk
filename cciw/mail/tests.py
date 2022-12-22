@@ -3,10 +3,12 @@ import re
 from email import policy
 from unittest import mock
 
+import mailer as queued_mail
 import mailer.engine
 import pytest
 from django.core import mail
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
+from django.db.transaction import atomic
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from mailer.models import Message
@@ -17,7 +19,7 @@ from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.tests import factories as officer_factories
 from cciw.officers.tests.base import RolesSetupMixin
 from cciw.utils.functional import partition
-from cciw.utils.tests.base import TestBase
+from cciw.utils.tests.base import AtomicChecksMixin, TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
@@ -430,21 +432,48 @@ def send_queued_mail() -> list[mail.EmailMessage]:
     return sent
 
 
+class EmailTransactionAssertionError(AssertionError):
+    pass
+
+
+class EmailSubjectAssertionError(AssertionError):
+    pass
+
+
 class TestMailBackend(LocMemEmailBackend):
     __test__ = False
 
     def send_messages(self, messages):
         # Transaction check
         if len(_EMAIL_SENDING_DISALLOWED) > 0:
-            raise AssertionError("Normal email should not be sent within transactions, " "use queued_mail instead")
+            raise EmailTransactionAssertionError(
+                "Normal email should not be sent within transactions, " "use queued_mail instead"
+            )
 
         # Subject check
         for m in messages:
             if not m.subject.startswith("[CCIW]"):
                 if not _is_forwarded_message(m):
-                    raise AssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
+                    raise EmailSubjectAssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
 
         return super().send_messages(messages)
+
+
+class TestAtomicChecksMixin(AtomicChecksMixin, TestBase):
+    # A test for our tests! Checking that TestMailBackend/Atomic monkey patching actually works
+    def test_TestMailBackend_disallows_mail_within_atomic_blocks(self):
+        with self.assertRaises(EmailTransactionAssertionError):
+            with atomic():
+                mail.send_mail("[CCIW] subject", "hello", "x@cciw.co.uk", ["x@example.com"])
+
+    def test_TestMailBackend_allows_queued_mail_within_atomic_blocks(self):
+        with atomic():
+            queued_mail.send_mail("[CCIW] subject", "hello", "x@cciw.co.uk", ["x@example.com"])
+
+    def test_TestMailBackend_enforces_subject(self):
+
+        with self.assertRaises(EmailSubjectAssertionError):
+            mail.send_mail("bad subject", "hello", "x@cciw.co.uk", ["x@example.com"])
 
 
 def _is_forwarded_message(raw_message):
