@@ -171,7 +171,7 @@ def for_htmx(
                         resp.template_name = use_template
                     elif blocks_to_use is not None:
                         if not isinstance(blocks_to_use, list):
-                            blocks_to_use = list(blocks_to_use)
+                            blocks_to_use = [blocks_to_use]
                         rendered_blocks = [
                             render_block_to_string(resp.template_name, b, context=resp.context_data, request=request)
                             for b in blocks_to_use
