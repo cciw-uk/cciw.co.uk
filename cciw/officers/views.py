@@ -1,6 +1,5 @@
 import contextlib
 import enum
-import re
 from datetime import date, datetime, timedelta
 from functools import wraps
 from typing import Iterable, TypeAlias
@@ -93,15 +92,17 @@ from .forms import (
 )
 from .models import (
     Application,
-    CampOfficerCollection,
     CampRole,
     DBSActionLog,
     DBSCheck,
     Invitation,
+    OfficerList,
     Referee,
     Reference,
     ReferenceAction,
+    add_officer_to_camp,
     empty_reference,
+    remove_officer_from_camp,
 )
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
 from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
@@ -912,14 +913,14 @@ def _officer_list(
     request: HttpRequest,
     camp_id: CampId,
     *,
-    selected_officer_ids: set[int] | None = None,
+    selected_officers: set[User] | None = None,
     open_chooseofficers: bool | None = None,
     search_query: str = "",
     selected_role: int | None = None,
     add_officer_message: str = "",
 ) -> TemplateResponse:
     camp = _get_camp_or_404(camp_id)
-    collection = CampOfficerCollection(camp)
+    officer_list = OfficerList(camp)
     camp_roles = CampRole.objects.all()
 
     try:
@@ -928,40 +929,44 @@ def _officer_list(
     except (ValueError, User.DoesNotExist):
         created_officer = None
 
-    selected_officer_ids = selected_officer_ids or set()
+    selected_officers = selected_officers or set()
 
     if request.method == "POST":
         # "Add officer" functionality
-        chosen_officer_ids = {
-            int(input_name.split("_")[1]) for input_name in request.POST if re.match(r"chooseofficer_\d+", input_name)
-        }
+        chosen_officers = [
+            officer for officer in officer_list.addable_officers if f"chooseofficer_{officer.id}" in request.POST
+        ]
         add_previous_role = "add_previous_role" in request.POST
         add_new_role = "add_new_role" in request.POST
         if add_previous_role or add_new_role:
             if add_new_role:
                 new_role = CampRole.objects.get(id=int(request.POST["new_role"]))
-                added_officers = collection.add_officers_with_role(chosen_officer_ids, new_role)
+                added_officers = [add_officer_to_camp(camp, o, new_role) for o in chosen_officers]
             elif add_previous_role:
-                added_officers = collection.add_officers_with_previous_role(chosen_officer_ids)
+                added_officers = [
+                    add_officer_to_camp(camp, o, role)
+                    for o in chosen_officers
+                    if (role := officer_list.get_previous_role(o)) is not None
+                ]
             else:
                 added_officers = []
             # if we successfully process, we remove from chosen_officer_ids,
             # but preserve the state of checkboxes we weren't able to handle.
-            selected_officer_ids = set(chosen_officer_ids) - {o.id for o in added_officers}
-            if selected_officer_ids:
+            selected_officers = set(chosen_officers) - set(added_officers)
+            if selected_officers:
                 add_officer_message = "Some officers could not be added because their previous role is not known"
 
         # "Remove officer" functionality
         if "remove" in request.POST:
-            collection.remove_officers([int(request.POST["officer_id"])])
+            remove_officer_from_camp(camp, User.objects.get(id=int(request.POST["officer_id"])))
 
         # Internal redirect, to refresh data from DB
         return _officer_list(
             make_get_request(request),
             camp_id=camp.url_id,
             # Propagate some state from POST:
-            selected_officer_ids=selected_officer_ids,
-            open_chooseofficers=bool(chosen_officer_ids),  # if we just added some, probably want to add more
+            selected_officers=selected_officers,
+            open_chooseofficers=bool(chosen_officers),  # if we just added some, probably want to add more
             search_query=request.POST.get("search", ""),
             selected_role=int(request.POST["new_role"]) if ("new_role" in request.POST) else None,
             add_officer_message=add_officer_message,
@@ -970,16 +975,16 @@ def _officer_list(
     # Should the 'choose officers' component default to open?
     if open_chooseofficers is None:
         open_chooseofficers = (
-            len(collection.invitations) == 0  # no officers added yet
+            len(officer_list.invitations) == 0  # no officers added yet
             or created_officer is not None  # just created one in system, will want to add them
         )
     context = {
         "camp": camp,
         "title": f"Officer list: {camp.nice_name}, {camp.leaders_formatted}",
-        "invitations": collection.invitations,
-        "candidate_officers": collection.candidate_officers,
+        "invitations": officer_list.invitations,
+        "candidate_officers": officer_list.candidate_officers,
         "open_chooseofficers": open_chooseofficers,
-        "selected_officer_ids": selected_officer_ids,
+        "selected_officers": selected_officers,
         "add_officer_message": add_officer_message,
         "camp_roles": camp_roles,
         "selected_role": selected_role,
