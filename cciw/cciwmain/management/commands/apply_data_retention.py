@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from cciw.data_retention import apply_data_retention
+from cciw.data_retention.applying import apply_data_retention
 
 
 class Command(BaseCommand):

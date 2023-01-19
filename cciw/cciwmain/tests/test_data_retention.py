@@ -15,18 +15,9 @@ from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us.models import Message
 from cciw.contact_us.tests import factories as contact_us_factories
-from cciw.data_retention import (
-    ErasureMethod,
-    Forever,
-    Group,
-    Keep,
-    ModelDetail,
-    Policy,
-    PreserveAgeOnCamp,
-    Rules,
-    apply_data_retention,
-    parse_keep,
-)
+from cciw.data_retention.applying import PreserveAgeOnCamp, apply_data_retention
+from cciw.data_retention.datatypes import ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, Rules
+from cciw.data_retention.loading import parse_keep
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
 from cciw.officers.tests import factories as officers_factories
