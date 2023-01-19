@@ -78,6 +78,7 @@ django==4.0.7
     #   django-colorful
     #   django-debug-toolbar
     #   django-decorator-include
+    #   django-extensions
     #   django-functest
     #   django-js-asset
     #   django-mailer
@@ -106,6 +107,8 @@ django-debug-toolbar==3.5
     # via -r requirements-dev.in
 django-decorator-include==3.0
     # via -r requirements.in
+django-extensions==3.2.1
+    # via -r requirements-dev.in
 django-functest==1.5.2
     # via -r requirements-dev.in
 django-js-asset==2.0.0
@@ -191,6 +194,8 @@ makefun==1.15.0
     # via -r submodules/fabutils/requirements.in
 markdown==3.3.7
     # via wiki
+markupsafe==2.1.2
+    # via werkzeug
 matplotlib-inline==0.1.6
     # via ipython
 mccabe==0.7.0
@@ -422,6 +427,8 @@ webtest==3.0.0
     # via
     #   django-functest
     #   django-webtest
+werkzeug==2.2.2
+    # via -r requirements-dev.in
 wheel==0.37.1
     # via pip-tools
 wiki==0.9

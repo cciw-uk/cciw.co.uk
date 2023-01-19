@@ -14,3 +14,5 @@ pytest-cov==3.0.0
 pytest-django==4.5.2
 pytest-xdist[psutil]==2.1.0
 time-machine==2.8.1
+django-extensions
+werkzeug

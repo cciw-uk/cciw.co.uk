@@ -165,6 +165,11 @@ if DEVBOX and DEBUG:
         "django.contrib.admindocs",
     ]
 
+if DEVBOX:
+    INSTALLED_APPS += [
+        "django_extensions",
+    ]
+
 if USE_DEBUG_TOOLBAR and DEBUG:
     INSTALLED_APPS += [
         "debug_toolbar",
@@ -331,6 +336,11 @@ if DEVBOX:
         "propagate": False,
     }
     LOGGING["root"]["handlers"] = ["console"]
+    LOGGING["loggers"]["werkzeug"] = {
+        "handlers": ["console"],
+        "level": "DEBUG",
+        "propagate": True,
+    }
 
 PASSWORD_RESET_TIMEOUT = 7 * 24 * 3600
 
