@@ -37,21 +37,6 @@
 #   changes must only be done with the permission of the CCiW committee, and in
 #   conformance with GDPR and other data protection laws.
 
-# --- Deletion mechanisms ---
-#
-# There are different ways we could delete data from a database.
-#
-# - blanking out details, e.g. replace text with `[deleted]`. This enables us to
-#   keep some details in a row, while removing others, and is usually the
-#   preferred method.
-#
-# - removing entire rows of data. This generally makes it harder to keep
-#   statistics (totals, averages e.g.) about what happened, and we usually
-#   prefer not to do this, but where we have no need of the stats it's fine.
-#
-# - other more complicated methods, discussed as needed.
-#
-
 # --- Structure and contents ---
 #
 # We have the following groups of data:
@@ -68,6 +53,21 @@
 # All groups have an implicit rule: data which is still in use should not be
 # deleted. (For example, the address of a person who still owes us money). Rules
 # for determining which data is in use is not defined in this document.
+
+# --- Deletion mechanisms ---
+#
+# There are different ways we could delete data from a database.
+#
+# - blanking out details, e.g. replace text with `[deleted]`. This enables us to
+#   keep some details in a row, while removing others, and is usually the
+#   preferred method.
+#
+# - removing entire rows of data. This generally makes it harder to keep
+#   statistics (totals, averages e.g.) about what happened, and we usually
+#   prefer not to do this, but where we have no need of the stats it's fine.
+#
+# - other more complicated methods, discussed as needed.
+#
 
 # -------------------------------
 
