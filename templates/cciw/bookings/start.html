@@ -24,6 +24,8 @@
     email address of the person booking and paying, not of the camper. We will
     send an email to this address to confirm it is correct and log you in.</p>
 
+  <p>All personal data is kept in accordance with our <a href="{% url 'cciw-cciwmain-data_retention_policy' %}">data retention policy</a>.</p>
+
   <form method="POST" action="">
     {% csrf_token %}
     <div class="field">

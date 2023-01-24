@@ -1026,3 +1026,41 @@ table.bookinglist {
         }
     }
 }
+
+
+// Data retention / literate YAML
+pre.code {
+    font-size: 13px;
+    line-height: 16px;
+    font-family: monospace;
+}
+
+pre.code.yaml {
+  border: 4px solid #8aa;
+  border-width: 0 4px 0 4px;
+  padding: 8px 8px;
+  background-color: #f8f8f8;
+  overflow-x: scroll;
+}
+
+pre.code.yaml {
+     .punctuation.indicator {
+         font-weight: bold;
+     }
+     .name {
+         color: #9f009d;
+     }
+     .literal.scalar.plain {
+         color: #006264;
+     }
+     .comment {
+         color: #00098b;
+     }
+}
+
+
+@media print {
+    nav, footer {
+        display: none;
+    }
+}

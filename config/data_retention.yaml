@@ -1,5 +1,5 @@
-# Data rentention policy
-# ----------------------
+# CCiW data retention policy
+# --------------------------
 
 # About this document
 # ~~~~~~~~~~~~~~~~~~~
@@ -7,37 +7,41 @@
 # This is CCiW's official policy on how long we keep personal data in our
 # database, and which data can be deleted at the request of the "data subject"
 # (the person the data is about).
-
-# The format of this document is unusual because this document is both a human-
-# readable document and a machine-readable file that is automatically read and
-# applied by our software that handles data rentention. Lines beginning with a
-# '#' like this one are 'comments' that are skipped by the software that reads
-# it. The remainder is definitions and instructions that are interpreted and
-# applied by the software.
-
-# This format has some disadvantages - it is slightly unusual and harder to
-# understand at first - but it also has a lot of advantages:
-
+#
+# The official source of this document is: https://github.com/cciw-uk/cciw.co.uk/blob/master/config/data_retention.yaml
+#
+# A identical copy with improved formatting is found at: https://www.cciw.co.uk/data-retention-policy/
+#
+# The format of this document is "Literate YAML", which means this document is both a
+# human-readable document and a machine-readable file that is automatically read and
+# applied by our software that handles data retention. Sections like this one are 'comments'
+# that are skipped by the software that reads it. The remainder is definitions and instructions
+# that are interpreted and applied by the software.
+#
+# This format has a lot of advantages:
+#
 # - This actually is the data retention policy. Many organisations' "data
 #   retention policy" is in fact what their policy is supposed to be, and what
 #   actually happens could be completely different.
-
+#
 # - There is no possibility of the CCiW committee updating a policy document but
 #   failing to communicate that to the web developers, because there is only a
 #   single policy document.
-
+#
 # - This document is automatically checked for validity and completeness. If we
 #   add a new table or column in the database, but don't add a retention policy
 #   for it here, our automated checks will spot this and force us to define a
 #   policy.
 
-# Changes to this document:
+# Changes to this document
+# ~~~~~~~~~~~~~~~~~~~~~~~~
 
-#   Where there are implications for the privacy/retention of personal data,
-#   changes must only be done with the permission of the CCiW committee, and in
-#   conformance with GDPR and other data protection laws.
+# Where there are implications for the privacy/retention of personal data,
+# changes must only be done with the permission of the CCiW committee, and in
+# conformance with GDPR and other data protection laws.
 
-# --- Structure and contents ---
+# Structure and contents
+# ~~~~~~~~~~~~~~~~~~~~~~
 #
 # We have the following groups of data:
 #
@@ -46,15 +50,16 @@
 # - Deletable officer data
 # - Temporary data
 # - Non-personal data
-
+#
 # For each group, we start by defining the rules that will be applied, then by
 # listing the tables and columns it applies to.
 #
 # All groups have an implicit rule: data which is still in use should not be
 # deleted. (For example, the address of a person who still owes us money). Rules
-# for determining which data is in use is not defined in this document.
+# for determining which data is in use are not defined in this document.
 
-# --- Deletion mechanisms ---
+# Deletion mechanisms
+# ~~~~~~~~~~~~~~~~~~~
 #
 # There are different ways we could delete data from a database.
 #
@@ -69,50 +74,56 @@
 # - other more complicated methods, discussed as needed.
 #
 
-# -------------------------------
+# Data groups
+# -----------
+
+# Camper and officer data to keep forever
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# The CCiW committee have decided that there is some data that we will keep
+# forever. The main purposes for this are:
+#
+# - future legal defence needs for criminal or civil cases
+#
+# - being able to cooperate fully and helpfully with any criminal investigations
+#   into allegations of abuse or neglect that happened on camp
+#
+# - being able to defend the good reputation of CCiW
+#
+# For these reasons, we need our records to have:
+#
+# - complete lists of campers on each camp (with enough names to be able to
+#   identify campers)
+#
+# - complete lists of officers on each camp
+#
+# - information about what medical information parents supplied (needed e.g. for
+#   accusations of medical negligence)
+#
+# - most officer application form data and all reference data
+#
+# - records showing our due diligence regarding DBS checks etc.
+#
+# As per exceptions allowed in GDPR for these purposes, this policy overrides
+# "right to erasure" of data subjects.
+#
+# However, CCiW will consider prioritising "right to erasure" even for this data
+# if there are special considerations.
 
 - group: Camper and officer data to keep forever
-
-  # The CCiW committee have decided that there is some data that we will keep
-  # forever. The main purposes for this are:
-
-  # - future legal defence needs for criminal or civil cases
-  #
-  # - being able to cooperate fully and helpfully with any criminal investigations
-  #   into allegations of abuse or neglect that happened on camp
-  #
-  # - being able to defend the good reputation of CCiW
-
-  # For these reasons, we need our records to have:
-
-  # - complete lists of campers on each camp (with enough names to be able to
-  #   identify campers)
-  #
-  # - complete lists of officers on each camp
-  #
-  # - information about what medical information parents supplied (needed e.g. for
-  #   accusations of medical negligence)
-  #
-  # - most officer application form data and all reference data
-  #
-  # - records showing our due diligence regarding DBS checks etc.
-
-  # As per exceptions allowed in GDPR for these purposes, this policy overrides
-  # "right to erasure" of data subjects.
-  #
-  # However, CCiW will consider prioritising "right to erasure" even for this data
-  # if there are special considerations.
 
   rules:
     keep: forever
     deletable on request from data subject: no
 
   tables:
-    - name: bookings.BookingAccount  # This table stores info about the person making the booking
+    - name: bookings.BookingAccount
+      # This table stores info about the person making the booking
       columns:
       - name  # full name of the person
 
-    - name: bookings.Booking  # This table stores the rest of the booking information
+    - name: bookings.Booking
+      # This table stores the rest of the booking information
       columns:
       - first_name  # of the camper
       - last_name
@@ -136,16 +147,19 @@
       - publicity_photos_agreement
       - custom_agreements_checked
 
-    - name: accounts.User  # These users are officers/leaders/other CCiW volunteers
+    - name: accounts.User
+      # These users are officers/leaders/other CCiW volunteers
       columns:
       - username
       - first_name
       - last_name
 
-    - name: officers.Invitation  # This stores the link between officers and camps i.e. the officer list
+    - name: officers.Invitation
+      # This stores the link between officers and camps i.e. the officer list
       columns: all
 
-    - name: officers.Application  # Data entered by officer on application form
+    - name: officers.Application
+      # Data entered by officer on application form
       columns:
       - full_name
       - christian_experience
@@ -166,10 +180,12 @@
       - dbs_check_consent
       - finished
 
-    - name: officers.Qualification  # Qualification list that is part of application form
+    - name: officers.Qualification
+      # Qualification list that is part of application form
       columns: all
 
-    - name: officers.Referee  # Referee data entered on the application form
+    - name: officers.Referee
+      # Referee data entered on the application form
       columns:
       - referee_number
       - name
@@ -179,7 +195,8 @@
       - mobile
       - email
 
-    - name: officers.Reference  # Actual reference entered by referee
+    - name: officers.Reference
+      # Actual reference entered by referee
       columns: all
 
     - name: officers.DBSCheck
@@ -192,16 +209,16 @@
       - applicant_accepted
       - registered_with_dbs_update
 
+# Deletable camper and parent booking data
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# -------------------------------
+# It is useful for campers/parents if we keep booking data for several years,
+# since this will massively speed up the process of them filling in booking
+# forms in subsequent years. But we will delete earlier if requested. We also
+# check that information is not needed for business reasons (e.g. chasing
+# payment) before deleting.
 
 - group: Deletable camper and parent booking data
-
-  # It is useful for campers/parents if we keep booking data for several years,
-  # since this will massively speed up the process of them filling in booking
-  # forms in subsequent years. But we will delete earlier if requested. We also
-  # check that information is not needed for business reasons (e.g. chasing
-  # payment) before deleting.
 
   rules:
     keep: 5 years
@@ -277,12 +294,15 @@
       - contact_phone
 
 
-- group: Deletable camper and parent booking data - supporting information
+# Deletable camper and parent booking data - supporting information
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  # A second set of camper-related information is "Supporting information". This
-  # is almost always documents that relate to a camper's application for custom
-  # discounts. We keep this for 3 years, because it relates to finances and as a
-  # charity we should keep these records for 3 years.
+# A second set of camper-related information is "Supporting information". This
+# is almost always documents that relate to a camper's application for custom
+# discounts. We keep this for 3 years, because it relates to finances and as a
+# charity we should keep these records for 3 years.
+
+- group: Deletable camper and parent booking data - supporting information
 
   rules:
     keep: 3 years
@@ -304,13 +324,14 @@
       - content
 
 
-# -------------------------------
+# Deleteable officer data
+# ~~~~~~~~~~~~~~~~~~~~~~~
+
+# It is usually most useful for us to keep officer data indefinitely, because
+# this avoids officers needing to re-enter data. However, with exceptions noted
+# above, we can observe "right to erasure" for some officer data:
 
 - group: Deleteable officer data
-
-  # It is usually most useful for us to keep officer data indefinitely, because
-  # this avoids officers needing to re-enter data. However, with exceptions noted
-  # above, we can observe "right to erasure" for some officer data:
 
   rules:
     keep: forever  # by default, i.e. indefinitely
@@ -336,49 +357,52 @@
       - address_email
 
 
-# -------------------------------
+# Temporary data
+# ~~~~~~~~~~~~~~
+
+# Various pieces of data that we don't need forever, and could contain personal
+# data.
 
 - group: Temporary data
-
-  # Various pieces of data that we don't need forever, and could contain personal
-  # data.
 
   rules:
     keep: 1 year
     deletable on request from data subject: no  # It is not directly linked to any data subject
 
   tables:
-    # Outgoing emails:
     - name: mailer.Message
+      # This table stores outgoing emails
       delete row: yes  # Delete entire rows, rather than just blanking out details.
     - name: mailer.MessageLog
       delete row: yes
-    # Incoming mails from "contact us" page:
     - name: contact_us.Message
+      # Incoming mails from "contact us" page
       delete row: yes
 
-# -------------------------------
+
+# Non-personal data
+# ~~~~~~~~~~~~~~~~~
+#
+# This includes:
+#
+# - data related to bookings and officers that is not entered by the user themselves,
+#   nor is personal in nature, but is internal book-keeping data (first section)
+#
+# - many other tables of data for various business purposes
+#
+# The purpose of listing this is so that we have an exhaustive list of all
+# tables/columns. If any new tables or columns are added to the system, but a
+# policy is not defined in this file, an automatic check will stop deployment
+# until the policy is defined.
 
 - group: Non-personal data
-
-  # This includes:
-
-  # - data related to bookings and officers that is not entered by the user themselves,
-  #   nor is personal in nature, but is internal book-keeping data (first section)
-  #
-  # - many other tables of data for various business purposes
-
-  # The purpose of listing this is so that we have an exhaustive list of all
-  # tables/columns. If any new tables or columns are added to the system, but a
-  # policy is not defined in this file, an automatic check will stop deployment
-  # until the policy is defined.
 
   rules:
     keep: forever
     deletable on request from data subject: no
 
   tables:
-    # -- Related to personal data, but data that is managed internally --
+    # -- Data related to personal data, but data that is managed internally --
     - name: bookings.BookingAccount
       columns:
       - total_received
@@ -411,9 +435,9 @@
       - bad_password
       - password_validators_used
 
-    # This table contains information displayed publicly on the website relating
-    # to leaders/chaplains on camps.
     - name: cciwmain.Person
+      # This table contains information displayed publicly on the website relating
+      # to leaders/chaplains on camps.
       columns:
       - name
       - info
