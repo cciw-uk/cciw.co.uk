@@ -40,3 +40,5 @@ django-libsass==0.9
 patchwork==1.0.1
 git+https://github.com/spookylukey/django-urlconfchecks.git@3ec85d0aa8225e76542799455c8dd33c9b602222#django-urlconfchecks
 -r submodules/fabutils/requirements.in
+docutils==0.19
+pygments==2.14.0
