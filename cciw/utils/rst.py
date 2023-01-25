@@ -4,12 +4,22 @@ from django.utils.safestring import mark_safe
 from docutils.writers import html4css1
 
 
-def rst_to_html(text: str, initial_header_level=1):
+def rst_to_html(text: str, initial_header_level=1, strict=False) -> str:
     settings = RST_SETTINGS | {"initial_header_level": initial_header_level}
+    if strict:
+        settings.update({"strict": strict, "halt_level": 2})
     parts = docutils.core.publish_parts(
         source=smart_str(text), settings_overrides=settings, writer=TextutilsHTMLWriter()
     )
     return mark_safe(force_str(parts["body"]))
+
+
+def remove_rst_title(text: str) -> str:
+    lines = text.split("\n")
+    if len(lines) > 3:
+        if lines[0].startswith("=") and lines[2].startswith("="):
+            lines = lines[3:]
+    return "\n".join(lines)
 
 
 RST_SETTINGS = {

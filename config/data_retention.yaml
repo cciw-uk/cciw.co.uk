@@ -1,8 +1,32 @@
+# ==========================
 # CCiW data retention policy
-# --------------------------
+# ==========================
+
+# Summary
+# -------
+
+# CCiW's data retention policy is to keep personal information only as long
+# as necessary to serve the needs of our campers and officers, and in complicance with
+# all applicable laws. In short:
+#
+# - We keep most camper data for 5 years by default, unless deletion is
+#   requested earlier. The primary reason for keeping it more than one year is
+#   to provide convenience to those booking, so that they do not need to enter
+#   all details each year.
+#
+# - We keep some basic data about names of campers on camps indefinitely, for
+#   legal reasons set out below.
+#
+# - We normally keep officer data indefinitely.
+#
+# - Data subjects have “right to erasure” as set out in the GDPR and other laws,
+#   subject to some limitations below.
+
+# Full details are below.
+
 
 # About this document
-# ~~~~~~~~~~~~~~~~~~~
+# -------------------
 
 # This is CCiW's official policy on how long we keep personal data in our
 # database, and which data can be deleted at the request of the "data subject"
@@ -20,10 +44,6 @@
 #
 # This format has a lot of advantages:
 #
-# - This actually is the data retention policy. Many organisations' "data
-#   retention policy" is in fact what their policy is supposed to be, and what
-#   actually happens could be completely different.
-#
 # - There is no possibility of the CCiW committee updating a policy document but
 #   failing to communicate that to the web developers, because there is only a
 #   single policy document.
@@ -32,16 +52,19 @@
 #   add a new table or column in the database, but don't add a retention policy
 #   for it here, our automated checks will spot this and force us to define a
 #   policy.
+#
+# - This document actually is our data retention policy, as opposed to what
+#   our policy is supposed to be.
 
 # Changes to this document
-# ~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------
 
 # Where there are implications for the privacy/retention of personal data,
 # changes must only be done with the permission of the CCiW committee, and in
 # conformance with GDPR and other data protection laws.
 
 # Structure and contents
-# ~~~~~~~~~~~~~~~~~~~~~~
+# ----------------------
 #
 # We have the following groups of data:
 #
@@ -59,7 +82,7 @@
 # for determining which data is in use are not defined in this document.
 
 # Deletion mechanisms
-# ~~~~~~~~~~~~~~~~~~~
+# -------------------
 #
 # There are different ways we could delete data from a database.
 #
@@ -214,9 +237,7 @@
 
 # It is useful for campers/parents if we keep booking data for several years,
 # since this will massively speed up the process of them filling in booking
-# forms in subsequent years. But we will delete earlier if requested. We also
-# check that information is not needed for business reasons (e.g. chasing
-# payment) before deleting.
+# forms in subsequent years. But we will delete earlier if requested.
 
 - group: Deletable camper and parent booking data
 

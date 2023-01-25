@@ -4,7 +4,7 @@ from django.template.response import TemplateResponse
 
 from cciw.sitecontent.models import MenuLink
 from cciw.utils.literate_yaml import literate_yaml_to_rst
-from cciw.utils.rst import rst_to_html
+from cciw.utils.rst import remove_rst_title, rst_to_html
 
 
 def find(request, path: str, template_name="cciw/chunk_page.html"):
@@ -44,6 +44,8 @@ def data_retention_policy(request):
         "cciw/data_retention_policy.html",
         {
             "title": "Data retention policy",
-            "data_retention_policy": rst_to_html(literate_yaml_to_rst(policy), initial_header_level=2),
+            "data_retention_policy": rst_to_html(
+                remove_rst_title(literate_yaml_to_rst(policy)), initial_header_level=2
+            ),
         },
     )
