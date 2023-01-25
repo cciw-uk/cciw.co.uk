@@ -34,7 +34,7 @@
 #
 # The official source of this document is: https://github.com/cciw-uk/cciw.co.uk/blob/master/config/data_retention.yaml
 #
-# A identical copy with improved formatting is found at: https://www.cciw.co.uk/data-retention-policy/
+# Formatted version for reading and printing: https://www.cciw.co.uk/data-retention-policy/
 #
 # The format of this document is "Literate YAML", which means this document is both a
 # human-readable document and a machine-readable file that is automatically read and
