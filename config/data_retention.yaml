@@ -223,6 +223,9 @@
       columns: all
 
     - name: officers.DBSCheck
+      # This table stores metadata about our DBS check process for each officer,
+      # each time we needed to do a check. It does not store copies of the
+      # actual result of the DBS check, due to its sensitive nature.
       columns:
       - dbs_number
       - check_type
