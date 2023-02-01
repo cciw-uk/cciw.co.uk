@@ -39,7 +39,6 @@ from cciw.bookings.models import (
 from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
-from cciw.cciwmain.models import Camp
 
 from .decorators import (
     account_details_required,
@@ -354,17 +353,6 @@ def account_json(request):
         "status": "success",
         "account": account_to_dict(request.booking_account),
     }
-
-
-@booking_account_optional
-@json_response
-def place_availability_json(request):
-    retval = {"status": "success"}
-    camp_id = int(request.GET["camp_id"])
-    camp: Camp = Camp.objects.get(id=camp_id)
-    places = camp.get_places_left()
-    retval["result"] = dict(total=places[0], male=places[1], female=places[2])
-    return retval
 
 
 def make_state_token(bookings):

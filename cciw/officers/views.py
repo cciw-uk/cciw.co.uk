@@ -1762,6 +1762,17 @@ def notice_to_lines(notice: DataRetentionNotice) -> list[str]:
 
 @booking_secretary_required
 @json_response
+def place_availability_json(request):
+    retval = {"status": "success"}
+    camp_id = int(request.GET["camp_id"])
+    camp: Camp = Camp.objects.get(id=camp_id)
+    places = camp.get_places_left()
+    retval["result"] = dict(total=places.total, male=places.male, female=places.female)
+    return retval
+
+
+@booking_secretary_required
+@json_response
 def booking_places_json(request):
     try:
         account_id = int(request.GET["id"])
@@ -1827,7 +1838,7 @@ def booking_problems_json(request):
     retval = {"status": "success"}
     if form.is_valid():
         retval["valid"] = True
-        instance = form.save(commit=False)
+        instance: Booking = form.save(commit=False)
         # We will get errors later on if prices don't exist for the year chosen, so
         # we check that first.
         if not is_booking_open(instance.camp.year):

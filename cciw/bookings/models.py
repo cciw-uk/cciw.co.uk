@@ -1054,7 +1054,7 @@ class Booking(models.Model):
                 retval.append(("Early bird discount if booked now", discount_amount))
         return retval
 
-    def get_booking_problems(self, booking_sec=False, agreement_fetcher=None):
+    def get_booking_problems(self, booking_sec=False, agreement_fetcher=None) -> tuple[list[str], list[str]]:
         """
         Returns a two tuple (errors, warnings).
 
@@ -1074,7 +1074,7 @@ class Booking(models.Model):
             self.get_booking_warnings(booking_sec=booking_sec),
         )
 
-    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None):
+    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> list[str]:
         errors = []
         camp: Camp = self.camp
 
@@ -1286,7 +1286,7 @@ class Booking(models.Model):
 
         return errors
 
-    def get_booking_warnings(self, booking_sec=False):
+    def get_booking_warnings(self, booking_sec=False) -> list[str]:
         camp: Camp = self.camp
         warnings = []
 

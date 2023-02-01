@@ -26,7 +26,6 @@ urlpatterns = [
     path("edit-camper-details/<int:booking_id>/", views.edit_place, name="cciw-bookings-edit_place"),
     path("places-json/", views.places_json, name="cciw-bookings-places_json"),
     path("account-json/", views.account_json, name="cciw-bookings-account_json"),
-    path("place-availability-json/", views.place_availability_json, name="cciw-bookings-place_availability_json"),
     path("checkout/", views.list_bookings, name="cciw-bookings-list_bookings"),
     path("pay/", views.pay, name="cciw-bookings-pay"),
     path("pay/done/", views.pay_done, name="cciw-bookings-pay_done"),
