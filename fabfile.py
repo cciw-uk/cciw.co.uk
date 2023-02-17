@@ -294,7 +294,7 @@ def create_project_user(c):
     if not users.user_exists(c, PROJECT_USER):
         ssh_keys = [os.path.expandvars("$HOME/.ssh/id_rsa.pub")]
         users.create_user(c, PROJECT_USER, ssh_public_keys=ssh_keys)
-        files.require_directory(c, f"/home/{PROJECT_USER}/logs")
+        files.require_directory(c, f"/home/{PROJECT_USER}/logs", owner=PROJECT_USER, group=PROJECT_USER)
 
 
 @root_task()
