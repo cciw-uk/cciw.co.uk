@@ -144,6 +144,14 @@ TEMPLATE_CONTEXT = {
 }
 
 
+def get_system_templates() -> list[Template]:
+    return [template for template in TEMPLATES if template.system]
+
+
+def get_project_templates() -> list[Template]:
+    return [template for template in TEMPLATES if not template.system]
+
+
 # -- My decorators
 
 task = managed_connection_task(DEFAULT_USER, DEFAULT_HOST)
@@ -197,17 +205,6 @@ def _fix_startup_services(c: Connection):
     ]:
         c.run(f"update-rc.d {service} disable", echo=True)
         c.run(f"service {service} stop", echo=True)
-
-
-# Templates
-
-
-def get_system_templates() -> list[Template]:
-    return [template for template in TEMPLATES if template.system]
-
-
-def get_project_templates() -> list[Template]:
-    return [template for template in TEMPLATES if not template.system]
 
 
 # -- Project level deployment
@@ -811,7 +808,7 @@ def remote_restore_db_from_dump(c, db, filename):
 def migrate_upload_db(c, local_filename):
     local_filename = os.path.normpath(os.path.abspath(local_filename))
     remote_filename = f"/home/{PROJECT_USER}/{os.path.basename(local_filename)}"
-    Transfer(c).put(local=local_filename, remote=remote_filename)
+    files.put(c, local_filename, remote_filename)
     target = Version.current()
     remote_restore_db_from_dump(c, target.DB, remote_filename)
 
