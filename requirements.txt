@@ -151,6 +151,8 @@ fabric==2.7.1
     # via
     #   -r requirements.in
     #   patchwork
+fabutils @ git+https://github.com/cciw-uk/fabutils.git@b891d25ddfe465a49b3ce12dcfcde0e2f14f15da
+    # via -r requirements.in
 flake8==5.0.4
     # via -r requirements-dev.in
 frozendict==2.3.4
@@ -192,8 +194,6 @@ lxml==4.9.1
     # via
     #   -r requirements-dev.in
     #   pyquery
-makefun==1.15.0
-    # via -r submodules/fabutils/requirements.in
 markdown==3.3.7
     # via wiki
 markupsafe==2.1.2
@@ -231,9 +231,7 @@ parso==0.8.3
 parsy==2.0
     # via -r requirements.in
 patchwork==1.0.1
-    # via
-    #   -r requirements.in
-    #   -r submodules/fabutils/requirements.in
+    # via -r requirements.in
 pathlib2==2.3.7.post1
     # via fabric
 pep517==0.13.0
