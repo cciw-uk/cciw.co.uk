@@ -51,6 +51,12 @@
           name="save"
           value="Save"
         >
+      </form>
+      <form
+        hx-post="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
+        hx-target="[data-officer-id='{{ invitation.officer.id }}']"
+        hx-swap="outerHTML"
+      >
         <input
           type="submit"
           class="button--compact"
