@@ -9,7 +9,6 @@ from typing import Callable
 
 from fabric.connection import Connection
 from fabric.transfer import Transfer
-
 from fabutils import apt, disks, files, locales, postgresql, ssh, ssl, users
 from fabutils.connections import local_task, managed_connection_task
 from fabutils.templates import Template, upload_template_and_reload
