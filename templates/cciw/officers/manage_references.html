@@ -2,6 +2,8 @@
 
 {% load reference_utils %}
 
+{% block bodyclass %}manage-references-page{% endblock %}
+
 {% block extrahead %}
   {{ block.super }}
   <script type="text/javascript">
@@ -27,7 +29,7 @@
           var mode = jQuery(data).find('div.referencemode').text();
 
           // Look through other officer names in same section
-          var allOfficerRefs = jQuery('#' + mode + 'refs .referencesection');
+          var allOfficerRefs = jQuery('#' + mode + 'refs .manage-reference');
           var dest = null;
           allOfficerRefs.each(function(i, elem) {
             var oName = jQuery(elem).find('.referencestart').text();

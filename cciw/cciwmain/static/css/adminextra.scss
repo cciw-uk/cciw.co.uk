@@ -14,6 +14,19 @@
 
 /* Additional */
 
+
+button {
+    // Style the same an input[type=submit] in admin styles
+    background: var(--button-bg);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    color: var(--button-fg);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+
 #container
 {
     min-width: 700px;
@@ -34,8 +47,12 @@ a:hover {
     padding: 2px 10px;
 }
 
-input[type=submit].button--compact {
+@mixin compact-button {
     padding: 3px 6px;
+}
+
+input[type=submit].button--compact {
+    @include compact-button;
 }
 
 
@@ -76,8 +93,23 @@ a[target=_blank] {
 }
 
 
-/* References */
 
+/* Layout utilities */
+
+.columns-space-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+
+
+/* Manage references */
+
+.manage-references-page {
+    input[type=submit], button {
+        @include compact-button;
+    }
+}
 .refcount
 {
     color: white;
@@ -92,12 +124,9 @@ a[target=_blank] {
     margin-bottom: 3em;
 }
 
-.referencesection
-{
-    border-top: 1px solid #888;
+.manage-reference {
     padding-left: 1em;
     padding-right: 1em;
-    clear: both;
 }
 
 
@@ -120,6 +149,15 @@ a[target=_blank] {
 #receivedrefs
 {
     border-bottom: 1px solid #888;
+    border-top: 1px solid #888;
+
+    > p:first-child {
+        margin-top: 0.8em;
+        padding: 0 1em;
+    }
+}
+.manage-reference + .manage-reference {
+    border-top: 1px solid #888;
 }
 
 
@@ -128,11 +166,6 @@ a[target=_blank] {
     padding: 0.5em;
 }
 
-.referenceactions {
-    float: right;
-    width: 40em;
-    max-width: 40%;
-}
 
 .reference-field-name {
     font-style: italic;
@@ -313,6 +346,13 @@ form .aligned.confirmation ul {
             background-color: #dde;
         }
     }
+}
+
+#id_currentofficers {
+    input[type=submit], button {
+        @include compact-button;
+    }
+
 }
 
 .requires_action {

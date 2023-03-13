@@ -9,7 +9,7 @@
         hx-target="[data-officer-id='{{ invitation.officer.id }}']"
         hx-swap="outerHTML"
       >
-        <input type="submit" class="button--compact" name="edit" value="Edit">
+        <input type="submit" name="edit" value="Edit">
       </form>
 
       <form
@@ -23,12 +23,7 @@
         {% csrf_token %}
         {# htmx issue 1132 - use form instead of putting things on button #}
         <input type="hidden" name="officer_id" value="{{ invitation.officer.id }}">
-        <input
-          type="submit"
-          class="button--compact"
-          name="remove"
-          value="Remove"
-        >
+        <input type="submit" name="remove" value="Remove">
       </form>
 
       {% include "cciw/officers/resend_email_form_inc.html" with caption="Resend email" officer_id=invitation.officer_id %}
@@ -45,24 +40,14 @@
         hx-target="[data-officer-id='{{ invitation.officer.id }}']"
         hx-swap="outerHTML"
       >
-        <input
-          type="submit"
-          class="button--compact"
-          name="save"
-          value="Save"
-        >
+        <input type="submit" name="save" value="Save">
       </form>
       <form
         hx-post="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
         hx-target="[data-officer-id='{{ invitation.officer.id }}']"
         hx-swap="outerHTML"
       >
-        <input
-          type="submit"
-          class="button--compact"
-          name="cancel"
-          value="Cancel"
-        >
+        <input type="submit" name="cancel" value="Cancel">
       </form>
     </td>
   {% endif %}
