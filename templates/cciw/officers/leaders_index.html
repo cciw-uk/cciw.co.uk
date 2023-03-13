@@ -3,17 +3,13 @@
 {% block content %}
   <div id="content-main">
     {% if current_camps %}
-      {% with current_camps as camps %}
-        <h2>Current camps:</h2>
-        {% include "cciw/officers/camp_management_links.html" %}
-      {% endwith %}
+      <h2>Current camps:</h2>
+      {% include "cciw/officers/camp_management_links.html" with camps=current_camps %}
     {% endif %}
 
     {% if old_camps %}
-      {% with old_camps as camps %}
-        <h2>Past camps:</h2>
-        {% include "cciw/officers/camp_management_links.html" %}
-      {% endwith %}
+      <h2>Past camps:</h2>
+      {% include "cciw/officers/camp_management_links.html" with camps=old_camps %}
     {% endif %}
 
     {% if not current_camps and not old_camps %}

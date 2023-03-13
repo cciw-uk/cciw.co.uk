@@ -16,9 +16,7 @@
         <tr class="reference-list">
           {% for referee in referees %}
             <td>
-              {% with reference=referee.reference %}
-                {% include "cciw/officers/officer_ref_inc.html" %}
-              {% endwith %}
+              {% include "cciw/officers/officer_ref_inc.html" with reference=referee.reference %}
             </td>
           {% endfor %}
         </tr>

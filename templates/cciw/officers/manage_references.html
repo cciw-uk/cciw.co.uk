@@ -122,11 +122,7 @@
 
     <div id="notrequestedrefs">
       {% for referee in notrequested %}
-
-        {% with "notrequested" as mode %}
-          {% include "cciw/officers/manage_reference.html" %}
-        {% endwith %}
-
+        {% include "cciw/officers/manage_reference.html" with mode="notrequested" %}
       {% empty %}
         <p>No outstanding references to be requested.</p>
       {% endfor %}
@@ -138,11 +134,7 @@
 
       <div id="requestedrefs">
         {% for referee in requested %}
-
-          {% with "requested" as mode %}
-            {% include "cciw/officers/manage_reference.html" %}
-          {% endwith %}
-
+          {% include "cciw/officers/manage_reference.html" with mode="requested" %}
         {% endfor %}
         <div id="requestedend"></div>
       </div>
@@ -152,11 +144,7 @@
 
     <div id="receivedrefs">
       {% for referee in received %}
-
-        {% with "received" as mode %}
-          {% include "cciw/officers/manage_reference.html" %}
-        {% endwith %}
-
+        {% include "cciw/officers/manage_reference.html" with mode="received" %}
       {% empty %}
         <p>No references received.</p>
       {% endfor %}

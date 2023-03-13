@@ -40,9 +40,7 @@
       <h2>Confirmed places</h2>
       <p>You have the following confirmed places on camps this year:</p>
 
-      {% with bookings=confirmed_places show_missing_agreements=True %}
-        {% include "cciw/bookings/place_table.html" %}
-      {% endwith %}
+      {% include "cciw/bookings/place_table.html" with bookings=confirmed_places show_missing_agreements=True %}
 
       <p>Information about what to bring on camp will be sent in an email or letter
         before camp.</p>
@@ -56,9 +54,7 @@
 
       <div class="actiongroup">
         <div class="actioninfo">
-          {% with bookings=unconfirmed_places show_missing_agreements=True %}
-            {% include "cciw/bookings/place_table.html" %}
-          {% endwith %}
+          {% include "cciw/bookings/place_table.html" with bookings=unconfirmed_places show_missing_agreements=True %}
         </div>
         {% include "cciw/bookings/pending_payment_notice.html" %}
         <div class="actionbutton">
@@ -74,9 +70,7 @@
 
       <div class="actiongroup">
         <div class="actioninfo">
-          {% with bookings=basket_or_shelf %}
-            {% include "cciw/bookings/place_table.html" %}
-          {% endwith %}
+          {% include "cciw/bookings/place_table.html" with bookings=basket_or_shelf %}
         </div>
         <div class="actionbutton">
           <a href="{% url 'cciw-bookings-list_bookings' %}" class="bigaction">Review and book</a>
@@ -87,9 +81,7 @@
     {% if cancelled_places %}
       <h2>Cancelled places</h2>
 
-      {% with bookings=cancelled_places %}
-        {% include "cciw/bookings/place_table.html" %}
-      {% endwith %}
+      {% include "cciw/bookings/place_table.html" with bookings=cancelled_places %}
     {% endif %}
 
     {% if not confirmed_places and not unconfirmed_places and not cancelled_places and not basket_or_shelf %}
