@@ -101,6 +101,16 @@ a[target=_blank] {
     justify-content: space-between;
 }
 
+.layout-table{
+    display: table;
+}
+.layout-tr{
+    display: table-row;
+}
+.layout-td{
+    display: table-cell;
+}
+
 
 
 /* Manage references */
@@ -156,6 +166,36 @@ a[target=_blank] {
     background-color: #f0fff0;
 }
 
+.manage-reference__action-table {
+    margin: 0.5em 0.5em 0 0.5em;
+    .layout-tr:nth-child(2n+1) .layout-td {
+        background-color: #fff4;
+    }
+    > .layout-tr > .layout-td {
+        padding-right: 0.5em;
+    }
+    .layout-tr {
+        .layout-td {
+            border-top: 1px solid #bbb;
+            border-bottom: 1px solid #bbb;
+        }
+    }
+    .layout-tr + .layout-tr {
+        .layout-td {
+            border-top: 0;
+        }
+    }
+
+    .layout-td {
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+
+        &:first-child {
+            padding-right: 0.5em;
+            padding-left: 0.5em;
+        }
+    }
+}
 
 .reference-field-name {
     font-style: italic;

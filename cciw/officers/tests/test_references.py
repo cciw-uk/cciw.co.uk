@@ -48,7 +48,6 @@ class ManageReferencesPageWT(WebTestBase):
         # Not received
         self.assertTextPresent(application.referees[1].email)
         self.assertTextPresent(application.referees[1].name)
-        self.assertTextPresent("Ask for reference - choose from the options")
 
     def test_page_anonymous_denied(self):
         camp = camps_factories.create_camp()

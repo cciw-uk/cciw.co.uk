@@ -26,7 +26,7 @@
             <div>Last requested: <b> {{ referee.last_requested|timesince }} ago</b></div>
           {% endif %}
         {% else %}
-          <div><strong>Not requested</strong></div>
+          <div><strong>Reference not yet requested</strong></div>
         {% endif %}
       {% endif %}
 
@@ -34,95 +34,124 @@
         <p><a href="{% url 'cciw-officers-view_reference' reference_id=referee.reference.id %}" target="_blank">View reference from {{ referee.name }}</a>
         </p>
       {% else %}
-        <p>Ask for reference{% if referee.reference_was_requested %} again{% endif %} - choose from the options:</p>
-        <ul>
-          <li>If the name or address details are incorrect:
-            <button
-              name="correct-referee-details"
-              hx-get='{% url "cciw-officers-correct_referee_details" camp_id=camp.url_id referee_id=referee.id %}'
-              hx-target="#modal-dialog-container"
-            >
-              Correct referee details
-            </button>
-
-          </li>
+        <div class="layout-table manage-reference__action-table">
           {% if referee.reference_was_requested %}
-            <li>Ask {{ referee.application.officer.first_name }} to prompt their referee:
-              <button
-                name="nag-by-officer"
-                hx-get='{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id referee_id=referee.id %}'
-                hx-target="#modal-dialog-container"
-              >
-                Get {{ referee.application.officer.first_name }} to do the nagging
-              </button>
-            </li>
+            <div class="layout-tr">
+              <div class="layout-td">
+                Ask {{ referee.application.officer.first_name }} to prompt their referee:
+              </div>
+              <div class="layout-td">
+                <button
+                  name="nag-by-officer"
+                  hx-get='{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id referee_id=referee.id %}'
+                  hx-target="#modal-dialog-container"
+                >
+                  Get {{ referee.application.officer.first_name }} to do the nagging
+                </button>
+              </div>
+            </div>
           {% endif %}
 
           {% if referee.previous_reference %}
-            <li>{{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
-              has done a reference for {{ referee.application.officer.first_name}} before, so:
-              <button
-                name="request-updated-reference"
-                hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
-                hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
-                hx-target="#modal-dialog-container">
-                Request updated reference{% if referee.reference_was_requested %} (again){% endif %}
-              </button>
-            </li>
-          {% endif %}
-
-          {% if referee.possible_previous_references %}
-            <li>
-              There are no exact matches for <b>{{ referee.name }} &lt;{{ referee.email }}&gt;</b><br/>
-              but if one of the previous references
-              submitted for this officer is actually by the same person, please select:<br />
-              <form
-                hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
-                hx-target="#modal-dialog-container">
-                <select name="prev_ref_id" required>
-                  <option value="" selected="selected">-----</option>
-                  {% for reference in referee.possible_previous_references %}
-                    <option value="{{ reference.id }}">
-                      {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
-                      ({{ reference.date_created|date:"Y" }})
-                    </option>
-                  {% endfor %}
-                </select>
+            <div class="layout-tr">
+              <div class="layout-td">
+                {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
+                has done a reference for {{ referee.application.officer.first_name}} before, so:
+              </div>
+              <div class="layout-td">
                 <button
-                  name="request-updated-reference-custom"
-                >
+                  name="request-updated-reference"
+                  hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
+                  hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
+                  hx-target="#modal-dialog-container">
                   Request updated reference{% if referee.reference_was_requested %} (again){% endif %}
                 </button>
-              </form>
-            </li>
+              </div>
+            </div>
           {% endif %}
 
           {% if not referee.previous_reference %}
-            <li>{{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
-              has not done an online reference for {{ referee.application.officer.first_name}} before, so:
-              <button
-                name="request-reference"
-                hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
-                hx-target="#modal-dialog-container">
-                Request reference{% if referee.reference_was_requested %} (again){% endif %}
-              </button>
-            </li>
+            <div class="layout-tr">
+              <div class="layout-td">
+                {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
+                has not done an online reference for {{ referee.application.officer.first_name}} before, so:
+              </div>
+              <div class="layout-td">
+
+                <button
+                  name="request-reference"
+                  hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
+                  hx-target="#modal-dialog-container">
+                  Request reference{% if referee.reference_was_requested %} (again){% endif %}
+                </button>
+              </div>
+            </div>
           {% endif %}
 
-          <li>If the referee can't respond to email:
-            <button
-              name="fill-in-reference-manually"
-              hx-get='{% url "cciw-officers-fill_in_reference_manually" camp_id=camp.url_id referee_id=referee.id %}'
-              hx-target="#modal-dialog-container"
-              {% if referee.previous_reference %}
-                hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
-              {% endif %}
-            >
-              Fill in form manually
-            </button>
-          </li>
+          {% if referee.possible_previous_references %}
+            <div class="layout-tr">
+              <div class="layout-td">
+                There are no exact matches for <b>{{ referee.name }} &lt;{{ referee.email }}&gt;</b>
+                but if one of the previous references submitted for this officer may actually be the
+                same person:
+              </div>
+              <div class="layout-td">
+                <form
+                  hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
+                  hx-target="#modal-dialog-container">
+                  <select name="prev_ref_id" required>
+                    <option value="" selected="selected">-----</option>
+                    {% for reference in referee.possible_previous_references %}
+                      <option value="{{ reference.id }}">
+                        {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
+                        ({{ reference.date_created|date:"Y" }})
+                      </option>
+                    {% endfor %}
+                  </select><br>
+                  <button
+                    name="request-updated-reference-custom"
+                  >
+                    Request updated reference{% if referee.reference_was_requested %} (again){% endif %}
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endif %}
 
-        </ul>
+          <div class="layout-tr">
+            <div class="layout-td">
+              If the name/email or other details are missing or incorrect:
+            </div>
+            <div class="layout-td">
+
+              <button
+                name="correct-referee-details"
+                hx-get='{% url "cciw-officers-correct_referee_details" camp_id=camp.url_id referee_id=referee.id %}'
+                hx-target="#modal-dialog-container"
+              >
+                Correct referee details
+              </button>
+            </div>
+          </div>
+
+          <div class="layout-tr">
+            <div class="layout-td">
+              If the referee can't respond to email:
+            </div>
+            <div class="layout-td">
+              <button
+                name="fill-in-reference-manually"
+                hx-get='{% url "cciw-officers-fill_in_reference_manually" camp_id=camp.url_id referee_id=referee.id %}'
+                hx-target="#modal-dialog-container"
+                {% if referee.previous_reference %}
+                  hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
+                {% endif %}
+              >
+                Fill in form manually
+              </button>
+            </div>
+          </div>
+        </div>
 
       {% endif %}
 
