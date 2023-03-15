@@ -82,6 +82,9 @@ class CampQuerySet(models.QuerySet):
     def include_other_years_info(self):
         return self.prefetch_related("camp_name__camps")
 
+    def by_camp_id(self, camp_id: CampId):
+        return self.filter(year=camp_id.year, camp_name__slug=camp_id.slug)
+
 
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")

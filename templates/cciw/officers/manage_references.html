@@ -1,91 +1,58 @@
 {% extends "cciw/officers/base.html" %}
 
 {% load reference_utils %}
+{% load static %}
+
 
 {% block bodyclass %}manage-references-page{% endblock %}
 
-{% block extrahead %}
-  {{ block.super }}
+{% block content %}
   <script type="text/javascript">
     //<![CDATA[
 
-    function requestGeneric(query) {
-      cciw.openTemporaryWindow('{% url "cciw-officers-request_reference" camp_id=camp.url_id %}?' + query,
-        '_blank',
-        "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-    }
+    document.body.addEventListener("refreshReference", function(evt) {
+      const refereeId = evt.detail.value;
+      const refereeSelector = "#id-manage-reference-" + refereeId.toString()
+      const moveIntoPlace = () => {
+        const refreshedNode = document.querySelector(refereeSelector);
+        const sortKey = (node) => JSON.parse(node.getAttribute("data-sort-key"));
+        const mySortKey = sortKey(refreshedNode);
+        if ((refreshedNode.previousElementSibling && sortKey(refreshedNode.previousElementSibling) > mySortKey) ||
+          (refreshedNode.nextElementSibling && sortKey(refreshedNode.nextElementSibling) < mySortKey))
+        {
+          // this node is in the wrong place.
 
-    function refreshReferenceSection(referee_id) {
-      jQuery.ajax({
-        type: "GET",
-        url: "?referee_id=" + referee_id.toString() + "&" + Math.random().toString(),
-        dataType: 'text',
-        success: function(data, textStatus, xhr) {
-          // Replace existing div and move to correct place,
-          // which might be under a different 'mode'
-          var section = jQuery('#officerref' + referee_id.toString());
-          var officerName = section.find("h3.referencestart").text();
-          var refereeName = section.find(".refereename").text();
-          var mode = jQuery(data).find('div.referencemode').text();
-
-          // Look through other officer names in same section
-          var allOfficerRefs = jQuery('#' + mode + 'refs .manage-reference');
-          var dest = null;
-          allOfficerRefs.each(function(i, elem) {
-            var oName = jQuery(elem).find('.referencestart').text();
-            var rName = jQuery(elem).find('.refereename').text();
-            // references are sorted alphabetical by officer names
-            // and then by referee name.
-            if (officerName < oName ||
-              (officerName == oName && refereeName < rName)) {
-                dest = jQuery(elem);
-                return false;
-              };
-          });
-          if (!dest) {
-            dest = jQuery('#' + mode + 'end');
+          var inserted = false;
+          var previousNode = null;
+          // Move it to correct place
+          const parentNode = refreshedNode.parentElement;
+          for (const node of parentNode.childNodes) {
+            if (!node.tagName) {
+              continue;
+            }
+            if ((previousNode === null || sortKey(previousNode) < mySortKey) && (sortKey(node) >= mySortKey)) {
+              // Found right place
+              parentNode.insertBefore(refreshedNode, node);
+              inserted = true;
+            }
+            previousNode = node;
           }
-
-          section.fadeOut('slow', function() {
-            section.insertBefore(dest);
-            // Don't use 'replaceWith' so we can control animation.
-            section.html(jQuery(data).html());
-            section.fadeIn('slow');
-          });
+          if (!inserted) {
+            // Must belong at end
+            parentNode.insertBefore(refreshedNode, null);
+          }
         }
-      });
-    }
+      };
 
-    function requestReference(referee_id) {
-      requestGeneric('referee_id=' + referee_id.toString());
-    }
-
-    function requestUpdate(referee_id, prev_ref_id) {
-      requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
-    }
-
-    function requestUpdateCustom(referee_id) {
-      var s = document.getElementById('id_referee_opts_' + referee_id.toString());
-      if (s.selectedIndex == -1 || s.value == "") {
-        alert("Please select an option");
-      } else {
-        var val = s.options[s.selectedIndex].value;
-        requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + val);
-      }
-    }
-
-    function nagByOfficer(referee_id) {
-      cciw.openTemporaryWindow('{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id %}?referee_id=' + referee_id.toString(),
-        '_blank',
-        "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-    }
-
+      htmx.ajax("GET", "?referee_id=" + refereeId.toString(), {
+        target: refereeSelector,
+        swap: "outerHTML",
+      }).then(moveIntoPlace);
+    });
 
     //]]>
   </script>
-{% endblock %}
 
-{% block content %}
   <div id="content-main">
     {% if officer %}
       <h3>For officer {{ officer.full_name }} <a href=".">(view all)</a></h3>
@@ -101,7 +68,7 @@
       application forms. References that have not been requested are at the top,
       those that have been requested are in the middle, and those that have been
       received are at the bottom.  Within each section they are sorted
-      alphabetically by first name.
+      alphabetically by officer name.
     </p>
 
     <p>For each reference that needs to be requested, choose from the options.  An
@@ -120,37 +87,14 @@
       <p><strong>{{ message }}</strong></p>
     {% endif %}
 
-    <h2>References to be requested</h2>
-
-    <div id="notrequestedrefs">
-      {% for referee in notrequested %}
-        {% include "cciw/officers/manage_reference.html" with mode="notrequested" %}
+    <div class="manage-reference-list">
+      {% for referee in all_referees %}
+        {% include "cciw/officers/manage_reference.html" %}
       {% empty %}
-        <p>No outstanding references to be requested.</p>
+        <div class="manage-reference manage-reference--notrequested">
+          <p>No references/application forms found</p>
+        </div>
       {% endfor %}
-      <div id="notrequestedend"></div>
-    </div>
-
-    {% if requested %}
-      <h2 class="ok">References requested</h2>
-
-      <div id="requestedrefs">
-        {% for referee in requested %}
-          {% include "cciw/officers/manage_reference.html" with mode="requested" %}
-        {% endfor %}
-        <div id="requestedend"></div>
-      </div>
-    {% endif %}
-
-    <h2 class="good">References received</h2>
-
-    <div id="receivedrefs">
-      {% for referee in received %}
-        {% include "cciw/officers/manage_reference.html" with mode="received" %}
-      {% empty %}
-        <p>No references received.</p>
-      {% endfor %}
-      <div id="receivedend"></div>
     </div>
 
   </div>

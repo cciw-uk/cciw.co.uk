@@ -22,7 +22,7 @@ Tests can be run with pytest::
 
   $ pytest
 
-Exclude slow and flaky Selenium tests like this::
+Exclude slow Selenium tests like this::
 
   $ pytest -m 'not selenium'
 

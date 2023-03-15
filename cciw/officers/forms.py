@@ -2,14 +2,16 @@ from datetime import date
 
 from django import forms
 from django.contrib.auth.forms import PasswordResetForm
+from django.core.exceptions import ValidationError
 from django.forms.models import ModelForm
 from django.template.loader import render_to_string
 from django.utils import timezone
 
 from cciw.accounts.models import User, get_reference_contact_users
+from cciw.cciwmain.utils import is_valid_email
 from cciw.officers import create
 from cciw.officers.email import send_leaders_reference_email
-from cciw.officers.models import CampRole, Invitation, Reference
+from cciw.officers.models import CampRole, Invitation, Referee, Reference
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 
 
@@ -86,14 +88,10 @@ class UpdateOfficerForm(ModelForm):
         self.invitation.save()
 
 
-class SetEmailForm(BaseForm):
-    name = forms.CharField(widget=forms.TextInput(attrs={"size": "50"}))
-    email = forms.EmailField(widget=forms.TextInput(attrs={"size": "50"}), required=False)
-
-    def save(self, referee):
-        referee.name = self.cleaned_data["name"]
-        referee.email = self.cleaned_data["email"]
-        referee.save()
+class CorrectRefereeDetailsForm(ModelForm):
+    class Meta:
+        model = Referee
+        fields = ["name", "email", "address", "tel", "mobile"]
 
 
 class SendMessageForm(BaseForm):
@@ -125,8 +123,15 @@ class SendReferenceRequestForm(SendMessageForm):
         url = self.message_info["url"]
         if url not in cleaned_data.setdefault("message", ""):
             errmsg = f"You removed the link {url} from the message.  This link is needed for the referee to be able to submit their reference"
-            self._errors.setdefault("message", self.error_class([])).append(errmsg)
             del cleaned_data["message"]
+            raise ValidationError({"message": errmsg})
+
+        if not is_valid_email(self.message_info["referee"].email):
+            raise ValidationError(
+                "No email address has been set for the referee. Please amend the referee"
+                + " details to add an email address, or fill in the reference form manually."
+            )
+
         return cleaned_data
 
 

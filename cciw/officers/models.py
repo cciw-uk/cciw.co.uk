@@ -225,7 +225,7 @@ class Referee(models.Model):
     def reference_was_requested(self):
         return self.last_requested is not None
 
-    @property
+    @cached_property
     def last_requested(self):
         """
         Returns the last date the reference was requested,
@@ -261,6 +261,9 @@ class Referee(models.Model):
     def log_nag_made(self, user, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.NAG, created_at=dt, user=user)
 
+    def log_details_corrected(self, user, dt):
+        self.actions.create(action_type=ReferenceAction.ActionType.DETAILS_CORRECTED, created_at=dt, user=user)
+
     class Meta:
         ordering = (
             "application__date_saved",
@@ -277,6 +280,7 @@ class ReferenceAction(models.Model):
         RECEIVED = "received", "Reference received"
         FILLED_IN = "filledin", "Reference filled in manually"
         NAG = "nag", "Applicant nagged"
+        DETAILS_CORRECTED = "detailscorrected", "Referee details corrected"
 
     referee = models.ForeignKey(Referee, on_delete=models.CASCADE, related_name="actions")
     created_at = models.DateTimeField(default=timezone.now)
@@ -673,3 +677,70 @@ class DBSActionLog(models.Model):
 
     def __str__(self):
         return f"Log of DBS action '{self.get_action_type_display()}' for {self.officer.full_name}, {self.created_at:%Y-%m-%d}"
+
+
+TITLES = ["dr", "rev", "reverend", "pastor", "mr", "ms", "mrs", "prof"]
+
+
+def normalized_name(name):
+    # See also application_form.js
+    first_word = name.strip().split(" ")[0].lower().replace(".", "")
+    if first_word in TITLES:
+        name = name[len(first_word) :].strip(".").strip()
+    return name
+
+
+def close_enough_referee_match(referee1: Referee, referee2: Referee):
+    if (
+        normalized_name(referee1.name).lower() == normalized_name(referee2.name).lower()
+        and referee1.email.lower() == referee2.email.lower()
+    ):
+        return True
+
+    return False
+
+
+def add_previous_references(referee: Referee) -> None:
+    """
+    Adds the attributes:
+    - 'previous_reference' (which is None if no exact match)
+    - 'possible_previous_references' (list ordered by relevance)
+    """
+    exact, previous = get_previous_references(referee)
+    referee.previous_reference = exact
+    referee.possible_previous_references = [] if exact else previous
+
+
+def get_previous_references(referee: Referee) -> tuple[Reference | None, list[Reference]]:
+    # Look for References for same officer, within the previous five years.
+    # Don't look for references from this year's application (which will be the
+    # other referee).
+    cutoffdate = referee.application.date_saved - timedelta(365 * 5)
+    previous = list(
+        Reference.objects.filter(
+            referee__application__officer=referee.application.officer,
+            referee__application__finished=True,
+            date_created__gte=cutoffdate,
+        )
+        .select_related("referee__application")
+        .exclude(referee__application=referee.application)
+        .order_by("-referee__application__date_saved")
+    )
+
+    # Sort by relevance
+    def relevance_key(reference):
+        # Matching name or email address is better, so has lower value,
+        # so it comes first.
+        return -(
+            int(reference.referee.email.lower() == referee.email.lower())
+            + int(reference.referee.name.lower() == referee.name.lower())
+        )
+
+    previous.sort(key=relevance_key)  # sort is stable, so previous sort by date should be kept
+
+    exact = None
+    for reference in previous:
+        if close_enough_referee_match(reference.referee, referee):
+            exact = reference
+            break
+    return (exact, previous)

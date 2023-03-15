@@ -23,3 +23,23 @@
     {{ form.media }}
   {% endif %}
 {% endblock %}
+
+
+{% block footer %}
+  {{ block.super }}
+  <div id="modal-dialog-container"></div>
+
+  <script type="text/javascript">
+    document.body.addEventListener("htmx:afterSettle", function(detail) {
+      var loadedNodes = detail.target.children;
+      if (loadedNodes && loadedNodes.length == 1 && loadedNodes[0].tagName == "DIALOG") {
+        loadedNodes[0].showModal();
+      };
+    });
+
+    document.body.addEventListener('closeModal', function(evt) {
+      $('#modal-dialog-container > dialog')[0].close();
+    });
+
+  </script>
+{% endblock %}

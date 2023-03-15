@@ -156,15 +156,16 @@ def for_htmx(
                 if if_hx_target is None or request.headers.get("Hx-Target", None) == if_hx_target:
                     blocks_to_use = use_block
                     if not hasattr(resp, "render"):
+                        if not resp.content and "Hx-Trigger" in resp.headers:
+                            # This is a special case response, it doesn't need modifying:
+                            return resp
+                        # Otherwise there is some mistake
                         raise ValueError(f"Cannot modify a response of type {type(resp)} that isn't a TemplateResponse")
                     if resp.is_rendered:
                         raise ValueError("Cannot modify a response that has already been rendered")
 
                     if use_block_from_params:
                         use_block_from_params_val = _get_param_from_request(request, "use_block")
-                        if use_block_from_params_val is None:
-                            return HttpResponse("No `use_block` in request params", status="400")
-
                         blocks_to_use = use_block_from_params_val
 
                     if use_template is not None:

@@ -46,9 +46,25 @@ urlpatterns = [
     path("leaders/update-officer/", views.update_officer, name="cciw-officers-update_officer"),
     path("leaders/resend-email/", views.resend_email, name="cciw-officers-resend_email"),
     path(
-        "leaders/request-reference/<campid:camp_id>/", views.request_reference, name="cciw-officers-request_reference"
+        "leaders/request-reference/<campid:camp_id>/<int:referee_id>/",
+        views.request_reference,
+        name="cciw-officers-request_reference",
     ),
-    path("leaders/nag-by-officer/<campid:camp_id>/", views.nag_by_officer, name="cciw-officers-nag_by_officer"),
+    path(
+        "leaders/correct-referee-details/<campid:camp_id>/<int:referee_id>/",
+        views.correct_referee_details,
+        name="cciw-officers-correct_referee_details",
+    ),
+    path(
+        "leaders/fill-in-reference-manually/<campid:camp_id>/<int:referee_id>/",
+        views.fill_in_reference_manually,
+        name="cciw-officers-fill_in_reference_manually",
+    ),
+    path(
+        "leaders/nag-by-officer/<campid:camp_id>/<int:referee_id>/",
+        views.nag_by_officer,
+        name="cciw-officers-nag_by_officer",
+    ),
     path("leaders/reference/<int:reference_id>/", views.view_reference, name="cciw-officers-view_reference"),
     # DBS
     path("leaders/dbss/<yyyy:year>/", views.manage_dbss, name="cciw-officers-manage_dbss"),

@@ -375,7 +375,7 @@ def code_quality_checks(c):
     """
     c.local("flake8 .", echo=True)
     c.local("isort -c .", echo=True)
-    c.local("pytest -m 'not selenium'", echo=True, pty=True)
+    c.local("pytest", echo=True, pty=True)
 
 
 def check_branch(c: Connection):

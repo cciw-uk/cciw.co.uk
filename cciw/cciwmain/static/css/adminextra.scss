@@ -125,45 +125,35 @@ a[target=_blank] {
 }
 
 .manage-reference {
-    padding-left: 1em;
-    padding-right: 1em;
-}
+    padding: 0.5em 1em;
 
+    li button {
+        margin-left: 0.5em;
+    }
 
-#notrequestedrefs
-{
-    background-color: #f8f8f8;
-}
-
-#requestedrefs
-{
-    background-color: #fff8d0;
-}
-#receivedrefs
-{
-    background-color: #f0fff0;
-}
-
-#notrequestedrefs,
-#requestedrefs,
-#receivedrefs
-{
-    border-bottom: 1px solid #888;
-    border-top: 1px solid #888;
-
-    > p:first-child {
-        margin-top: 0.8em;
-        padding: 0 1em;
+    li {
+        font-size: inherit;
     }
 }
+
+.manage-reference-list {
+    border-bottom: 1px solid #888;
+    border-top: 1px solid #888;
+}
+
 .manage-reference + .manage-reference {
     border-top: 1px solid #888;
 }
 
+.manage-reference--notrequested {
+    background-color: #f8f8f8;
+}
 
-.referencebutton
-{
-    padding: 0.5em;
+.manage-reference--requested {
+    background-color: #fff8d0;
+}
+.manage-reference--received {
+    background-color: #f0fff0;
 }
 
 
@@ -303,6 +293,53 @@ form .aligned.confirmation ul {
     font-size: 120%;
 }
 
+// Dialogs
+
+dialog.large {
+    // Override some builtins that limit us:
+    max-height: 100vh;
+    max-width: 100vw;
+
+    // Positioning
+    box-sizing: border-box;
+    width: 100vw;
+    height: calc(100vh - 20px);
+    top: 20px;  // bottom
+    left: 0px;
+    position: fixed;
+    margin: 0;
+
+    // Styling
+    border: 0;
+    border-top: 2px solid #888;
+    padding: 20px;
+
+    // Fade in:
+    display: flex;  // for some reason, display: block disables the transition.
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none; // necessary or the main page becomes inaccessible after closing dialog
+    &[open] {
+        opacity: 1;
+        pointer-events: inherit;
+    }
+}
+
+dialog::backdrop {
+    background-color: #0008;
+}
+
+form.dialog-close-form {
+    float: right;
+    button.dialog-close {
+        color: inherit;
+        background-color: inherit;
+        border: 1px solid #888;
+        border-radius: 5px;
+    }
+}
+
 // DBS page
 
 #id_officer_table {
@@ -386,5 +423,3 @@ details summary {
 .htmx-request {
     opacity: 50%;
 }
-
-@import "tabber.scss";

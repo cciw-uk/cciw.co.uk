@@ -1,0 +1,5 @@
+<p>Name: {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}</p>
+<p>Address:</p>
+<div>{{ referee.address|linebreaksbr }}</div>
+{% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+{% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}

@@ -1,0 +1,35 @@
+{% extends "cciw/officers/modal_dialog.html" %}
+
+{% block title %}Fill reference for {{ app.officer.full_name }} from {{ referee.name }}{% endblock %}
+
+{% block content %}
+  <p>If the referee cannot use the online system for some reason, you can
+    phone/email them and enter their responses manually below.</p>
+
+  {% include "cciw/officers/referee_details_summary_inc.html" with referee=referee %}
+  <br>
+
+  {% if is_update %}
+    <p>The form below has been pre-filled from last year's reference.</p>
+  {% endif %}
+
+  {% if form.errors %}
+    <p class="actionnote">Please check the errors below</p>
+  {% endif %}
+
+  <form
+    id="id_request_reference_manual"
+    hx-post="{{ post_url }}"
+    hx-target="#dialog-content-main"
+    hx-vals='{"use_block": "content"}'
+  >
+    {% csrf_token %}
+    <table>
+      {{ form }}
+    </table>
+    <div>
+      <input type="submit" name="save" value="Save" />
+      <input type="submit" name="cancel" value="Cancel" formnovalidate />
+    </div>
+  </form>
+{% endblock %}

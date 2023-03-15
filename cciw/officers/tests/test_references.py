@@ -3,17 +3,19 @@ from datetime import date
 from django.conf import settings
 from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 from time_machine import travel
 
+from cciw.accounts.models import User
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.officers.email import make_ref_form_url
-from cciw.officers.models import Referee, ReferenceAction
+from cciw.officers.models import Referee, ReferenceAction, close_enough_referee_match, get_previous_references
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RolesSetupMixin
-from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.factories import Auto
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 
 def create_camp_leader_officer(year=Auto, future=Auto, officer_role: str = Auto):
@@ -30,7 +32,8 @@ def create_camp_leader_officer(year=Auto, future=Auto, officer_role: str = Auto)
     return camp, leader, officer
 
 
-class ReferencesPage(WebTestBase):
+class ManageReferencesPageWT(WebTestBase):
+    # Basic tests that can be done with WebTest
     def test_page_ok(self):
         camp, leader, officer = create_camp_leader_officer()
         application = factories.create_application(officer=officer, year=camp.year)
@@ -65,28 +68,42 @@ class ReferencesPage(WebTestBase):
         self.assertCode(403)
 
 
-class RequestReference(RolesSetupMixin, WebTestBase):
+class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
     """
-    Tests for page where reference is requested, and referee email can be updated.
+    Tests for managing references
     """
+
+    def wait_until_dialog_closed(self):
+        self.wait_until(lambda _: not self.is_element_displayed("dialog"))
+
+    def start_manage_reference(self, referee_email: str = Auto) -> tuple[Camp, User, User, Referee]:
+        camp, leader, officer = create_camp_leader_officer(future=True)
+        app = factories.create_application(officer=officer, year=camp.year, referee1_email=referee_email)
+        referee = app.referees[0]
+        return camp, leader, officer, referee
+
+    def start_manage_reference_page(self, referee_email: str = Auto) -> tuple[Camp, User, User, Referee]:
+        camp, leader, officer, referee = self.start_manage_reference(referee_email=referee_email)
+        self.officer_login(leader)
+        self.get_url("cciw-officers-manage_references", camp_id=camp.url_id)
+        return camp, leader, officer, referee
+
+    def start_request_reference(self, referee_email: str = Auto) -> tuple[Camp, User, User, Referee]:
+        camp, leader, officer, referee = self.start_manage_reference_page(referee_email=referee_email)
+        self.click(f"#id-manage-reference-{referee.id} [name=request-reference]")
+        return camp, leader, officer, referee
 
     def test_with_email(self):
         """
         Ensure page allows you to proceed if there is an email address for referee
         """
-        camp, leader, officer = create_camp_leader_officer(future=True)
-        app = factories.create_application(officer=officer, referee1_email="an_email@example.com")
-        referee = app.referees[0]
-        self.officer_login(leader)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
-        )
-        self.assertCode(200)
-        self.assertTextAbsent("No email address")
+        camp, leader, _, referee = self.start_request_reference()
         self.assertTextPresent("The following email")
-        self.submit("#id_request_reference_send input[name=send]")
+        self.click("#id_request_reference_send input[name=send]")
+        self.wait_until_dialog_closed()
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         assert len(msgs) == 1
+        assert msgs[0].to == [referee.email]
         assert msgs[0].extra_headers.get("Reply-To", "") == leader.email
         assert msgs[0].extra_headers.get("X-CCIW-Camp", "") == str(camp.url_id)
 
@@ -94,56 +111,45 @@ class RequestReference(RolesSetupMixin, WebTestBase):
         """
         Ensure page requires an email address to be entered if it isn't set.
         """
-        camp, leader, officer = create_camp_leader_officer(future=True)
-        app = factories.create_application(officer=officer, referee1_email="")
-        referee = app.referees[0]
-        self.officer_login(leader)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
-        )
-        self.assertCode(200)
-        self.assertTextPresent("No email address")
+        camp, leader, officer, referee = self.start_request_reference(referee_email="")
         self.assertTextAbsent("This field is required")  # Don't want errors on first view
-        self.assertTextAbsent("The following email")
 
-        # Ensure we can add the email address
-        self.fill_by_name({"email": "addedemail@example.com", "name": "Added Name"})
-        self.submit("[name=setemail]")
-        app.refresh_from_db()
-        assert app.referees[0].email == "addedemail@example.com"
-        assert app.referees[0].name == "Added Name"
-        self.assertTextPresent("Name/email address updated.")
-
-    def test_cancel(self):
-        camp, leader, officer = create_camp_leader_officer(future=True)
-        app = factories.create_application(officer=officer, referee1_email="an_email@example.com")
-        referee = app.referees[0]
-        self.officer_login(leader)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
-        )
-        self.assertCode(200)
-        self.submit("#id_request_reference_send [name=cancel]")
+        # Should refuse to send if we press send
+        self.click("[name=send]")
+        self.assertTextPresent("No email address")
         assert len(mail.outbox) == 0
 
     def test_dont_remove_link(self):
         """
         Test the error that should appear if the link is removed or altered
         """
-        camp, leader, officer = create_camp_leader_officer(future=True)
-        app = factories.create_application(officer=officer)
-        referee = app.referees[0]
-        self.officer_login(leader)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
-        )
-        self.assertCode(200)
+        camp, leader, officer, referee = self.start_request_reference()
         self.fill_by_name({"message": "I removed the link! Haha"})
-        self.submit("[name=send]")
+        self.click("[name=send]")
         url = make_ref_form_url(referee.id, None)
         self.assertTextPresent(url)
         self.assertTextPresent("You removed the link")
         assert len(mail.outbox) == 0
+
+    def test_cancel(self):
+        camp, leader, officer, referee = self.start_manage_reference_page()
+        self.click(f"#id-manage-reference-{referee.id} [name=request-reference]")
+        self.click("#id_request_reference_send [name=cancel]")
+        self.wait_until_dialog_closed()
+        assert len(mail.outbox) == 0
+
+    def test_set_referee_email(self):
+        # Ensure we can add the email address
+        camp, leader, officer, referee = self.start_manage_reference_page()
+        self.click(f"#id-manage-reference-{referee.id} [name=correct-referee-details]")
+
+        self.fill_by_name({"email": "addedemail@example.com", "name": "Added Name"})
+        self.click("[name=save]")
+        self.wait_until_dialog_closed()
+        referee.refresh_from_db()
+        assert referee.email == "addedemail@example.com"
+        assert referee.name == "Added Name"
+        assert referee.actions.filter(action_type=ReferenceAction.ActionType.DETAILS_CORRECTED).exists()
 
     def test_update_with_exact_match(self):
         """
@@ -164,26 +170,12 @@ class RequestReference(RolesSetupMixin, WebTestBase):
             )
 
             referee = app2.referees[0]
-            add_previous_references(referee)
-            assert referee.previous_reference is not None
+            prev_exact, prev_refs = get_previous_references(referee)
+            assert prev_exact is not None
             self.officer_login(leader)
-            self.get_literal_url(
-                reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp2.url_id))
-                + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.previous_reference.id)
-            )
-            self.assertCode(200)
+            self.get_url("cciw-officers-manage_references", camp_id=camp2.url_id)
+            self.click(f"#id-manage-reference-{referee.id} [name=request-updated-reference]")
             self.assertTextPresent("Referee1 Name has done a reference for Joe in the past.")
-
-    def test_exact_match_with_title(self):
-        assert close_enough_referee_match(
-            Referee(name="Joe Bloggs", email="me@example.com"),
-            Referee(name="Rev. Joe Bloggs", email="me@example.com"),
-        )
-
-        assert not close_enough_referee_match(
-            Referee(name="Joe Bloggs", email="me@example.com"),
-            Referee(name="Someone else entirely", email="me@example.com"),
-        )
 
     def test_update_with_no_exact_match(self):
         """
@@ -215,33 +207,26 @@ class RequestReference(RolesSetupMixin, WebTestBase):
         # Tests
         with travel(date(2011, 5, 1)):
             referee = app2.referees[0]
-            add_previous_references(referee)
-            assert referee.previous_reference is None
-            assert referee.possible_previous_references[0].referee_name == "Referee1 Name"
+            prev_exact, prev_refs = get_previous_references(referee)
+            assert prev_exact is None
+            assert prev_refs[0].referee_name == "Referee1 Name"
             self.officer_login(leader)
-            self.get_literal_url(
-                reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp_2.url_id))
-                + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.possible_previous_references[0].id)
-            )
-            self.assertCode(200)
+            self.get_url("cciw-officers-manage_references", camp_id=camp_2.url_id)
+            self.fill({f"#id-manage-reference-{referee.id} [name=prev_ref_id]": prev_refs[0].id})
+            self.click(f"#id-manage-reference-{referee.id} [name=request-updated-reference-custom]")
             self.assertTextAbsent(f"Referee1 Name has done a reference for {officer.first_name} in the past.")
-            self.assertHtmlPresent(
-                """<p>In the past,"""
-                """<b>"Referee1 Name &lt;email_for_ref1@example.com&gt;"</b>"""
-                f"""did a reference for {officer.first_name}. If you have confirmed that this person's name/email address is now"""
-                """<b>"Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",</b>"""
-                """you can ask them to update their reference.</p>"""
-            )
+            for frag in [
+                "Referee1 Name <email_for_ref1@example.com>",
+                f"did a reference for {officer.first_name}",
+                "If you have confirmed that this person's name/email address is now",
+                "Referee1 Name <a_new_email_for_ref1@example.com>",
+                "you can ask them to update their reference",
+            ]:
+                self.assertTextPresent(frag)
 
     def test_fill_in_manually(self):
-        camp, leader, officer = create_camp_leader_officer(future=True)
-        app = factories.create_application(officer=officer)
-        referee = app.referees[0]
-        self.officer_login(leader)
-        self.get_literal_url(
-            reverse("cciw-officers-request_reference", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
-        )
-        self.assertCode(200)
+        camp, leader, officer, referee = self.start_manage_reference_page()
+        self.click(f"#id-manage-reference-{referee.id} [name=fill-in-reference-manually]")
         self.fill_by_name(
             {
                 "how_long_known": "10 years",
@@ -249,32 +234,44 @@ class RequestReference(RolesSetupMixin, WebTestBase):
                 "character": "Great",
                 "capability_children": "Great.",
                 "concerns": "No.",
-            }
+            },
+            scroll=False,
         )
-        self.submit("#id_request_reference_manual [name=save]")
+        self.click("#id_request_reference_manual [name=save]", scroll=False)
         msgs = [e for e in mail.outbox if "Reference form for" in e.subject]
         assert len(msgs) >= 0
-        app.refresh_from_db()
-        assert app.referees[0].reference_is_received()
+        referee.refresh_from_db()
+        assert referee.reference_is_received()
 
     def test_nag(self):
         """
         Tests for 'nag officer' page
         """
-        camp, leader, officer = create_camp_leader_officer(future=True)
-        app = factories.create_application(officer=officer)
-        referee = app.referees[0]
+        camp, leader, officer, referee = self.start_manage_reference()
+        referee.log_request_made(leader, timezone.now())
         self.officer_login(leader)
-        self.get_literal_url(
-            reverse("cciw-officers-nag_by_officer", kwargs=dict(camp_id=camp.url_id)) + f"?referee_id={referee.id}"
-        )
-        self.assertCode(200)
+        self.get_url("cciw-officers-manage_references", camp_id=camp.url_id)
+
+        self.click(f"#id-manage-reference-{referee.id} [name=nag-by-officer]")
         self.assertTextPresent("to nag their referee")
-        self.submit("[name=send]")
+        self.click("[name=send]")
+        self.wait_until_dialog_closed()
         msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
         assert len(msgs) == 1
         assert msgs[0].extra_headers.get("Reply-To", "") == leader.email
         assert referee.actions.filter(action_type=ReferenceAction.ActionType.NAG).count() == 1
+
+
+def test_exact_match_with_title():
+    assert close_enough_referee_match(
+        Referee(name="Joe Bloggs", email="me@example.com"),
+        Referee(name="Rev. Joe Bloggs", email="me@example.com"),
+    )
+
+    assert not close_enough_referee_match(
+        Referee(name="Joe Bloggs", email="me@example.com"),
+        Referee(name="Someone else entirely", email="me@example.com"),
+    )
 
 
 def make_local_url(url):
@@ -374,8 +371,8 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         app2 = factories.create_application(officer=officer, year=2001)
 
         # We should be able to find an exact match for references
-        add_previous_references(app2.referees[0])
-        assert app2.referees[0].previous_reference == app1.referees[0].reference
+        prev_exact, prev_refs = get_previous_references(app2.referees[0])
+        assert prev_exact == app1.referees[0].reference
 
         # Go to the corresponding URL
         url = make_local_url(make_ref_form_url(app2.referees[0].id, app1.referees[0].reference.id))
@@ -383,9 +380,5 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         self.assertCode(200)
 
         # Check it is pre-filled as we expect
-        self.assertHtmlPresent(
-            """<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Referee1 Name" required />"""
-        )
-        self.assertHtmlPresent(
-            """<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" required />"""
-        )
+        assert self.get_element_attribute("#id_referee_name", "value") == "Referee1 Name"
+        assert self.get_element_attribute("#id_how_long_known", "value") == "A long time"

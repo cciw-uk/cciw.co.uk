@@ -1,101 +1,46 @@
-{% extends "cciw/officers/base.html" %}
+{% extends "cciw/officers/modal_dialog.html" %}
 
-{% load static %}
-
-{% block extrastyle %}
-  {{ block.super }}
-  <script type="text/javascript" src="{% static "js/tabber.js" %}"></script>
-{% endblock %}
-
-{% block title %}Request reference for {{ app.officer.full_name }} | CCiW Officers {% endblock %}
+{% block title %}Request reference for {{ app.officer.full_name }} from {{ referee.name }}{% endblock %}
 
 {% block content %}
-  <div id="content-main">
+  {{ block.super }}
 
-    <h2>Request reference for {{ app.officer.full_name }}</h2>
+  {% include "cciw/officers/referee_details_summary_inc.html" with referee=referee %}
 
-    <p>From referee: {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}</p>
-    <p>Address:</p>
-    <div>{{ referee.address|linebreaksbr }}</div>
-    {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
-    {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
-    <div><br/></div>
+  <div><br/></div>
 
-    {% if already_requested %}
-      <p><strong class="ok">PLEASE NOTE: A request has already been sent for this reference</strong></p>
-    {% endif %}
+  {% if already_requested %}
+    <p><strong class="ok">PLEASE NOTE: A request has already been sent for this reference</strong></p>
+  {% endif %}
 
-    {% if bad_email %}
-      <p>No email address (or an invalid email address) was provided, so the
-        referee can't be emailed.  If you cannot find out their email address, you
-        must fill in the reference manually. If you can find out the email
-        address, enter it below and press 'Save' to continue:</p>
+  {% if is_update and known_email_address %}
+    <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in the past.</p>
+  {% endif %}
 
-      <form id="id_set_email_form" method="post" action="">
-        {% csrf_token %}
-        <table>
-          {{ emailform }}
-        </table>
-        <div><input type="submit" name="setemail" value="Save" /></div>
-      </form>
+  {% if not is_update %}
+    <p><strong>{{ referee.name }} has not done a reference for
+      {{ app.officer.first_name }} in the past.</strong>  Before requesting this reference, you should endeavour to ensure that this person is who the applicant claims they are, and <strong>ensure the email address is correct</strong>, and that they are happy to do a reference.</p>
+  {% endif %}
 
-      <hr>
+  {% if is_update and not known_email_address %}
+    <p>In the past, <b>"{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;"</b> did a reference for {{ app.officer.first_name }}.  If you have confirmed that this person's name/email address is now <b>"{{ referee.name }} &lt;{{ referee.email }}&gt;",</b> you can ask them to update their reference.</p>
+  {% endif %}
 
-      <div class="tabber">
-        <div class="tabbertab tabbertabdefault" title="Fill in manually">
-          {% include "cciw/officers/request_reference_edit_form_inc.html" %}
-        </div>
-      </div>
+  {% if form.errors %}
+    <p class="actionnote">Please check the errors below</p>
+  {% endif %}
 
-    {% else %}
-      {% if is_update and known_email_address %}
-        <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in the past.</p>
-      {% endif %}
-
-      {% if not is_update %}
-        <p><strong>{{ referee.name }} has not done a reference for
-          {{ app.officer.first_name }} in the past.</strong>  Before requesting this
-          reference, you should endeavour to ensure that this person is who the
-          applicant claims they are, and <strong>ensure the email address is
-            correct</strong>, and that they are happy to do a reference.</p>
-      {% endif %}
-
-      {% if is_update and not known_email_address %}
-        <p>In the past, <b>"{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;"</b> did a
-          reference for {{ app.officer.first_name }}.  If you have confirmed that this
-          person's name/email address is now <b>"{{ referee.name }} &lt;{{ referee.email }}&gt;",</b>
-          you can ask them to update their reference.</p>
-      {% endif %}
-
-      <p>If you need to correct the name/email address, please edit below and press
-        'Save' before continuing. The name should be the full name only, and not include
-        a title or any other information.</p>
-
-      {% if emailform.errors %}
-        <p class="errornote">
-          Please correct the error(s) below.
-        </p>
-      {% endif %}
-      <form id="id_set_email_form" method="post" action="">
-        {% csrf_token %}
-        <table>
-          {{ emailform }}
-        </table>
-        <p><input type="submit" name="setemail" value="Save" /></p>
-      </form>
-
-      <hr/>
-
-      <div class="tabber">
-        <div class="tabbertab {% if show_messageform %}tabbertabdefault{% endif %}" title="Send email">
-          {% include "cciw/officers/request_reference_by_email_inc.html" %}
-        </div>
-        <div class="tabbertab {% if show_editreferenceform %}tabbertabdefault{% endif %}" title="Fill in manually">
-          {% include "cciw/officers/request_reference_edit_form_inc.html" %}
-        </div>
-      </div>
-
-    {% endif %}
-
-  </div>
+  <p>The following email, which you can now modify, will be sent to them. Make sure you don't modify the link contained in the email.</p>
+  <form
+    id="id_request_reference_send"
+    hx-post="{{ post_url }}"
+    hx-target="#dialog-content-main"
+    hx-vals='{"use_block": "content"}'
+  >
+    {{ form.as_p }}
+    <div>
+      <input type="submit" name="send" value="Send" />
+      <input type="submit" name="cancel" value="Cancel" formnovalidate />
+    </div>
+  </form>
 {% endblock %}
