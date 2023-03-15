@@ -101,6 +101,12 @@ a[target=_blank] {
     justify-content: space-between;
 }
 
+@media screen and (max-width: 1024px) {
+    .columns-stacked-for-small {
+        flex-direction: column;
+    }
+}
+
 .layout-table{
     display: table;
 }
@@ -118,6 +124,7 @@ a[target=_blank] {
 .manage-references-page {
     input[type=submit], button {
         @include compact-button;
+        white-space: nowrap;
     }
 }
 .refcount
@@ -167,7 +174,7 @@ a[target=_blank] {
 }
 
 .manage-reference__action-table {
-    margin: 0.5em 0.5em 0 0.5em;
+    margin: 0.5em 0.5em 0 0;
     .layout-tr:nth-child(2n+1) .layout-td {
         background-color: #fff4;
     }

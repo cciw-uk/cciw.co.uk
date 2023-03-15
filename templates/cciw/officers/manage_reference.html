@@ -13,7 +13,7 @@
                    target="_blank"
     >full reference history</a>
   </h3>
-  <div class="columns-space-between">
+  <div class="columns-space-between columns-stacked-for-small">
     <div> {# Column 1 #}
       <h4 class="refereename">From: {{ referee.name }}{% if referee.capacity_known %} ({{ referee.capacity_known }}){% endif %}</h4>
 
@@ -92,7 +92,7 @@
             <div class="layout-tr">
               <div class="layout-td">
                 There are no exact matches for <b>{{ referee.name }} &lt;{{ referee.email }}&gt;</b>
-                but if one of the previous references submitted for this officer may actually be the
+                but one of the previous references submitted for this officer may actually be from the
                 same person:
               </div>
               <div class="layout-td">
