@@ -57,7 +57,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#id_officer_table').on(
+    $('#id_dbs_officer_table').on(
         'submit',
         'form.alert-leaders, form.register-received-dbs, form.dbs-checked-online, form.request-dbs-form-action',
         function(ev) {
@@ -85,7 +85,7 @@ $(document).ready(function() {
         var officerId = $row.attr('data-officer-id');
         jQuery.ajax({
             type: 'GET',
-            url: $('#id_officer_table').attr('data-url'),
+            url: $('#id_dbs_officer_table').attr('data-url'),
             data: { 'officer_id': officerId },
             dataType: 'text',
             success: function(data, textStatus, xhr) {
@@ -95,7 +95,7 @@ $(document).ready(function() {
     }
 
     // convert 'data-camps' into jQuery data
-    $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
+    $('#id_dbs_officer_table tr.officer_dbs_row').each(function(idx, elem) {
         $(elem).data('camps', $(elem).attr('data-camps').split(','));
     });
 
@@ -132,7 +132,7 @@ $(document).ready(function() {
 
     function updateVisibleRows(selectedCamps) {
         // Now go through all rows
-        $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
+        $('#id_dbs_officer_table tr.officer_dbs_row').each(function(idx, elem) {
             var tr = $(elem);
             var rowCamps = tr.data('camps');
             var shouldShow = selectedCamps.some(item => rowCamps.includes(item));

@@ -47,12 +47,18 @@ a:hover {
     padding: 2px 10px;
 }
 
-@mixin compact-button {
+@mixin compact-button-styles {
     padding: 3px 6px;
 }
 
+@mixin compact-buttons {
+    input[type=submit], button {
+        @include compact-button-styles;
+    }
+}
+
 input[type=submit].button--compact {
-    @include compact-button;
+    @include compact-button-styles;
 }
 
 
@@ -123,7 +129,7 @@ a[target=_blank] {
 
 .manage-references-page {
     input[type=submit], button {
-        @include compact-button;
+        @include compact-button-styles;
         white-space: nowrap;
     }
 }
@@ -389,7 +395,9 @@ form.dialog-close-form {
 
 // DBS page
 
-#id_officer_table {
+#id_dbs_officer_table {
+    @include compact-buttons;
+
     .address {
         background-color: #f8f8f8;
         padding: 2px;
@@ -433,10 +441,7 @@ form.dialog-close-form {
 }
 
 #id_currentofficers {
-    input[type=submit], button {
-        @include compact-button;
-    }
-
+    @include compact-buttons;
 }
 
 .requires_action {
