@@ -76,10 +76,12 @@ class DBSInfo:
         )
 
 
-def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None) -> list[tuple[User, DBSInfo]]:
+def get_officers_with_dbs_info_for_camps(camps, officer_id: int | None = None) -> list[tuple[User, DBSInfo]]:
     """
     Get needed DBS officer info for the given set of camps,
     return a list of two tuples, [(officer, dbs_info)]
+
+    Filter to given officer_id if provided
     """
     # Some of this logic could be put onto specific models. However, we only
     # ever need this info in bulk for specific views, and efficient data access

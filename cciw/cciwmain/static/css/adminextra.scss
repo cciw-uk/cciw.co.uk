@@ -403,20 +403,13 @@ form.dialog-close-form {
         padding: 2px;
         border: 1px solid #d0d0d0;
     }
-    table.actions {
-        td {
-            border-top-width: 0px;
-            border-bottom-width: 1px;
+    .layout-table.actions {
+        .layout-td {
+            padding: 2px;
             vertical-align: top;
-            padding-top: 2px;
-            padding-bottom: 1px;
         }
-        tbody tr:first-child td {
+        .layout-tr:first-child .layout-td {
             padding-top: 0px;
-        }
-        tbody tr:last-child td {
-            border-bottom-width: 0px;
-            padding-bottom: 0px;
         }
     }
 }

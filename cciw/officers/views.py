@@ -1299,6 +1299,7 @@ def officer_stats_trend_download(request, start_year: int, end_year: int) -> Htt
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
 @with_breadcrumbs(officers_breadcrumbs)
+@for_htmx(use_block_from_params=True)
 def manage_dbss(request, year: int) -> HttpResponse:
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
@@ -1317,16 +1318,14 @@ def manage_dbss(request, year: int) -> HttpResponse:
 
     if "officer_id" in request.GET:
         officer_id = int(request.GET["officer_id"])
-        template_name = "cciw/officers/manage_dbss_rows_inc.html"
     else:
         officer_id = None
-        template_name = "cciw/officers/manage_dbss.html"
 
     officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, officer_id=officer_id)
 
     return TemplateResponse(
         request,
-        template_name,
+        "cciw/officers/manage_dbss.html",
         {
             "title": f"Manage DBSs {year}",
             "officers_and_dbs_info": officers_and_dbs_info,
@@ -1339,13 +1338,26 @@ def manage_dbss(request, year: int) -> HttpResponse:
     )
 
 
+def htmx_dbs_events_response(
+    closeModal: bool = False,
+    refreshOfficer: User | None = None,
+):
+    events = {}
+    if refreshOfficer is not None:
+        events[f"refreshOfficer-{refreshOfficer.id}"] = True
+    if closeModal:
+        events["closeModal"] = closeModal
+
+    return HttpResponse("", headers={"Hx-Trigger": json.dumps(events)})
+
+
 @staff_member_required
 @dbs_officer_required
-@json_response
 def mark_dbs_sent(request):
     officer_id = int(request.POST["officer_id"])
     officer = User.objects.get(id=officer_id)
     c = request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLog.ACTION_FORM_SENT)
+
     accept = [a.strip() for a in request.headers.get("Accept", "").split(",")]
 
     if "application/json" in accept:
