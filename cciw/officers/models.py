@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from attr import dataclass
 from django.conf import settings
 from django.db import models
+from django.db.models.enums import TextChoices
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -631,6 +632,12 @@ class DBSCheck(models.Model):
         )
 
 
+class DBSActionLogType(TextChoices):
+    FORM_SENT = "form_sent", "DBS form sent"
+    LEADER_ALERT_SENT = "leader_alert_sent", "Alert sent to leader"
+    REQUEST_FOR_DBS_FORM_SENT = "request_for_dbs_form_sent", "Request for DBS form sent"
+
+
 class DBSActionLogManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("officer")
@@ -639,6 +646,11 @@ class DBSActionLogManager(models.Manager):
         if "action_type" not in kwargs:
             raise TypeError("action_type is a required field")
         return super().create(*args, **kwargs)
+
+    def remove_last(self, *, officer: User, action_type: DBSActionLogType) -> None:
+        last = self.filter(officer=officer, action_type=action_type).order_by("-created_at").first()
+        if last:
+            last.delete()
 
 
 class DBSActionLog(models.Model):
@@ -656,7 +668,7 @@ class DBSActionLog(models.Model):
     ]
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="dbsactionlogs", on_delete=models.PROTECT)
-    action_type = models.CharField("action type", max_length=40, choices=ACTION_CHOICES)
+    action_type = models.CharField("action type", max_length=40, choices=DBSActionLogType.choices)
     created_at = models.DateTimeField("Created at", default=timezone.now)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

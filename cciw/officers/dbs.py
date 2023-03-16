@@ -2,14 +2,14 @@ import operator
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from functools import reduce
+from functools import cached_property, reduce
 
 from django.utils import timezone
 
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camps
-from cciw.officers.models import Application, DBSActionLog, DBSCheck, Invitation
+from cciw.officers.models import Application, DBSActionLog, DBSActionLogType, DBSCheck, Invitation
 
 
 @dataclass
@@ -75,6 +75,10 @@ class DBSInfo:
             )
         )
 
+    @cached_property
+    def last_dbs_form_sent_recently(self) -> bool:
+        return self.last_dbs_form_sent is not None and (timezone.now() - self.last_dbs_form_sent) < timedelta(days=1)
+
 
 def get_officers_with_dbs_info_for_camps(camps, officer_id: int | None = None) -> list[tuple[User, DBSInfo]]:
     """
@@ -121,11 +125,11 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int | None = None) -
         .filter(created_at__gt=now - timedelta(365))
         .order_by("created_at")
     )
-    dbs_forms_sent = list(relevant_action_logs.filter(action_type=DBSActionLog.ACTION_FORM_SENT))
+    dbs_forms_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.FORM_SENT))
     requests_for_dbs_form_sent = list(
-        relevant_action_logs.filter(action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
+        relevant_action_logs.filter(action_type=DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT)
     )
-    leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT))
+    leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.LEADER_ALERT_SENT))
 
     update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(all_officers)
 

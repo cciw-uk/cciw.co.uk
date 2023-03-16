@@ -8,7 +8,7 @@ from django_functest import FuncBaseMixin
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.dbs import get_officers_with_dbs_info_for_camps
-from cciw.officers.models import DBSActionLog, DBSCheck
+from cciw.officers.models import DBSActionLog, DBSActionLogType, DBSCheck
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
@@ -54,7 +54,7 @@ class DbsInfoTests(TestBase):
 
         # Now create an 'form sent' action log
         t1 = timezone.now()
-        DBSActionLog.objects.create(officer=self.officer_user, created_at=t1, action_type=DBSActionLog.ACTION_FORM_SENT)
+        DBSActionLog.objects.create(officer=self.officer_user, created_at=t1, action_type=DBSActionLogType.FORM_SENT)
         officer, dbs_info = self.get_officer_with_dbs_info()
         assert dbs_info.last_dbs_form_sent is not None
         assert dbs_info.last_dbs_form_sent == t1
@@ -62,7 +62,7 @@ class DbsInfoTests(TestBase):
         # A leader alert action should not change last_dbs_form_sent
         t2 = timezone.now()
         DBSActionLog.objects.create(
-            officer=self.officer_user, created_at=t2, action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT
+            officer=self.officer_user, created_at=t2, action_type=DBSActionLogType.LEADER_ALERT_SENT
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
         assert dbs_info.last_dbs_form_sent == t1
@@ -245,7 +245,7 @@ class ManageDbsPageBase(FuncBaseMixin):
         assert f"{self.officer_user.full_name} indicated that they do NOT\nconsent to having a DBS check done" in m.body
 
         assert self.dbs_officer.dbsactions_performed.count() == 1
-        assert self.dbs_officer.dbsactions_performed.get().action_type == DBSActionLog.ACTION_LEADER_ALERT_SENT
+        assert self.dbs_officer.dbsactions_performed.get().action_type == DBSActionLogType.LEADER_ALERT_SENT
 
         self.handle_closed_window()
         self.assertUrlsEqual(url)
@@ -271,7 +271,7 @@ class ManageDbsPageBase(FuncBaseMixin):
         assert f"{self.officer_user.full_name} needs a new DBS check" in m.body
 
         assert self.dbs_officer.dbsactions_performed.count() == 1
-        assert self.dbs_officer.dbsactions_performed.get().action_type == DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT
+        assert self.dbs_officer.dbsactions_performed.get().action_type == DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT
 
         self.handle_closed_window()
         self.assertUrlsEqual(url)

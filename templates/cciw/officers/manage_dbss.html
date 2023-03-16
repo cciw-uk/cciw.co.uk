@@ -72,7 +72,6 @@
 
   <table
     id="id_dbs_officer_table"
-    data-url=
     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
   >
     <thead>
@@ -91,7 +90,7 @@
             data-officer-id="{{ officer.id }}"
             hx-get="{% url 'cciw-officers-manage_dbss' year=year %}?officer_id={{ officer.id }}"
             hx-trigger="refreshOfficer-{{ officer.id }}"
-            hx-vals='{"use-block": "table-body"}'
+            hx-vals='{"use_block": "table-body"}'
             hx-target="this"
             hx-swap="outerHTML"
             class="officer_dbs_row {% if dbs_info.requires_action %}requires_action{% endif %}"
@@ -128,8 +127,8 @@
                 {# No actions needed, deliberately empty #}
               {% elif dbs_info.applicant_rejected %}
                 APPLICANT REJECTED</br>
-                Due to rejected DBS, this officer should be removed from the
-                officer list. Please contact leaders/CCiW committee.
+                Due to rejection based on DBS, this officer should be removed
+                from the officer list. Please contact leaders/CCiW committee.
               {% elif not dbs_info.has_application_form %}
                 Needs application form
               {% elif not dbs_info.dbs_check_consent %}
@@ -208,15 +207,18 @@
                     <div class="layout-td">
                       <form
                         hx-post="{% url 'cciw-officers-mark_dbs_sent' %}"
+                        hx-swap="none"
                         class="dbs-form-sent">
                         <input type="hidden" name="officer_id" value="{{ officer.id }}" />
-                        <button id="id_send_{{ officer.id }}">
+                        <button name="mark_sent">
                           Mark DBS form sent
                         </button>
+                        {% if dbs_info.last_dbs_form_sent_recently %}
+                          <button name="undo_last_mark_sent">
+                            Undo
+                          </button>
+                        {% endif %}
                       </form>
-                      <button id="id_undo_{{ officer.id }}"
-                              action="{% url 'cciw-officers-undo_mark_dbs_sent' %}"
-                              style="display: none;">Undo</button>
                     </div>
                     <div class="layout-td">
                       DBS form sent:

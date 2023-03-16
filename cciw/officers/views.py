@@ -95,6 +95,7 @@ from .models import (
     Application,
     CampRole,
     DBSActionLog,
+    DBSActionLogType,
     DBSCheck,
     Invitation,
     OfficerList,
@@ -1356,15 +1357,12 @@ def htmx_dbs_events_response(
 def mark_dbs_sent(request):
     officer_id = int(request.POST["officer_id"])
     officer = User.objects.get(id=officer_id)
-    c = request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLog.ACTION_FORM_SENT)
+    if "mark_sent" in request.POST:
+        request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLogType.FORM_SENT)
+    elif "undo_last_mark_sent" in request.POST:
+        request.user.dbsactions_performed.remove_last(officer=officer, action_type=DBSActionLogType.FORM_SENT)
 
-    accept = [a.strip() for a in request.headers.get("Accept", "").split(",")]
-
-    if "application/json" in accept:
-        return {"status": "success", "dbsActionLogId": str(c.id)}
-    else:
-        # This path really only exists to support WebBrowser tests
-        return HttpResponseRedirect(request.headers["Referer"])
+    return htmx_dbs_events_response(refreshOfficer=officer)
 
 
 @staff_member_required
@@ -1414,7 +1412,7 @@ def dbs_consent_alert_leaders(request, application_id: int):
 
     def send_email(message):
         send_dbs_consent_alert_leaders_email(message, officer, camps)
-        request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
+        request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLogType.LEADER_ALERT_SENT)
 
     return popup_email_view(
         request,
@@ -1446,7 +1444,7 @@ def request_dbs_form_action(request, application_id: int):
     def send_email(message):
         send_request_for_dbs_form_email(message, officer, request.user)
         request.user.dbsactions_performed.create(
-            officer=officer, action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT
+            officer=officer, action_type=DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT
         )
 
     return popup_email_view(
