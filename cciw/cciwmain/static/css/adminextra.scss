@@ -127,11 +127,8 @@ a[target=_blank] {
 
 /* Manage references */
 
-.manage-references-page {
-    input[type=submit], button {
-        @include compact-button-styles;
-        white-space: nowrap;
-    }
+.manage-reference-list {
+    @include compact-buttons;
 }
 .refcount
 {
@@ -386,6 +383,7 @@ dialog::backdrop {
 form.dialog-close-form {
     float: right;
     button.dialog-close {
+        @include compact-button-styles;
         color: inherit;
         background-color: inherit;
         border: 1px solid #888;
@@ -403,20 +401,13 @@ form.dialog-close-form {
         padding: 2px;
         border: 1px solid #d0d0d0;
     }
-    table.actions {
-        td {
-            border-top-width: 0px;
-            border-bottom-width: 1px;
+    .layout-table.actions {
+        .layout-td {
+            padding: 2px;
             vertical-align: top;
-            padding-top: 2px;
-            padding-bottom: 1px;
         }
-        tbody tr:first-child td {
+        .layout-tr:first-child .layout-td {
             padding-top: 0px;
-        }
-        tbody tr:last-child td {
-            border-bottom-width: 0px;
-            padding-bottom: 0px;
         }
     }
 }
@@ -444,8 +435,8 @@ form.dialog-close-form {
     @include compact-buttons;
 }
 
-.requires_action {
-    background-color: #ffd0d0;
+.requires_action, tr.requires_action {
+    background-color: #f9dddd;
 }
 
 table.data th,

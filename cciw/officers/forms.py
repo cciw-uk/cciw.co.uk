@@ -11,7 +11,7 @@ from cciw.accounts.models import User, get_reference_contact_users
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers import create
 from cciw.officers.email import send_leaders_reference_email
-from cciw.officers.models import CampRole, Invitation, Referee, Reference
+from cciw.officers.models import CampRole, DBSCheck, Invitation, Referee, Reference
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 
 
@@ -221,3 +221,25 @@ class CciwPasswordResetForm(PasswordResetForm):
         # reset their password, otherwise our onboarding process (which involves
         # accounts being created by someone else) can get stuck.
         return User._default_manager.filter(email__iexact=email, is_active=True)
+
+
+class DBSCheckForm(ModelForm):
+    class Meta:
+        model = DBSCheck
+        fields = [
+            "dbs_number",
+            "check_type",
+            "completed",
+            "requested_by",
+            "other_organisation",
+            "applicant_accepted",
+            "registered_with_dbs_update",
+        ]
+        widgets = {
+            "completed": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def save(self, *, officer: User, **kwargs):
+        dbs_check: DBSCheck = self.instance
+        dbs_check.officer = officer
+        return super().save(**kwargs)

@@ -1,21 +1,23 @@
-{% extends "cciw/officers/base.html" %}
-{% block title %}Ask for DBS form to be sent to {{ officer.full_name }} | CCiW Officers {% endblock %}
+{% extends "cciw/officers/modal_dialog.html" %}
+
+{% block title %}Ask for DBS form to be sent to {{ officer.full_name }}{% endblock %}
 
 {% block content %}
-  <div id="content-main">
+  <h2>Ask {{ external_dbs_officer.organisation_short }} to send DBS form</h2>
 
-    <h2>Ask {{ external_dbs_officer.organisation_short }} to send DBS form</h2>
+  <p>The following email, which you can now modify, will be sent to
+    <b>{{ external_dbs_officer.name }} &lt;{{ external_dbs_officer.email }}&gt;</b>
+    at <b>{{ external_dbs_officer.organisation_short }}</b>.</p>
 
-    <p>The following email, which you can now modify, will be sent to
-      <b>{{ external_dbs_officer.name }} &lt;{{ external_dbs_officer.email }}&gt;</b>
-      at <b>{{ external_dbs_officer.organisation_short }}</b>.</p>
-
-    <form action="" method="post">{% csrf_token %}
-      {{ messageform.as_p }}
-      <p>
-        <input type="submit" name="send" value="Send" />
-        <input type="submit" name="cancel" value="Cancel" formnovalidate />
-      </p>
-    </form>
-  </div>
+  <form
+    hx-post="{{ request.get_full_path }}"
+    hx-target="#dialog-content-main"
+    hx-vals='{"use_block": "content"}'
+  >
+    {{ messageform.as_p }}
+    <p>
+      <input type="submit" name="send" value="Send" />
+      <input type="submit" name="cancel" value="Cancel" formnovalidate />
+    </p>
+  </form>
 {% endblock %}

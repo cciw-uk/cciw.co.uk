@@ -2,7 +2,9 @@ from datetime import date, timedelta
 
 from attr import dataclass
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.enums import TextChoices
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -603,13 +605,13 @@ class DBSCheck(models.Model):
         max_length=20,
         choices=RequestedBy.choices,
         default=RequestedBy.UNKNOWN,
-        help_text="The organisation that asked for this DBS to be done, " "normally CCiW.",
+        help_text="The organisation that asked for this DBS to be done, normally CCiW.",
     )
     other_organisation = models.CharField(
         max_length=255, blank=True, help_text="If previous answer is not CCiW, please fill in"
     )
     applicant_accepted = models.BooleanField(
-        default=True, help_text="Uncheck if the applicant could not be accepted " "on the basis of this DBS check"
+        default=True, help_text="Uncheck if the applicant could not be accepted on the basis of this DBS check"
     )
 
     registered_with_dbs_update = models.BooleanField("registered with DBS update service", null=True)
@@ -624,11 +626,23 @@ class DBSCheck(models.Model):
         verbose_name_plural = "DBS/CRB check"
         base_manager_name = "objects"
 
+    def clean(self):
+        if self.requested_by == DBSCheck.RequestedBy.OTHER and self.other_organisation.strip() == "":
+            raise ValidationError(
+                {"other_organisation": "This field is required if 'Requested by' is 'Other organisation'."}
+            )
+
     def could_be_for_camp(self, camp):
         return (
             self.completed >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)
             and self.completed <= camp.start_date
         )
+
+
+class DBSActionLogType(TextChoices):
+    FORM_SENT = "form_sent", "DBS form sent"
+    LEADER_ALERT_SENT = "leader_alert_sent", "Alert sent to leader"
+    REQUEST_FOR_DBS_FORM_SENT = "request_for_dbs_form_sent", "Request for DBS form sent"
 
 
 class DBSActionLogManager(models.Manager):
@@ -640,23 +654,19 @@ class DBSActionLogManager(models.Manager):
             raise TypeError("action_type is a required field")
         return super().create(*args, **kwargs)
 
+    def remove_last(self, *, officer: User, action_type: DBSActionLogType) -> None:
+        last = self.filter(officer=officer, action_type=action_type).order_by("-created_at").first()
+        if last:
+            last.delete()
+
 
 class DBSActionLog(models.Model):
     """
     Represents a log of a DBS action done by DBS officer
     """
 
-    ACTION_FORM_SENT = "form_sent"
-    ACTION_LEADER_ALERT_SENT = "leader_alert_sent"
-    ACTION_REQUEST_FOR_DBS_FORM_SENT = "request_for_dbs_form_sent"
-    ACTION_CHOICES = [
-        (ACTION_FORM_SENT, "DBS form sent"),
-        (ACTION_LEADER_ALERT_SENT, "Alert sent to leader"),
-        (ACTION_REQUEST_FOR_DBS_FORM_SENT, "Request for DBS form sent"),
-    ]
-
     officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="dbsactionlogs", on_delete=models.PROTECT)
-    action_type = models.CharField("action type", max_length=40, choices=ACTION_CHOICES)
+    action_type = models.CharField("action type", max_length=40, choices=DBSActionLogType.choices)
     created_at = models.DateTimeField("Created at", default=timezone.now)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

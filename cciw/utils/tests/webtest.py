@@ -131,7 +131,7 @@ class SeleniumBase(
     """
 
     driver_name = conftest.BROWSER
-    browser_window_size = (1024, 768)
+    browser_window_size = (1600, 900)
     display = conftest.SHOW_BROWSER
     default_timeout = 20
     page_load_timeout = 40
@@ -157,4 +157,9 @@ class SeleniumBase(
         time.sleep(0.1)
         self.wait_until(
             lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)')
+        )
+        self.wait_until(
+            lambda _: not self.is_element_present(".htmx-request")
+            and not self.is_element_present(".htmx-swapping")
+            and not self.is_element_present(".htmx-settling")
         )

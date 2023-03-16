@@ -1,15 +1,14 @@
 {% extends "cciw/officers/modal_dialog.html" %}
+
 {% block title %}Reference for {{ officer.full_name }}{% endblock %}
 
 {% block content %}
-  {{ block.super }}
-
   <h2>Ask {{ officer.first_name }} to nag their referee</h2>
 
   <p>The following email, which you can now modify, will be sent to them.</p>
 
   <form
-    hx-post="{{ post_url }}"
+    hx-post="{{ request.get_full_path }}"
     hx-target="#dialog-content-main"
     hx-vals='{"use_block": "content"}'
   >

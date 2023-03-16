@@ -98,7 +98,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         camp, leader, _, referee = self.start_request_reference()
         self.assertTextPresent("The following email")
-        self.click("#id_request_reference_send input[name=send]")
+        self.click("dialog input[name=send]")
         self.wait_until_dialog_closed()
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         assert len(msgs) == 1
@@ -133,7 +133,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
     def test_cancel(self):
         camp, leader, officer, referee = self.start_manage_reference_page()
         self.click(f"#id-manage-reference-{referee.id} [name=request-reference]")
-        self.click("#id_request_reference_send [name=cancel]")
+        self.click("dialog [name=cancel]")
         self.wait_until_dialog_closed()
         assert len(mail.outbox) == 0
 

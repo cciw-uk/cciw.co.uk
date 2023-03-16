@@ -45,6 +45,7 @@
                   name="nag-by-officer"
                   hx-get='{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id referee_id=referee.id %}'
                   hx-target="#modal-dialog-container"
+                  hx-swap="innerHTML"
                 >
                   Get {{ referee.application.officer.first_name }} to do the nagging
                 </button>
@@ -63,7 +64,9 @@
                   name="request-updated-reference"
                   hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
                   hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
-                  hx-target="#modal-dialog-container">
+                  hx-target="#modal-dialog-container"
+                  hx-swap="innerHTML"
+                >
                   Request updated reference{% if referee.reference_was_requested %} (again){% endif %}
                 </button>
               </div>
@@ -81,7 +84,9 @@
                 <button
                   name="request-reference"
                   hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
-                  hx-target="#modal-dialog-container">
+                  hx-target="#modal-dialog-container"
+                  hx-swap="innerHTML"
+                >
                   Request reference{% if referee.reference_was_requested %} (again){% endif %}
                 </button>
               </div>
@@ -98,7 +103,9 @@
               <div class="layout-td">
                 <form
                   hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
-                  hx-target="#modal-dialog-container">
+                  hx-target="#modal-dialog-container"
+                  hx-swap="innerHTML"
+                >
                   <select name="prev_ref_id" required>
                     <option value="" selected="selected">-----</option>
                     {% for reference in referee.possible_previous_references %}
@@ -128,6 +135,7 @@
                 name="correct-referee-details"
                 hx-get='{% url "cciw-officers-correct_referee_details" camp_id=camp.url_id referee_id=referee.id %}'
                 hx-target="#modal-dialog-container"
+                hx-swap="innerHTML"
               >
                 Correct referee details
               </button>
@@ -143,6 +151,7 @@
                 name="fill-in-reference-manually"
                 hx-get='{% url "cciw-officers-fill_in_reference_manually" camp_id=camp.url_id referee_id=referee.id %}'
                 hx-target="#modal-dialog-container"
+                hx-swap="innerHTML"
                 {% if referee.previous_reference %}
                   hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
                 {% endif %}

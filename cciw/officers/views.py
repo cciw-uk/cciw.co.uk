@@ -3,7 +3,7 @@ import enum
 import json
 from datetime import date, datetime
 from functools import wraps
-from typing import Iterable, TypeAlias
+from typing import Callable, Iterable, TypeAlias
 
 import furl
 import openpyxl
@@ -11,6 +11,7 @@ import pandas as pd
 import pandas_highcharts.core
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin import site as admin_site
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.views import PasswordResetView
 from django.core import signing
@@ -54,7 +55,6 @@ from cciw.utils.views import (
     get_spreadsheet_from_dataframe_builder,
     get_spreadsheet_simple_builder,
     make_get_request,
-    reroute_response,
     user_passes_test_improved,
 )
 
@@ -84,6 +84,7 @@ from .forms import (
     CciwPasswordResetForm,
     CorrectRefereeDetailsForm,
     CreateOfficerForm,
+    DBSCheckForm,
     DbsConsentProblemForm,
     ReferenceForm,
     RequestDbsFormForm,
@@ -94,7 +95,7 @@ from .forms import (
 from .models import (
     Application,
     CampRole,
-    DBSActionLog,
+    DBSActionLogType,
     DBSCheck,
     Invitation,
     OfficerList,
@@ -624,7 +625,6 @@ def correct_referee_details(request: HttpRequest, camp_id: CampId, referee_id: i
         {
             "form": form,
             "referee": referee,
-            "post_url": request.get_full_path(),
         },
     )
 
@@ -708,7 +708,6 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
             "app": app,
             "is_update": prev_reference is not None,
             "form": form,
-            "post_url": request.get_full_path(),
         }
     )
 
@@ -751,7 +750,6 @@ def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id
             "app": referee.application,
             "form": form,
             "is_update": prev_reference is not None,
-            "post_url": request.get_full_path(),
         },
     )
 
@@ -778,8 +776,8 @@ def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
         else:
             # cancel
             return htmx_reference_events_response(closeModal=True)
-
-    form = SendNagByOfficerForm(message_info=messageform_info)
+    else:
+        form = SendNagByOfficerForm(message_info=messageform_info)
 
     return TemplateResponse(
         request,
@@ -789,7 +787,6 @@ def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
             "app": app,
             "officer": officer,
             "form": form,
-            "post_url": request.get_full_path(),
         },
     )
 
@@ -1299,6 +1296,7 @@ def officer_stats_trend_download(request, start_year: int, end_year: int) -> Htt
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
 @with_breadcrumbs(officers_breadcrumbs)
+@for_htmx(use_block_from_params=True)
 def manage_dbss(request, year: int) -> HttpResponse:
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
@@ -1312,21 +1310,24 @@ def manage_dbss(request, year: int) -> HttpResponse:
         selected_camp_slugs = set(request.GET.getlist("camp"))
         selected_camps = {c for c in camps if c.slug_name in selected_camp_slugs}
     else:
-        # Assume all, because having none is never useful
-        selected_camps = set(camps)
+        if "Hx-Request" in request.headers and request.GET.get("use_block", "") == "content":
+            # They deselected the last checkbox, we should show them nothing for UI consistency.
+            # In other cases (e.g. use_block = table-body, officer_id=...), we should include all camps.
+            selected_camps = set()
+        else:
+            # Assume all, because having none is never useful
+            selected_camps = set(camps)
 
-    if "officer_id" in request.GET:
+    try:
         officer_id = int(request.GET["officer_id"])
-        template_name = "cciw/officers/manage_dbss_rows_inc.html"
-    else:
+    except (KeyError, ValueError):
         officer_id = None
-        template_name = "cciw/officers/manage_dbss.html"
 
-    officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, officer_id=officer_id)
+    officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, selected_camps, officer_id=officer_id)
 
     return TemplateResponse(
         request,
-        template_name,
+        "cciw/officers/manage_dbss.html",
         {
             "title": f"Manage DBSs {year}",
             "officers_and_dbs_info": officers_and_dbs_info,
@@ -1339,57 +1340,64 @@ def manage_dbss(request, year: int) -> HttpResponse:
     )
 
 
+def htmx_dbs_events_response(
+    closeModal: bool = False,
+    refreshOfficer: User | None = None,
+):
+    events = {}
+    if refreshOfficer is not None:
+        events[f"refreshOfficer-{refreshOfficer.id}"] = True
+    if closeModal:
+        events["closeModal"] = closeModal
+
+    return HttpResponse("", headers={"Hx-Trigger": json.dumps(events)})
+
+
 @staff_member_required
 @dbs_officer_required
-@json_response
 def mark_dbs_sent(request):
     officer_id = int(request.POST["officer_id"])
     officer = User.objects.get(id=officer_id)
-    c = request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLog.ACTION_FORM_SENT)
-    accept = [a.strip() for a in request.headers.get("Accept", "").split(",")]
+    if "mark_sent" in request.POST:
+        request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLogType.FORM_SENT)
+    elif "undo_last_mark_sent" in request.POST:
+        request.user.dbsactions_performed.remove_last(officer=officer, action_type=DBSActionLogType.FORM_SENT)
 
-    if "application/json" in accept:
-        return {"status": "success", "dbsActionLogId": str(c.id)}
-    else:
-        # This path really only exists to support WebBrowser tests
-        return HttpResponseRedirect(request.headers["Referer"])
+    return htmx_dbs_events_response(refreshOfficer=officer)
 
 
-@staff_member_required
-@dbs_officer_required
-@json_response
-def undo_mark_dbs_sent(request):
-    dbsactionlog_id = int(request.POST["dbsactionlog_id"])
-    DBSActionLog.objects.filter(id=dbsactionlog_id).delete()
-    return {"status": "success"}
-
-
-def popup_email_view(
-    request, context, template_name=None, messageform_info=None, send_email=None, messageform_class=None
+def modal_dialog_message_form(
+    request,
+    context,
+    *,
+    template_name: str,
+    messageform_info: dict,
+    send_email: Callable[[str], None],
+    messageform_class=type,
+    success_response: HttpResponse,
+    cancel_response: HttpResponse,
 ):
     if request.method == "POST":
         if "send" in request.POST:
             messageform = messageform_class(request.POST, message_info=messageform_info)
-            # It's impossible for the form to be invalid, so assume valid
-            messageform.is_valid()
-            send_email(wordwrap(messageform.cleaned_data["message"], 70))
-            return reroute_response(request)
+            if messageform.is_valid():
+                send_email(wordwrap(messageform.cleaned_data["message"], 70))
+                return success_response
         else:
-            # cancel
-            return reroute_response(request)
-
-    messageform = messageform_class(message_info=messageform_info)
+            return cancel_response
+    else:
+        messageform = messageform_class(message_info=messageform_info)
 
     context["messageform"] = messageform
-    context["is_popup"] = True
     return TemplateResponse(request, template_name, context)
 
 
 @staff_member_required
 @dbs_officer_required
+@for_htmx(use_block_from_params=True)
 def dbs_consent_alert_leaders(request, application_id: int):
     app = get_object_or_404(Application.objects.filter(id=application_id))
-    officer = officer = app.officer
+    officer = app.officer
     camps = camps_for_application(app)
     context = {"officer": officer}
     messageform_info = {
@@ -1402,15 +1410,17 @@ def dbs_consent_alert_leaders(request, application_id: int):
 
     def send_email(message):
         send_dbs_consent_alert_leaders_email(message, officer, camps)
-        request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
+        request.user.dbsactions_performed.create(officer=officer, action_type=DBSActionLogType.LEADER_ALERT_SENT)
 
-    return popup_email_view(
+    return modal_dialog_message_form(
         request,
         context,
         template_name="cciw/officers/dbs_consent_alert_leaders.html",
         messageform_info=messageform_info,
         messageform_class=DbsConsentProblemForm,
         send_email=send_email,
+        cancel_response=htmx_dbs_events_response(closeModal=True),
+        success_response=htmx_dbs_events_response(closeModal=True, refreshOfficer=officer),
     )
 
 
@@ -1434,46 +1444,81 @@ def request_dbs_form_action(request, application_id: int):
     def send_email(message):
         send_request_for_dbs_form_email(message, officer, request.user)
         request.user.dbsactions_performed.create(
-            officer=officer, action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT
+            officer=officer, action_type=DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT
         )
 
-    return popup_email_view(
+    return modal_dialog_message_form(
         request,
         context,
         template_name="cciw/officers/request_dbs_form_action.html",
         messageform_info=messageform_info,
         messageform_class=RequestDbsFormForm,
         send_email=send_email,
+        cancel_response=htmx_dbs_events_response(closeModal=True),
+        success_response=htmx_dbs_events_response(closeModal=True, refreshOfficer=officer),
     )
 
 
 @staff_member_required
 @dbs_officer_required
-def dbs_checked_online(request):
-    officer = User.objects.get(id=int(request.GET["officer_id"]))
-    dbs_number = request.GET["dbs_number"]
+@for_htmx(use_block_from_params=True)
+def dbs_checked_online(request: HttpRequest, officer_id: int):
+    officer = User.objects.get(id=officer_id)
+    dbs_number = request.GET.get("dbs_number", "")
     old_dbs_check = officer.dbs_checks.filter(dbs_number=dbs_number).order_by("-completed").first()
-    params = {
-        "_return_to": request.GET["_return_to"],
-        "officer": officer.id,
+    form_initial = {
         "dbs_number": dbs_number,
-        "registered_with_dbs_update": "2",  # = Yes
-        "completed": date.today().strftime("%Y-%m-%d"),
+        "registered_with_dbs_update": True,
+        "completed": date.today(),
         "check_type": DBSCheck.CheckType.ONLINE,
     }
-    if "_temporary_window" in request.GET:
-        params["_temporary_window"] = request.GET["_temporary_window"]
-
     if old_dbs_check:
-        params.update(
+        form_initial.update(
             {
                 "requested_by": old_dbs_check.requested_by,
                 "other_organisation": old_dbs_check.other_organisation,
             }
         )
-    url = furl.furl(reverse("admin:officers_dbscheck_add")).add(params).url
+    return _dbscheck_create_form(request, officer, form_initial)
 
-    return HttpResponseRedirect(url)
+
+@staff_member_required
+@dbs_officer_required
+@for_htmx(use_block_from_params=True)
+def dbs_register_received(request: HttpRequest, officer_id: int):
+    officer = User.objects.get(id=officer_id)
+    form_initial = {
+        "check_type": DBSCheck.CheckType.FORM,
+    }
+    return _dbscheck_create_form(request, officer, form_initial)
+
+
+def _dbscheck_create_form(request: HttpRequest, officer: User, form_initial: dict):
+    dbscheck_admin_instance = admin_site._registry[DBSCheck]
+    if request.method == "POST":
+        if "save" in request.POST:
+            form = DBSCheckForm(request.POST)
+            if form.is_valid():
+                dbs_check = form.save(officer=officer)
+                # Copy what admin does for addition action
+                dbscheck_admin_instance.log_addition(request, dbs_check, [{"added": {}}])
+                # TODO add admin.LogEntry
+                return htmx_dbs_events_response(refreshOfficer=officer, closeModal=True)
+        else:
+            return htmx_dbs_events_response(closeModal=True)
+    else:
+        if "completed" in form_initial and not isinstance(form_initial["completed"], str):
+            form_initial["completed"] = form_initial["completed"].strftime("%Y-%m-%d")
+        form = DBSCheckForm(initial=form_initial)
+
+    return TemplateResponse(
+        request,
+        "cciw/officers/add_dbs_check.html",
+        {
+            "officer": officer,
+            "form": form,
+        },
+    )
 
 
 @staff_member_required

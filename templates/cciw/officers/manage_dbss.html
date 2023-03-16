@@ -3,86 +3,301 @@
 
 {% load static %}
 {% load compress %}
-
-{% block extrahead %}
-  {{ block.super }}
-  {% compress js %}
-    <script type="text/javascript" src="{% static "js/manage_dbss.js" %}"></script>
-  {% endcompress %}
-{% endblock %}
+{% load cciwform %}
 
 {% block content %}
+  <main id="content-main" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
-  <p>This page shows all officers on camp officer lists for year {{ year }}, and their status
-    regarding needing DBS checks.</p>
+    <p>This page shows all officers on camp officer lists for year {{ year }}, and their status
+      regarding needing DBS checks.</p>
 
-  <p>Please the <a href="/wiki/managing-dbs/" target="_blank">DBS wiki page</a>
-    for an overview of the process.</p>
+    <p>Please the <a href="/wiki/managing-dbs/" target="_blank">DBS wiki page</a>
+      for an overview of the process.</p>
 
-  <p>For officers needing DBSs, various possible actions are listed in the <b>Info and actions</b>
-    column, with any necessary info to take that action:</p>
+    <p>For officers needing DBSs, various possible actions are listed in the <b>Info and actions</b>
+      column, with any necessary info to take that action:</p>
 
-  <ul>
-    <li>If they have not yet filled an application form in, no actions are possible
-      because the application form collects required information for a DBS check.</li>
+    <ul>
+      <li>If they have not yet filled an application form in, no actions are possible
+        because the application form collects required information for a DBS check.</li>
 
-    <li>Some officers will need to be sent in the post a DBS form to fill in. You should <b>either</b>:
+      <li>Some officers will need to be sent in the post a DBS form to fill in. You should <b>either</b>:
 
-      <ul>
-        <li>Use the 'Ask {{ external_dbs_officer.organisation_short }} to send DBS form' button, OR</li>
-        <li>Send them a form yourself and use 'Mark DBS form sent' button.</li>
-      </ul>
-    </li>
+        <ul>
+          <li>Use the 'Ask {{ external_dbs_officer.organisation_short }} to send DBS form' button, OR</li>
+          <li>Send them a form yourself and use 'Mark DBS form sent' button.</li>
+        </ul>
+      </li>
 
-    <li>When a DBS check is returned, this should be entered using the relevant button.</li>
+      <li>When a DBS check is returned, this should be entered using the relevant button.</li>
 
-    <li>If an officer has a enhanced DBS number registered for the “update service”,
-      and if the number is in our database, the possibility of doing an online check
-      against the DBS number. This is by far the fastest method. Once complete, the
-      relevant button should be used to update our records.</li>
+      <li>If an officer has a enhanced DBS number registered for the “update service”,
+        and if the number is in our database, the possibility of doing an online check
+        against the DBS number. This is by far the fastest method. Once complete, the
+        relevant button should be used to update our records.</li>
 
-    <li>Officers definitely requiring attention from the DBS officer
-      are <span class="requires_action">highlighted</span>.</li>
+      <li>Officers definitely requiring attention from the DBS officer
+        are <span class="requires_action">highlighted</span>.</li>
 
-  </ul>
+    </ul>
 
-  <p>If necessary, you can edit an officer's application form to correct bad data, using the links
-    in the <b>Application Form</b> column.</p>
+    <p>If necessary, you can edit an officer's application form to correct bad data, using the links
+      in the <b>Application Form</b> column.</p>
 
-  <h2>Other options</h2>
+    <h2>Other options</h2>
 
-  <ul>
-    <li>To record information for an officer who is not listed as needing a DBS check below: <a href="{% url 'admin:officers_dbscheck_add' %}?_return_to={{ request.get_full_path|urlencode }}">manually add a DBS check record</a>.</li>
+    <ul>
+      <li>To record information for an officer who is not listed as needing a DBS check below: <a href="{% url 'admin:officers_dbscheck_add' %}?_return_to={{ request.get_full_path|urlencode }}">manually add a DBS check record</a>.</li>
 
-    <li><a target="_blank" href="{% url 'admin:officers_dbscheck_changelist' %}" target="_blank">Browse existing DBS check records</a></li>
-  </ul>
+      <li><a target="_blank" href="{% url 'admin:officers_dbscheck_changelist' %}" target="_blank">Browse existing DBS check records</a></li>
+    </ul>
 
-  <p>The officer list below can be filtered by camp if required:</p>
+    <p>The officer list below can be filtered by camp if required:</p>
 
-  <div id='id_campselector'>
-    <form action="." method="GET">
-      <p>Select camps: {% for camp in camps %}
-        <label><input type="checkbox" name="camp" value="{{ camp.slug_name }}"
-                      {% if camp in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
-      {% endfor %} <input type="submit" value="Update page">
-      </p>
-    </form>
-  </div>
+    <div id='id_campselector'>
+      <form
+        hx-get="."
+        hx-trigger="change"
+        hx-target="#content-main"
+        hx-swap="outerHTML"
+        hx-vals='{"use_block": "content"}'
+        hx-push-url="true"
+      >
+        <p>Select camps:
+          {% for camp in camps %}
+            <label>
+              <input type="checkbox" name="camp" value="{{ camp.slug_name }}"
+                     {% if camp in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
+          {% endfor %}
+        </p>
+      </form>
+    </div>
+    <table
+      id="id_dbs_officer_table"
+    >
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Camps</th>
+          <th>Application form</th>
+          <th>DBS status</th>
+          <th>Info and actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% block table-body %}
+          {% for officer, dbs_info in officers_and_dbs_info %}
+            <tr
+              data-officer-id="{{ officer.id }}"
+              {# don't use hx-vals here because it would be inherited by other htmx actions #}
+              hx-get="{% url 'cciw-officers-manage_dbss' year=year %}?officer_id={{ officer.id }}&use_block=table-body"
+              hx-trigger="refreshOfficer-{{ officer.id }} from:body"
+              hx-target="this"
+              hx-swap="outerHTML"
+              class="{% if dbs_info.requires_action %}requires_action{% endif %}"
+            >
+              <td>{{ officer.full_name }}</td>
+              <td>{% for camp in dbs_info.camps %}
+                <a href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+              </td>
+              <td>{% if dbs_info.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
+                <a href="{% url 'admin:officers_application_change' dbs_info.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
+              <td>
+                {% if not dbs_info.has_dbs %}
+                  <img src="{% static "admin/img/icon-no.svg" %}"> Never
+                {% else %}
+                  {% if dbs_info.applicant_rejected %}
+                    <img src="{% static "admin/img/icon-no.svg" %}"> Applicant rejected
+                  {% elif dbs_info.has_recent_dbs %}
+                    <img src="{% static "admin/img/icon-yes.svg" %}"> Recent
+                  {% else %}
+                    <img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
+                  {% endif %}
+                  <br/>
+                  <a href="{% url "admin:officers_dbscheck_changelist" %}?officer_id={{ officer.id }}"
+                     target="_blank"
+                  >Details</a>
+                {% endif %}
+              </td>
+              <td>
+                {# Lots of possible cases/actions. Start with the easy cases that involve no/few actions: #}
 
-  <table id="id_dbs_officer_table"
-         data-url="{% url 'cciw-officers-manage_dbss' year=year %}"
-  >
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Camps</th>
-        <th>Application form</th>
-        <th>DBS status</th>
-        <th>Info and actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% include 'cciw/officers/manage_dbss_rows_inc.html' %}
-    </tbody>
-  </table>
+                {% if dbs_info.has_recent_dbs %}
+                  {# No actions needed, deliberately empty #}
+                {% elif dbs_info.applicant_rejected %}
+                  APPLICANT REJECTED</br>
+                  Due to rejection based on DBS, this officer should be removed
+                  from the officer list. Please contact leaders/CCiW committee.
+                {% elif not dbs_info.has_application_form %}
+                  Needs application form
+                {% elif not dbs_info.dbs_check_consent %}
+                  {# Alert leaders to non-consent #}
+                  <div class="layout-table actions">
+                    <div class="layout-tr">
+                      <div class="layout-td">
+                        <b>Officer does not consent to DBS check</b>
+                      </div>
+                      <div class="layout-td">
+                        <form
+                          hx-get="{% url 'cciw-officers-dbs_consent_alert_leaders' application_id=dbs_info.application_id %}"
+                          hx-target="#modal-dialog-container"
+                          hx-swap="innerHTML"
+                        >
+                          <button name="alert_leaders">
+                            Alert leaders
+                          </button>
+                        </form>
+
+                      </div>
+                      <div class="layout-td">
+
+                        Alert sent:
+                        <span id="id_last_leader_alert_sent_{{ officer.id }}">
+                          {% if dbs_info.last_leader_alert_sent %}
+                            {{ dbs_info.last_leader_alert_sent|timesince }} ago
+                          {% else %}
+                            No record
+                          {% endif %}
+
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                {% else %}
+                  <div class="layout-table actions">
+                    {# Col 1 - caption for info #}
+                    {# Col 2 - info #}
+                    {# Col 3 - action button #}
+                    {# Col 2 - info about action completed #}
+
+                    {# Get external organisation to send DBS form #}
+                    <div class="layout-tr">
+                      <div class="layout-td">
+                      </div>
+                      <div class="layout-td">
+                      </div>
+                      <div class="layout-td">
+                        <form
+                          hx-get="{% url 'cciw-officers-request_dbs_form_action' application_id=dbs_info.application_id %}"
+                          hx-target="#modal-dialog-container"
+                          hx-swap="innerHTML"
+                        >
+                          <button name="request_form_to_be_sent">
+                            Ask {{ external_dbs_officer.organisation_short }} to send DBS form…
+                          </button>
+                        </form>
+                      </div>
+                      <div class="layout-td">
+                        Request sent:
+                        <span id="id_last_form_request_sent_{{ officer.id }}">
+                          {% if dbs_info.last_form_request_sent %}
+                            {{ dbs_info.last_form_request_sent|timesince }} ago
+                          {% else %}
+                            No record
+                          {% endif %}
+                        </span>
+
+                      </div>
+                    </div>
+
+                    {# Mark DBS form as sent #}
+                    <div class="layout-tr">
+                      <div class="layout-td">
+                        Send DBS form to address:
+                      </div>
+                      <div class="layout-td">
+                        <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
+                      </div>
+                      <div class="layout-td">
+                        <form
+                          hx-post="{% url 'cciw-officers-mark_dbs_sent' %}"
+                          hx-swap="none"
+                        >
+                          <input type="hidden" name="officer_id" value="{{ officer.id }}" />
+                          <button name="mark_sent">
+                            Mark DBS form sent
+                          </button>
+                          {% if dbs_info.last_dbs_form_sent_recently %}
+                            <button name="undo_last_mark_sent">
+                              Undo
+                            </button>
+                          {% endif %}
+                        </form>
+                      </div>
+                      <div class="layout-td">
+                        DBS form sent:
+                        <span id="id_last_dbs_form_sent_{{ officer.id }}">
+                          {% if dbs_info.last_dbs_form_sent %}
+                            {{ dbs_info.last_dbs_form_sent|timesince }} ago
+                          {% else %}
+                            No record
+                          {% endif %}
+                        </span>
+                      </div>
+                    </div>
+
+                    {# Register received DBS form #}
+                    <div class="layout-tr">
+                      <div class="layout-td">
+                        DBS result received:
+                      </div>
+                      <div class="layout-td"></div>
+                      <div class="layout-td">
+                        <form
+                          hx-get="{% url 'cciw-officers-dbs_register_received' officer_id=officer.id %}"
+                          hx-target="#modal-dialog-container"
+                          hx-swap="innerHTML"
+                        >
+                          <button name="register_received_dbs">DBS received…</button>
+                        </form>
+                      </div>
+                    </div>
+
+                    {% if dbs_info.update_enabled_dbs_number and dbs_info.can_check_dbs_online %}
+                      <div class="layout-tr">
+                        {# Row - check DBS online #}
+                        <div class="layout-td">
+                          Update service ID:<br>
+                          Date of birth
+                        </div>
+                        <div class="layout-td">
+                          {{ dbs_info.update_enabled_dbs_number.number }}<br>
+                          {{ dbs_info.birth_date|date:"Y-m-d" }}
+                        </div>
+                        <div class="layout-td" colspan="2">
+                          <form
+                            hx-get="{% url 'cciw-officers-dbs_checked_online' officer_id=officer.id %}"
+                            hx-target="#modal-dialog-container"
+                            hx-swap="innerHTML"
+                          >
+                            <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number.number }}">
+                            <button name="dbs_checked_online">DBS checked online…</button>
+                          </form>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                  {% if dbs_info.update_enabled_dbs_number and not dbs_info.can_check_dbs_online %}
+                    <div class="layout-table">
+                      <div class="layout-tr">
+                        <div class="layout-td">
+                          CANNOT CHECK ONLINE: we have a DBS number
+                          ({{ dbs_info.update_enabled_dbs_number.number }}),
+                          but no info about the original DBS, and the online service only
+                          gives updates. Either the DBS must be checked, or a new DBS
+                          requested.
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        {% endblock %}
+      </tbody>
+    </table>
+  </main>
 {% endblock %}

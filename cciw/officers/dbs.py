@@ -2,14 +2,14 @@ import operator
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from functools import reduce
+from functools import cached_property, reduce
 
 from django.utils import timezone
 
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camps
-from cciw.officers.models import Application, DBSActionLog, DBSCheck, Invitation
+from cciw.officers.models import Application, DBSActionLog, DBSActionLogType, DBSCheck, Invitation
 
 
 @dataclass
@@ -75,11 +75,19 @@ class DBSInfo:
             )
         )
 
+    @cached_property
+    def last_dbs_form_sent_recently(self) -> bool:
+        return self.last_dbs_form_sent is not None and (timezone.now() - self.last_dbs_form_sent) < timedelta(days=1)
 
-def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None) -> list[tuple[User, DBSInfo]]:
+
+def get_officers_with_dbs_info_for_camps(
+    year_camps: list[Camp], selected_camps: set[Camp], officer_id: int | None = None
+) -> list[tuple[User, DBSInfo]]:
     """
     Get needed DBS officer info for the given set of camps,
     return a list of two tuples, [(officer, dbs_info)]
+
+    Filter to given officer_id if provided
     """
     # Some of this logic could be put onto specific models. However, we only
     # ever need this info in bulk for specific views, and efficient data access
@@ -88,19 +96,18 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None) -> list[
     # We need all the officers, and we need to know which camp(s) they belong
     # to. Even if we have only selected one camp, it might be nice to know if
     # they are on other camps. So we get data for all camps, and filter later.
-    # We also want to be able to do filtering by javascript in the frontend.
     now = timezone.now()
 
-    camp_invitations = Invitation.objects.filter(camp__in=camps).select_related("officer", "camp__camp_name")
+    camp_invitations = Invitation.objects.filter(camp__in=year_camps).select_related("officer", "camp__camp_name")
     if officer_id is not None:
         camp_invitations = camp_invitations.filter(officer__id=officer_id)
     camp_invitations = list(camp_invitations)
 
     all_officers = list({i.officer for i in camp_invitations})
     all_officers.sort(key=lambda o: (o.first_name, o.last_name))
-    apps = list(applications_for_camps(camps))
+    apps = list(applications_for_camps(year_camps))
     recent_dbs_officer_ids = set(
-        reduce(operator.or_, [DBSCheck.objects.get_for_camp(c, include_late=True) for c in camps]).values_list(
+        reduce(operator.or_, [DBSCheck.objects.get_for_camp(c, include_late=True) for c in year_camps]).values_list(
             "officer_id", flat=True
         )
     )
@@ -119,11 +126,11 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None) -> list[
         .filter(created_at__gt=now - timedelta(365))
         .order_by("created_at")
     )
-    dbs_forms_sent = list(relevant_action_logs.filter(action_type=DBSActionLog.ACTION_FORM_SENT))
+    dbs_forms_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.FORM_SENT))
     requests_for_dbs_form_sent = list(
-        relevant_action_logs.filter(action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
+        relevant_action_logs.filter(action_type=DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT)
     )
-    leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT))
+    leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.LEADER_ALERT_SENT))
 
     update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(all_officers)
 
@@ -152,6 +159,8 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None) -> list[
     retval = []
     for o in all_officers:
         officer_camps = officers_camps[o.id]
+        if not any(c in selected_camps for c in officer_camps):
+            continue
         app = officer_apps.get(o.id, None)
         dbs_info = DBSInfo(
             camps=officer_camps,

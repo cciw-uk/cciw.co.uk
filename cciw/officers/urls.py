@@ -69,7 +69,6 @@ urlpatterns = [
     # DBS
     path("leaders/dbss/<yyyy:year>/", views.manage_dbss, name="cciw-officers-manage_dbss"),
     path("leaders/mark-dbs-sent/", views.mark_dbs_sent, name="cciw-officers-mark_dbs_sent"),
-    path("leaders/undo-mark-dbs-sent/", views.undo_mark_dbs_sent, name="cciw-officers-undo_mark_dbs_sent"),
     path(
         "leaders/dbs-consent-alert-leaders/<int:application_id>/",
         views.dbs_consent_alert_leaders,
@@ -80,7 +79,16 @@ urlpatterns = [
         views.request_dbs_form_action,
         name="cciw-officers-request_dbs_form_action",
     ),
-    path("leaders/dbs-checked-online/", views.dbs_checked_online, name="cciw-officers-dbs_checked_online"),
+    path(
+        "leaders/dbs-checked-online/<int:officer_id>/",
+        views.dbs_checked_online,
+        name="cciw-officers-dbs_checked_online",
+    ),
+    path(
+        "leaders/dbs-register-received/<int:officer_id>/",
+        views.dbs_register_received,
+        name="cciw-officers-dbs_register_received",
+    ),
     # Officer stats
     path("leaders/officer-stats/<yyyy:year>/", views.officer_stats, name="cciw-officers-officer_stats"),
     path(

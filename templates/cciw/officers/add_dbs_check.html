@@ -1,20 +1,18 @@
 {% extends "cciw/officers/modal_dialog.html" %}
 
-{% block title %}DBS consent problem for {{ officer.full_name }}{% endblock %}
+{% block title %}Add DBS check for {{ officer.full_name }}{% endblock %}
 
 {% block content %}
-  <h2>Report DBS problem to leaders</h2>
-
-  <p>The following email, which you can now modify, will be sent to the leaders of the relevant camp(s).</p>
-
   <form
     hx-post="{{ request.get_full_path }}"
     hx-target="#dialog-content-main"
     hx-vals='{"use_block": "content"}'
   >
-    {{ messageform.as_p }}
+    <table>
+      {{ form }}
+    </table>
     <p>
-      <input type="submit" name="send" value="Send" />
+      <input type="submit" name="save" value="Save" />
       <input type="submit" name="cancel" value="Cancel" formnovalidate />
     </p>
   </form>

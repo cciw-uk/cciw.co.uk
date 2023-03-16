@@ -156,7 +156,11 @@ def for_htmx(
                 if if_hx_target is None or request.headers.get("Hx-Target", None) == if_hx_target:
                     blocks_to_use = use_block
                     if not hasattr(resp, "render"):
-                        if not resp.content and "Hx-Trigger" in resp.headers:
+                        if not resp.content and (
+                            "Hx-Trigger" in resp.headers
+                            or "Hx-Trigger-After-Swap" in resp.headers
+                            or "Hx-Trigger-After-Settle" in resp.headers
+                        ):
                             # This is a special case response, it doesn't need modifying:
                             return resp
                         # Otherwise there is some mistake

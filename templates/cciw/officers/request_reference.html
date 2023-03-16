@@ -3,8 +3,6 @@
 {% block title %}Request reference for {{ app.officer.full_name }} from {{ referee.name }}{% endblock %}
 
 {% block content %}
-  {{ block.super }}
-
   {% include "cciw/officers/referee_details_summary_inc.html" with referee=referee %}
 
   <div><br/></div>
@@ -32,8 +30,7 @@
 
   <p>The following email, which you can now modify, will be sent to them. Make sure you don't modify the link contained in the email.</p>
   <form
-    id="id_request_reference_send"
-    hx-post="{{ post_url }}"
+    hx-post="{{ request.get_full_path }}"
     hx-target="#dialog-content-main"
     hx-vals='{"use_block": "content"}'
   >
