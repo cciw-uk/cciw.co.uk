@@ -118,7 +118,8 @@ Roles:
       - officers.Reference/change
   Chairperson:
     # This person will be a member of Committee as well
-    Permissions: []
+    Permissions:
+      - contact_us.Message/view
   Site editors:
     # People with general permissions to manage the
     # site - enter camp information etc.
