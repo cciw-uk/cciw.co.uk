@@ -542,6 +542,8 @@ def manage_references(request, camp_id: CampId):
             referee.application.officer.last_name,
             referee.name,
         ]
+        # Note that we add this as an attribute because we also need to sort by
+        # the same key client side.
         if referee.reference_is_received():
             continue  # Don't need the following
         # decorate each Reference with suggested previous References.
@@ -590,11 +592,11 @@ def officer_history(request, officer_id: int):
 
 def htmx_reference_events_response(
     closeModal: bool = False,
-    refreshReference: Referee | None = None,
+    refreshReferee: Referee | None = None,
 ):
     events = {}
-    if refreshReference is not None:
-        events["refreshReference"] = refreshReference.id
+    if refreshReferee is not None:
+        events[f"refreshReferee-{refreshReferee.id}"] = True
     if closeModal:
         events["closeModal"] = closeModal
 
@@ -612,7 +614,7 @@ def correct_referee_details(request: HttpRequest, camp_id: CampId, referee_id: i
             if form.is_valid():
                 form.save()
                 referee.log_details_corrected(request.user, timezone.now())
-                return htmx_reference_events_response(closeModal=True, refreshReference=referee)
+                return htmx_reference_events_response(closeModal=True, refreshReferee=referee)
         else:
             # cancel
             return htmx_reference_events_response(closeModal=True)
@@ -671,7 +673,7 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
     if prev_ref_id:
         prev_reference_is_exact, prev_reference = _get_previous_reference(referee, prev_ref_id)
         if prev_reference is None:
-            return htmx_reference_events_response(closeModal=True, refreshReference=referee)
+            return htmx_reference_events_response(closeModal=True, refreshReferee=referee)
         context["known_email_address"] = prev_reference_is_exact
         context["old_referee"] = prev_reference.referee
         url = make_ref_form_url(referee.id, prev_ref_id)
@@ -695,7 +697,7 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
             if form.is_valid():
                 send_reference_request_email(wordwrap(form.cleaned_data["message"], 70), referee, request.user, camp)
                 referee.log_request_made(request.user, timezone.now())
-                return htmx_reference_events_response(closeModal=True, refreshReference=referee)
+                return htmx_reference_events_response(closeModal=True, refreshReferee=referee)
         elif "cancel" in request.POST:
             return htmx_reference_events_response(closeModal=True)
     else:
@@ -735,7 +737,7 @@ def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id
             form = AdminReferenceForm(request.POST, instance=reference)
             if form.is_valid():
                 form.save(referee, user=request.user)
-                return htmx_reference_events_response(closeModal=True, refreshReference=referee)
+                return htmx_reference_events_response(closeModal=True, refreshReferee=referee)
         else:
             # Cancel
             return htmx_reference_events_response(closeModal=True)
@@ -772,7 +774,7 @@ def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
             if form.is_valid():
                 send_nag_by_officer(wordwrap(form.cleaned_data["message"], 70), officer, referee, request.user)
                 referee.log_nag_made(request.user, timezone.now())
-                return htmx_reference_events_response(closeModal=True, refreshReference=referee)
+                return htmx_reference_events_response(closeModal=True, refreshReferee=referee)
         else:
             # cancel
             return htmx_reference_events_response(closeModal=True)

@@ -1,12 +1,18 @@
 {% load json_filters %}
 
-<div id="id-manage-reference-{{ referee.id }}"
-     class="manage-reference
-            {% if referee.reference_is_received %}manage-reference--received
-            {% elif referee.reference_was_requested %}manage-reference--requested
-            {% else %}manage-reference--notrequested
-            {% endif %}"
-     data-sort-key="{{ referee.sort_key|jsonify }}">
+<div
+  id="id-manage-reference-{{ referee.id }}"
+  hx-get="?referee_id={{ referee.id }}"
+  hx-trigger="refreshReferee-{{ referee.id }} from:body"
+  hx-target="this"
+  hx-swap="outerHTML"
+  class="manage-reference
+         {% if referee.reference_is_received %}manage-reference--received
+         {% elif referee.reference_was_requested %}manage-reference--requested
+         {% else %}manage-reference--notrequested
+         {% endif %}"
+  data-sort-key="{{ referee.sort_key|jsonify }}"
+>
   <h3 class="referencestart">
     {{ referee.application.officer.full_name }}
     &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=referee.application.officer.id %}"

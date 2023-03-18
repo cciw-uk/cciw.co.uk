@@ -6,19 +6,17 @@
 
 {% block content %}
   <script type="text/javascript">
-    //<![CDATA[
+    document.body.addEventListener("htmx:afterSettle", function(detail) {
+      // Move newly added 'id-manage-reference-' divs into their correct place,
+      // which may have changed due to status change.
 
-    document.body.addEventListener("refreshReference", function(evt) {
-      const refereeId = evt.detail.value;
-      const refereeSelector = "#id-manage-reference-" + refereeId.toString()
-      const moveIntoPlace = () => {
-        const refreshedNode = document.querySelector(refereeSelector);
+      const moveIntoPlace = (refreshedNode) => {
         const sortKey = (node) => JSON.parse(node.getAttribute("data-sort-key"));
         const mySortKey = sortKey(refreshedNode);
         if ((refreshedNode.previousElementSibling && sortKey(refreshedNode.previousElementSibling) > mySortKey) ||
           (refreshedNode.nextElementSibling && sortKey(refreshedNode.nextElementSibling) < mySortKey))
         {
-          // this node is in the wrong place.
+          // This node is in the wrong place.
 
           var inserted = false;
           var previousNode = null;
@@ -28,7 +26,7 @@
             if (!node.tagName) {
               continue;
             }
-            if ((previousNode === null || sortKey(previousNode) < mySortKey) && (sortKey(node) >= mySortKey)) {
+            if (node != refreshedNode && (previousNode === null || sortKey(previousNode) < mySortKey) && (sortKey(node) >= mySortKey)) {
               // Found right place
               parentNode.insertBefore(refreshedNode, node);
               inserted = true;
@@ -42,13 +40,11 @@
         }
       };
 
-      htmx.ajax("GET", "?referee_id=" + refereeId.toString(), {
-        target: refereeSelector,
-        swap: "outerHTML",
-      }).then(moveIntoPlace);
+      var loadedNode = detail.target;
+      if (loadedNode && loadedNode.id && loadedNode.id.startsWith("id-manage-reference")) {
+        moveIntoPlace(loadedNode);
+      }
     });
-
-    //]]>
   </script>
 
   <div id="content-main">
