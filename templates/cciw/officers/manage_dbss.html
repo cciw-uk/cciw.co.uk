@@ -153,7 +153,7 @@
                       <div class="layout-td">
 
                         Alert sent:
-                        <span id="id_last_leader_alert_sent_{{ officer.id }}">
+                        <span data-last-leader-alert-sent>
                           {% if dbs_info.last_leader_alert_sent %}
                             {{ dbs_info.last_leader_alert_sent|timesince }} ago
                           {% else %}
@@ -191,7 +191,7 @@
                       </div>
                       <div class="layout-td">
                         Request sent:
-                        <span id="id_last_form_request_sent_{{ officer.id }}">
+                        <span data-last-form-request-sent>
                           {% if dbs_info.last_form_request_sent %}
                             {{ dbs_info.last_form_request_sent|timesince }} ago
                           {% else %}
@@ -208,7 +208,7 @@
                         Send DBS form to address:
                       </div>
                       <div class="layout-td">
-                        <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
+                        <textarea class="address">{{ dbs_info.address }}</textarea>
                       </div>
                       <div class="layout-td">
                         <form
@@ -228,7 +228,7 @@
                       </div>
                       <div class="layout-td">
                         DBS form sent:
-                        <span id="id_last_dbs_form_sent_{{ officer.id }}">
+                        <span data-last-dbs-form-sent>
                           {% if dbs_info.last_dbs_form_sent %}
                             {{ dbs_info.last_dbs_form_sent|timesince }} ago
                           {% else %}

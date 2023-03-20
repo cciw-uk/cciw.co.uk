@@ -219,19 +219,19 @@ class ManageDbsPageSL(SeleniumBase):
         assert officer.dbsactionlogs.count() == 1
         assert officer.dbsactionlogs.get().user.username == self.dbs_officer.username
 
-        self.assertElementText(f"#id_last_dbs_form_sent_{officer.id}", "0 minutes ago")
+        self.assertElementText(f'[data-officer-id="{officer.id}"] [data-last-dbs-form-sent]', "0 minutes ago")
 
         self.click_dbs_sent_undo_button(officer)
         self.wait_for_ajax()
         assert officer.dbsactionlogs.count() == 0
-        self.assertElementText(f"#id_last_dbs_form_sent_{officer.id}", "No record")
+        self.assertElementText(f'[data-officer-id="{officer.id}"] [data-last-dbs-form-sent]', "No record")
 
     def test_alert_leaders(self):
         factories.create_application(self.officer_user, year=self.year, dbs_check_consent=False)
         self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
         self.assertTextPresent("Officer does not consent")
-        self.assertElementText(f"#id_last_leader_alert_sent_{self.officer_user.id}", "No record")
+        self.assertElementText(f'[data-officer-id="{self.officer_user.id}"] [data-last-leader-alert-sent]', "No record")
         self.click_alert_leaders_button(self.officer_user)
         self.assertTextPresent("Report DBS problem to leaders")
         self.click('input[name="send"]', scroll=False)
@@ -244,7 +244,9 @@ class ManageDbsPageSL(SeleniumBase):
         assert self.dbs_officer.dbsactions_performed.count() == 1
         assert self.dbs_officer.dbsactions_performed.get().action_type == DBSActionLogType.LEADER_ALERT_SENT
 
-        self.assertElementText(f"#id_last_leader_alert_sent_{self.officer_user.id}", "0 minutes ago")
+        self.assertElementText(
+            f'[data-officer-id="{self.officer_user.id}"] [data-last-leader-alert-sent]', "0 minutes ago"
+        )
 
     def wait_for_dialog_close(self):
         self.wait_until(lambda _: not self.is_element_displayed("dialog"))
@@ -254,7 +256,7 @@ class ManageDbsPageSL(SeleniumBase):
         factories.create_application(self.officer_user, year=self.year)
         self.officer_login(self.dbs_officer)
         self.get_url("cciw-officers-manage_dbss", self.year)
-        self.assertElementText(f"#id_last_form_request_sent_{self.officer_user.id}", "No record")
+        self.assertElementText(f'[data-officer-id="{self.officer_user.id}"] [data-last-form-request-sent]', "No record")
         self.click_request_dbs_form_button(self.officer_user)
         self.assertTextPresent(f"Ask for DBS form to be sent to {self.officer_user.full_name}", within="dialog")
         self.click('input[name="send"]')
@@ -266,7 +268,9 @@ class ManageDbsPageSL(SeleniumBase):
         assert self.dbs_officer.dbsactions_performed.count() == 1
         assert self.dbs_officer.dbsactions_performed.get().action_type == DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT
 
-        self.assertElementText(f"#id_last_form_request_sent_{self.officer_user.id}", "0 minutes ago")
+        self.assertElementText(
+            f'[data-officer-id="{self.officer_user.id}"] [data-last-form-request-sent]', "0 minutes ago"
+        )
 
     def test_register_received_dbs(self):
         factories.create_application(self.officer_user, year=self.year)

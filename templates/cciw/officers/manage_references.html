@@ -2,6 +2,7 @@
 
 {% load reference_utils %}
 {% load static %}
+{% load json_filters %}
 
 
 {% block content %}
@@ -77,13 +78,205 @@
     {% endif %}
 
     <div class="manage-reference-list">
-      {% for referee in all_referees %}
-        {% include "cciw/officers/manage_reference.html" %}
-      {% empty %}
-        <div class="manage-reference manage-reference--notrequested">
-          <p>No references/application forms found</p>
-        </div>
-      {% endfor %}
+      {% block list-body %}
+        {% for referee in all_referees %}
+          <div
+            id="id-manage-reference-{{ referee.id }}"
+            hx-get="?referee_id={{ referee.id }}&use_block=list-body"
+            hx-trigger="refreshReferee-{{ referee.id }} from:body"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="manage-reference
+                   {% if referee.reference_is_received %}manage-reference--received
+                   {% elif referee.reference_was_requested %}manage-reference--requested
+                   {% else %}manage-reference--notrequested
+                   {% endif %}"
+            data-sort-key="{{ referee.sort_key|jsonify }}"
+          >
+            <h3 class="referencestart">
+              {{ referee.application.officer.full_name }}
+              &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=referee.application.officer.id %}"
+                             target="_blank"
+              >full reference history</a>
+            </h3>
+            <div class="columns-space-between columns-stacked-for-small">
+              <div> {# Column 1 #}
+                <h4 class="refereename">From: {{ referee.name }}{% if referee.capacity_known %} ({{ referee.capacity_known }}){% endif %}</h4>
+
+                {% if referee.reference_is_received %}
+                  <div class="good"><strong>Received</strong></div>
+                {% else %}
+                  {% if referee.reference_was_requested %}
+                    <div class="ok"><strong>Requested</strong></div>
+                    {% if referee.last_requested %}
+                      <div>Last requested: <b> {{ referee.last_requested|timesince }} ago</b></div>
+                    {% endif %}
+                  {% else %}
+                    <div><strong>Reference not yet requested</strong></div>
+                  {% endif %}
+                {% endif %}
+
+                {% if referee.reference_is_received %}
+                  <p><a href="{% url 'cciw-officers-view_reference' reference_id=referee.reference.id %}" target="_blank">View reference from {{ referee.name }}</a>
+                  </p>
+                {% else %}
+                  <div class="layout-table manage-reference__action-table">
+                    {% if referee.reference_was_requested %}
+                      <div class="layout-tr">
+                        <div class="layout-td">
+                          Ask {{ referee.application.officer.first_name }} to prompt their referee:
+                        </div>
+                        <div class="layout-td">
+                          <button
+                            name="nag-by-officer"
+                            hx-get='{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id referee_id=referee.id %}'
+                            hx-target="#modal-dialog-container"
+                            hx-swap="innerHTML"
+                          >
+                            Get {{ referee.application.officer.first_name }} to do the nagging
+                          </button>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    {% if referee.previous_reference %}
+                      <div class="layout-tr">
+                        <div class="layout-td">
+                          {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
+                          has done a reference for {{ referee.application.officer.first_name}} before, so:
+                        </div>
+                        <div class="layout-td">
+                          <button
+                            name="request-updated-reference"
+                            hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
+                            hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
+                            hx-target="#modal-dialog-container"
+                            hx-swap="innerHTML"
+                          >
+                            Request updated reference{% if referee.reference_was_requested %} (again){% endif %}
+                          </button>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    {% if not referee.previous_reference %}
+                      <div class="layout-tr">
+                        <div class="layout-td">
+                          {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
+                          has not done an online reference for {{ referee.application.officer.first_name}} before, so:
+                        </div>
+                        <div class="layout-td">
+
+                          <button
+                            name="request-reference"
+                            hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
+                            hx-target="#modal-dialog-container"
+                            hx-swap="innerHTML"
+                          >
+                            Request reference{% if referee.reference_was_requested %} (again){% endif %}
+                          </button>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    {% if referee.possible_previous_references %}
+                      <div class="layout-tr">
+                        <div class="layout-td">
+                          There are no exact matches for <b>{{ referee.name }} &lt;{{ referee.email }}&gt;</b>
+                          but one of the previous references submitted for this officer may actually be from the
+                          same person:
+                        </div>
+                        <div class="layout-td">
+                          <form
+                            hx-get='{% url "cciw-officers-request_reference" camp_id=camp.url_id referee_id=referee.id %}'
+                            hx-target="#modal-dialog-container"
+                            hx-swap="innerHTML"
+                          >
+                            <select name="prev_ref_id" required>
+                              <option value="" selected="selected">-----</option>
+                              {% for reference in referee.possible_previous_references %}
+                                <option value="{{ reference.id }}">
+                                  {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
+                                  ({{ reference.date_created|date:"Y" }})
+                                </option>
+                              {% endfor %}
+                            </select><br>
+                            <button
+                              name="request-updated-reference-custom"
+                            >
+                              Request updated reference{% if referee.reference_was_requested %} (again){% endif %}
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    <div class="layout-tr">
+                      <div class="layout-td">
+                        If the name/email or other details are missing or incorrect:
+                      </div>
+                      <div class="layout-td">
+
+                        <button
+                          name="correct-referee-details"
+                          hx-get='{% url "cciw-officers-correct_referee_details" camp_id=camp.url_id referee_id=referee.id %}'
+                          hx-target="#modal-dialog-container"
+                          hx-swap="innerHTML"
+                        >
+                          Correct referee details
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="layout-tr">
+                      <div class="layout-td">
+                        If the referee can't respond to email:
+                      </div>
+                      <div class="layout-td">
+                        <button
+                          name="fill-in-reference-manually"
+                          hx-get='{% url "cciw-officers-fill_in_reference_manually" camp_id=camp.url_id referee_id=referee.id %}'
+                          hx-target="#modal-dialog-container"
+                          hx-swap="innerHTML"
+                          {% if referee.previous_reference %}
+                            hx-vals='{"prev_ref_id": {{ referee.previous_reference.id }} }'
+                          {% endif %}
+                        >
+                          Fill in form manually
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                {% endif %}
+
+              </div>
+
+              <div> {# Column 2 #}
+                {% with actions=referee.actions.all %}
+                  {% if actions %}
+                    <h4>History</h4>
+                    <table>
+                      {% for action in referee.actions.all %}
+                        <tr>
+                          <td>{{ action.created_at|date:"Y-m-d H:i" }}</td>
+                          <td>{{ action.created_at|timesince }} ago</td>
+                          <td>{{ action.get_action_type_display }}</td>
+                          <td>{% if action.user %}by {{ action.user.username }}{% endif %}</td>
+                        </tr>
+                      {% endfor %}
+                    </table>
+                  {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="manage-reference manage-reference--notrequested">
+            <p>No references/application forms found</p>
+          </div>
+        {% endfor %}
+      {% endblock %}
     </div>
 
   </div>

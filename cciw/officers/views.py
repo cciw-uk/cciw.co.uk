@@ -500,6 +500,7 @@ def _get_camp_or_404(camp_id: CampId) -> Camp:
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
 @with_breadcrumbs(leaders_breadcrumbs)
+@for_htmx(use_block_from_params=True)
 def manage_references(request, camp_id: CampId):
 
     # If referee_id is set, we just want to update part of the page.
@@ -551,21 +552,17 @@ def manage_references(request, camp_id: CampId):
 
     all_referees.sort(key=lambda referee: referee.sort_key)
 
-    context = {
-        "officer": officer,
-        "camp": camp,
-        "title": f"Manage references: {camp.nice_name}",
-        "ref_email_search": ref_email,
-    }
-
-    if referee_id is None:
-        context["all_referees"] = all_referees
-        template_name = "cciw/officers/manage_references.html"
-    else:
-        context["referee"] = all_referees[0]
-        template_name = "cciw/officers/manage_reference.html"
-
-    return TemplateResponse(request, template_name, context)
+    return TemplateResponse(
+        request,
+        "cciw/officers/manage_references.html",
+        {
+            "officer": officer,
+            "camp": camp,
+            "title": f"Manage references: {camp.nice_name}",
+            "ref_email_search": ref_email,
+            "all_referees": all_referees,
+        },
+    )
 
 
 @staff_member_required
