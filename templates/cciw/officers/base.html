@@ -30,9 +30,17 @@
 
   <script type="text/javascript">
     document.body.addEventListener("htmx:afterSettle", function(detail) {
-      var loadedNodes = detail.target.children;
+      const loadedNodes = detail.target.children;
       if (loadedNodes && loadedNodes.length == 1 && loadedNodes[0].tagName == "DIALOG") {
-        loadedNodes[0].showModal();
+        const dialog = loadedNodes[0];
+        dialog.addEventListener("close", (event) => {
+          // Remove dialog to ensure it can't interfere with anything or block
+          // interaction. This is in addition to CSS `pointer-events: none`
+          // on the dialog element which has the same purpose, but there may not
+          // be complete browser support for both.
+          dialog.remove();
+        });
+        dialog.showModal();
       };
     });
 
