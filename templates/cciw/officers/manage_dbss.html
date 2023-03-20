@@ -123,12 +123,12 @@
               <td>
                 {# Lots of possible cases/actions. Start with the easy cases that involve no/few actions: #}
 
-                {% if dbs_info.has_recent_dbs %}
-                  {# No actions needed, deliberately empty #}
-                {% elif dbs_info.applicant_rejected %}
+                {% if dbs_info.applicant_rejected %}
                   APPLICANT REJECTED</br>
                   Due to rejection based on DBS, this officer should be removed
                   from the officer list. Please contact leaders/CCiW committee.
+                {% elif dbs_info.has_recent_dbs %}
+                  {# No actions needed, deliberately empty #}
                 {% elif not dbs_info.has_application_form %}
                   Needs application form
                 {% elif not dbs_info.dbs_check_consent %}
