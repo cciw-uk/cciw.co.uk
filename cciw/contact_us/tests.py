@@ -8,10 +8,20 @@ from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.contact_us.bogofilter import BogofilterStatus
 from cciw.officers.tests import factories as officer_factories
 from cciw.sitecontent.models import HtmlChunk
+from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import WebTestBase
 
-from ..models import Message, SpamStatus
-from .factories import create_message
+from .models import ContactType, Message, SpamStatus
+
+
+def create_message(message: str = Auto, subject: ContactType = ContactType.WEBSITE) -> Message:
+    return Message.objects.create(
+        subject=subject,
+        email="someemail@example.com",
+        name="Some Person",
+        message="This is an important message please read it" if message is Auto else message,
+    )
+
 
 CONTACT_US_URL = reverse("cciw-contact_us-send")
 

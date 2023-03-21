@@ -13,8 +13,8 @@ from cciw.bookings.models import Booking, BookingAccount, BookingState
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
+from cciw.contact_us import tests as contact_us_factories
 from cciw.contact_us.models import Message
-from cciw.contact_us.tests import factories as contact_us_factories
 from cciw.data_retention.applying import PreserveAgeOnCamp, apply_data_retention
 from cciw.data_retention.datatypes import ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, Rules
 from cciw.data_retention.loading import parse_keep
