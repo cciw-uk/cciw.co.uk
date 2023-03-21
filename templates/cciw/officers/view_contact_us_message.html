@@ -56,6 +56,14 @@
         </form>
       </td>
     </tr>
+    <tr>
+      <th>Re-classify</th>
+      <td>
+        <form method="POST" action=".">{% csrf_token %}
+          {{ reclassify_form.subject }} <input type="submit" name="reclassify" value="Change subject">
+        </form>
+      </td>
+    </tr>
   </table>
   <p><a href="mailto:{{ message.email|urlencode }}?subject={{ subject|urlencode }}&body={{ reply_template|urlencode }}">Reply in your email program</a></p>
 

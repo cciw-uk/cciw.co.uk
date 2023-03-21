@@ -1,10 +1,18 @@
+import logging
+
+from django.conf import settings
+from django.core import mail
 from django.db import models
 from django.db.models import TextChoices
+from django.urls import reverse
 from django.utils import timezone
 
 from cciw.bookings.models import BookingAccount
+from cciw.cciwmain.common import get_current_domain
 
 from .bogofilter import BogofilterStatus, get_bogofilter_classification, make_email_msg, mark_ham, mark_spam
+
+logger = logging.getLogger(__name__)
 
 
 class MessageQuerySet(models.QuerySet):
@@ -19,6 +27,20 @@ class ContactType(TextChoices):
     DATA_PROTECTION = "data_protection", "Data protection and related"
     VOLUNTEERING = "volunteering", "Volunteering"
     GENERAL = "general", "Other"
+
+
+CONTACT_CHOICE_DESTS = {
+    ContactType.BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
+    ContactType.BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
+    ContactType.GENERAL: settings.GENERAL_CONTACT_EMAILS,
+    ContactType.WEBSITE: settings.WEBMASTER_EMAILS,
+    ContactType.VOLUNTEERING: settings.VOLUNTEERING_EMAILS,
+    ContactType.DATA_PROTECTION: settings.WEBMASTER_EMAILS,
+}
+
+
+for val in ContactType:
+    assert val in CONTACT_CHOICE_DESTS, f"{val!r} missing form CONTACT_CHOICE_DESTS"
 
 
 class SpamStatus(TextChoices):
@@ -55,7 +77,7 @@ class Message(models.Model):
         return f"Message {self.id} from {self.email} on {self.created_at}"
 
     @property
-    def bogosity_percent(self) -> int:
+    def bogosity_percent(self) -> int | None:
         return None if self.bogosity is None else int(self.bogosity * 100)
 
     def mark_spam(self):
@@ -68,14 +90,13 @@ class Message(models.Model):
         mark_ham(self._make_bogofilter_email_message())
         self.classify_with_bogofilter()
 
-    def classify_with_bogofilter(self) -> tuple[BogofilterStatus, float]:
+    def classify_with_bogofilter(self) -> None:
         status, score = get_bogofilter_classification(self._make_bogofilter_email_message())
         if self.spam_classification_bogofilter == BogofilterStatus.UNCLASSIFIED or status != BogofilterStatus.ERROR:
             self.spam_classification_bogofilter = status
         if score is not None:
             self.bogosity = score
         self.save()
-        return status, score
 
     def _make_bogofilter_email_message(self):
         return make_email_msg(
@@ -84,3 +105,36 @@ class Message(models.Model):
             self.message,
             extra_headers={"X-Account": repr(self.booking_account)} if self.booking_account else None,
         )
+
+    def send_emails(self):
+        if self.spam_classification_bogofilter == BogofilterStatus.SPAM and self.bogosity > 0.95:
+            logger.info("Not sending contact_us email id=%s with spam score %.3f", self.id, self.bogosity)
+            return
+
+        to_emails = CONTACT_CHOICE_DESTS[self.subject]
+
+        # Since msg.message could contain arbitrary spam, we don't send
+        # it in an email (to protect our email server's spam reputation).
+        # Instead we send a link to a page that will show the message.
+
+        view_url = "https://{domain}{path}".format(
+            domain=get_current_domain(), path=reverse("cciw-contact_us-view", args=(self.id,))
+        )
+
+        body = f"""
+A message has been sent on the CCiW website feedback form, follow
+the link to view it:
+
+{view_url}
+
+Spaminess: {self.bogosity_percent}% - {self.get_spam_classification_bogofilter_display().upper()}
+
+    """
+
+        email = mail.EmailMessage(
+            subject=f"[CCIW] Website feedback {self.id}",
+            body=body,
+            from_email=settings.SERVER_EMAIL,
+            to=to_emails,
+        )
+        email.send()

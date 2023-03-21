@@ -20,6 +20,12 @@ class ContactUsForm(CciwFormMixin, forms.ModelForm):
         ]
 
 
+class ReclassifyForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ["subject"]
+
+
 class AjaxContactUsForm(ContactUsForm):
     class Meta:
         model = Message

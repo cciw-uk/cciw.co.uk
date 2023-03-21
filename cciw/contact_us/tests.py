@@ -163,3 +163,14 @@ class ViewMessagePage(SiteSetupMixin, WebTestBase):
         self.assertTextPresent("Marked as spam")
         message.refresh_from_db()
         assert message.spam_classification_manual == SpamStatus.SPAM
+
+    def test_reclassify(self):
+        message = create_message(subject=ContactType.WEBSITE)
+        self.officer_login(officer_factories.create_secretary())
+        self.get_url("cciw-contact_us-view", message.id)
+        self.fill({"#id_subject": ContactType.BOOKINGS})
+        self.submit("[name=reclassify]")
+        self.assertTextPresent(f"has been reclassified as '{ContactType.BOOKINGS.label}' and resent")
+        assert len(mail.outbox) == 1
+        assert sorted(mail.outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
+        assert Message.objects.count() == 1
