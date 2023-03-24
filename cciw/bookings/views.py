@@ -37,7 +37,7 @@ from cciw.bookings.models import (
     is_booking_open_thisyear,
 )
 from cciw.cciwmain import common
-from cciw.cciwmain.common import ajax_form_validate, get_current_domain
+from cciw.cciwmain.common import get_current_domain, htmx_form_validate
 from cciw.cciwmain.decorators import json_response
 
 from .decorators import (
@@ -230,7 +230,7 @@ def not_logged_in(request):
 
 
 @booking_account_required
-@ajax_form_validate(AccountDetailsForm)
+@htmx_form_validate(form_class=AccountDetailsForm)
 def account_details(request):
     form_class = AccountDetailsForm
 
@@ -255,7 +255,7 @@ def account_details(request):
 
 @booking_account_required
 @account_details_required
-@ajax_form_validate(AddPlaceForm)
+@htmx_form_validate(form_class=AddPlaceForm)
 def add_or_edit_place(request, context, booking_id=None):
     form_class = AddPlaceForm
     year = common.get_thisyear()

@@ -19,6 +19,8 @@ class ContactUsForm(CciwFormMixin, forms.ModelForm):
             "cx",
         ]
 
+    do_htmx_validation = True
+
 
 class ReclassifyForm(forms.ModelForm):
     class Meta:
@@ -26,12 +28,12 @@ class ReclassifyForm(forms.ModelForm):
         fields = ["subject"]
 
 
-class AjaxContactUsForm(ContactUsForm):
+class ValidationContactUsForm(ContactUsForm):
     class Meta:
         model = Message
         fields = [f for f in ContactUsForm.Meta.fields if f != "cx"]
 
 
-# We have to remove the captcha field in AJAX validation
+# We have to remove the captcha field in htmx validation
 # because its clean() method removes the Captcha from the database
-del AjaxContactUsForm.base_fields["cx"]
+del ValidationContactUsForm.base_fields["cx"]

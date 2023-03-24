@@ -1,7 +1,7 @@
 {% extends 'cciw/standard.html' %}
 {% load bookings %}
 
-{% block bodyattr %}class="bookingspage"{% endblock %}
+{% block bodyattr %}{{ block.super }} class="bookingspage"{% endblock %}
 
 {% block pagetitle %}Booking{% endblock %}
 

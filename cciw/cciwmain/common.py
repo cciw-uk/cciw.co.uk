@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.html import format_html_join
 
-from cciw.cciwmain.utils import python_to_json
+from cciw.cciwmain.forms import render_single_form_field
 
 
 @attr.s(auto_attribs=True)
@@ -26,20 +26,23 @@ class CampId:
         return f"{self.year}-{self.slug}"
 
 
-def ajax_form_validate(form_class):
+def htmx_form_validate(*, form_class: type):
     """
-    Returns decorator that enables the returning of validation results by JSON
-    if accessed with ?format=json.
+    Instead of a normal view, just do htmx validation using the given form class,
+    for a single field and return the single div that needs to be replaced.
+    Normally the form class will be the same class used in the view body.
     """
 
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if request.method == "POST" and request.GET.get("format", None) == "json":
-                data = request.POST.copy()
-                form = form_class(data)
-                errors = form.errors.copy()
-                return HttpResponse(python_to_json(errors), content_type="text/javascript")
+            if request.method == "POST" and "Hx-Request" in request.headers and "_validate_field" in request.POST:
+                htmx_validation_field = request.POST["_validate_field"]
+                form = form_class(request.POST)
+                if htmx_validation_field not in form.fields:
+                    return HttpResponse(headers={"Hx-Trigger": "htmx:abort"})
+                form.is_valid()
+                return HttpResponse(render_single_form_field(form, htmx_validation_field))
             return view_func(request, *args, **kwargs)
 
         return wrapper

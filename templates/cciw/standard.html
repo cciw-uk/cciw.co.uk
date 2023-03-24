@@ -11,6 +11,7 @@
   {{ block.super }}
   {% compress js %}
     <script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/htmx-1.8.6.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
   {% endcompress %}
 
@@ -19,6 +20,7 @@
 {% block bodystart %}
   <div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
 {% endblock %}
+
 
 {% block topbar %}
   <nav id="menubarOuter">
@@ -34,9 +36,9 @@
           {% for menulink in menulinks %}
             <li>
               <a href="{{ menulink.url }}"
-                {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
-                {% if menulink.is_current_page %} aria-current="page" {% endif %}
-                {% if menulink.is_current_section %} class="currentSection" {% endif %}
+                 {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
+                 {% if menulink.is_current_page %} aria-current="page" {% endif %}
+                 {% if menulink.is_current_section %} class="currentSection" {% endif %}
               >{{ menulink.title }}</a>
             </li>
           {% endfor %}

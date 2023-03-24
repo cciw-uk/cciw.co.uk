@@ -70,60 +70,6 @@
 
 var cciw = (function(pub, $) {
 
-    var submittableControl = function(node) {
-        var type = (node.type || "").toLowerCase();
-        var accept = false;
-        if (node.disabled || !node.name) {
-            accept = false;
-        } else {
-            // We don't know which button was 'clicked',
-            // so we can't include any as an element to submit
-            // Also can't submit files
-            accept = $.inArray(type, ["file", "submit", "reset", "button", "image"]) == -1;
-        }
-        return accept;
-    };
-
-    var addFormOnchangeHandlers = function(form, mk_input_change_handler) {
-        // Summary: Adds 'onchange' handlers to all inputs in a form
-        // form: jQuery object containing the form
-        // mk_input_change_handler: when called with one of the
-        //   form elements, returns a handler to be connected to
-        //   that element.
-        var inputs = form.find('input,textarea,select');
-        inputs.each(function(i, elem) {
-            if (submittableControl(elem)) {
-                $(elem).change(mk_input_change_handler(elem));
-            }
-        });
-        return null;
-    };
-
-    var djangoNormaliseControlId = function(control_id) {
-        // Summary: returns the id/name that corresponds to
-        // the whole Django widget.  For MultiWidgets,
-        // this strips the trailing _0, _1 etc.
-        return control_id.replace(/^(.*)(_\d+)$/, "$1");
-    };
-
-    // standardform_* functions depend on the HTML in CciwFormMixin
-    var standardformDisplayError = function(control_id, errors) {
-        var row = $('#div_' + control_id);
-        if (row.length == 0) {
-            return;
-        }
-        if (!row.hasClass("validationErrors")) {
-            // insert <ul> inside it
-            var content = $("<div class='fieldMessages'><ul class='errorlist'></ul></div>");
-            $.each(errors, function(i, val) {
-                content.find("ul").append($('<li></li>').html(val));
-
-            });
-            row.prepend(content);
-            row.addClass("validationErrors");
-        }
-    };
-
     var standardformClearError = function(control_id) {
         var row = $('#div_' + control_id);
         if (row.length == 0) {
@@ -134,40 +80,6 @@ var cciw = (function(pub, $) {
             // there will be a child which holds the error message
             row.find('.fieldMessages').remove();
         }
-    };
-
-    var standardformGetValidatorCallback = function(control_name, control_id) {
-        // Summary: returns a callback that should be called when
-        // the AJAX validation request returns with data.
-        var control_name_n = djangoNormaliseControlId(control_name);
-        var control_id_n = djangoNormaliseControlId(control_id);
-        var handler = function(json) {
-            var errors = json[control_name_n];
-            if (errors != null && errors != undefined) {
-                standardformClearError(control_id_n);
-                standardformDisplayError(control_id_n, errors);
-            } else {
-                standardformClearError(control_id_n);
-            }
-        };
-        return handler;
-    };
-
-    var standardformGetInputChangeHandler = function(form, control_name, control_id) {
-        // Summary: returns an event handler to be added to a control,
-        // form: jQuery object containing the form the control belongs to
-        // control_name: the name of the control
-        // control_id: id of the control
-        var on_input_change = function(ev) {
-            $.ajax({
-                type: "POST",
-                data: form.serialize(),
-                url: "?format=json",
-                dataType: "json",
-                success: standardformGetValidatorCallback(control_name, control_id)
-            });
-        };
-        return on_input_change;
     };
 
     var genericAjaxErrorHandler = function(jqXHR, textStatus, errorThrown) {
@@ -199,12 +111,6 @@ var cciw = (function(pub, $) {
         return window.open(url, windowName, windowFeatures)
     }
 
-    // Public interface:
-    pub.standardformAddOnchangeHandlers = function(form) {
-        addFormOnchangeHandlers(form, function(input) {
-            return standardformGetInputChangeHandler(form, input.name, input.id);
-        });
-    };
 
     pub.standardformClearError = standardformClearError;
     pub.genericAjaxErrorHandler = genericAjaxErrorHandler;
@@ -215,11 +121,6 @@ var cciw = (function(pub, $) {
 
 (function($) {
     $(document).ready(function() {
-
-        // Ajax callbacks for labelled forms
-        $('form.ajaxify').each(function(i, elem) {
-            cciw.standardformAddOnchangeHandlers($(this));
-        });
 
         $('#menutoggle a').on('click', function(ev) {
             $('#menubar ul li').toggleClass('expanded');

@@ -17,7 +17,7 @@
 
   {% else %}
 
-    <form action="" method="POST" id="id_addplaceform" name="addplaceform" class="ajaxify">
+    <form action="" method="POST" id="id_addplaceform" name="addplaceform">
 
       {% if form.errors %}
         <div class="userError">The details could not be saved - please correct the
@@ -46,7 +46,7 @@
       {% endif %}
 
       <h2>Camp</h2>
-      {% cciw_form_field form 'camp' 'Choose camp:' %}
+      {% cciw_form_field form 'camp' %}
 
       <h2>Price</h2>
       <p>The 2nd child from the same family is eligible for '2nd child discount'.
@@ -67,7 +67,7 @@
           off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
       {% endif %}
 
-      {% cciw_form_field form 'price_type' 'Price' %}
+      {% cciw_form_field form 'price_type' %}
 
       <h2>Use of data</h2>
 
@@ -81,27 +81,27 @@
       </p>
 
       <h2>Camper details <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;"></h2>
-      {% cciw_form_field form 'first_name' 'First name' %}
-      {% cciw_form_field form 'last_name' 'Surname' %}
-      {% cciw_form_field form 'sex' 'Sex' %}
-      {% cciw_form_field form 'date_of_birth' 'Date of birth' %}
+      {% cciw_form_field form 'first_name' %}
+      {% cciw_form_field form 'last_name' %}
+      {% cciw_form_field form 'sex' %}
+      {% cciw_form_field form 'date_of_birth' %}
 
       <h2>Camper address <input type="submit" class="copy_data_btn" id="id_use_account_1_btn" value="Use account address" style="display:none;"></h2>
 
       <p>We will use this information to contact you before camp.</p>
 
-      {% cciw_form_field form 'address_line1' 'Address line 1' %}
-      {% cciw_form_field form 'address_line2' 'Address line 2' %}
-      {% cciw_form_field form 'address_city' 'Town/city' %}
-      {% cciw_form_field form 'address_county' 'County/state' %}
-      {% cciw_form_field form 'address_country' 'Country' %}
-      {% cciw_form_field form 'address_post_code' 'Post code' %}
-      {% cciw_form_field form 'phone_number' 'Phone number' %}
-      {% cciw_form_field form 'email' 'Email' %}
+      {% cciw_form_field form 'address_line1' %}
+      {% cciw_form_field form 'address_line2' %}
+      {% cciw_form_field form 'address_city' %}
+      {% cciw_form_field form 'address_county' %}
+      {% cciw_form_field form 'address_country' %}
+      {% cciw_form_field form 'address_post_code' %}
+      {% cciw_form_field form 'phone_number' %}
+      {% cciw_form_field form 'email' %}
 
       <h2>Church</h2>
 
-      {% cciw_form_field form 'church' 'Name of church (if any)' %}
+      {% cciw_form_field form 'church' %}
 
       <h2>Transport</h2>
 
@@ -114,14 +114,14 @@
 
       <p>Please enter a contact name, address and number that we can use <strong>during the week of camp</strong> in case of emergency.</p>
 
-      {% cciw_form_field form 'contact_name' 'Name' %}
-      {% cciw_form_field form 'contact_line1' 'Address line 1' %}
-      {% cciw_form_field form 'contact_line2' 'Address line 2' %}
-      {% cciw_form_field form 'contact_city' 'Town/city' %}
-      {% cciw_form_field form 'contact_county' 'County/state' %}
-      {% cciw_form_field form 'contact_country' 'Country' %}
-      {% cciw_form_field form 'contact_post_code' 'Post code' %}
-      {% cciw_form_field form 'contact_phone_number' 'Phone number' %}
+      {% cciw_form_field form 'contact_name' %}
+      {% cciw_form_field form 'contact_line1' %}
+      {% cciw_form_field form 'contact_line2' %}
+      {% cciw_form_field form 'contact_city' %}
+      {% cciw_form_field form 'contact_county' %}
+      {% cciw_form_field form 'contact_country' %}
+      {% cciw_form_field form 'contact_post_code' %}
+      {% cciw_form_field form 'contact_phone_number' %}
 
       <h2>Dietary requirements</h2>
 
@@ -129,7 +129,7 @@
         Please enter any special dietary requirements here (e.g. vegetarian), to
         ensure we can provide appropriate food on camp.
       </p>
-      {% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
+      {% cciw_form_field form 'dietary_requirements' %}
 
       <h2>GP details <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;"></h2>
 
@@ -137,14 +137,14 @@
         contact in the case of medical needs that arise on camp.
       </p>
 
-      {% cciw_form_field form 'gp_name' 'Name' %}
-      {% cciw_form_field form 'gp_line1' 'Address line 1' %}
-      {% cciw_form_field form 'gp_line2' 'Address line 2' %}
-      {% cciw_form_field form 'gp_city' 'Town/city' %}
-      {% cciw_form_field form 'gp_county' 'County/state' %}
-      {% cciw_form_field form 'gp_country' 'Country' %}
-      {% cciw_form_field form 'gp_post_code' 'Post code' %}
-      {% cciw_form_field form 'gp_phone_number' 'Phone number' %}
+      {% cciw_form_field form 'gp_name' %}
+      {% cciw_form_field form 'gp_line1' %}
+      {% cciw_form_field form 'gp_line2' %}
+      {% cciw_form_field form 'gp_city' %}
+      {% cciw_form_field form 'gp_county' %}
+      {% cciw_form_field form 'gp_country' %}
+      {% cciw_form_field form 'gp_post_code' %}
+      {% cciw_form_field form 'gp_phone_number' %}
 
       <h2>Medical details</h2>
 
@@ -154,13 +154,13 @@
         medical details to medical professionals as necessary.
       </p>
 
-      {% cciw_form_field form 'medical_card_number' 'NHS number' %}
-      {% cciw_form_field form 'last_tetanus_injection_date' 'Last tetanus injection (if known)' %}
-      {% cciw_form_field form 'allergies' 'Allergies (including medication)' %}
-      {% cciw_form_field form 'regular_medication_required' 'Regular medication required' %}
-      {% cciw_form_field form 'illnesses' 'Medical conditions (e.g. asthma, epilepsy, diabetes)' %}
-      {% cciw_form_field form 'can_swim_25m' 'Can the camper swim 25m?' %}
-      {% cciw_form_field form 'learning_difficulties' 'Anything else we need to be aware of in relation to attending camp, including learning/behavioural difficulties, being registered with social care?' %}
+      {% cciw_form_field form 'medical_card_number' %}
+      {% cciw_form_field form 'last_tetanus_injection_date' %}
+      {% cciw_form_field form 'allergies' %}
+      {% cciw_form_field form 'regular_medication_required' %}
+      {% cciw_form_field form 'illnesses' %}
+      {% cciw_form_field form 'can_swim_25m' %}
+      {% cciw_form_field form 'learning_difficulties' %}
 
       <p>If the illnesses, allergies or learning/behavioural difficulties above
         include conditions that would affect the safety of camp or our ability to look
@@ -177,7 +177,7 @@
         disappointment in the case where we will not be able to cater for the camper's
         condition on camp.</p>
 
-      {% cciw_form_field form 'serious_illness' 'Serious condition/illness' %}
+      {% cciw_form_field form 'serious_illness' %}
 
       <h2>Agreements</h2>
 
@@ -195,7 +195,7 @@
 
       <p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
 
-      {% cciw_form_field form 'agreement' 'Agree to above conditions' %}
+      {% cciw_form_field form 'agreement' %}
 
       <h3>Photographs</h3>
 
@@ -203,7 +203,7 @@
         give permission for photos taken of the camper to be used in this way, please
         tick the box below. This is optional.</p>
 
-      {% cciw_form_field form 'publicity_photos_agreement' 'Agree to photos being taken and used for publicity.' %}
+      {% cciw_form_field form 'publicity_photos_agreement' %}
 
       {% for agreement in custom_agreements %}
         <h3>{{ agreement.name }}</h3>
@@ -216,11 +216,11 @@
           <div class="field">
             <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
             <input type="checkbox"
-              name="custom_agreement_{{ agreement.id }}"
-              id="id_custom_agreement_{{ agreement.id }}"
-              {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
-                checked="checked"
-              {% endif %}
+                   name="custom_agreement_{{ agreement.id }}"
+                   id="id_custom_agreement_{{ agreement.id }}"
+                   {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
+                     checked="checked"
+                   {% endif %}
             >
           </div>
         </div>

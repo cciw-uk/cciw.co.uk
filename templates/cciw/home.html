@@ -1,7 +1,7 @@
 {% extends "cciw/chunk_page.html" %}
 {% load standardpage %}
 
-{% block bodyattr %}class="homepage"{% endblock %}
+{% block bodyattr %}{{ block.super }} class="homepage"{% endblock %}
 
 {% block contenttop %}
   <div class="lead">

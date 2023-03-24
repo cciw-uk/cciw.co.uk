@@ -1,6 +1,14 @@
 <div
   class="formrow {{ field.css_classes }}"
   id="div_id_{{ field.name }}"
+  {% if do_htmx_validation %}
+    hx-post="."
+    hx-vals='{"_validate_field": "{{ field.name }}" }'
+    hx-trigger="change from:#id_{{ field.name }}"
+    hx-params="{{ field.name }},_validate_field"
+    hx-target="this"
+    hx-swap="outerHTML"
+  {% endif %}
 >
   {% if errors %}
     <div class="fieldMessages">
@@ -9,7 +17,7 @@
   {% endif %}
   <div class="field">
     {% if label_tag %}
-      {# Passed in from template via cciw_form_field #}
+      {# Passed in via render_single_form_field #}
       {{ label_tag }}
     {% else %}
       {% if field.label %}{{ field.label_tag }}{% endif %}

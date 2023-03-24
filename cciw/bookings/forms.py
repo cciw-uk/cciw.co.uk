@@ -29,6 +29,8 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             "subscribe_to_newsletter",
         ]
 
+    do_htmx_validation = True
+
     def save(self, *args, **kwargs):
         old_subscription = BookingAccount.objects.get(id=self.instance.id).subscribe_to_newsletter
         retval = super().save(*args, **kwargs)
@@ -66,6 +68,27 @@ class FixPriceMixin:
 class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
     camp = forms.ChoiceField(choices=[], widget=forms.RadioSelect)
+
+    do_htmx_validation = True
+
+    label_overrides = {
+        "camp": "Choose camp:",
+        "price_type": "Price",
+        "first_name": "First name",
+        "last_name": "Surname",
+        "church": "Name of church (if any)",
+        "contact_name": "Name",
+        "contact_phone_number": "Phone number",
+        "gp_name": "Name",
+        "gp_phone_number": "Phone number",
+        "last_tetanus_injection_date": "Last tetanus injection (if known)",
+        "allergies": "Allergies (including medication)",
+        "illnesses": "Medical conditions (e.g. asthma, epilepsy, diabetes)",
+        "learning_difficulties": "Anything else we need to be aware of in relation to attending camp, including learning/behavioural difficulties, being registered with social care?",
+        "serious_illness": "Serious condition/illness",
+        "agreement": "Agree to above conditions",
+        "publicity_photos_agreement": "Agree to photos being taken and used for publicity.",
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
