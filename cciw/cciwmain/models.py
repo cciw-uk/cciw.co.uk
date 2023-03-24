@@ -48,6 +48,11 @@ class Person(models.Model):
         verbose_name_plural = "people"
 
 
+class CampNameManager(models.Manager):
+    def get_by_natural_key(self, slug):
+        return self.get(slug=slug)
+
+
 class CampName(models.Model):
     name = models.CharField(
         max_length=255, help_text="Name of set of camps. Should start with capital letter", unique=True
@@ -59,8 +64,13 @@ class CampName(models.Model):
     )
     color = RGBColorField()
 
+    objects = CampNameManager()
+
     def __str__(self):
         return self.name
+
+    def natural_key(self):
+        return (self.slug,)
 
 
 @dataclass
