@@ -82,39 +82,8 @@ var cciw = (function(pub, $) {
         }
     };
 
-    var genericAjaxErrorHandler = function(jqXHR, textStatus, errorThrown) {
-        if (jqXHR.status === 400) {
-            var json = $.parseJSON(jqXHR.responseText);
-            var message = "";
-            var errors = json.errors;
-            var fields = Object.keys(errors);
-            for (var i = 0; i < fields.length; i++) {
-                var field = fields[i];
-                var errs = errors[field];
-                for (var j = 0; j < errs.length; j++) {
-                    message += field + ": " + errs[j] + "\n";
-                }
-            }
-            alert("Data not saved: \n" + message);
-        } else {
-            alert("Data not saved: " + textStatus);
-        }
-    };
-
-    var openTemporaryWindow = function(url, windowName, windowFeatures) {
-        if (url.indexOf("?") < 0) {
-            url += "?";
-        } else {
-            url += "&";
-        }
-        url += "_temporary_window=1";
-        return window.open(url, windowName, windowFeatures)
-    }
-
 
     pub.standardformClearError = standardformClearError;
-    pub.genericAjaxErrorHandler = genericAjaxErrorHandler;
-    pub.openTemporaryWindow = openTemporaryWindow;
 
     return pub;
 })(cciw || {}, jQuery);

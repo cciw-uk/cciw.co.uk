@@ -24,7 +24,6 @@
         hx-swap-oob="true"
       >
         <h2>Current officers</h2>
-        {% csrf_token %}
         <p>Total: {{ invitations|length }}</p>
         <table>
           <thead>
@@ -193,9 +192,6 @@
       </li>
     </ul>
     <div id="officer-download-notice"></div>
-    <form>
-      {% csrf_token %}{# Ensure cookie is set for AJAX #}
-    </form>
 
 
   </div>
