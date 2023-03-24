@@ -2,9 +2,12 @@ from datetime import date, timedelta
 
 from attr import dataclass
 from django.conf import settings
+from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Value
 from django.db.models.enums import TextChoices
+from django.db.models.functions import Concat
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -293,6 +296,18 @@ class ReferenceAction(models.Model):
     # invented in a database migration due to missing data. Any stats on this
     # table should exclude these records.
     inaccurate = models.BooleanField(default=False)
+
+    @admin.display(ordering="referee__name")
+    def referee_name(self) -> str:
+        return self.referee.name
+
+    @admin.display(
+        ordering=Concat(
+            "referee__application__officer__first_name", Value(" "), "referee__application__officer__last_name"
+        )
+    )
+    def officer_name(self):
+        return self.referee.application.officer.full_name
 
     class Meta:
         ordering = [("created_at")]

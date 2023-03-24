@@ -255,7 +255,11 @@
               <div> {# Column 2 #}
                 {% with actions=referee.actions.all %}
                   {% if actions %}
-                    <h4>History</h4>
+                    <h4>History
+                      {% if request.user.is_superuser %}
+                        <a href="{% url 'admin:officers_referenceaction_changelist' %}?referee_id={{ referee.id }}" target="_blank">&nbsp;</a>
+                      {% endif %}
+                    </h4>
                     <table>
                       {% for action in referee.actions.all %}
                         <tr>

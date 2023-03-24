@@ -24,6 +24,7 @@ from cciw.officers.models import (
     QualificationType,
     Referee,
     Reference,
+    ReferenceAction,
 )
 from cciw.utils.admin import RerouteResponseAdminMixin
 from cciw.utils.views import close_window_response
@@ -535,18 +536,33 @@ class DBSActionLogAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     autocomplete_fields = ["officer", "user"]
 
+    @admin.display(ordering="officer__first_name")
     def first_name(self, obj):
         return obj.officer.first_name
 
-    first_name.admin_order_field = "officer__first_name"
-
+    @admin.display(ordering="officer__last_name")
     def last_name(self, obj):
         return obj.officer.last_name
 
-    last_name.admin_order_field = "officer__last_name"
-
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("officer", "user")
+
+
+class ReferenceActionAdmin(admin.ModelAdmin):
+
+    list_display = [
+        "referee_name",
+        "officer_name",
+        "action_type",
+        "user",
+        "created_at",
+    ]
+
+    list_filter = ["action_type"]
+    search_fields = ["referee__name"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("referee__application__officer", "user")
 
 
 admin.site.register(Application, ApplicationAdmin)
@@ -556,3 +572,4 @@ admin.site.register(DBSCheck, DBSCheckAdmin)
 admin.site.register(DBSActionLog, DBSActionLogAdmin)
 admin.site.register(QualificationType)
 admin.site.register(CampRole)
+admin.site.register(ReferenceAction, ReferenceActionAdmin)
