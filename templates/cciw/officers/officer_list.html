@@ -73,7 +73,10 @@
                 <thead>
                   <tr>
                     <th colspan="4">
-                      <input name="search" type="search" placeholder="Search officers"
+                      <input
+                        name="search"
+                        type="search"
+                        placeholder="Search officers"
 
                         {% if created_officer %}
                           value="{{ created_officer.full_name }}"
@@ -81,19 +84,19 @@
                           value="{{ search_query }}"
                         {% endif %}
                         _="
-                        on keyup
-                        if the event's key is 'Escape'
-                        set my value to ''
-                        trigger keyup
-                        else
-                        show <tr/> in #id-chooseofficers__tablebody when its textContent.toLowerCase() contains (my value).toLowerCase()
-                      end
+                           on keyup
+                           if the event's key is 'Escape'
+                           set my value to ''
+                           trigger keyup
+                           else
+                           show <tr/> in #id-chooseofficers__tablebody when its textContent.toLowerCase() contains (my value).toLowerCase()
+                           end
 
-                      on load
-                      trigger keyup
-                      end
+                           on load
+                           trigger keyup
+                           end
 
-                      ">
+                          ">
                     </th>
                   </tr>
                   <tr>
@@ -106,15 +109,15 @@
                 <tbody id="id-chooseofficers__tablebody">
                   {% for candidate_officer in candidate_officers %}
                     <tr class="chooseofficers__officer
-                      {% if candidate_officer.is_previous %}
-                        chooseofficers__officer--previous
-                      {% endif %}
-                      ">
+                               {% if candidate_officer.is_previous %}
+                                 chooseofficers__officer--previous
+                               {% endif %}
+                              ">
                       <td><input type="checkbox"
-                        name="chooseofficer_{{ candidate_officer.id }}"
-                        id="id_chooseofficer_{{ candidate_officer.id }}"
-                        {% if candidate_officer.officer in selected_officers or candidate_officer.id == created_officer.id %}checked{% endif %}
-                      ></td>
+                                 name="chooseofficer_{{ candidate_officer.id }}"
+                                 id="id_chooseofficer_{{ candidate_officer.id }}"
+                                 {% if candidate_officer.officer in selected_officers or candidate_officer.id == created_officer.id %}checked{% endif %}
+                        ></td>
                       <td><label for="id_chooseofficer_{{ candidate_officer.id }}">{{ candidate_officer.full_name }}</label></td>
                       <td>{{ candidate_officer.email }}</td>
                       <td>
@@ -141,9 +144,9 @@
               <select name="new_role" id="id_chooseofficer-role">
                 {% for role in camp_roles %}
                   <option value="{{ role.id }}"
-                    {% if role.id == selected_role %}
-                      selected
-                    {% endif %}
+                          {% if role.id == selected_role %}
+                            selected
+                          {% endif %}
                   >{{ role.name }}</option>
                 {% endfor %}
               </select>
