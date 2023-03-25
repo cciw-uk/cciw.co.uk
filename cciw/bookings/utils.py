@@ -4,13 +4,12 @@ from itertools import groupby
 from dateutil.relativedelta import relativedelta
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
-from django_countries.fields import Country
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
 from cciw.utils.spreadsheet import ExcelSimpleBuilder
 
-from .models import ACCOUNT_PUBLIC_ATTRS, BOOKING_PLACE_PUBLIC_ATTRS, Booking, BookingAccount, Payment
+from .models import Booking, BookingAccount, Payment
 
 
 def format_address(*args):
@@ -280,8 +279,3 @@ def addresses_for_mailing_list(year: int, spreadsheet: ExcelSimpleBuilder) -> Ex
 
     spreadsheet.add_sheet_with_header_row("Addresses", headers, rows)
     return spreadsheet
-
-
-handle_country = lambda v: v.code if isinstance(v, Country) else v
-booking_to_dict = lambda b: {k: handle_country(getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS}
-account_to_dict = lambda acc: {k: handle_country(getattr(acc, k)) for k in ACCOUNT_PUBLIC_ATTRS}

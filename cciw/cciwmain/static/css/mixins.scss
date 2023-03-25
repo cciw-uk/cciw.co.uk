@@ -79,3 +79,41 @@
         }
     }
 }
+
+
+// Dialogs
+
+@mixin fullWidthDialog($top-border-gap) {
+    // Override some builtins that limit us:
+    max-height: 100vh;
+    max-width: 100vw;
+
+    // Positioning
+    box-sizing: border-box;
+    width: 100vw;
+    height: calc(100vh - #{$top-border-gap});
+    top: $top-border-gap;
+    left: 0px;
+    position: fixed;
+    margin: 0;
+
+    // Styling
+    border: 0;
+    border-top: 2px solid #888;
+    padding: 20px;
+
+    // Fade in:
+    display: flex;  // for some reason, display: block disables the transition.
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none; // keep main page accessible after closing dialog
+    &[open] {
+        opacity: 1;
+        pointer-events: inherit;
+    }
+
+    &::backdrop {
+        background-color: #0008;
+    }
+}

@@ -758,6 +758,9 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
             Q(created_at__lt=before_datetime) & Q(Q(camp__isnull=True) | Q(camp__end_date__lt=before_datetime))
         )
 
+    def non_erased(self):
+        return self.filter(erased_on__isnull=True)
+
 
 class BookingManagerBase(models.Manager):
     def get_queryset(self):
@@ -765,48 +768,6 @@ class BookingManagerBase(models.Manager):
 
 
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
-
-
-# Public attributes - i.e. that the account holder is allowed to see
-BOOKING_PLACE_PUBLIC_ATTRS = [
-    "id",
-    "first_name",
-    "last_name",
-    "sex",
-    "date_of_birth",
-    "address_line1",
-    "address_line2",
-    "address_city",
-    "address_county",
-    "address_country",
-    "address_post_code",
-    "phone_number",
-    "church",
-    "contact_name",
-    "contact_line1",
-    "contact_line2",
-    "contact_city",
-    "contact_county",
-    "contact_country",
-    "contact_post_code",
-    "contact_phone_number",
-    "dietary_requirements",
-    "gp_name",
-    "gp_line1",
-    "gp_line2",
-    "gp_city",
-    "gp_county",
-    "gp_country",
-    "gp_post_code",
-    "gp_phone_number",
-    "medical_card_number",
-    "last_tetanus_injection_date",
-    "allergies",
-    "regular_medication_required",
-    "learning_difficulties",
-    "serious_illness",
-    "created_at",
-]
 
 
 class Booking(models.Model):
@@ -1427,6 +1388,118 @@ class Booking(models.Model):
             ]
             if v
         )
+
+
+# Attributes that the account holder is allowed to see
+BOOKING_PLACE_USER_VISIBLE_ATTRS = [
+    "id",
+    "first_name",
+    "last_name",
+    "sex",
+    "date_of_birth",
+    "address_line1",
+    "address_line2",
+    "address_city",
+    "address_county",
+    "address_country",
+    "address_post_code",
+    "phone_number",
+    "church",
+    "contact_name",
+    "contact_line1",
+    "contact_line2",
+    "contact_city",
+    "contact_county",
+    "contact_country",
+    "contact_post_code",
+    "contact_phone_number",
+    "dietary_requirements",
+    "gp_name",
+    "gp_line1",
+    "gp_line2",
+    "gp_city",
+    "gp_county",
+    "gp_country",
+    "gp_post_code",
+    "gp_phone_number",
+    "medical_card_number",
+    "last_tetanus_injection_date",
+    "allergies",
+    "regular_medication_required",
+    "learning_difficulties",
+    "serious_illness",
+    "created_at",
+]
+
+# BookingAccount fields we can copy to Booking for camper address
+BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS = {
+    "address_line1": "address_line1",
+    "address_line2": "address_line2",
+    "address_city": "address_city",
+    "address_county": "address_county",
+    "address_country": "address_country",
+    "address_post_code": "address_post_code",
+    "phone_number": "phone_number",
+}
+
+# BookingAccount fields we can copy to Booking for contact address
+BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS = {
+    "name": "contact_name",
+    "address_line1": "contact_line1",
+    "address_line2": "contact_line2",
+    "address_city": "contact_city",
+    "address_county": "contact_county",
+    "address_country": "contact_country",
+    "address_post_code": "contact_post_code",
+    "phone_number": "contact_phone_number",
+}
+
+# Booking fields that can be copied from previous Bookings:
+BOOKING_PLACE_CAMPER_DETAILS = [
+    "first_name",
+    "last_name",
+    "sex",
+    "date_of_birth",
+    "church",
+    "dietary_requirements",
+    "medical_card_number",
+    "last_tetanus_injection_date",
+    "allergies",
+    "regular_medication_required",
+    "illnesses",
+    "can_swim_25m",
+    "learning_difficulties",
+    "serious_illness",
+]
+BOOKING_PLACE_CAMPER_ADDRESS_DETAILS = [
+    "address_line1",
+    "address_line2",
+    "address_city",
+    "address_county",
+    "address_country",
+    "address_post_code",
+    "phone_number",
+]
+BOOKING_PLACE_CONTACT_ADDRESS_DETAILS = [
+    "contact_name",
+    "contact_line1",
+    "contact_line2",
+    "contact_city",
+    "contact_county",
+    "contact_country",
+    "contact_post_code",
+    "contact_phone_number",
+]
+BOOKING_PLACE_GP_DETAILS = [
+    "gp_name",
+    "gp_line1",
+    "gp_line2",
+    "gp_city",
+    "gp_county",
+    "gp_country",
+    "gp_post_code",
+    "gp_phone_number",
+]
 
 
 class SupportingInformationType(models.Model):

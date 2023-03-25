@@ -170,7 +170,34 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
 
 AddPlaceForm.base_fields["agreement"].required = True
-AddPlaceForm.base_fields["date_of_birth"].widget.attrs["placeholder"] = "YYYY-MM-DD"
-AddPlaceForm.base_fields["date_of_birth"].help_text = "(YYYY-MM-DD)"
-AddPlaceForm.base_fields["last_tetanus_injection_date"].widget.attrs["placeholder"] = "YYYY-MM-DD"
-AddPlaceForm.base_fields["last_tetanus_injection_date"].help_text = "(YYYY-MM-DD)"
+for f in ["date_of_birth", "last_tetanus_injection_date"]:
+    AddPlaceForm.base_fields[f].widget.attrs["placeholder"] = "YYYY-MM-DD"
+    AddPlaceForm.base_fields[f].widget.format = "%Y-%m-%d"
+
+for f in [
+    "dietary_requirements",
+    "church",
+    "allergies",
+    "regular_medication_required",
+    "illnesses",
+    "learning_difficulties",
+]:
+    AddPlaceForm.base_fields[f].widget.attrs["placeholder"] = "Leave empty if none or N/A"
+
+
+class UsePreviousData(CciwFormMixin, forms.Form):
+    copy_from_booking = forms.ChoiceField(required=True, label="Copy from")
+    copy_camper_details = forms.BooleanField(required=False, label="Copy camper details (name + medical)")
+    copy_address_details = forms.BooleanField(required=False, label="Copy camper address")
+    copy_contact_address_details = forms.BooleanField(required=False, label="Copy contact address")
+    copy_gp_details = forms.BooleanField(label="Copy GP information", required=False)
+
+    def __init__(self, *args, previous_bookings=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["copy_from_booking"].choices = [
+            (
+                b.id,
+                f"{b.first_name} {b.last_name} {b.created_at.year}; Post code: {b.address_post_code}; GP: {b.gp_name}",
+            )
+            for b in previous_bookings
+        ]

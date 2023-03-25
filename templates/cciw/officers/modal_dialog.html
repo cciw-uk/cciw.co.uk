@@ -1,11 +1,11 @@
 <dialog class="large" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="columns-space-between">
+  <div class="columns-space-between">
     <h1>{% block title %}{% endblock %}</h1>
     <form method="dialog" class="dialog-close-form"><button class="dialog-close">X</button></form>
-  </header>
+  </div>
 
-  <main id="dialog-content-main">
+  <div id="dialog-content-main">
     {% block content %}
     {% endblock %}
-  </main>
+  </div>
 </dialog>

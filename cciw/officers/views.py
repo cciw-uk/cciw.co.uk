@@ -30,12 +30,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 
 from cciw.accounts.models import User
-from cciw.bookings.models import Booking, BookingAccount, Price, is_booking_open, most_recent_booking_year
+from cciw.bookings.models import Booking, Price, is_booking_open, most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (
-    account_to_dict,
     addresses_for_mailing_list,
-    booking_to_dict,
     camp_bookings_to_spreadsheet,
     camp_sharable_transport_details_to_spreadsheet,
     payments_to_spreadsheet,
@@ -1802,46 +1800,6 @@ def place_availability_json(request):
     places = camp.get_places_left()
     retval["result"] = dict(total=places.total, male=places.male, female=places.female)
     return retval
-
-
-@booking_secretary_required
-@json_response
-def booking_places_json(request):
-    try:
-        account_id = int(request.GET["id"])
-    except (KeyError, ValueError):
-        return {
-            "status": "success",
-            "places": [],
-        }
-
-    account = BookingAccount.objects.get(id=account_id)
-    qs = account.bookings.all()
-    try:
-        exclude_id = int(request.GET["exclude"])
-    except (KeyError, ValueError):
-        exclude_id = None
-    if exclude_id:
-        qs = qs.exclude(id=exclude_id)
-
-    return {
-        "status": "success",
-        "places": [booking_to_dict(b) for b in qs],
-    }
-
-
-@booking_secretary_required
-@json_response
-def booking_account_json(request):
-    try:
-        account_id = int(request.GET["id"])
-    except (KeyError, ValueError):
-        return {"status": "failure"}
-    acc = BookingAccount.objects.get(id=account_id)
-    return {
-        "status": "success",
-        "account": account_to_dict(acc),
-    }
 
 
 @booking_secretary_required

@@ -2,13 +2,6 @@
 {% load cciwform static %}
 {% load compress %}
 
-{% block extraheader %}
-  {{ block.super }}
-  {% compress js %}
-    <script type="text/javascript" src="{% static "bookings/js/add_place.js" %}"></script>
-  {% endcompress %}
-{% endblock %}
-
 
 {% block content %}
   {% if not booking_open %}
@@ -17,245 +10,290 @@
 
   {% else %}
 
-    <form action="" method="POST" id="id_addplaceform" name="addplaceform">
+    {% block form-block %}
+      <form action="" method="POST" id="id_addplaceform" name="addplaceform">
 
-      {% if form.errors %}
-        <div class="userError">The details could not be saved - please correct the
-          errors flagged below:
+        {% if form.errors and 'save' in request.POST %}
+          <div class="userError">The details could not be saved - please correct the
+            errors flagged below:
 
-          {{ form.non_field_errors }}
-        </div>
-      {% else %}
-
-        {% if read_only %}
-          <p><strong>This place has been approved or booked, and information here
-            can only be changed by an admin.</strong></p>
-
+            {{ form.non_field_errors }}
+          </div>
         {% else %}
 
-          {% if form.instance.id %}
-            <p>Details for <b>{{ form.instance.name }}</b>:</p>
+          {% if read_only %}
+            <p><strong>This place has been approved or booked, and information here
+              can only be changed by an admin.</strong></p>
+
           {% else %}
-            <p>Please enter the details needed to book a place on a camp. Required fields
-              are <b>in bold</b>.</p>
+
+            {% if booking %}
+              <p>Details for <b>{{ booking.name }}</b>:</p>
+            {% else %}
+              <p>Please enter the details needed to book a place on a camp. Required fields
+                are <b>in bold</b>.</p>
+            {% endif %}
+
           {% endif %}
+
 
         {% endif %}
 
+        <h2>Camp</h2>
+        {% cciw_form_field form 'camp' %}
 
-      {% endif %}
+        <h2>Price</h2>
+        <p>The 2nd child from the same family is eligible for '2nd child discount'.
+          Subsequent children from the same family are eligible for '3rd child
+          discount'.</p>
 
-      <h2>Camp</h2>
-      {% cciw_form_field form 'camp' %}
+        <p>A camper booking to go on a second camp in the same year must pay the
+          full price amount.</p>
 
-      <h2>Price</h2>
-      <p>The 2nd child from the same family is eligible for '2nd child discount'.
-        Subsequent children from the same family are eligible for '3rd child
-        discount'.</p>
+        <p>If you will struggle to pay the full fee, you can also apply for a
+          custom discount. The exact price will have to be arranged by the booking
+          secretary: you will need to fill in this page, then contact the booking
+          secretary, and later complete the online booking process if you choose
+          this option.</p>
 
-      <p>A camper booking to go on a second camp in the same year must pay the
-        full price amount.</p>
+        {% if early_bird_available and price_early_bird_discount > 0 %}
+          <p><b>Please note — there is an early bird discount of £{{ price_early_bird_discount }}
+            off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
+        {% endif %}
 
-      <p>If you will struggle to pay the full fee, you can also apply for a
-        custom discount. The exact price will have to be arranged by the booking
-        secretary: you will need to fill in this page, then contact the booking
-        secretary, and later complete the online booking process if you choose
-        this option.</p>
+        {% cciw_form_field form 'price_type' %}
 
-      {% if early_bird_available and price_early_bird_discount > 0 %}
-        <p><b>Please note — there is an early bird discount of £{{ price_early_bird_discount }}
-          off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
-      {% endif %}
-
-      {% cciw_form_field form 'price_type' %}
-
-      <h2>Use of data</h2>
-
-      <p>
-        We store and use your data in accordance with our <a href="/info/privacy-notice/" target="_blank">privacy policy</a>.
-        In general terms, this means that we do not collect any more data than
-        is necessary to ensure the safety and well-being of all campers, and we
-        do not pass on the data to 3rd parties except where that is necessary
-        for those purposes. Further notes about how we use specific pieces of
-        information are given below.
-      </p>
-
-      <h2>Camper details <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;"></h2>
-      {% cciw_form_field form 'first_name' %}
-      {% cciw_form_field form 'last_name' %}
-      {% cciw_form_field form 'sex' %}
-      {% cciw_form_field form 'date_of_birth' %}
-
-      <h2>Camper address <input type="submit" class="copy_data_btn" id="id_use_account_1_btn" value="Use account address" style="display:none;"></h2>
-
-      <p>We will use this information to contact you before camp.</p>
-
-      {% cciw_form_field form 'address_line1' %}
-      {% cciw_form_field form 'address_line2' %}
-      {% cciw_form_field form 'address_city' %}
-      {% cciw_form_field form 'address_county' %}
-      {% cciw_form_field form 'address_country' %}
-      {% cciw_form_field form 'address_post_code' %}
-      {% cciw_form_field form 'phone_number' %}
-      {% cciw_form_field form 'email' %}
-
-      <h2>Church</h2>
-
-      {% cciw_form_field form 'church' %}
-
-      <h2>Transport</h2>
-
-      <div>We used to offer some help with transport if you were coming from South
-        Wales. This is no longer available - please make your own arrangements to get to
-        camp.
-      </div>
-
-      <h2>Contact details <input type="submit" id="id_use_account_2_btn" class="copy_data_btn" value="Use account address" style="display:none;"></h2>
-
-      <p>Please enter a contact name, address and number that we can use <strong>during the week of camp</strong> in case of emergency.</p>
-
-      {% cciw_form_field form 'contact_name' %}
-      {% cciw_form_field form 'contact_line1' %}
-      {% cciw_form_field form 'contact_line2' %}
-      {% cciw_form_field form 'contact_city' %}
-      {% cciw_form_field form 'contact_county' %}
-      {% cciw_form_field form 'contact_country' %}
-      {% cciw_form_field form 'contact_post_code' %}
-      {% cciw_form_field form 'contact_phone_number' %}
-
-      <h2>Dietary requirements</h2>
-
-      <p>
-        Please enter any special dietary requirements here (e.g. vegetarian), to
-        ensure we can provide appropriate food on camp.
-      </p>
-      {% cciw_form_field form 'dietary_requirements' %}
-
-      <h2>GP details <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;"></h2>
-
-      <p>Please enter the details of the camper's GP, so that we can be in
-        contact in the case of medical needs that arise on camp.
-      </p>
-
-      {% cciw_form_field form 'gp_name' %}
-      {% cciw_form_field form 'gp_line1' %}
-      {% cciw_form_field form 'gp_line2' %}
-      {% cciw_form_field form 'gp_city' %}
-      {% cciw_form_field form 'gp_county' %}
-      {% cciw_form_field form 'gp_country' %}
-      {% cciw_form_field form 'gp_post_code' %}
-      {% cciw_form_field form 'gp_phone_number' %}
-
-      <h2>Medical details</h2>
-
-      <p>
-        We collect medical and health details to ensure we can provide a safe
-        environment for campers and can respond to medical needs. We may pass on
-        medical details to medical professionals as necessary.
-      </p>
-
-      {% cciw_form_field form 'medical_card_number' %}
-      {% cciw_form_field form 'last_tetanus_injection_date' %}
-      {% cciw_form_field form 'allergies' %}
-      {% cciw_form_field form 'regular_medication_required' %}
-      {% cciw_form_field form 'illnesses' %}
-      {% cciw_form_field form 'can_swim_25m' %}
-      {% cciw_form_field form 'learning_difficulties' %}
-
-      <p>If the illnesses, allergies or learning/behavioural difficulties above
-        include conditions that would affect the safety of camp or our ability to look
-        after the camper, please indicate below.</p>
-
-      <p>This includes, for example, significant deafness or blindness, unstabilised
-        diabetes or epilepsy, life-threatening allergies, or other conditions which
-        would normally require supervision in school life, such as autism. You do not
-        need to tick this box for conditions that are easily managed by medication,
-        where the camper can administer the medication themselves.</p>
-
-      <p>If the box is ticked, a camp leader will then have to manually approve this
-        place before booking and payment can proceed. This system is needed to avoid
-        disappointment in the case where we will not be able to cater for the camper's
-        condition on camp.</p>
-
-      {% cciw_form_field form 'serious_illness' %}
-
-      <h2>Agreements</h2>
-
-      <h3>Camper agreement</h3>
-
-      <p>The camper must agree to observe the camp's <a href="/booking/code-of-conduct/" target="_blank">code of conduct</a>. Failure to obey
-        camp rules can result in the camper being sent home, with no refund.</p>
-
-      <h3>Parent/guardian agreement</h3>
-
-      <p>In the event of any medical treatment becoming necessary during the camp,
-        every effort will be made to contact the parent/guardian. However, parents are
-        required to authorise the leadership team to act in their absence where urgent
-        treatment becomes necessary.</p>
-
-      <p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
-
-      {% cciw_form_field form 'agreement' %}
-
-      <h3>Photographs</h3>
-
-      <p>We sometimes take photos during camp for use in camp publicity purposes. If you
-        give permission for photos taken of the camper to be used in this way, please
-        tick the box below. This is optional.</p>
-
-      {% cciw_form_field form 'publicity_photos_agreement' %}
-
-      {% for agreement in custom_agreements %}
-        <h3>{{ agreement.name }}</h3>
-
-        <div>
-          {{ agreement.text_html|safe }}
-        </div>
-
-        <div id="div_id_agreement" class="formrow">
-          <div class="field">
-            <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
-            <input type="checkbox"
-                   name="custom_agreement_{{ agreement.id }}"
-                   id="id_custom_agreement_{{ agreement.id }}"
-                   {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
-                     checked="checked"
-                   {% endif %}
-            >
-          </div>
-        </div>
-
-      {% endfor %}
-
-      {% if not read_only %}
-
-        <h2>Save</h2>
+        <h2>Use of data</h2>
 
         <p>
-          <input type="submit" name="submit" value="Save place details to continue" id="id_save_btn" />
+          We store and use your data in accordance with our <a href="/info/privacy-notice/" target="_blank">privacy policy</a>.
+          In general terms, this means that we do not collect any more data than
+          is necessary to ensure the safety and well-being of all campers, and we
+          do not pass on the data to 3rd parties except where that is necessary
+          for those purposes. Further notes about how we use specific pieces of
+          information are given below.
         </p>
 
-      {% endif %}
+        <h2 class="columns-space-between">
+          <span>
+            Camper details
+          </span>
+          <button
+            type="button"
+            class="copy_data_btn use_previous_data"
+            hx-trigger="click"
+            hx-get="{{ use_previous_data_modal_url }}"
+            hx-target="body"
+            hx-swap="beforeend"
+          >
+            Use previous data
+          </button>
+        </h2>
+        {% cciw_form_field form 'first_name' %}
+        {% cciw_form_field form 'last_name' %}
+        {% cciw_form_field form 'sex' %}
+        {% cciw_form_field form 'date_of_birth' %}
 
-      {# Put extra stuff at end so that CSS first-child selectors work #}
-      {% csrf_token %}
-      <script type="text/javascript">
-        var cciw = (function(pub) {
-          "use strict";
-          pub.placesJsonUrl = '{% url "cciw-bookings-places_json" %}';
-          pub.accountJsonUrl ='{% url "cciw-bookings-account_json" %}';
-          return pub;
+        {% block camper-address %}
+          <div id="id-add-place-camper-address">
+            <h2 class="columns-space-between">
+              <span>
+                Camper address
+              </span>
+              <button
+                type="button"
+                class="copy_data_btn"
+                name="copy_account_address_to_camper"
+                hx-trigger="click"
+                hx-get="{{ reuse_data_url }}"
+                hx-vals='{"use_block": "camper-address", "copy_account_address_to_camper": "1"}'
+                hx-include="#id-add-place-camper-address"
+                hx-target="#id-add-place-camper-address"
+                hx-swap="outerHTML"
+              >
+                Use account address
+              </button>
+            </h2>
 
-        })(cciw || {});
-      </script>
-      <input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
-      <input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>
+            <p>We will use this information to contact you before camp.</p>
 
+            {% cciw_form_field form 'address_line1' %}
+            {% cciw_form_field form 'address_line2' %}
+            {% cciw_form_field form 'address_city' %}
+            {% cciw_form_field form 'address_county' %}
+            {% cciw_form_field form 'address_country' %}
+            {% cciw_form_field form 'address_post_code' %}
+            {% cciw_form_field form 'phone_number' %}
+            {% cciw_form_field form 'email' %}
+          </div>
+        {% endblock %}
 
-    </form>
+        <h2>Church</h2>
 
-    {% include "cciw/bookings/use_previous_popup_inc.html" %}
+        {% cciw_form_field form 'church' %}
 
+        <h2>Transport</h2>
+
+        <div>We used to offer some help with transport if you were coming from South
+          Wales. This is no longer available - please make your own arrangements to get to
+          camp.
+        </div>
+
+        {% block contact-details %}
+          <div id="id-add-place-contact-details">
+            <h2 class="columns-space-between">
+              <span>
+                Contact details
+              </span>
+              <button
+                type="button"
+                class="copy_data_btn"
+                name="copy_account_address_to_contact_details"
+                hx-trigger="click"
+                hx-get="{{ reuse_data_url }}"
+                hx-vals='{"use_block": "contact-details", "copy_account_address_to_contact_details": "1"}'
+                hx-include="#id-add-place-contact-details"
+                hx-target="#id-add-place-contact-details"
+                hx-swap="outerHTML"
+              >
+                Use account address
+              </button>
+
+            </h2>
+
+            <p>Please enter a contact name, address and number that we can use <strong>during the week of camp</strong> in case of emergency.</p>
+
+            {% cciw_form_field form 'contact_name' %}
+            {% cciw_form_field form 'contact_line1' %}
+            {% cciw_form_field form 'contact_line2' %}
+            {% cciw_form_field form 'contact_city' %}
+            {% cciw_form_field form 'contact_county' %}
+            {% cciw_form_field form 'contact_country' %}
+            {% cciw_form_field form 'contact_post_code' %}
+            {% cciw_form_field form 'contact_phone_number' %}
+
+          </div>
+        {% endblock %}
+
+        <h2>Dietary requirements</h2>
+
+        <p>
+          Please enter any special dietary requirements here (e.g. vegetarian), to
+          ensure we can provide appropriate food on camp.
+        </p>
+        {% cciw_form_field form 'dietary_requirements' %}
+
+        <h2>GP details</h2>
+
+        <p>Please enter the details of the camper's GP, so that we can be in
+          contact in the case of medical needs that arise on camp.
+        </p>
+
+        {% cciw_form_field form 'gp_name' %}
+        {% cciw_form_field form 'gp_line1' %}
+        {% cciw_form_field form 'gp_line2' %}
+        {% cciw_form_field form 'gp_city' %}
+        {% cciw_form_field form 'gp_county' %}
+        {% cciw_form_field form 'gp_country' %}
+        {% cciw_form_field form 'gp_post_code' %}
+        {% cciw_form_field form 'gp_phone_number' %}
+
+        <h2>Medical details</h2>
+
+        <p>
+          We collect medical and health details to ensure we can provide a safe
+          environment for campers and can respond to medical needs. We may pass on
+          medical details to medical professionals as necessary.
+        </p>
+
+        {% cciw_form_field form 'medical_card_number' %}
+        {% cciw_form_field form 'last_tetanus_injection_date' %}
+        {% cciw_form_field form 'allergies' %}
+        {% cciw_form_field form 'regular_medication_required' %}
+        {% cciw_form_field form 'illnesses' %}
+        {% cciw_form_field form 'can_swim_25m' %}
+        {% cciw_form_field form 'learning_difficulties' %}
+
+        <p>If the illnesses, allergies or learning/behavioural difficulties above
+          include conditions that would affect the safety of camp or our ability to look
+          after the camper, please indicate below.</p>
+
+        <p>This includes, for example, significant deafness or blindness, unstabilised
+          diabetes or epilepsy, life-threatening allergies, or other conditions which
+          would normally require supervision in school life, such as autism. You do not
+          need to tick this box for conditions that are easily managed by medication,
+          where the camper can administer the medication themselves.</p>
+
+        <p>If the box is ticked, a camp leader will then have to manually approve this
+          place before booking and payment can proceed. This system is needed to avoid
+          disappointment in the case where we will not be able to cater for the camper's
+          condition on camp.</p>
+
+        {% cciw_form_field form 'serious_illness' %}
+
+        <h2>Agreements</h2>
+
+        <h3>Camper agreement</h3>
+
+        <p>The camper must agree to observe the camp's <a href="/booking/code-of-conduct/" target="_blank">code of conduct</a>. Failure to obey
+          camp rules can result in the camper being sent home, with no refund.</p>
+
+        <h3>Parent/guardian agreement</h3>
+
+        <p>In the event of any medical treatment becoming necessary during the camp,
+          every effort will be made to contact the parent/guardian. However, parents are
+          required to authorise the leadership team to act in their absence where urgent
+          treatment becomes necessary.</p>
+
+        <p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
+
+        {% cciw_form_field form 'agreement' %}
+
+        <h3>Photographs</h3>
+
+        <p>We sometimes take photos during camp for use in camp publicity purposes. If you
+          give permission for photos taken of the camper to be used in this way, please
+          tick the box below. This is optional.</p>
+
+        {% cciw_form_field form 'publicity_photos_agreement' %}
+
+        {% for agreement in custom_agreements %}
+          <h3>{{ agreement.name }}</h3>
+
+          <div>
+            {{ agreement.text_html|safe }}
+          </div>
+
+          <div id="div_id_agreement" class="formrow">
+            <div class="field">
+              <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
+              <input type="checkbox"
+                     name="custom_agreement_{{ agreement.id }}"
+                     id="id_custom_agreement_{{ agreement.id }}"
+                     {% if booking and agreement.id in booking.custom_agreements_checked %}
+                       checked="checked"
+                     {% endif %}
+              >
+            </div>
+          </div>
+
+        {% endfor %}
+
+        {% if not read_only %}
+
+          <h2>Save</h2>
+
+          <p>
+            <input type="submit" name="save" value="Save place details to continue" id="id_save_btn" />
+          </p>
+
+        {% endif %}
+
+        {# Put extra stuff at end so that CSS first-child selectors work #}
+        {% csrf_token %}
+
+      </form>
+    {% endblock %}
 
   {% endif %}
 {% endblock %}

@@ -868,8 +868,10 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
     def test_use_existing_addresses(self):
         self._use_existing_start()
 
-        self.click(".use_existing_btn")
-        self.click("#id_use_address_btn")
+        self.click(".use_previous_data")
+        self.fill({"#id_copy_address_details": True, "#id_copy_contact_address_details": True})
+        self.click("dialog button[name=copy]")
+        self.wait_for_ajax()
 
         self.assertValues(
             {
@@ -890,8 +892,10 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
     def test_use_existing_gp(self):
         self._use_existing_start()
 
-        self.click(".use_existing_btn")
-        self.click("#id_use_gp_info_btn")
+        self.click(".use_previous_data")
+        self.fill({"#id_copy_gp_details": True})
+        self.click("dialog button[name=copy]")
+        self.wait_for_ajax()
 
         self.assertValues(
             {
@@ -909,32 +913,25 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
             }
         )
 
-    def test_use_existing_all(self):
+    def test_use_existing_camper(self):
         self._use_existing_start()
 
-        self.click(".use_existing_btn")
-        self.click("#id_use_all_btn")
+        self.click(".use_previous_data")
+        self.fill({"#id_copy_camper_details": True})
+        self.click("dialog button[name=copy]")
+        self.wait_for_ajax()
 
         self.assertValues(
             {
-                "#id_address_line1": "123 My street",
-                "#id_address_country": "GB",
-                "#id_address_post_code": "ABC 123",
-                "#id_contact_name": "Mr Father",
-                "#id_contact_line1": "98 Main Street",
-                "#id_contact_country": "GB",
-                "#id_contact_post_code": "ABC 456",
                 "#id_first_name": "Frédéric",
-                "#id_gp_name": "Doctor Who",
-                "#id_gp_line1": "The Tardis",
-                "#id_gp_country": "GB",
             }
         )
 
     def test_use_account_data(self):
         self._use_existing_start()
 
-        self.click("#id_use_account_1_btn")
+        self.click("button[name=copy_account_address_to_camper]")
+        self.wait_for_ajax()
         self.assertValues(
             {
                 "#id_address_line1": "456 My Street",
@@ -945,7 +942,8 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
             }
         )
 
-        self.click("#id_use_account_2_btn")
+        self.click("button[name=copy_account_address_to_contact_details]")
+        self.wait_for_ajax()
         self.assertValues(
             {
                 "#id_contact_line1": "456 My Street",
@@ -2163,52 +2161,6 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
     # sensible.
 
     # NB use a mixture of WebTest and Django client tests
-
-    def test_places_json(self):
-        self.booking_login()
-        self.create_booking()
-        resp = self.get_url("cciw-bookings-places_json")
-        j = json.loads(resp.content.decode("utf-8"))
-        assert j["places"][0]["first_name"] == self.get_place_details()["first_name"]
-
-    def test_places_json_with_exclusion(self):
-        self.booking_login()
-        booking = self.create_booking()
-        resp = self.get_literal_url(reverse("cciw-bookings-places_json") + f"?exclude={booking.id}")
-        j = json.loads(resp.content.decode("utf-8"))
-        assert j["places"] == []
-
-    def test_places_json_with_bad_exclusion(self):
-        self.booking_login()
-        resp = self.get_literal_url(reverse("cciw-bookings-places_json") + "?exclude=x")
-        j = json.loads(resp.content.decode("utf-8"))
-        assert j["places"] == []
-
-    def test_account_json(self):
-        account = self.booking_login()
-        account.address_line1 = "123 Main Street"
-        account.address_country = "FR"
-        account.save()
-
-        resp = self.get_url("cciw-bookings-account_json")
-        j = json.loads(resp.content.decode("utf-8"))
-        assert j["account"]["address_line1"] == "123 Main Street"
-        assert j["account"]["address_country"] == "FR"
-
-    def test_booking_account_json(self):
-        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
-
-        self.officer_login(officers_factories.create_officer())
-        resp = self.get_literal_url(reverse("cciw-officers-booking_account_json"), expect_errors=True)
-        assert resp.status_code == 403
-
-        # Now as booking secretary
-        self.officer_login(officers_factories.create_booking_secretary())
-        resp = self.get_literal_url(reverse("cciw-officers-booking_account_json") + f"?id={acc1.id}")
-        assert resp.status_code == 200
-
-        j = json.loads(resp.content.decode("utf-8"))
-        assert j["account"]["address_post_code"] == "ABC"
 
     def _booking_problems_json(self, place_details):
         data = {}

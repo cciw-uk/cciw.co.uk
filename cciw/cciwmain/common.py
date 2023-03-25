@@ -8,7 +8,10 @@ from functools import wraps
 import attr
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.forms import Form
+from django.forms.widgets import CheckboxInput
 from django.http import HttpResponse
+from django.http.request import QueryDict
 from django.utils import timezone
 from django.utils.html import format_html_join
 
@@ -36,18 +39,31 @@ def htmx_form_validate(*, form_class: type):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if request.method == "POST" and "Hx-Request" in request.headers and "_validate_field" in request.POST:
-                htmx_validation_field = request.POST["_validate_field"]
-                form = form_class(request.POST)
-                if htmx_validation_field not in form.fields:
-                    return HttpResponse(headers={"Hx-Trigger": "htmx:abort"})
-                form.is_valid()
+            if (
+                request.method == "POST"
+                and "Hx-Request" in request.headers
+                and (htmx_validation_field := request.POST.get("_validate_field", None))
+            ):
+                form = _build_validation_form(form_class, request.POST, htmx_validation_field)
+                form.is_valid()  # trigger validation
                 return HttpResponse(render_single_form_field(form, htmx_validation_field))
             return view_func(request, *args, **kwargs)
 
         return wrapper
 
     return decorator
+
+
+def _build_validation_form(form_class: type[Form], data: QueryDict, field_name: str):
+    # htmx quirk: when using hx-params, it submits "undefined" for checkboxes that are unchecked,
+    # instead of omitting the field like we expect. We want to keep using params, to avoid submitting
+    # fields that are not relevant to individual field validation, so we fix here.
+    field = form_class.base_fields[field_name]
+    if isinstance(field.widget, CheckboxInput):
+        if data.get(field_name) == "undefined":
+            data = data.copy()
+            del data[field_name]  # checkbox value is False
+    return form_class(data)
 
 
 _thisyear = None

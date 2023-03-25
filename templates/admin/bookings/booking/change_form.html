@@ -3,13 +3,6 @@
 {% load static %}
 {% load compress %}
 
-{% block extrastyle %}
-  {{ block.super }}
-  {% compress css %}
-    <link rel="stylesheet" href="{% static "css/bookings_add_place.scss" %}" type="text/x-scss" />
-  {% endcompress %}
-{% endblock %}
-
 
 {% block after_related_objects %}
   {# Some javascript enhancements  #}
@@ -31,14 +24,10 @@
   <script type="text/javascript">
     var cciw = (function(pub) {
       "use strict";
-      pub.allAccountJsonUrl = '{% url "cciw-officers-booking_account_json" %}';
       pub.bookingProblemsJsonUrl = '{% url "cciw-officers-booking_problems_json" %}';
       pub.placeAvailabilityJsonUrl = '{% url "cciw-officers-place_availability_json" %}';
       pub.getExpectedAmountDueUrl = '{% url "cciw-officers-get_booking_expected_amount_due" %}';
 
-      // For 'use previous' functionality:
-      pub.placesJsonUrl = '{% url "cciw-officers-booking_places_json" %}';
-      pub.accountJsonUrl = '{% url "cciw-officers-booking_account_json" %}';
       return pub;
 
     })(cciw || {});
@@ -47,12 +36,6 @@
 
   {% compress js %}
     <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
   {% endcompress %}
-
-  <input id="readonly" type="hidden" value="0">
-  <input id="formInstanceId" type="hidden" value="{{ object_id }}">
-
-  {% include "cciw/bookings/use_previous_popup_inc.html" %}
 
 {% endblock %}

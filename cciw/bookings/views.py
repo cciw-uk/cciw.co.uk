@@ -1,4 +1,5 @@
 import contextlib
+import json
 import os
 import re
 from collections import defaultdict
@@ -9,17 +10,25 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
+from django.http.request import HttpRequest
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 from paypal.standard.forms import PayPalPaymentsForm
 
 from cciw.bookings.email import send_verify_email
-from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
+from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm, UsePreviousData
 from cciw.bookings.middleware import unset_booking_account_cookie
 from cciw.bookings.models import (
+    BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS,
+    BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS,
+    BOOKING_PLACE_CAMPER_ADDRESS_DETAILS,
+    BOOKING_PLACE_CAMPER_DETAILS,
+    BOOKING_PLACE_CONTACT_ADDRESS_DETAILS,
+    BOOKING_PLACE_GP_DETAILS,
     AgreementFetcher,
     Booking,
     BookingAccount,
@@ -38,7 +47,7 @@ from cciw.bookings.models import (
 )
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, htmx_form_validate
-from cciw.cciwmain.decorators import json_response
+from cciw.utils.views import for_htmx
 
 from .decorators import (
     account_details_required,
@@ -46,7 +55,6 @@ from .decorators import (
     booking_account_required,
     redirect_if_agreement_fix_required,
 )
-from .utils import account_to_dict, booking_to_dict
 
 # utilities
 
@@ -253,13 +261,21 @@ def account_details(request):
     )
 
 
-@booking_account_required
 @account_details_required
 @htmx_form_validate(form_class=AddPlaceForm)
-def add_or_edit_place(request, context, booking_id=None):
+def add_or_edit_place(
+    request,
+    booking_id: int = None,
+    *,
+    context: dict | None = None,
+    form_input_data: dict | None = None,
+    extra_response_headers: dict | None = None,
+):
+    context = context or {}
     form_class = AddPlaceForm
     year = common.get_thisyear()
     now = timezone.now()
+    booking_account = request.booking_account
 
     if request.method == "POST" and not is_booking_open_thisyear():
         # Redirect to same view, but GET
@@ -268,35 +284,37 @@ def add_or_edit_place(request, context, booking_id=None):
     if booking_id is not None:
         # Edit
         try:
-            booking = request.booking_account.bookings.get(id=booking_id)
+            booking: Booking = booking_account.bookings.get(id=booking_id)
             state_was_booked = booking.is_booked
         except (ValueError, Booking.DoesNotExist):
             raise Http404
         if request.method == "POST" and not booking.is_user_editable():
             # Redirect to same view, but GET
             return HttpResponseRedirect(request.get_full_path())
+        context.update(title="Booking - edit camper details", edit_mode=True)
     else:
         # Add
         booking = None
         state_was_booked = False
+        context.update(title="Booking - add new camper details")
 
     custom_agreements = CustomAgreement.objects.for_year(year)
     if request.method == "POST":
         form = form_class(request.POST, instance=booking)
         if form.is_valid():
-            booking: Booking = form.instance
+            booking = form.instance
             custom_agreements_checked = [
                 agreement for agreement in custom_agreements if f"custom_agreement_{agreement.id}" in request.POST
             ]
             booking.save_for_account(
-                account=request.booking_account,
+                account=booking_account,
                 state_was_booked=state_was_booked,
                 custom_agreements=custom_agreements_checked,
             )
             messages.info(request, f'Details for "{booking.name}" were saved successfully')
             return HttpResponseRedirect(reverse("cciw-bookings-list_bookings"))
     else:
-        form = form_class(instance=booking)
+        form = form_class(data=form_input_data, instance=booking)
 
     context.update(
         {
@@ -310,49 +328,93 @@ def add_or_edit_place(request, context, booking_id=None):
             ).price,
             "read_only": booking is not None and not booking.is_user_editable(),
             "custom_agreements": custom_agreements,
+            "booking": booking,
+            "reuse_data_url": _reuse_data_url(booking.id if booking else None),
+            "use_previous_data_modal_url": _use_previous_data_modal_url(booking.id if booking else None),
         }
     )
-    return TemplateResponse(request, "cciw/bookings/add_place.html", context)
+    return TemplateResponse(request, "cciw/bookings/add_place.html", context, headers=extra_response_headers)
 
 
 @booking_account_required
 @redirect_if_agreement_fix_required  # Don't allow to add new until booked places fixed
 def add_place(request):
-    return add_or_edit_place(request, {"title": "Booking - add new camper details"})
+    return add_or_edit_place(request)
 
 
 @booking_account_required
 def edit_place(request, booking_id: int):
+    return add_or_edit_place(request, booking_id=booking_id)
+
+
+@booking_account_required
+@for_htmx(use_block_from_params=True)
+@require_GET
+def add_place_reuse_data(request: HttpRequest, booking_id: int | None = None):
+    """
+    Adds in additional data to the form on the page, depending on the buttons used.
+    """
+    # Triggered from the add_place.html page, and from the use_previous_data_modal.html page
+    booking_account = request.booking_account
+    form_data = request.GET.copy()
+    extra_response_headers = {}
+
+    if "copy_account_address_to_camper" in request.GET:
+        for field_from, field_to in BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS.items():
+            form_data[field_to] = getattr(booking_account, field_from)
+
+    if "copy_account_address_to_contact_details" in request.GET:
+        for field_from, field_to in BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS.items():
+            form_data[field_to] = getattr(booking_account, field_from)
+
+    if from_booking_id := request.GET.get("copy_from_booking", None):
+        previous_booking = booking_account.bookings.all().non_erased().get(id=from_booking_id)
+        for key, fields in [
+            ("copy_camper_details", BOOKING_PLACE_CAMPER_DETAILS),
+            ("copy_address_details", BOOKING_PLACE_CAMPER_ADDRESS_DETAILS),
+            ("copy_contact_address_details", BOOKING_PLACE_CONTACT_ADDRESS_DETAILS),
+            ("copy_gp_details", BOOKING_PLACE_GP_DETAILS),
+        ]:
+            if key in request.GET:
+                for f in fields:
+                    form_data[f] = getattr(previous_booking, f)
+
+        extra_response_headers = {"Hx-Trigger": json.dumps({"closeModal": True})}
+
     return add_or_edit_place(
-        request, {"title": "Booking - edit camper details", "edit_mode": True}, booking_id=booking_id
+        request, form_input_data=form_data, booking_id=booking_id, extra_response_headers=extra_response_headers
     )
 
 
 @booking_account_required
-@json_response
-def places_json(request):
-    account = request.booking_account
-    qs = account.bookings.all()
-    try:
-        exclude_id = int(request.GET["exclude"])
-    except (KeyError, ValueError):
-        exclude_id = None
-    if exclude_id:
-        qs = qs.exclude(id=exclude_id)
+def use_previous_data_modal(request: HttpRequest, booking_id: int | None = None):
+    booking_account = request.booking_account
+    previous_bookings = booking_account.bookings.all().non_erased()
+    if booking_id is not None:
+        previous_bookings = previous_bookings.exclude(id=booking_id)
+    form = UsePreviousData(previous_bookings=previous_bookings)
+    return TemplateResponse(
+        request,
+        "cciw/bookings/use_previous_data_modal.html",
+        {
+            "form": form,
+            "reuse_data_url": _reuse_data_url(booking_id),
+        },
+    )
 
-    return {
-        "status": "success",
-        "places": [booking_to_dict(b) for b in qs],
-    }
+
+def _reuse_data_url(booking_id: int | None):
+    if booking_id:
+        return reverse("cciw-bookings-add_place_reuse_data", kwargs=dict(booking_id=booking_id))
+    else:
+        return reverse("cciw-bookings-add_place_reuse_data")
 
 
-@booking_account_required
-@json_response
-def account_json(request):
-    return {
-        "status": "success",
-        "account": account_to_dict(request.booking_account),
-    }
+def _use_previous_data_modal_url(booking_id: int | None):
+    if booking_id:
+        return reverse("cciw-bookings-use_previous_data_modal", kwargs=dict(booking_id=booking_id))
+    else:
+        return reverse("cciw-bookings-use_previous_data_modal")
 
 
 def make_state_token(bookings):

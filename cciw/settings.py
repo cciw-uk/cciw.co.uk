@@ -239,7 +239,7 @@ if LIVEBOX:
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
-# CSRF_COOKIE_HTTPONLY = True   # Can't use this until we fix cciwutils.js which requires checking all forms.
+# CSRF_COOKIE_HTTPONLY = True   # Can't use this until we fix Javascript which requires checking all forms.
 
 # == LOGGING ==
 
@@ -501,6 +501,11 @@ STATICFILES_FINDERS = [
 ]
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
+
+COMPRESS_FILTERS = {
+    "css": ["compressor.filters.css_default.CssAbsoluteFilter", "compressor.filters.cssmin.rCSSMinFilter"],
+    "js": ["compressor.filters.jsmin.rJSMinFilter"] if LIVEBOX else [],
+}
 
 COMPRESS_PRECOMPILERS = [
     ("text/x-scss", "django_libsass.SassCompiler"),
