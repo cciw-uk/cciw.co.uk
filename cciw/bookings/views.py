@@ -399,6 +399,7 @@ def use_previous_data_modal(request: HttpRequest, booking_id: int | None = None)
         "cciw/bookings/use_previous_data_modal.html",
         {
             "form": form,
+            "previous_bookings": previous_bookings,
             "reuse_data_url": _reuse_data_url(booking_id),
         },
     )

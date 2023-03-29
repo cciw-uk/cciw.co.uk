@@ -6,34 +6,43 @@
   </div>
 
   <div id="dialog-content-main">
-    <p>You can copy information previously entered to save time. Please note:</p>
+    {% if not previous_bookings %}
+      <p>You have no previous bookings that you can copy information from, sorry!
+        Once you have added at least one booking, you'll be able to use this form
+        to copy information and fill in subsequent bookings more quickly.
+      </p>
 
-    <ul>
-      <li>This will overwrite existing data on this form for the selected sections</li>
-      <li><strong>Remember to check the data after using this to ensure it is all up to date</strong>
-      </li>
-    </ul>
+    {% else %}
 
-    <div>
-      Select previous booking to copy from:
-    </div>
-    <div>
-      <form>
-        {{ form.as_p }}
-        <div>
-          <button
-            name="copy"
-            type="submit"
-            hx-get="{{ reuse_data_url }}"
-            hx-target="#id_addplaceform"
-            hx-swap="outerHTML"
-            hx-vals='{"use_block": "form-block"}'
-            hx-include="#id_addplaceform,#id_use_existing_data_modal form"
-          >
-            Copy details
-          </button>
-        </div>
-      </form>
-    </div>
+      <p>You can copy information previously entered to save time. Please note:</p>
+
+      <ul>
+        <li>This will overwrite existing data on this form for the selected sections</li>
+        <li><strong>Remember to check the data after using this to ensure it is all up to date</strong>
+        </li>
+      </ul>
+
+      <div>
+        Select previous booking to copy from:
+      </div>
+      <div>
+        <form>
+          {{ form.as_p }}
+          <div>
+            <button
+              name="copy"
+              type="submit"
+              hx-get="{{ reuse_data_url }}"
+              hx-target="#id_addplaceform"
+              hx-swap="outerHTML"
+              hx-vals='{"use_block": "form-block"}'
+              hx-include="#id_addplaceform,#id_use_existing_data_modal form"
+            >
+              Copy details
+            </button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
   </div>
 </dialog>
