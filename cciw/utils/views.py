@@ -156,10 +156,14 @@ def for_htmx(
                 if if_hx_target is None or request.headers.get("Hx-Target", None) == if_hx_target:
                     blocks_to_use = use_block
                     if not hasattr(resp, "render"):
-                        if not resp.content and (
-                            "Hx-Trigger" in resp.headers
-                            or "Hx-Trigger-After-Swap" in resp.headers
-                            or "Hx-Trigger-After-Settle" in resp.headers
+                        if not resp.content and any(
+                            h in resp.headers
+                            for h in (
+                                "Hx-Trigger",
+                                "Hx-Trigger-After-Swap",
+                                "Hx-Trigger-After-Settle",
+                                "Hx-Redirect",
+                            )
                         ):
                             # This is a special case response, it doesn't need modifying:
                             return resp
@@ -212,3 +216,7 @@ def make_get_request(request: HttpRequest) -> HttpRequest:
     new_request.POST = QueryDict()
     new_request.method = "GET"
     return new_request
+
+
+def htmx_redirect(url):
+    return HttpResponse(headers={"HX-Redirect": url})

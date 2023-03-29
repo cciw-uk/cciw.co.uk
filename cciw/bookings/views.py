@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
 from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -47,7 +48,7 @@ from cciw.bookings.models import (
 )
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, htmx_form_validate
-from cciw.utils.views import for_htmx
+from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
 
 from .decorators import (
     account_details_required,
@@ -434,10 +435,15 @@ def make_state_token(bookings):
 
 @booking_account_required
 @redirect_if_agreement_fix_required
+@for_htmx(use_block_from_params=True)
 def list_bookings(request):
     """
     List bookings a.k.a. checkout
     """
+    return _list_bookings(request)
+
+
+def _list_bookings(request):
     year = common.get_thisyear()
     now = timezone.now()
     bookings = request.booking_account.bookings.for_year(year).order_by("id").with_prefetch_camp_info()
@@ -451,9 +457,11 @@ def list_bookings(request):
             return HttpResponseRedirect(reverse("cciw-bookings-add_place"))
 
         places = basket_bookings + shelf_bookings
-        response = _handle_list_booking_actions(request, places)
-        if response:
-            return response
+        handled = _handle_list_booking_actions(request, places)
+        if handled is True:
+            return _list_bookings(make_get_request(request))
+        elif isinstance(handled, HttpResponse):
+            return handled
 
         if "book_now" in request.POST:
             state_token = request.POST.get("state_token", "")
@@ -468,7 +476,7 @@ def list_bookings(request):
                     messages.info(request, "Places booked!")
                     return HttpResponseRedirect(reverse("cciw-bookings-pay"))
                 else:
-                    messages.error(request, "These places cannot be booked for the reasons " "given below.")
+                    messages.error(request, "These places cannot be booked for the reasons given below.")
         # Start over, because things may have changed.
         return HttpResponseRedirect(request.path)
 
@@ -532,42 +540,30 @@ def list_bookings(request):
     )
 
 
-def _handle_list_booking_actions(request, places):
-    def shelve(place):
+def _handle_list_booking_actions(request: HttpRequest, places: list[Booking]) -> bool | HttpResponse:
+    if "booking_id" not in request.POST:
+        return False
+
+    try:
+        place = [p for p in places if p.id == int(request.POST["booking_id"])][0]
+    except (ValueError, IndexError):
+        return False
+
+    if "shelve" in request.POST:
         place.shelved = True
         place.save()
-        messages.info(request, f'Place for "{place.name}" moved to shelf')
-
-    def unshelve(place):
+        return True
+    elif "unshelve" in request.POST:
         place.shelved = False
         place.save()
-        messages.info(request, f'Place for "{place.name}" moved to basket')
-
-    def delete(place):
-        messages.info(request, f'Place for "{place.name}" deleted')
+        return True
+    elif "delete" in request.POST:
         place.delete()
+        return True
+    elif "edit" in request.POST:
+        return htmx_redirect(reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(place.id)}))
 
-    def edit(place):
-        return HttpResponseRedirect(reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(place.id)}))
-
-    for k in request.POST.keys():
-        for r, action in [
-            (r"shelve_(\d+)", shelve),
-            (r"unshelve_(\d+)", unshelve),
-            (r"delete_(\d+)", delete),
-            (r"edit_(\d+)", edit),
-        ]:
-            m = re.match(r, k)
-            if m is not None:
-                place = None
-                with contextlib.suppress(
-                    ValueError,  # converting to string
-                    IndexError,  # not in list
-                ):
-                    b_id = int(m.groups()[0])
-                    place = [p for p in places if p.id == b_id][0]
-                if place is not None:
-                    return action(place)
+    return False
 
 
 class CustomAmountPayPalForm(PayPalPaymentsForm):

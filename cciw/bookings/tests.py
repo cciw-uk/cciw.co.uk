@@ -1548,66 +1548,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit("[name=add_another]")
         self.assertUrlsEqual(reverse("cciw-bookings-add_place"))
 
-    def test_move_to_shelf(self):
-        self.booking_login()
-        booking = self.create_booking()
-        assert not booking.shelved
-        self.get_url(self.urlname)
-
-        self.submit(f"[name=shelve_{booking.id}]")
-
-        # Should be changed
-        booking.refresh_from_db()
-        assert booking.shelved
-
-        # Different button should appear
-        assert not self.is_element_present(f"[name=shelve_{booking.id}]")
-        assert self.is_element_present(f"[name=unshelve_{booking.id}]")
-
-        self.assertTextPresent("Shelf")
-
-    def test_move_to_basket(self):
-        self.booking_login()
-        booking = self.create_booking()
-        booking.shelved = True
-        booking.save()
-
-        self.get_url(self.urlname)
-        self.submit(f"[name=unshelve_{booking.id}]")
-
-        # Should be changed
-        booking.refresh_from_db()
-        assert not booking.shelved
-
-        # Shelf section should disappear.
-        self.assertTextAbsent("Shelf")
-
-    def test_delete_place(self):
-        account = self.booking_login()
-        booking = self.create_booking()
-        self.get_url(self.urlname)
-
-        if self.is_full_browser_test:
-            self.click(f"[name=delete_{booking.id}]", expect_alert=True)
-            self.accept_alert()
-            self.wait_until_loaded("body")
-        else:
-            self.submit(f"[name=delete_{booking.id}]")
-
-        # Should be gone
-        if self.is_full_browser_test:
-            self.wait_until(lambda d: account.bookings.count() == 0)
-        else:
-            assert account.bookings.count() == 0
-
-    def test_edit_place_btn(self):
-        self.booking_login()
-        booking = self.create_booking()
-        self.get_url(self.urlname)
-
-        self.submit(f"[name=edit_{booking.id}]")
-        self.assertUrlsEqual(reverse("cciw-bookings-edit_place", kwargs={"booking_id": booking.id}))
-
     def test_book_ok(self):
         """
         Test that we can book a place
@@ -1823,7 +1763,64 @@ class TestListBookingsWT(ListBookingsBase, WebTestBase):
 
 
 class TestListBookingsSL(ListBookingsBase, SeleniumBase):
-    pass
+    def test_move_to_shelf(self):
+        self.booking_login()
+        booking = self.create_booking()
+        assert not booking.shelved
+        self.get_url(self.urlname)
+
+        self.click(f'tr[data-booking-id="{booking.id}"] [name=shelve]')
+        self.wait_for_ajax()
+
+        # Should be changed
+        booking.refresh_from_db()
+        assert booking.shelved
+
+        # Different button should appear
+        assert not self.is_element_present(f'tr[data-booking-id="{booking.id}"] [name=shelve]')
+        assert self.is_element_present(f'tr[data-booking-id="{booking.id}"] [name=unshelve]')
+
+        self.assertTextPresent("Shelf")
+
+    def test_move_to_basket(self):
+        self.booking_login()
+        booking = self.create_booking()
+        booking.shelved = True
+        booking.save()
+
+        self.get_url(self.urlname)
+        self.click(f'tr[data-booking-id="{booking.id}"] [name=unshelve]')
+        self.wait_for_ajax()
+
+        # Should be changed
+        booking.refresh_from_db()
+        assert not booking.shelved
+
+        # Shelf section should disappear.
+        self.assertTextAbsent("Shelf")
+
+    def test_delete_place(self):
+        account = self.booking_login()
+        booking = self.create_booking()
+        self.get_url(self.urlname)
+
+        self.click(f'tr[data-booking-id="{booking.id}"] [name=delete]', expect_alert=True)
+        self.accept_alert()
+        self.wait_for_ajax()
+
+        # Should be gone
+        if self.is_full_browser_test:
+            self.wait_until(lambda d: account.bookings.count() == 0)
+        else:
+            assert account.bookings.count() == 0
+
+    def test_edit_place_btn(self):
+        self.booking_login()
+        booking = self.create_booking()
+        self.get_url(self.urlname)
+
+        self.submit(f'tr[data-booking-id="{booking.id}"] [name=edit]')
+        self.assertUrlsEqual(reverse("cciw-bookings-edit_place", kwargs={"booking_id": booking.id}))
 
 
 class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):

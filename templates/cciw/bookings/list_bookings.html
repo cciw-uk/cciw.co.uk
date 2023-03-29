@@ -3,59 +3,57 @@
 
 {% block content %}
 
-  <form action="" method="POST">
+  <h2>Basket</h2>
 
-    {% csrf_token %}
-    <input type="hidden" name="state_token" value="{{ state_token }}"/>
+  {% if basket_bookings %}
 
-    <h2>Basket</h2>
+    {% if all_bookable %}
+      <p>The places below are ready to be booked — but not booked yet!
+        Please continue by choosing from the options below.</p>
+    {% endif %}
 
-    {% if basket_bookings %}
+    <table class="topheaders bookinglist">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Camp</th>
+          <th scope="col">Price</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
 
-      {% if all_bookable %}
-        <p>The places below are ready to be booked — but not booked yet!
-          Please continue by choosing from the options below.</p>
+      {% for booking in basket_bookings %}
+        {% include "cciw/bookings/place_details_row_inc.html" with booking=booking basket=1 %}
+      {% endfor %}
+
+      {% if discounts_available %}
+        {% for discount_caption, discount_amount in discounts_available %}
+          <tr>
+            <td colspan="2" class="discounts">{{ discount_caption }}:</td>
+            <td class="price">-£{{ discount_amount }}</td>
+            <td></td>
+          </tr>
+        {% endfor %}
       {% endif %}
 
-      <table class="topheaders bookinglist">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Camp</th>
-            <th scope="col">Price</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-
-        {% for booking in basket_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking basket=1 %}
-        {% endfor %}
-
-        {% if discounts_available %}
-          {% for discount_caption, discount_amount in discounts_available %}
-            <tr>
-              <td colspan="2" class="discounts">{{ discount_caption }}:</td>
-              <td class="price">-£{{ discount_amount }}</td>
-              <td></td>
-            </tr>
-          {% endfor %}
-        {% endif %}
-
-        <tr>
-          <td colspan="2" class="total">Total:</td>
-          <td class="price">{% if total|default_if_none:"None" == "None" %}TBA{% else %}
-            {% if grand_total != total %}
-              <strike>£{{ total }}</strike> <b>£{{ grand_total }}</b>
-            {% else %}
-              £{{ total }}
-            {% endif %}
+      <tr>
+        <td colspan="2" class="total">Total:</td>
+        <td class="price">{% if total|default_if_none:"None" == "None" %}TBA{% else %}
+          {% if grand_total != total %}
+            <strike>£{{ total }}</strike> <b>£{{ grand_total }}</b>
+          {% else %}
+            £{{ total }}
           {% endif %}
-          </td>
-          <td></td>
-        </tr>
-      </table>
+        {% endif %}
+        </td>
+        <td></td>
+      </tr>
+    </table>
 
+    <form action="" method="POST">
 
+      {% csrf_token %}
+      <input type="hidden" name="state_token" value="{{ state_token }}"/>
       <div class="actionsplit">
         <div class="actionbutton">
           <input type="submit" name="add_another" value="Add another place" class="bigaction">
@@ -67,12 +65,14 @@
 
       {% if not all_bookable %}
         {% if all_unbookable %}
-          {% if basket_bookings|length > 1 %}
-            <p>These places cannot be booked for the reasons described above.
-          {% else %}
-            <p>This place cannot be booked for the reasons described above.
-          {% endif %}
-          For the cases of serious illness or custom discount, the booking will be reviewed and you will be notified when this is done.</p>
+          <p>
+            {% if basket_bookings|length > 1 %}
+              These places cannot be booked for the reasons described above.
+            {% else %}
+              This place cannot be booked for the reasons described above.
+            {% endif %}
+            For the cases of serious illness or custom discount, the booking will be reviewed and you will be notified when this is done.
+          </p>
         {% else %}
           <p>One or more of the places cannot be booked, so this set cannot be booked as a group.
             For the cases of serious illness or custom discount, the booking will be reviewed and you will be notified when this is done.</p>
@@ -81,38 +81,38 @@
             and book the other place(s).</p>
         {% endif %}
       {% endif %}
+    </form>
 
-    {% else %}
+  {% else %}
 
-      <p>Nothing in your basket.</p>
+    <p>Nothing in your basket.</p>
 
-    {% endif %} {# basket_bookings #}
+  {% endif %} {# basket_bookings #}
 
-    {% if shelf_bookings %}
+  {% if shelf_bookings %}
 
-      <h2>Shelf</h2>
+    <h2>Shelf</h2>
 
-      <p>These place details are 'on the shelf' for later use - move them to the
-        basket in order to book them.</p>
+    <p>These place details are 'on the shelf' for later use - move them to the
+      basket in order to book them.</p>
 
-      <table class="topheaders bookinglist">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Camp</th>
-            <th scope="col">Price</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-        {% for booking in shelf_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking shelf=1 %}
-        {% endfor %}
-      </table>
+    <table class="topheaders bookinglist">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Camp</th>
+          <th scope="col">Price</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      {% for booking in shelf_bookings %}
+        {% include "cciw/bookings/place_details_row_inc.html" with booking=booking shelf=1 %}
+      {% endfor %}
+    </table>
 
 
-    {% endif %}
+  {% endif %}
 
-  </form>
 
   {% include 'cciw/bookings/help.html' %}
 

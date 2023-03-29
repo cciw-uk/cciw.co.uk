@@ -1,5 +1,5 @@
 {% load static %}
-<tr>
+<tr data-booking-id="{{ booking.id }}">
   <td>
     {{ booking.name }}
   </td>
@@ -11,14 +11,50 @@
     {% if booking.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ booking.amount_due_normalised }}{% endif %}
   </td>
   <td rowspan="2" class="bookinglistaction">
-    <input type="submit" name="edit_{{ booking.id }}" value="View/edit"><br/>
+    <input
+      type="submit"
+      name="edit"
+      hx-trigger="click"
+      hx-post="."
+      hx-vals='{"booking_id": {{ booking.id }}, "edit": "true" }'
+      hx-swap="none"
+      value="View/edit">
+    <br/>
     {% if basket %}
-      <input type="submit" name="shelve_{{ booking.id }}" value="Save for later"><br/>
+      <input
+        type="submit"
+        name="shelve"
+        hx-trigger="click"
+        hx-post="."
+        hx-vals='{"booking_id": {{ booking.id }}, "shelve": "true", "use_block": ["content"] }'
+        hx-target="#contentinner"
+        hx-swap="innerHTML"
+        value="Save for later"
+      ><br/>
     {% endif %}
     {% if shelf %}
-      <input type="submit" name="unshelve_{{ booking.id }}" value="Move to basket"><br/>
+      <input
+        type="submit"
+        name="unshelve"
+        hx-trigger="click"
+        hx-post="."
+        hx-vals='{"booking_id": {{ booking.id }}, "unshelve": "true", "use_block": ["content"] }'
+        hx-target="#contentinner"
+        hx-swap="innerHTML"
+        value="Move to basket"
+      ><br/>
     {% endif %}
-    <input type="submit" data-js-confirm data-js-confirm-message="Delete this booking?" name="delete_{{ booking.id }}" value="Delete">
+    <input
+      type="submit"
+      name="delete"
+      hx-trigger="click"
+      hx-post="."
+      hx-confirm="Delete this booking for {{ booking.name }}?"
+      hx-vals='{"booking_id": {{ booking.id }}, "delete": "true", "use_block": ["content"] }'
+      hx-target="#contentinner"
+      hx-swap="innerHTML"
+      value="Delete"
+    >
   </td>
 </tr>
 <tr class="sectionbottom">
