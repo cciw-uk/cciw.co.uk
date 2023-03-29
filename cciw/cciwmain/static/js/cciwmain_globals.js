@@ -2,10 +2,6 @@
 (function($) {
     $(document).ready(function() {
 
-        $('#menutoggle a').on('click', function(ev) {
-            $('#menubar ul li').toggleClass('expanded');
-        })
-
         // JS confirmation for destructive actions
         // TODO this can probably be replaced with htmx and `hx-confirm`
         $('input[type=submit][data-js-confirm]').on('click', function(ev) {

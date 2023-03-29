@@ -184,14 +184,16 @@ header {
 
 // menubar
 
-$menubarLineHeight: $lineHeight;
 
 $menubarPaddingHeight: 3px;
-$menubarBorderHeight: 1px;
 
 // menubar unselected wants to look about same as $primaryColorLighter, but due
 // to contrast from dark background in header we have to darken and destaturate it
 $menubarUnselectedColor: #90ab70;
+
+:root {
+    --menubar-line-height: #{$lineHeight};
+}
 
 #menubar {
 
@@ -199,11 +201,7 @@ $menubarUnselectedColor: #90ab70;
     width: 100%;
     @include topnavlinks();
 
-    @media screen and (max-width: $smallMenubarFontScreenWidth) {
-        font-size: 80%;
-    }
-
-    // The need to use flexbox here is caused by:
+    // Note some constraints:
     //
     // 1) getting the right transparency effects, including making the empty
     // area to the left of the menu items look the same as the menu items
@@ -221,28 +219,44 @@ $menubarUnselectedColor: #90ab70;
         display: flex;
         flex-direction: row;
 
+        justify-content: center;
+
         li {
             z-index: 0;
 
             a, .spacer {
                 background-color: scale-color($menubarUnselectedColor, $alpha: -50%);
-                line-height: $menubarLineHeight;
-                display: inline-block;
+                line-height: var(--menubar-line-height);
+                display: block;
+            }
+            a {
                 padding: $menubarPaddingHeight 20px;
                 @media screen and (max-width: $smallMenubarFontScreenWidth) {
                     padding-left: 10px;
                     padding-right: 10px;
                 }
+                @media screen and (max-width: 400px) {
+                    padding-left: 5px;
+                    padding-right: 5px;
+                }
+
+                // For really narrow screens:
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .spacer {
+                padding: $menubarPaddingHeight 0;
             }
 
             flex: 0 1 auto;
+            min-width: 0;
 
-            &.spacerstart {
+            &.spacerstart, &.spacerend {
+                padding: 0;
                 flex: 1 1 auto;
             }
-            &.spacerend {
-                display: none;
-            }
+
             .spacer {
                 width: 100%;
                 box-sizing: border-box;
@@ -266,7 +280,39 @@ $menubarUnselectedColor: #90ab70;
         }
     }
 
+    // Large screen - shift to right
+    ul li.spacerend {
+        width: 0;
+        flex: 0 1 auto;
+    }
+
+    // Smaller: center
+    @media screen and (max-width: $mobileMenuWidth) {
+        ul li {
+            &.spacerend, &.spacerstart {
+                width: auto;
+                flex: 1 1 auto;
+            }
+        }
+    }
 }
+
+// Menubar for mobile:
+
+@media screen and (max-width: $mobileMenuWidth) {
+    body:not(.homepage) #headerlogo {
+        top: calc(var(--menubar-line-height) + #{$menubarPaddingHeight} * 2 + 2px);
+    }
+}
+@media screen and (max-width: $smallMenubarFontScreenWidth) {
+    #menubar {
+        font-size: 80%;
+    }
+    :root {
+        --menubar-line-height: #{$lineHeight * 0.7};
+    }
+}
+
 
 // Main body
 
@@ -848,54 +894,6 @@ table.bookinglist {
     }
 }
 
-// Menubar for mobile:
-
-@media screen and (min-width: ($mobileMenuWidth + 1px)) {
-    #menubar #menutoggle {
-        display: none;
-    }
-}
-
-@media screen and (max-width: $mobileMenuWidth) {
-    #menubar {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        width: auto;
-        font-size: inherit;
-
-        ul {
-            display: block;
-            text-align: left;
-            li {
-                display: none; // See cciwmain_globals.js
-                &.expanded {
-                    display: block;
-                    &.spacerstart, &.spacerend {
-                        display: none;
-                    }
-                }
-                a {
-                    display: block;
-
-                    &,
-                    &[aria-current="page"],
-                    &[aria-current="page"]:hover,
-                    &.currentSection,
-                    &.currentSection:hover {
-                        background-color: scale-color($menubarUnselectedColor, $alpha: -10%);
-                    }
-                }
-
-                &#menutoggle {
-                    display: block;
-                    text-align: right;
-                }
-            }
-        }
-    }
-}
-
 @media screen and (max-width: $responsiveTablesScreenWidth) {
 
     table.responsive {
@@ -967,19 +965,17 @@ table.bookinglist {
     #pagetitle {
         padding-top: 20vh;
     }
-    @media screen and (min-width: ($mobileMenuWidth + 1px)) {
-        // If not displaying mobile menu bar, shift menubar down to below photo
-        // and center it.
-        header {
-            position: relative; // establish bounding box for #menubar
-        }
-        #menubar {
-            position: absolute;
-            bottom: 0px;
-            li.spacerstart, li.spacerend {
-                display: block;
-                flex: 1 1 auto;
-            }
+    // Shift menubar down to below photo
+    // and center it.
+    header {
+        position: relative; // establish bounding box for #menubar
+    }
+    #menubar {
+        position: absolute;
+        bottom: 0px;
+        li.spacerstart, li.spacerend {
+            display: block;
+            flex: 1 1 auto;
         }
     }
     .lead {
