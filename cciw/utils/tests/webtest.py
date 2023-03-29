@@ -66,7 +66,9 @@ class CommonMixin:
                 submit_css_selector = self.submit_css_selector
             self.click(self.submit_css_selector)
             assert self.is_element_present("form:invalid")
-            self.execute_script('$("[required]").removeAttr("required");')
+            self.execute_script(
+                "document.querySelectorAll('[required]').forEach((elem) => elem.removeAttribute('required'))"
+            )
             # Now we can go ahead and submit normally
         if submit_css_selector is None:
             # This can work if subclass has overridden `submit` to provide

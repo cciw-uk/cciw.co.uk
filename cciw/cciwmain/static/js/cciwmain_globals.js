@@ -15,7 +15,7 @@
     });
 
     document.body.addEventListener('closeModal', function() {
-      $('dialog[open]')[0].close();
+        document.querySelector('dialog[open]').close();
     });
 
 })();

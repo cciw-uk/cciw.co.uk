@@ -1291,7 +1291,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Used for testing what happens if user enables button using browser
         # tools etc. i.e. checking that we have proper server side validation
         if self.is_full_browser_test:
-            self.execute_script("""$('#id_book_now_btn').removeAttr('disabled')""")
+            self.execute_script("""document.querySelector('#id_book_now_btn').removeAttribute('disabled')""")
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
