@@ -983,7 +983,7 @@ def _officer_list(
 @camp_admin_required
 def update_officer(request):
     # Partial page, via htmx
-    invitation = Invitation.objects.get(id=int(request.GET["invitation_id"]))
+    invitation = Invitation.objects.select_related("role", "officer").get(id=int(request.GET["invitation_id"]))
     officer = invitation.officer
     mode = "edit"
     if request.method == "POST":

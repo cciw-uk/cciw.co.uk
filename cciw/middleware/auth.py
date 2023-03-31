@@ -31,7 +31,11 @@ def private_wiki(get_response):
 def bad_password_checks(get_response):
     def middleware(request):
         user = request.user
-        if user.is_authenticated and user.bad_password:
+        if (
+            (request.path.startswith("/officers") or request.path.startswith("/admin"))
+            and user.is_authenticated
+            and user.bad_password
+        ):
             redirect_response = redirect_to_password_change_with_next(request)
             if redirect_response is not None:
                 return redirect_response
