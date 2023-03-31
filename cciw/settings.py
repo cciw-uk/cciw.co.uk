@@ -464,6 +464,7 @@ SECURE_DOWNLOAD_URL_BASE = "/protected/"  # See nginx conf
 # == MIDDLEWARE ==
 
 _MIDDLEWARE = [
+    (DEVBOX and DEBUG, "cciw.db_debug.db_debug_middleware"),
     (True, "django.middleware.security.SecurityMiddleware"),
     (True, "django.middleware.gzip.GZipMiddleware"),
     (USE_DEBUG_TOOLBAR and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
