@@ -15,7 +15,7 @@ repos:
       - id: isort
         language_version: python3.10
   - repo: https://github.com/rtts/djhtml
-    rev: 3.0.5
+    rev: 3.0.6
     hooks:
       - id: djhtml
         entry: djhtml -t 2

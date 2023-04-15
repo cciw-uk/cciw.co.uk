@@ -1,6 +1,35 @@
 // Layout utility classes
 
+
 .columns-space-between {
     display: flex;
     justify-content: space-between;
+}
+
+.columns-align-left {
+    display: flex;
+    justify-content: left;
+    > * {
+        margin-right: 1rem;
+    }
+}
+
+.columns-wrap {
+    flex-wrap: wrap;
+}
+
+@media screen and (max-width: 1024px) {
+    .columns-stacked-for-small {
+        flex-direction: column;
+    }
+}
+
+.layout-table{
+    display: table;
+}
+.layout-tr{
+    display: table-row;
+}
+.layout-td{
+    display: table-cell;
 }

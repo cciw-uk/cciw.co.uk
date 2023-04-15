@@ -1,3 +1,5 @@
+@import "utilities.scss";
+
 
 // Admin re-theme
 
@@ -99,29 +101,6 @@ a[target=_blank] {
 }
 
 
-
-/* Layout utilities */
-
-.columns-space-between {
-    display: flex;
-    justify-content: space-between;
-}
-
-@media screen and (max-width: 1024px) {
-    .columns-stacked-for-small {
-        flex-direction: column;
-    }
-}
-
-.layout-table{
-    display: table;
-}
-.layout-tr{
-    display: table-row;
-}
-.layout-td{
-    display: table-cell;
-}
 
 
 
