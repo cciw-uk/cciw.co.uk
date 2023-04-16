@@ -137,6 +137,8 @@ django-urlconfchecks @ git+https://github.com/spookylukey/django-urlconfchecks.g
     # via -r requirements.in
 django-webtest==1.9.10
     # via django-functest
+django-widget-tweaks==1.4.12
+    # via -r requirements.in
 docutils==0.19
     # via -r requirements.in
 et-xmlfile==1.1.0

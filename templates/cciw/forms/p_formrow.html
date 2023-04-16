@@ -1,7 +1,8 @@
+{% load widget_tweaks %}
 <div
   class="formrow {{ field.css_classes }}"
   id="div_id_{{ field.name }}"
-  {% if do_htmx_validation %}
+  {% if do_htmx_validation and field|widget_type != "fileinput" and field|widget_type != "captchatextinput" %}
     hx-get="."
     hx-vals='{"_validate_field": "{{ field.name }}" }'
     hx-trigger="change from:#div_id_{{ field.name }}"

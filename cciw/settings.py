@@ -158,6 +158,7 @@ INSTALLED_APPS = [
     "captcha",
     "django_urlconfchecks",
     "spurl",
+    "widget_tweaks",
 ]
 
 if DEVBOX and DEBUG:
