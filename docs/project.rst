@@ -4,10 +4,7 @@ CCiW project overview
 Architecture
 ------------
 
-The CCiW site is fairly standard Django site. It is currently hosted on
-DigitalOcean.
-
-We use:
+The CCiW site is fairly standard Django site. We use:
 
 * nginx as main webserver
 * postgresql as database

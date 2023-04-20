@@ -107,8 +107,8 @@ Sending:
 
 Receiving:
 
-* In DNS (currently managed by DigitalOcean), we have an MX record pointing mail
-  to Amazon SES servers. Settings provided by Amazon - see
+* In DNS, we have an MX record pointing mail to Amazon SES servers. Settings
+  provided by Amazon - see
   https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-mx-record.html
 
 * In SES, we have a "rule set" that matches various email addresses and
@@ -135,7 +135,7 @@ Using the main account, added 'cciw.co.uk' as a verified domain.
   * Domain: cciw.co.uk
   * Generate DKIM Settings: enabled
 
-* Added domain verification records in DNS (DigitalOcean) as per instructions.
+* Added domain verification records in DNS as per instructions.
 
 * Under "SMTP settings"
 

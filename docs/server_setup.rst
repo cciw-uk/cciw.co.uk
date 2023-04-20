@@ -8,8 +8,7 @@ Server provisioning/upgrade
 To upgrade to a major new version of the OS, it is usually better to start a new
 `VPS <https://en.wikipedia.org/wiki/Virtual_private_server>`_, test it is all
 working, then transfer. Here is the process, assuming that we are staying with
-the same provider (DigitalOcean). If moving to a new host, some steps will need
-to be changed.
+the same provider. If moving to a new host, some steps will need to be changed.
 
 
 1. For all cciw.co.uk domains that point to the DO droplet (usually just the
@@ -32,7 +31,7 @@ to be changed.
 
 3. Create new VPS:
 
-   On DigitalOcean, last time (2020-04-18) this process was:
+   On last time (2020-04-18) this process was:
 
    From https://cloud.digitalocean.com/
 
@@ -45,7 +44,7 @@ to be changed.
    - Smallest box (last time - $6/month, 1 Gb mem, 25 Gb disk, 1000 Gb transfer)
    - London datacenter
    - SSH authentication
-     - luke@calvin SSH key selected (will need to upload one if there isn't one configured)
+     - choose an SSH key - will need to upload one if there isn't one configured
 
        This key should be the same as ~/.ssh/id_rsa.pub on the machine you deploy from.
 
