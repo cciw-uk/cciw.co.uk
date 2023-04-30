@@ -159,6 +159,8 @@ INSTALLED_APPS = [
     "django_urlconfchecks",
     "spurl",
     "widget_tweaks",
+    # Where we need to override something added:
+    "cciw.overrides",
 ]
 
 if DEVBOX and DEBUG:
