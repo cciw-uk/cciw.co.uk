@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.urls import reverse
 
 from cciw.cciwmain.tests import factories as camp_factories
@@ -26,11 +28,18 @@ class CampAdmin(WebTestBase):
         assert self.is_element_present(f'[href="/admin/cciwmain/camp/{camp.id}/change/"]')
         assert not self.is_element_present(f'[href="/admin/cciwmain/camp/{other_camp.id}/change/"]')
         self.follow_link(f'[href="/admin/cciwmain/camp/{camp.id}/change/"]')
-        assert camp.max_campers != 47  # sanity check
-        self.fill({"#id_max_campers": 47})
+
+        # Camp leaders can change last_booking_date
+        self.fill(
+            {"#id_last_booking_date": (last_booking_date := camp.end_date - timedelta(days=1)).strftime("%Y-%m-%d")}
+        )
+
+        # But camp leaders can't change booking limits
+        assert not self.is_element_present("#id_max_campers")
+
         self.submit('[name="_save"]')
         camp.refresh_from_db()
-        assert camp.max_campers == 47
+        assert camp.last_booking_date == last_booking_date
 
         # Old camp is not editable:
         self.get_url("admin:cciwmain_camp_change", old_camp.id)

@@ -74,7 +74,10 @@ class CampAdmin(admin.ModelAdmin):
         ),
         (
             "Booking constraints",
-            {"fields": ("max_campers", "max_male_campers", "max_female_campers", "last_booking_date")},
+            {
+                "description": "Changes to booking limits need to be coordinated with the booking secretary.",
+                "fields": ("max_campers", "max_male_campers", "max_female_campers", "last_booking_date"),
+            },
         ),
         (
             "Applications and references",
@@ -118,6 +121,20 @@ class CampAdmin(admin.ModelAdmin):
             return qs
         else:
             return qs.filter(id__in=[c.id for c in request.user.viewable_camps])
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        # Some users (Camp leaders) have permissions to edit their own camp for
+        # some purposes, which is enabled via custom logic in
+        # `has_change_permission` below.
+
+        # But giving them unrestricted editing powers makes things difficult
+        # (particularly if the booking secretary is managing a waiting list for
+        # a camp). So we limit users who don't have full "cciwmain.change_camp"
+        # permissions
+        if not request.user.has_perm("cciwmain.change_camp"):
+            readonly_fields += ["max_male_campers", "max_female_campers", "max_campers"]
+        return readonly_fields
 
     def has_change_permission(self, request, obj=None):
         if obj is None:

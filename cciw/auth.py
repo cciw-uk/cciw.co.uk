@@ -66,7 +66,7 @@ class CciwAuthBackend:
             return True
         return perm in self.get_all_permissions(user_obj, obj=obj)
 
-    def has_module_perms(self, user_obj, app_label):
+    def has_module_perms(self, user_obj: User, app_label: str):
         """
         Returns True if user_obj has any permissions in the given app_label.
         """
