@@ -34,7 +34,6 @@ class ApplicationModel(TestBase):
 
 
 class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
-
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
 
@@ -180,7 +179,6 @@ class PersonalApplicationView(WebTestBase):
 
 class ApplicationUtils(TestBase):
     def test_date_saved_logic(self):
-
         # Setup::
         # * two camps, different years, but within 12 months of each
         #   other.

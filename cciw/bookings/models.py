@@ -728,7 +728,11 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     # Performance
     def with_prefetch_camp_info(self):
-        return self.select_related("camp", "camp__camp_name", "camp__chaplain",).prefetch_related(
+        return self.select_related(
+            "camp",
+            "camp__camp_name",
+            "camp__chaplain",
+        ).prefetch_related(
             "camp__leaders",
         )
 
@@ -1961,7 +1965,7 @@ def build_paypal_custom_field(account):
     return f"account:{account.id};"
 
 
-def parse_paypal_custom_field(custom):
+def parse_paypal_custom_field(custom: str) -> BookingAccount | None:
     m = re.match(r"account:(\d+);", custom)
     if m is None:
         return None

@@ -7,7 +7,6 @@ from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
         # Sometimes, the django-mailer 'send_mail.lock' doesn't get deleted,
         # causing mail to queue up.
         lock_file = os.path.expandvars("$HOME/send_mail.lock")

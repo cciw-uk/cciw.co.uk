@@ -222,7 +222,6 @@ class CreateBookingWebMixin(BookingLogInMixin):
         price_type=PriceType.FULL,
         sex="m",
     ) -> dict:
-
         if name is not Auto:
             assert first_name is Auto
             assert last_name is Auto
@@ -283,7 +282,6 @@ class CreateBookingWebMixin(BookingLogInMixin):
 
 
 class BookingBaseMixin(AtomicChecksMixin):
-
     # Constants used in 'assertTextPresent' and 'assertTextAbsent', the latter
     # being prone to false positives if a constant isn't used.
     ABOVE_MAXIMUM_AGE = "above the maximum age"
@@ -429,7 +427,6 @@ class TestBookingIndex(BookingBaseMixin, WebTestBase):
 
 
 class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
-
     urlname = "cciw-bookings-start"
 
     def submit(self, css_selector="[type=submit]"):
@@ -635,7 +632,6 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
 
 
 class AccountDetailsBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
-
     urlname = "cciw-bookings-account_details"
     submit_css_selector = "[type=submit]"
 
@@ -754,7 +750,6 @@ class TestAccountDetailsSL(AccountDetailsBase, SeleniumBase):
 
 
 class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
-
     urlname = "cciw-bookings-add_place"
 
     SAVE_BTN = "#id_save_btn"
@@ -957,7 +952,6 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
 
 
 class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
-
     # Most functionality is shared with the 'add' form, so doesn't need testing separately.
 
     submit_css_selector = "#id_save_btn"
@@ -1222,7 +1216,6 @@ class TestEditPaymentAdminSL(EditPaymentAdminBase, SeleniumBase):
 
 class AccountTransferBase(fix_autocomplete_fields(["from_account", "to_account"]), AtomicChecksMixin, FuncBaseMixin):
     def test_add_account_transfer(self):
-
         account_1 = BookingAccount.objects.create(email="account1@example.com", name="Joe")
         account_2 = BookingAccount.objects.create(email="account2@example.com", name="Jane")
         account_1.manual_payments.create(amount="100.00")
@@ -2251,7 +2244,6 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
 
 
 class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
-
     urlname = "cciw-bookings-account_overview"
 
     def test_show(self):

@@ -81,7 +81,6 @@ class PwnedPasswordPatcherMixin:
 
 
 class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
-
     good_password = "Jo6Ohmieooque5A"
 
     def test_disallow_too_common(self):

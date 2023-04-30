@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("cciwmain", "0001_initial"),
         ("cciwmain", "0002_auto_20141231_1034"),

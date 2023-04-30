@@ -471,7 +471,6 @@ class TestAtomicChecksMixin(AtomicChecksMixin, TestBase):
             queued_mail.send_mail("[CCIW] subject", "hello", "x@cciw.co.uk", ["x@example.com"])
 
     def test_TestMailBackend_enforces_subject(self):
-
         with self.assertRaises(EmailSubjectAssertionError):
             mail.send_mail("bad subject", "hello", "x@cciw.co.uk", ["x@example.com"])
 

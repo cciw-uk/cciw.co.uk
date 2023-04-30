@@ -10,7 +10,6 @@ import cciw.accounts.models
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("accounts", "0001_squashed_0006_auto_20150818_1728"),
         ("accounts", "0002_auto_20151125_1439"),

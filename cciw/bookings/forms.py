@@ -66,7 +66,6 @@ class FixPriceMixin:
 
 
 class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
-
     camp = forms.ChoiceField(choices=[], widget=forms.RadioSelect)
 
     do_htmx_validation = True

@@ -8,7 +8,6 @@ register = template.Library()
 
 @register.inclusion_tag("cciw/bookings/bookingbar.html", takes_context=True)
 def bookingbar(context):
-
     request = context["request"]
     booking_account = request.booking_account
     logged_in = booking_account is not None

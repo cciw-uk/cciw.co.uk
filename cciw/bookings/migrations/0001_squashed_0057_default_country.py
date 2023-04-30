@@ -14,7 +14,6 @@ import cciw.documents.fields
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("bookings", "0001_initial"),
         ("bookings", "0002_booking_created_online"),

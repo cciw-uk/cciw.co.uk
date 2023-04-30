@@ -264,7 +264,7 @@ class Camp(models.Model):
         females_booked = 0
         males_booked = 0
         q = self.bookings.booked().values_list("sex").annotate(count=models.Count("id")).order_by()
-        for (s, c) in q:
+        for s, c in q:
             if s == Sex.MALE:
                 males_booked = c
             elif s == Sex.FEMALE:

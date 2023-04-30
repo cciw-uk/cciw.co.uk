@@ -54,7 +54,6 @@ def send_application_emails(request, application):
     # Collect emails to send to
     leader_email_groups = admin_emails_for_application(application)
     for camp, leader_emails in leader_email_groups:
-
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application)
         messages.info(

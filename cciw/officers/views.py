@@ -500,7 +500,6 @@ def _get_camp_or_404(camp_id: CampId) -> Camp:
 @with_breadcrumbs(leaders_breadcrumbs)
 @for_htmx(use_block_from_params=True)
 def manage_references(request, camp_id: CampId):
-
     # If referee_id is set, we just want to update part of the page.
     referee_id = request.GET.get("referee_id")
     officer = None

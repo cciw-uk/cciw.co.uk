@@ -10,7 +10,6 @@ import cciw.officers.fields
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("officers", "0001_initial"),
         ("officers", "0002_referenceaction"),

@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("mail", "0001_initial"),
         ("mail", "0002_delete_emailnotification"),

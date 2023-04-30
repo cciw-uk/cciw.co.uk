@@ -63,7 +63,6 @@ def make_content_disposition_safe_filename(filename):
 
 
 def get_protected_download(folder, filename):
-
     response = HttpResponse()
     response["Content-Disposition"] = f'attachment; filename="{make_content_disposition_safe_filename(filename)}"'
     # Using X-Accel-Redirect means:

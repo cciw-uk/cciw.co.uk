@@ -5,7 +5,6 @@ from cciw.utils.tests.base import TestBase
 
 
 class StatsTests(TestBase):
-
     # Very basic tests here, should expand
 
     def test_get_camp_officer_stats(self):

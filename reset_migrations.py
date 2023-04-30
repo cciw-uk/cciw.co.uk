@@ -101,7 +101,6 @@ def get_existing_migration_files_for_apps(app_migration_modules):
 
 
 def hide_existing_migrations(app_migration_modules, old_app_migrations):
-
     hidden = []
 
     # Hide existing migrations
@@ -126,7 +125,6 @@ def make_new_migrations(app_migration_modules):
 
 
 def rename_migrations(app_migration_modules, new_app_migrations):
-
     # Many need to be renamed to avoid clashes with the hidden migrations
     new_name_stem = f"squashed_{datetime.now().strftime('%Y%m%d')}"
 
@@ -146,7 +144,6 @@ def rename_migrations(app_migration_modules, new_app_migrations):
 
 
 def rewrite_new_migrations(app_migration_modules, new_app_migrations, old_app_migrations, migration_name_changes):
-
     # Mostly there will be '0001_initial' migrations, but there will also be
     # 0002_* due to cyclic dependencies. Both types need to be marked as
     # squashed migrations, because we don't want them to run on existing

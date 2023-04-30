@@ -372,7 +372,6 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
 
 
 class TestNewOfficerPage(SiteSetupMixin, WebTestBase):
-
     CONFIRM_BUTTON = "input[name=confirm]"
 
     def setUp(self):

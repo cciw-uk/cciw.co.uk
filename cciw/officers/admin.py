@@ -506,7 +506,6 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 
 
 class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
-
     search_fields = ["officer__first_name", "officer__last_name", "dbs_number"]
     list_display = ["first_name", "last_name", "dbs_number", "completed", "requested_by", "registered_with_dbs_update"]
     list_display_links = ("first_name", "last_name", "dbs_number")
@@ -527,7 +526,6 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
 
 
 class DBSActionLogAdmin(admin.ModelAdmin):
-
     search_fields = ("officer__first_name", "officer__last_name")
     list_display = ["action_type", "first_name", "last_name", "created_at", "user"]
     list_display_links = ["action_type"]
@@ -549,7 +547,6 @@ class DBSActionLogAdmin(admin.ModelAdmin):
 
 
 class ReferenceActionAdmin(admin.ModelAdmin):
-
     list_display = [
         "referee_name",
         "officer_name",
