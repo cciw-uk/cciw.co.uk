@@ -19,3 +19,6 @@ ignore_missing_imports = true
 plugins = ['pydantic.mypy']
 check_untyped_defs = true
 exclude = ['submodules']
+
+[tool.ruff]
+line-length = 120
