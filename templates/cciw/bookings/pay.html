@@ -23,7 +23,7 @@
 
   <h2>Payment methods</h2>
 
-  <p>Payment is done via Paypal. You do not need to have a Paypal account - any
+  <p>Payment is done via Paypal. You do not need to have a Paypal account – any
     credit card or debit card can be used.</p>
 
   <p> Please note that if you have recently paid, it can take a few minutes for
@@ -113,6 +113,23 @@
     <p>If we are forced to cancel the camp for some reason, you will receive a full
       refund.</p>
 
+  {% endif %}
+
+  {# We allow paying for other people, but only if they don't have their own debt, to avoid complications #}
+  {% if balance_due_now <= 0 %}
+    <h2>Paying for someone else</h2>
+
+    <p>If you have <a target="_blank" href="{% url 'cciw-contact_us-send' %}?bookings">contacted the booking secretary</a>
+      about this, you can choose to make a payment towards someone else's place on
+      camp. Please enter the amount you wish to pay below.</p>
+
+    <div class="payboxes">
+      <div class="paybox">
+        <h3>Pay chosen amount</h3>
+        {{ paypal_form_other_person.render }}
+
+      </div>
+    </div>
   {% endif %}
 
   {% include 'cciw/bookings/help.html' %}

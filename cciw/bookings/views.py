@@ -571,11 +571,13 @@ class CustomAmountPayPalForm(PayPalPaymentsForm):
     amount = forms.IntegerField(widget=forms.widgets.NumberInput)
 
 
-def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amount=None):
+def mk_paypal_form(
+    account, balance, protocol, domain, min_amount=None, max_amount=None, item_name="Camp place booking"
+):
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": str(balance),
-        "item_name": "Camp place booking",
+        "item_name": item_name,
         # We don't need this info, but invoice numbermust be unique
         "invoice": f"{account.id}-{balance}-{timezone.now()}",
         "notify_url": f"{protocol}://{domain}{reverse('paypal-ipn')}",
@@ -642,6 +644,14 @@ def pay(request):
                 domain,
                 min_amount=max(balance_due_now, 0),
                 max_amount=balance_full,
+            ),
+            "paypal_form_other_person": mk_paypal_form(
+                acc,
+                0,
+                protocol,
+                domain,
+                min_amount=0,
+                item_name="Payment for someone else",
             ),
         },
     )

@@ -36,7 +36,6 @@ class PriceAdmin(admin.ModelAdmin):
 
 
 class BookingAccountForm(forms.ModelForm):
-
     # We need to ensure that emails that are blank get saved as
     # NULL, so that they can pass our uniqueness constraints if they are empty
     # (NULLs do not compare equal, but empty strings do)
