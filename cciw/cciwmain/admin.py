@@ -121,7 +121,7 @@ class CampAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         if obj is None:
-            if request.user.can_edit_any_camps:
+            if request.user.can_edit_some_camps:
                 return True
         else:
             if request.user.can_edit_camp(obj):
@@ -130,7 +130,7 @@ class CampAdmin(admin.ModelAdmin):
 
     def has_view_permission(self, request, obj=None):
         if obj is None:
-            if request.user.can_edit_any_camps:
+            if request.user.can_edit_some_camps:
                 return True
         else:
             if request.user.can_view_camp(obj):

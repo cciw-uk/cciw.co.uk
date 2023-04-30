@@ -368,7 +368,7 @@ class User(AbstractBaseUser):
         return self.camps_as_admin_or_leader
 
     @cached_property
-    def can_edit_any_camps(self):
+    def can_edit_some_camps(self):
         if self.has_perm("cciwmain.change_camp"):
             return True
         if self.editable_camps:
@@ -379,7 +379,7 @@ class User(AbstractBaseUser):
         if self.has_perm("cciwmain.change_camp"):
             return True
 
-        if self.can_edit_any_camps and camp in self.editable_camps:
+        if self.can_edit_some_camps and camp in self.editable_camps:
             return True
         return False
 

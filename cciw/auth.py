@@ -99,7 +99,7 @@ class CciwAuthBackend:
                 if user_obj.can_manage_application_forms:
                     return True
             if app_label == "cciwmain":
-                if user_obj.can_edit_any_camps:
+                if user_obj.can_edit_some_camps:
                     return True
         return user_obj.is_active and any(
             perm[: perm.index(".")] == app_label for perm in self.get_all_permissions(user_obj)
