@@ -68,7 +68,7 @@ Roles:
       - bookings.SupportingInformationType/delete
       - bookings.SupportingInformationDocument/delete
       - bookings.SupportingInformationDocument/view
-      # Need to be able to record manual payments, refunds and transfers
+      # Need to be able to record manual payments, refunds and transfers, and view PayPal payments
       - bookings.ManualPayment/add
       - bookings.ManualPayment/change
       - bookings.ManualPayment/delete
@@ -81,6 +81,7 @@ Roles:
       - bookings.WriteOffDebt/add
       - bookings.WriteOffDebt/change
       - bookings.WriteOffDebt/delete
+      - ipn.PayPalIPN/view
       # In order to view payment inlines, need this:
       - bookings.Payment/view
       # Helpful for them to be able to manage prices
