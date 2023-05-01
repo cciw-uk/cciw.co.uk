@@ -133,7 +133,7 @@ class CampAdmin(admin.ModelAdmin):
         # a camp). So we limit users who don't have full "cciwmain.change_camp"
         # permissions
         if not request.user.has_perm("cciwmain.change_camp"):
-            readonly_fields += ["max_male_campers", "max_female_campers", "max_campers"]
+            readonly_fields += ["max_male_campers", "max_female_campers", "max_campers", "last_booking_date"]
         return readonly_fields
 
     def has_change_permission(self, request, obj=None):
