@@ -176,6 +176,7 @@
       - username
       - first_name
       - last_name
+      - email  # Email is a useful distinguisher for officers with the same name
 
     - name: officers.Invitation
       # This stores the link between officers and camps i.e. the officer list
@@ -451,7 +452,6 @@
     - name: accounts.User
       columns:
       - last_login
-      - email
       - is_staff
       - is_active
       - date_joined
