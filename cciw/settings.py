@@ -357,7 +357,7 @@ if LIVEBOX and not CHECK_DEPLOY:
 else:
     DB_NAME = "cciw"
     DB_USER = "cciw"
-    DB_PASSWORD = "foo"
+    DB_PASSWORD = "cciw"
     DB_PORT = "5432"
 
 
