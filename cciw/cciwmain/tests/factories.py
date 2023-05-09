@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.officers.models import CampRole
 from cciw.utils.tests.factories import Auto
 
 
@@ -19,6 +20,7 @@ def create_camp(
     chaplain: Person | User = Auto,
     future: bool = Auto,
     officers: list[User] = Auto,
+    officers_role: CampRole | str = Auto,
 ) -> Camp:
     assert not (leader is not Auto and leaders is not Auto), "Only supply one of 'leaders' and 'leader'"
     if leader:
@@ -80,7 +82,7 @@ def create_camp(
     if officers:
         from cciw.officers.tests import factories as officers_factories
 
-        officers_factories.add_officers_to_camp(camp, officers)
+        officers_factories.add_officers_to_camp(camp, officers, role=officers_role)
     return camp
 
 

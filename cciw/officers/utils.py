@@ -159,7 +159,9 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     from cciw.officers.applications import applications_for_camp
 
     # All the data we need:
-    invites = camp.invitations.all().select_related("officer").order_by("officer__first_name", "officer__last_name")
+    invites = (
+        camp.invitations.all().select_related("officer", "role").order_by("officer__first_name", "officer__last_name")
+    )
     apps = applications_for_camp(camp).prefetch_related("qualifications")
     app_dict = {app.officer.id: app for app in apps}
 
@@ -169,7 +171,7 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
         ("First name", lambda u, inv, app: u.first_name),
         ("Last name", lambda u, inv, app: u.last_name),
         ("Email", lambda u, inv, app: u.email),
-        ("Notes", lambda u, inv, app: inv.notes),
+        ("Role", lambda u, inv, app: inv.role.name if inv.role else ""),
         ("Address", app_attr_getter("address_firstline")),
         ("Town", app_attr_getter("address_town")),
         ("County", app_attr_getter("address_county")),

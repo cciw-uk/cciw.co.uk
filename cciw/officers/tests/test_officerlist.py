@@ -34,14 +34,12 @@ class TestExport(TestBase):
         Test that the export data view generates an Excel file with all the data
         we expect if there is no application form.
         """
-        camp = camp_factories.create_camp(officers=[officer := factories.create_officer()])
+        camp = camp_factories.create_camp(
+            officers=[officer := factories.create_officer()], officers_role="Tent Officer"
+        )
         first_names = [o.first_name for o in [officer]]
 
         assert Application.objects.all().count() == 0
-
-        for i, inv in enumerate(camp.invitations.all()):
-            inv.notes = f"Some notes {i}"
-            inv.save()
 
         workbook = officer_data_to_spreadsheet(camp, ExcelSimpleBuilder()).to_bytes()
 
@@ -55,8 +53,8 @@ class TestExport(TestBase):
         assert wksh.cell(2, 1).value in first_names
 
         # From Invitation model
-        assert wksh.cell(1, 4).value == "Notes"
-        assert wksh.cell(2, 4).value.startswith("Some notes")
+        assert wksh.cell(1, 4).value == "Role"
+        assert wksh.cell(2, 4).value == "Tent Officer"
 
     def test_export_with_application(self):
         """

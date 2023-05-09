@@ -446,7 +446,7 @@ have to fill in another DBS form.</p> """,
 
 
 class InvitationAdmin(admin.ModelAdmin):
-    list_display = ["officer", "camp", "notes", "date_added"]
+    list_display = ["officer", "camp", "role", "date_added"]
     list_filter = ["camp"]
     search_fields = ["officer__first_name", "officer__last_name", "officer__username"]
 
