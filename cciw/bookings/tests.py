@@ -47,7 +47,6 @@ from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_ur
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.spreadsheet import ExcelSimpleBuilder
 from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.factories import Auto
@@ -2618,7 +2617,7 @@ class TestExportPlaces(TestBase):
         booking.state = BookingState.BOOKED
         booking.save()
 
-        workbook = camp_bookings_to_spreadsheet(booking.camp, ExcelSimpleBuilder()).to_bytes()
+        workbook = camp_bookings_to_spreadsheet(booking.camp).to_bytes()
         wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
 
         wksh_all = wkbk.worksheets[0]
@@ -2632,7 +2631,7 @@ class TestExportPlaces(TestBase):
         dob = bday.replace(bday.year - 12)
         booking = factories.create_booking(date_of_birth=dob, camp=camp, state=BookingState.BOOKED)
 
-        workbook = camp_bookings_to_spreadsheet(booking.camp, ExcelSimpleBuilder()).to_bytes()
+        workbook = camp_bookings_to_spreadsheet(booking.camp).to_bytes()
         wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
         wksh_bdays = wkbk.worksheets[2]
 
@@ -2658,9 +2657,7 @@ class TestExportPaymentData(TestBase):
         mp2.delete()
 
         now = timezone.now()
-        workbook = payments_to_spreadsheet(
-            now - timedelta(days=3), now + timedelta(days=3), ExcelSimpleBuilder()
-        ).to_bytes()
+        workbook = payments_to_spreadsheet(now - timedelta(days=3), now + timedelta(days=3)).to_bytes()
 
         wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
         wksh = wkbk.worksheets[0]

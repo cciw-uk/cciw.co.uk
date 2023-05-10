@@ -12,8 +12,6 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
 from render_block import render_block_to_string
 
-from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder, ExcelSimpleBuilder
-
 
 def close_window_response(request: HttpRequest, *, clear_messages=False):
     # First we clear any messages, because, due to the closed window, these will
@@ -119,14 +117,6 @@ def redirect_to_url_with_next(next_url, url, redirect_field_name) -> HttpRespons
     f = furl(url)
     f.args[redirect_field_name] = next_url
     return HttpResponseRedirect(f.url)
-
-
-def get_spreadsheet_simple_builder(request: HttpRequest) -> ExcelSimpleBuilder:
-    return ExcelSimpleBuilder()
-
-
-def get_spreadsheet_from_dataframe_builder(request: HttpRequest) -> ExcelFromDataFrameBuilder:
-    return ExcelFromDataFrameBuilder()
 
 
 def for_htmx(

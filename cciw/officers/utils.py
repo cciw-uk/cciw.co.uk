@@ -3,15 +3,19 @@ Utility functions for officers app.
 """
 from collections import defaultdict
 
+from cciw.accounts.models import User
+from cciw.cciwmain.models import Camp
+from cciw.utils.spreadsheet import ExcelSimpleBuilder
 
-def camp_officer_list(camp):
+
+def camp_officer_list(camp: Camp) -> list[User]:
     """
     Returns complete list of officers for a camp
     """
     return list(camp.officers.all().order_by("first_name", "last_name", "email"))
 
 
-def camp_slacker_list(camp):
+def camp_slacker_list(camp: Camp) -> list[User]:
     """
     Returns list of officers who have not filled out an application form
     """
@@ -21,7 +25,7 @@ def camp_slacker_list(camp):
     return list(camp.officers.order_by("first_name", "last_name", "email").exclude(id__in=finished_apps_ids))
 
 
-def camp_serious_slacker_list(camp):
+def camp_serious_slacker_list(camp: Camp) -> list[User]:
     """
     Returns a list of officers who have serious problems in terms
     of submitted applications and references.
@@ -154,7 +158,8 @@ def camp_serious_slacker_list(camp):
     ]
 
 
-def officer_data_to_spreadsheet(camp, spreadsheet):
+def officer_data_to_spreadsheet(camp: Camp):
+    spreadsheet = ExcelSimpleBuilder()
     # Import here to avoid import cycle
     from cciw.officers.applications import applications_for_camp
 

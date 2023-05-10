@@ -16,7 +16,8 @@ def format_address(*args):
     return "\n".join(arg.strip() for arg in args)
 
 
-def camp_bookings_to_spreadsheet(camp: Camp, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
+def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
+    spreadsheet = ExcelSimpleBuilder()
     bookings = list(camp.bookings.confirmed().order_by("first_name", "last_name"))
 
     columns = [
@@ -106,7 +107,8 @@ def camp_bookings_to_spreadsheet(camp: Camp, spreadsheet: ExcelSimpleBuilder) ->
     return spreadsheet
 
 
-def camp_sharable_transport_details_to_spreadsheet(camp: Camp, spreadsheet: ExcelSimpleBuilder):
+def camp_sharable_transport_details_to_spreadsheet(camp: Camp):
+    spreadsheet = ExcelSimpleBuilder()
     accounts = (
         BookingAccount.objects.filter(share_phone_number=True).filter(bookings__in=camp.bookings.confirmed()).distinct()
     )
@@ -123,7 +125,8 @@ def camp_sharable_transport_details_to_spreadsheet(camp: Camp, spreadsheet: Exce
 
 
 # Spreadsheet needed by booking secretary
-def year_bookings_to_spreadsheet(year: int, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
+def year_bookings_to_spreadsheet(year: int) -> ExcelSimpleBuilder:
+    spreadsheet = ExcelSimpleBuilder()
     bookings = (
         Booking.objects.filter(camp__year=year)
         .confirmed()
@@ -150,7 +153,8 @@ def year_bookings_to_spreadsheet(year: int, spreadsheet: ExcelSimpleBuilder) -> 
     return spreadsheet
 
 
-def payments_to_spreadsheet(date_start: date, date_end: date, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
+def payments_to_spreadsheet(date_start: date, date_end: date) -> ExcelSimpleBuilder:
+    spreadsheet = ExcelSimpleBuilder()
     # Add one day to the date_end, since it is defined inclusively
     date_end = date_end + timedelta(days=1)
 
@@ -176,7 +180,8 @@ def payments_to_spreadsheet(date_start: date, date_end: date, spreadsheet: Excel
     return spreadsheet
 
 
-def addresses_for_mailing_list(year: int, spreadsheet: ExcelSimpleBuilder) -> ExcelSimpleBuilder:
+def addresses_for_mailing_list(year: int) -> ExcelSimpleBuilder:
+    spreadsheet = ExcelSimpleBuilder()
     # We get the postal addresses that we have for the *previous* year
     # to generate the mailing list for the given year.
     bookings = (
