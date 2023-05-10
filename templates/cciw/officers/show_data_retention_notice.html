@@ -1,7 +1,16 @@
-{% extends "cciw/officers/base.html" %}
+{% extends base_template %}  {# Could be dialog partial or full page #}
 
 {% block title %}Data retention notice{% endblock %}
 
 {% block content %}
-  {% include "cciw/officers/show_data_retention_notice_partial.html" %}
+  <h2>Downloading {{ brief_title }}…</h2>
+  <p>Before downloading this data you must understand and agree to the following rules:</p>
+  {% include include_file with expand_details=True %}
+
+  <br>
+  <p>
+    <a class="button" href="{{ download_link }}"
+       _="on click wait 0.5s send close to the closest <dialog/>"
+    >Accept responsibility and continue</a>
+  </p>
 {% endblock %}

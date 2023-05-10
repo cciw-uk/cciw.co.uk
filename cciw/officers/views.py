@@ -226,28 +226,33 @@ for val in DataRetentionNotice:
 
 def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title):
     """
-    Decorator for downloads that redirects via a prompt to ensure
+    Decorator for downloads to show a prompt to ensure
     user knows about data retention
     """
 
     def decorator(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
+            htmx = "HX-Request" in request.headers
             if "data_retention_notice_seen" in request.GET:
                 return func(request, *args, **kwargs)
             else:
-                partial = "HX-Request" in request.headers
-                if partial:
-                    template = "cciw/officers/show_data_retention_notice_partial.html"
+                if htmx:
+                    base_template = "cciw/officers/modal_dialog.html"
                 else:
-                    template = "cciw/officers/show_data_retention_notice.html"
+                    base_template = "cciw/officers/base.html"
+
+                template = "cciw/officers/show_data_retention_notice.html"
                 return TemplateResponse(
                     request,
                     template,
                     {
+                        "base_template": base_template,
                         "include_file": DATA_RETENTION_NOTICES[notice_type],
-                        "partial": partial,
                         "brief_title": brief_title,
+                        "download_link": furl.furl(request.get_full_path()).add(
+                            query_params={"data_retention_notice_seen": "1"}
+                        ),
                     },
                 )
 
@@ -587,7 +592,13 @@ def htmx_reference_events_response(
     if closeModal:
         events["closeModal"] = closeModal
 
-    return HttpResponse("", headers={"Hx-Trigger": json.dumps(events)})
+    return add_hx_trigger_header(HttpResponse(""), events)
+
+
+def add_hx_trigger_header(response: HttpResponse, events: dict) -> HttpResponse:
+    if events:
+        response.headers["Hx-Trigger"] = json.dumps(events)
+    return response
 
 
 @staff_member_required
@@ -1328,14 +1339,14 @@ def manage_dbss(request, year: int) -> HttpResponse:
 def htmx_dbs_events_response(
     closeModal: bool = False,
     refreshOfficer: User | None = None,
-):
+) -> HttpResponse:
     events = {}
     if refreshOfficer is not None:
         events[f"refreshOfficer-{refreshOfficer.id}"] = True
     if closeModal:
         events["closeModal"] = closeModal
 
-    return HttpResponse("", headers={"Hx-Trigger": json.dumps(events)})
+    return add_hx_trigger_header(HttpResponse(""), events)
 
 
 @staff_member_required

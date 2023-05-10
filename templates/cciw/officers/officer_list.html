@@ -194,13 +194,11 @@
         <a
           href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}"
           hx-get="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}"
-          hx-indicator="#officer-download-notice"
-          hx-target="#officer-download-notice"
-          hx-swap="innerHTML show:bottom">
+          hx-target="#modal-dialog-container"
+        >
           XLS</a>
       </li>
     </ul>
-    <div id="officer-download-notice"></div>
 
 
   </div>
