@@ -478,8 +478,8 @@ def _list_bookings(request):
                     return HttpResponseRedirect(reverse("cciw-bookings-pay"))
                 else:
                     messages.error(request, "These places cannot be booked for the reasons given below.")
-        # Start over, because things may have changed.
-        return HttpResponseRedirect(request.path)
+            # Start over, because things may have changed.
+            return HttpResponseRedirect(request.path)
 
     # Now apply business rules and other custom processing
     total = Decimal("0.00")
