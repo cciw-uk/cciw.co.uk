@@ -14,7 +14,8 @@ to pay online:
 
 https://{{ domain }}{% url 'cciw-bookings-pay' %}?bt={{ token }}
 
-Please do this within a few days or the link above will expire.
+This link will expire in 3 days if not used. In this situation you can
+log in at https://{{ domain }}{% url 'cciw-bookings-start' %} and pay.
 
 If you think there has been some mistake, please contact the booking
 secretary by replying to this email.

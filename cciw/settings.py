@@ -545,7 +545,7 @@ COLORS_SCSS_FILE = "css/camp_colors.scss"
 
 
 # == Bookings ==
-BOOKING_EMAIL_VERIFY_TIMEOUT = timedelta(days=3)
+BOOKING_EMAIL_VERIFY_TIMEOUT = timedelta(days=3)  # See also payments_due_email.txt if changing this
 BOOKING_SESSION_TIMEOUT = timedelta(weeks=2)
 BOOKING_FULL_PAYMENT_DUE = timedelta(days=90)
 BOOKING_FULL_PAYMENT_DUE_DISPLAY = "3 months"
