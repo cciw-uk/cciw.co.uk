@@ -605,7 +605,7 @@ def mk_paypal_form(
 
 @booking_account_required
 @redirect_if_agreement_fix_required
-def pay(request):
+def pay(request, installment: bool = False):
     acc: BookingAccount = request.booking_account
     this_year = common.get_thisyear()
     price_checker = PriceChecker(expected_years=[b.camp.year for b in acc.bookings.all()] + [this_year])
@@ -653,6 +653,7 @@ def pay(request):
                 min_amount=0,
                 item_name="Payment for someone else",
             ),
+            "installment": installment,
         },
     )
 

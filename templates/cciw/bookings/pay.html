@@ -64,7 +64,13 @@
 
     {% else %}
 
-      <p>This amount is now due:</p>
+      <p>This amount is now due.
+        {% if installment %}
+          If it is a difficult to pay the full amount, and you have an agreement
+          with the booking secretary, please enter the amount that you are able
+          to pay at the moment.
+        {% endif %}
+      </p>
 
     {% endif %}
 
@@ -88,7 +94,7 @@
       </div>
 
       {# Custom #}
-      {% if balance_due_now < balance_full %}
+      {% if balance_due_now < balance_full or installment %}
         <div class="paybox">
           <h3>Pay other amount</h3>
           {{ paypal_form_custom.render }}
