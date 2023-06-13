@@ -519,7 +519,13 @@ def handle_mail(data):
         logger.info("Discarding malformed mail, message-id %s", mail.get("Message-ID", "<unknown>"))
         return
 
-    from_email = extract_email_addresses(from_header)[0]
+    try:
+        from_email = extract_email_addresses(from_header)[0]
+    except IndexError:
+        logger.info(
+            "Discarding mail with no email address in From header, message-id %s", mail.get("Message-ID", "<unknown>")
+        )
+        return
 
     for address in addresses:
         try:
