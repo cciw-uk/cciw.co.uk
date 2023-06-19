@@ -11,9 +11,9 @@ PayPal is integrated using IPN.
 
 If making major changes to the PayPal integration and need to fully test the
 flow in development, you will need to use something like `ngrok
-<https://ngrok.com/docs/secure-tunnels/tunnels/>`_ to create a public (temporary) domain name that forwards
-to your local development machine, so that the (sandbox) PayPal server can post
-back to your development machine.
+<https://ngrok.com/docs/secure-tunnels/tunnels/>`_ to create a public
+(temporary) domain name that forwards to your local development machine, so that
+the (sandbox) PayPal server can post back to your development machine.
 
 .. code-block:: shell
 
@@ -218,7 +218,8 @@ With information from the following guides (but adapted):
 
 Actions:
 
-* In Amazon S3, a bucket was created to store incoming mail temporarily with following settings:
+* In Amazon S3, a bucket was created to store incoming mail temporarily with
+  following settings:
 
   * Region: EU West 1 (Ireland)
   * Name: (see secrets.json)
