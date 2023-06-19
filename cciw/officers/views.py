@@ -185,7 +185,7 @@ def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):
     return decorator
 
 
-DATA_RETENTION_NOTICES = {
+DATA_RETENTION_NOTICES_HTML = {
     DataRetentionNotice.OFFICERS: "cciw/officers/officer_data_retention_rules_inc.html",
     DataRetentionNotice.CAMPERS: "cciw/officers/camper_data_retention_rules_inc.html",
 }
@@ -220,7 +220,7 @@ copies you have made, such as attachments in emails and backups.
 }
 
 for val in DataRetentionNotice:
-    assert val in DATA_RETENTION_NOTICES, f"Need to add {val} to DATA_RETENTION_NOTICES"
+    assert val in DATA_RETENTION_NOTICES_HTML, f"Need to add {val} to DATA_RETENTION_NOTICES_HTML"
     assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
 
@@ -248,7 +248,7 @@ def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title):
                     template,
                     {
                         "base_template": base_template,
-                        "include_file": DATA_RETENTION_NOTICES[notice_type],
+                        "include_file": DATA_RETENTION_NOTICES_HTML[notice_type],
                         "brief_title": brief_title,
                         "download_link": furl.furl(request.get_full_path()).add(
                             query_params={"data_retention_notice_seen": "1"}
