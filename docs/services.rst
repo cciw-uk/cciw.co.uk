@@ -9,9 +9,18 @@ PayPal
 
 PayPal is integrated using IPN.
 
-To test in development, you will need to use ngrok, e.g. using ``fab
-run_ngrok``.
+If making major changes to the PayPal integration and need to fully test the
+flow in development, you will need to use something like `ngrok
+<https://ngrok.com/docs/secure-tunnels/tunnels/>`_ to create a public (temporary) domain name that forwards
+to your local development machine, so that the (sandbox) PayPal server can post
+back to your development machine.
 
+.. code-block:: shell
+
+   ngrok http 8000
+
+(assuming you are running the development server on port 8000, and have already
+installed and configured ngrok locally)
 
 Accounts
 ~~~~~~~~

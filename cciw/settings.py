@@ -119,7 +119,7 @@ LOGIN_URL = "/officers/"
 ALLOWED_HOSTS = [".cciw.co.uk"]
 
 if DEVBOX:
-    ALLOWED_HOSTS.extend(["cciw.local", ".ngrok.io"])
+    ALLOWED_HOSTS.extend(["cciw.local", ".ngrok.io", ".ngrok-free.app"])
 
 INSTALLED_APPS = [
     # 3rd party
