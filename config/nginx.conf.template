@@ -61,7 +61,7 @@ server {
     }
 
     location /static/ {
-        alias            %(STATIC_ROOT)s;
+        alias            %(STATIC_ROOT)s/;
         access_log      off;
         log_not_found   off;
         expires 30d;
@@ -72,7 +72,7 @@ server {
     }
 
     location /usermedia/ {
-        alias            %(MEDIA_ROOT)s;
+        alias            %(MEDIA_ROOT)s/;
         access_log      off;
         log_not_found   off;
         expires 30d;
