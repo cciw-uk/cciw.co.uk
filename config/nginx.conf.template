@@ -60,23 +60,23 @@ server {
         return 444;
     }
 
-    location /static {
+    location /static/ {
         alias            %(STATIC_ROOT)s;
         access_log      off;
         log_not_found   off;
         expires 30d;
-        location /static/CACHE {
+        location /static/CACHE/ {
             expires max;
         }
 
     }
 
-    location /usermedia {
+    location /usermedia/ {
         alias            %(MEDIA_ROOT)s;
         access_log      off;
         log_not_found   off;
         expires 30d;
-        location /usermedia/CACHE {
+        location /usermedia/CACHE/ {
             expires max;
         }
     }
