@@ -18,7 +18,7 @@ def private_wiki(get_response):
                     "<p>You must be <a href='%s?next=%s'>logged in</a> to use this.</p>"
                     % (settings.LOGIN_URL, escape(urlquote(request.get_full_path())))
                 )
-            if not request.user.is_wiki_user:
+            if not (request.user.is_superuser or request.user.is_wiki_user):
                 return HttpResponseForbidden(
                     "<h1>Forbidden</h1>" "<p>You do not have permission to access the wiki.</p>"
                 )
