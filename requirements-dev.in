@@ -1,5 +1,5 @@
 beautifulsoup4==4.11.1
-django-debug-toolbar==3.5
+django-debug-toolbar==4.1.0
 django-functest==1.5.2
 flake8==5.0.4
 hypothesis==6.54.6

@@ -373,6 +373,18 @@ DATABASES = {
     }
 }
 
+# == STORAGE ==
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+
 # == TEMPLATES ==
 
 TEMPLATE_CONTEXT_PROCESSORS = [  # backwards compat for django-wiki
