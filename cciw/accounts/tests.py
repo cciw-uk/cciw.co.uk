@@ -94,7 +94,7 @@ class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
                 "#id_new_password2": new_password,
             }
         )
-        self.submit("[type=submit]")
+        self.submit("[type=submit][value='Change my password']")
         self.assertTextPresent("This password is too common.")
 
     def test_allow_good_password(self):
@@ -109,7 +109,7 @@ class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
                 "#id_new_password2": new_password,
             }
         )
-        self.submit("[type=submit]")
+        self.submit("[type=submit][value='Change my password']")
         self.assertTextPresent("Your password was changed")
         user.refresh_from_db()
         assert user.check_password(new_password)
@@ -153,7 +153,7 @@ class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
                 "#id_new_password2": new_password,
             }
         )
-        self.submit("[type=submit]")
+        self.submit("[type=submit][value='Change my password']")
 
         assert self.pwned_password_call_count == 2
         user.refresh_from_db()
