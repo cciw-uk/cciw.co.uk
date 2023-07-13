@@ -27,8 +27,20 @@ def bookingbar(context):
             "",
             'Go to "Overview" and use the "log out" link if you need to log in as someone else',
         ),
-        (BookingStage.ACCOUNT, "Account details", logged_in, reverse("cciw-bookings-account_details"), msg_need_login),
-        (BookingStage.OVERVIEW, "Overview", logged_in, reverse("cciw-bookings-account_overview"), msg_need_login),
+        (
+            BookingStage.ACCOUNT,
+            "Account details",
+            logged_in,
+            reverse("cciw-bookings-account_details"),
+            msg_need_login,
+        ),
+        (
+            BookingStage.OVERVIEW,
+            "Overview",
+            logged_in,
+            reverse("cciw-bookings-account_overview"),
+            msg_need_login,
+        ),
         (
             BookingStage.PLACE,
             "Edit camper details"
