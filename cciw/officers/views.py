@@ -1,9 +1,10 @@
 import contextlib
 import enum
 import json
+from collections.abc import Callable, Iterable
 from datetime import date, datetime
 from functools import wraps
-from typing import Callable, Iterable, TypeAlias
+from typing import TypeAlias
 
 import furl
 import openpyxl

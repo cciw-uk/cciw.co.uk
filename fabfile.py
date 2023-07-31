@@ -2,10 +2,10 @@ import json
 import os.path
 import re
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import datetime
 from functools import partial
 from shlex import quote
-from typing import Callable
 
 from fabric.connection import Connection
 from fabric.transfer import Transfer
@@ -373,8 +373,7 @@ def code_quality_checks(c):
     """
     Run code quality checks, including tests.
     """
-    c.local("flake8 .", echo=True)
-    c.local("isort -c .", echo=True)
+    c.local("ruff .", echo=True)
     c.local("pytest", echo=True, pty=True)
 
 

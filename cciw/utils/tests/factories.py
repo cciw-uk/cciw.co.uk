@@ -1,6 +1,7 @@
 # Utilities needed by factories
 import itertools
-from typing import Any, Callable, Generator, TypeVar
+from collections.abc import Callable, Generator
+from typing import Any, TypeVar
 
 
 class _Auto:

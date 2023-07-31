@@ -25,7 +25,7 @@ def json_response(view_func):
         if isinstance(data, HttpResponse):
             return data
 
-        if not isinstance(data, (bytes, str)):
+        if not isinstance(data, bytes | str):
             data = python_to_json(data)
         resp = HttpResponse(data, status=code, content_type="application/json")
         resp["Cache-Control"] = "no-cache"

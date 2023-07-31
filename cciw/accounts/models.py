@@ -529,7 +529,7 @@ def _current_password_validators_as_string():
     def val_to_str(val):
         if isinstance(val, dict):
             return "{" + ",".join(f"{k!r}:{val_to_str(v)}" for k, v in sorted(val.items())) + "}"
-        elif isinstance(val, (str, int)):
+        elif isinstance(val, str | int):
             return repr(val)
         elif isinstance(val, list):
             return "[" + ",".join(f"{val_to_str(v)}" for v in val) + "]"

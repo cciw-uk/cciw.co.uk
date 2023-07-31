@@ -1,8 +1,8 @@
 """
 Parse and load data retention policy
 """
+from collections.abc import Mapping
 from datetime import timedelta
-from typing import Mapping
 
 import parsy
 import yaml
@@ -164,7 +164,7 @@ def field_requires_privacy_policy(field: Field) -> bool:
     # By default we don't need a policy for FKs, they link data but
     # don't themselves contain personal data.
     # AutoFields similarly and other auto created fields
-    if isinstance(field, (models.AutoField, models.ForeignKey, GenericForeignKey)):
+    if isinstance(field, models.AutoField | models.ForeignKey | GenericForeignKey):
         return False
     if field.auto_created:
         return False

@@ -4,7 +4,11 @@ from django.db.models.signals import post_save
 
 from cciw.cciwmain.models import Camp, CampName, generate_colors_scss
 
-generate_colors_scss_w = lambda sender, **kwargs: generate_colors_scss(update_existing=True)
+
+def generate_colors_scss_w(sender, **kwargs):
+    return generate_colors_scss(update_existing=True)
+
+
 post_save.connect(generate_colors_scss_w, CampName)
 
 

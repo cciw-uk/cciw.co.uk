@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import timedelta
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import pydantic.dataclasses
 from django.db import models
@@ -62,7 +62,7 @@ class ForeverType:
 
 Forever = ForeverType()
 
-Keep = Union[timedelta, ForeverType]
+Keep = timedelta | ForeverType
 
 
 class ErasureMethod:

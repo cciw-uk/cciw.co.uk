@@ -22,3 +22,9 @@ exclude = ['submodules']
 
 [tool.ruff]
 line-length = 120
+extend-select = [
+  "UP",  # enable pyupgrade
+  "I",  # enable isort
+]
+target-version = 'py310'
+ignore = ["E501","E731"]

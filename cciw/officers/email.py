@@ -1,7 +1,7 @@
 import contextlib
 import logging
+from collections.abc import Callable
 from email.mime.base import MIMEBase
-from typing import Callable
 from urllib.parse import quote as urlquote
 
 from django.conf import settings

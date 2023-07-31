@@ -7,8 +7,8 @@ that are also machine readable.
 This module provides functionality for formatting them.
 """
 
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass
-from typing import Generator, Iterable
 
 from .rst import rst_to_html
 

@@ -61,7 +61,7 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
                 # normalise newlines to style expected by Excel
                 val = val.replace("\r\n", "\n")
 
-            if isinstance(val, (datetime, date)):
+            if isinstance(val, datetime | date):
                 cell.number_format = date_format
                 if isinstance(val, datetime):
                     if timezone.is_aware(val):

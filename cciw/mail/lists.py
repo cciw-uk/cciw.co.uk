@@ -13,7 +13,7 @@ import logging
 import os
 import re
 import tempfile
-from typing import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 
 import attr
 from django.conf import settings
