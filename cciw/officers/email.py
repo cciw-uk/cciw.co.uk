@@ -10,6 +10,7 @@ from django.core.mail import EmailMessage, send_mail
 from django.urls import reverse
 from django.utils.crypto import salted_hmac
 
+from cciw.accounts.models import User
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP
@@ -39,11 +40,7 @@ def admin_emails_for_application(application: Application) -> list[tuple[Camp, l
     For the supplied application, finds the camps admins that are relevant.
     Returns results in groups of (camp, leader email list), for each relevant camp.
     """
-    camps = camps_for_application(application)
-    groups = []
-    for camp in camps:
-        groups.append((camp, admin_emails_for_camp(camp)))
-    return groups
+    return [(camp, admin_emails_for_camp(camp)) for camp in camps_for_application(application)]
 
 
 def send_application_emails(application: Application, notice_callback: Callable[[str], None]):
@@ -101,7 +98,7 @@ to CCiW. It is also attached to this email as an RTF file.
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL, [user_email], attachments=[rtf_attachment])
 
 
-def send_leader_email(leader_emails, application):
+def send_leader_email(leader_emails: list[str], application: Application):
     subject = f"[CCIW] Application form from {application.full_name}"
     url = "https://{domain}{path}".format(
         domain=common.get_current_domain(),
@@ -117,7 +114,7 @@ CCiW website:
     send_mail(subject, body, settings.SERVER_EMAIL, leader_emails)
 
 
-def make_update_email_url(application):
+def make_update_email_url(application: Application):
     return "https://{domain}{path}?t={token}".format(
         domain=common.get_current_domain(),
         path=reverse("cciw-officers-correct_email"),
@@ -127,7 +124,7 @@ def make_update_email_url(application):
     )
 
 
-def make_update_application_url(application, email):
+def make_update_application_url(application: Application, email: str):
     return "https://{domain}{path}?t={token}".format(
         domain=common.get_current_domain(),
         path=reverse("cciw-officers-correct_application"),
@@ -135,7 +132,7 @@ def make_update_application_url(application, email):
     )
 
 
-def send_email_change_emails(officer, application):
+def send_email_change_emails(officer: User, application: Application):
     subject = "[CCIW] Email change on CCiW"
     user_email = formatted_email(officer)
     user_msg = """{name},
