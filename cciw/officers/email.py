@@ -20,6 +20,7 @@ from cciw.officers.applications import (
     camps_for_application,
 )
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
+from cciw.officers.models import Application
 
 logger = logging.getLogger(__name__)
 
@@ -27,16 +28,16 @@ logger = logging.getLogger(__name__)
 X_REFERENCE_REQUEST = "ReferenceRequest"
 
 
-def admin_emails_for_camp(camp):
+def admin_emails_for_camp(camp: Camp) -> list[str]:
     leaders = [user for leader in camp.leaders.all() for user in leader.users.all()] + list(camp.admins.all())
 
     return list(filter(lambda x: x is not None, map(formatted_email, leaders)))
 
 
-def admin_emails_for_application(application):
+def admin_emails_for_application(application: Application) -> list[tuple[Camp, list[str]]]:
     """
     For the supplied application, finds the camps admins that are relevant.
-    Returns results in groups of (camp, leaders), for each relevant camp.
+    Returns results in groups of (camp, leader email list), for each relevant camp.
     """
     camps = camps_for_application(application)
     groups = []
@@ -45,7 +46,7 @@ def admin_emails_for_application(application):
     return groups
 
 
-def send_application_emails(request, application):
+def send_application_emails(request, application: Application):
     if not application.finished:
         return
 
@@ -54,6 +55,8 @@ def send_application_emails(request, application):
     # Collect emails to send to
     leader_email_groups = admin_emails_for_application(application)
     for camp, leader_emails in leader_email_groups:
+        if camp.is_past():
+            continue
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application)
         messages.info(
