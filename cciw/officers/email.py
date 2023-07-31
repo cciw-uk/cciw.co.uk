@@ -59,10 +59,11 @@ def send_application_emails(request, application: Application):
             continue
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application)
-        messages.info(
-            request,
-            f"The leaders ({camp.leaders_formatted}) have been notified of the completed application form by email.",
-        )
+            messages.info(
+                request,
+                f"The leaders ({camp.leaders_formatted}) have been notified of the completed application form by"
+                " email.",
+            )
 
     if len(leader_email_groups) == 0:
         send_leader_email(settings.SECRETARY_EMAILS, application)
