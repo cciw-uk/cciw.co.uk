@@ -47,9 +47,6 @@ def admin_emails_for_application(application: Application) -> list[tuple[Camp, l
 
 
 def send_application_emails(request, application: Application):
-    if not application.finished:
-        return
-
     # Email to the leaders:
 
     # Collect emails to send to
@@ -73,18 +70,15 @@ def send_application_emails(request, application: Application):
             "because you are not on any camp's officer list this year.",
         )
 
-    # If this is someone editing their own application, we send them a copy, but
-    # not otherwise.
-    if request.user == application.officer:
-        application_text = application_to_text(application)
-        application_rtf = application_to_rtf(application)
-        rtf_attachment = (application_rtf_filename(application), application_rtf, "text/rtf")
+    application_text = application_to_text(application)
+    application_rtf = application_to_rtf(application)
+    rtf_attachment = (application_rtf_filename(application), application_rtf, "text/rtf")
 
-        send_officer_email(application.officer, application, application_text, rtf_attachment)
-        messages.info(request, "A copy of the application form has been sent to you via email.")
+    send_officer_email(application.officer, application, application_text, rtf_attachment)
+    messages.info(request, "A copy of the application form has been sent to you via email.")
 
-        if application.officer.email.lower() != application.address_email.lower():
-            send_email_change_emails(application.officer, application)
+    if application.officer.email.lower() != application.address_email.lower():
+        send_email_change_emails(application.officer, application)
 
 
 def send_officer_email(officer, application, application_text, rtf_attachment):

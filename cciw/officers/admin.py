@@ -442,7 +442,10 @@ have to fill in another DBS form.</p> """,
         from cciw.officers import email
 
         super().save_related(request, form, formsets, change)
-        email.send_application_emails(request, form.instance)
+
+        application = form.instance
+        if application.finished and request.user == application.officer:
+            email.send_application_emails(request, application)
 
 
 class InvitationAdmin(admin.ModelAdmin):
