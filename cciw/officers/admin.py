@@ -1,8 +1,9 @@
 import datetime
+from functools import partial
 
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.forms.utils import ErrorList
 from django.http.response import HttpResponse
 from django.urls import reverse
@@ -445,7 +446,7 @@ have to fill in another DBS form.</p> """,
 
         application = form.instance
         if application.finished and request.user == application.officer:
-            email.send_application_emails(request, application)
+            email.send_application_emails(application, notice_callback=partial(messages.info, request))
 
 
 class InvitationAdmin(admin.ModelAdmin):

@@ -1,10 +1,10 @@
 import contextlib
 import logging
 from email.mime.base import MIMEBase
+from typing import Callable
 from urllib.parse import quote as urlquote
 
 from django.conf import settings
-from django.contrib import messages
 from django.core import signing
 from django.core.mail import EmailMessage, send_mail
 from django.urls import reverse
@@ -46,7 +46,7 @@ def admin_emails_for_application(application: Application) -> list[tuple[Camp, l
     return groups
 
 
-def send_application_emails(request, application: Application):
+def send_application_emails(application: Application, notice_callback: Callable[[str], None]):
     # Email to the leaders:
 
     # Collect emails to send to
@@ -56,26 +56,25 @@ def send_application_emails(request, application: Application):
             continue
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application)
-            messages.info(
-                request,
+            notice_callback(
                 f"The leaders ({camp.leaders_formatted}) have been notified of the completed application form by"
                 " email.",
             )
 
     if len(leader_email_groups) == 0:
         send_leader_email(settings.SECRETARY_EMAILS, application)
-        messages.info(
-            request,
+        notice_callback(
             "The application form has been sent to the CCiW secretary, "
             "because you are not on any camp's officer list this year.",
         )
 
+    # Email to the officer:
     application_text = application_to_text(application)
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, "text/rtf")
 
     send_officer_email(application.officer, application, application_text, rtf_attachment)
-    messages.info(request, "A copy of the application form has been sent to you via email.")
+    notice_callback("A copy of the application form has been sent to you via email.")
 
     if application.officer.email.lower() != application.address_email.lower():
         send_email_change_emails(application.officer, application)
