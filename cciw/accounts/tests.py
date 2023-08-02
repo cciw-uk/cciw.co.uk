@@ -1,9 +1,19 @@
 from unittest.mock import patch
 
+import pytest
 from django.urls import reverse
 from furl import furl
 
-from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_MANAGER_ROLES, SECRETARY_ROLE_NAME, user_has_role
+from cciw.accounts.models import (
+    BOOKING_SECRETARY_ROLE_NAME,
+    CAMP_MANAGER_ROLES,
+    SECRETARY_ROLE_NAME,
+    User,
+    user_has_role,
+)
+from cciw.accounts.utils import merge_users
+from cciw.cciwmain.tests import factories as camp_factories
+from cciw.officers.models import add_officer_to_camp
 from cciw.officers.tests import factories
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
@@ -202,3 +212,28 @@ class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
         assert self.pwned_password_call_count == 0
         user.refresh_from_db()
         assert not user.password_validation_needs_checking()
+
+
+@pytest.mark.django_db
+def test_merge_user():
+    user1 = factories.create_officer()
+    user2 = factories.create_officer()
+    camp = camp_factories.create_camp(leader=user1)
+    add_officer_to_camp(camp, user1, factories.create_camp_role())
+    factories.create_application(user1)
+
+    # invitations and applications is M2O, people is M2M, so we should be
+    # covering bases here.
+
+    for user in (user1, user2):
+        count = 1 if user is user1 else 0
+        assert user.invitations.count() == count
+        assert user.people.count() == count
+        assert user.applications.count() == count
+
+    merge_users(user1, user2)
+
+    assert not User.objects.filter(id=user1.id).exists()
+    assert user2.invitations.count() == 1
+    assert user2.people.count() == 1
+    assert user2.applications.count() == 1
