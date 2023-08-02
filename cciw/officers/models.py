@@ -48,7 +48,7 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 class Application(ClearCachedPropertyMixin, models.Model):
     officer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name="applications"
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, related_name="applications"
     )  # blank=True to get the admin to work
     full_name = RequiredCharField("full name", max_length=NAME_LENGTH)
     birth_date = RequiredDateField("date of birth", null=True, default=None)
@@ -290,7 +290,7 @@ class ReferenceAction(models.Model):
     referee = models.ForeignKey(Referee, on_delete=models.CASCADE, related_name="actions")
     created_at = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ActionType.choices)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True)
 
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
@@ -690,7 +690,7 @@ class DBSActionLog(models.Model):
         null=True,
         blank=True,
         default=None,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
     )
 
     objects = DBSActionLogManager()
