@@ -15,7 +15,7 @@
 
     {% block extraheader %}{% endblock %}
   </head>
-  <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' {% block bodyattr %}{% endblock %}>
+  <body hx-ext="morph" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' {% block bodyattr %}{% endblock %}>
     {% block bodystart %}
     {% endblock %}
     <header>

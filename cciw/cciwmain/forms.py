@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.forms import Form, renderers
 
 
@@ -19,12 +18,7 @@ class CciwFormMixin:
     label_overrides: dict = {}
 
     def should_do_htmx_validation(self):
-        # For some reason, when running tests with Selenium, with the htmx
-        # validation running sometimes the htmx request gets POSTed before the
-        # field has changed, resulting in the field being blanked. This only
-        # happens with Selenium, and since we aren't actually testing htmx
-        # validation in tests, we solve by disabling for tests.
-        return self.do_htmx_validation and not settings.TESTS_RUNNING
+        return self.do_htmx_validation
 
     def get_context(self, *args, **kwargs):
         return super().get_context(*args, **kwargs) | {
@@ -33,7 +27,7 @@ class CciwFormMixin:
         }
 
 
-def render_single_form_field(form: Form, field_name: str):
+def render_single_form_field(form: Form, field_name: str, *, validation_only: bool):
     # Assumes form has CciwFormMixin as a base
     bound_field = form[field_name]
     label_text = form.label_overrides.get(field_name, None)
@@ -42,6 +36,7 @@ def render_single_form_field(form: Form, field_name: str):
             "field": bound_field,
             "errors": form.error_class(bound_field.errors, renderer=form.renderer),
             "do_htmx_validation": form.should_do_htmx_validation(),
+            "validation_only": validation_only,
         }
         | ({"label_tag": bound_field.label_tag(contents=label_text)} if label_text else {}),
         template_name=form.template_name_p_formrow,

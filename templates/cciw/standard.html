@@ -10,7 +10,9 @@
   {% endif %}
   {{ block.super }}
   {% compress js %}
-    <script type="text/javascript" defer src="{% static "js/htmx-1.9.0.min.js" %}"></script>
+    <script type="text/javascript" defer src="{% static "js/htmx-1.9.4.min.js" %}"></script>
+    <script type="text/javascript" defer src="{% static "js/htmx-debug-1.9.4.js" %}"></script>
+    <script type="text/javascript" defer src="{% static "js/idiomorph-ext-0.0.8.min.js" %}"></script>
     <script type="text/javascript" defer src="{% static "js/cciwmain_globals.js" %}"></script>
   {% endcompress %}
 

@@ -43,7 +43,7 @@ def htmx_form_validate(*, form_class: type):
             ):
                 form = form_class(request.GET)
                 form.is_valid()  # trigger validation
-                return HttpResponse(render_single_form_field(form, htmx_validation_field))
+                return HttpResponse(render_single_form_field(form, htmx_validation_field, validation_only=True))
             return view_func(request, *args, **kwargs)
 
         return wrapper
