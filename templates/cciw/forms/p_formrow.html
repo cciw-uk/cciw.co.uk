@@ -11,11 +11,6 @@
     hx-swap="morph:outerHTML"
   {% endif %}
 >
-  {% if errors %}
-    <div class="fieldMessages">
-      {{ errors }}
-    </div>
-  {% endif %}
   <div class="field">
     {% if label_tag %}
       {# Passed in via render_single_form_field #}
@@ -32,6 +27,11 @@
       {% if field.help_text %}
         <br>
         <span class="helptext">{{ field.help_text|safe }}</span>
+      {% endif %}
+      {% if errors %}
+        <div class="fieldErrorMessages">
+          {{ errors }}
+        </div>
       {% endif %}
     </div>
   </div>

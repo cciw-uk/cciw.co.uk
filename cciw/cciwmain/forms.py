@@ -9,7 +9,6 @@ class CciwFormMixin:
     default_renderer = renderers.TemplatesSetting()
     template_name_p = "cciw/forms/p.html"
     template_name_p_formrow = "cciw/forms/p_formrow.html"
-    error_css_class = "validationErrors"
     required_css_class = "required"
 
     do_htmx_validation: bool = False  # Set to True in subclasses to use htmx validation

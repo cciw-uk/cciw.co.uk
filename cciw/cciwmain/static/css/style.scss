@@ -526,13 +526,11 @@ table > tbody > tr.spacer > td {
 }
 
 div.userError,
-div.validationErrors,
 div.successMessage {
     border-radius: 7px;
 }
 
-div.userError,
-div.validationErrors {
+div.userError {
     border: 1px solid #d00000;
 }
 
@@ -615,6 +613,14 @@ div.formrow {
         font-size: 90%;
         color: $textLighterColor;
     }
+
+    .fieldErrorMessages {
+        color: #d00000;
+        ul, li {
+            padding-left: 0px;
+            list-style-type: none;
+        }
+    }
 }
 
 div.userError {
@@ -629,23 +635,6 @@ ul.errorlist {
     padding-bottom: 0px;
     margin-bottom: 0px;
     margin-top: 5px;
-}
-
-div.validationErrors::after {
-    // auto-clearing of floats
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
-div.fieldMessages {
-    background-color: #d00000;
-    border-radius: 5px;
-    color: white;
-    padding-bottom: 2px;
-    margin-bottom: 6px;
 }
 
 label.required {
