@@ -8,8 +8,8 @@ from .models import (
     ManualPayment,
     RefundPayment,
     WriteOffDebt,
+    credit_account,
     parse_paypal_custom_field,
-    send_payment,
 )
 
 # == Handlers ==
@@ -40,49 +40,49 @@ def paypal_payment_received(sender, **kwargs):
         unrecognised_payment(ipn_obj, f"Unrecognised payment status {ipn_obj.payment_status}")
         return
 
-    send_payment(ipn_obj.mc_gross, account, ipn_obj)
+    credit_account(ipn_obj.mc_gross, account, ipn_obj)
 
 
 def manual_payment_received(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(instance.amount, instance.account, instance)
+    credit_account(instance.amount, instance.account, instance)
 
 
 def manual_payment_deleted(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(-instance.amount, instance.account, None)
+    credit_account(-instance.amount, instance.account, None)
 
 
 def refund_payment_sent(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(-instance.amount, instance.account, instance)
+    credit_account(-instance.amount, instance.account, instance)
 
 
 def refund_payment_deleted(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(instance.amount, instance.account, None)
+    credit_account(instance.amount, instance.account, None)
 
 
 def write_off_debt_created(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(instance.amount, instance.account, instance)
+    credit_account(instance.amount, instance.account, instance)
 
 
 def write_off_debt_deleted(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(-instance.amount, instance.account, None)
+    credit_account(-instance.amount, instance.account, None)
 
 
 def account_transfer_payment_received(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(-instance.amount, instance.from_account, instance)
-    send_payment(instance.amount, instance.to_account, instance)
+    credit_account(-instance.amount, instance.from_account, instance)
+    credit_account(instance.amount, instance.to_account, instance)
 
 
 def account_transfer_payment_deleted(sender, **kwargs):
     instance = kwargs["instance"]
-    send_payment(instance.amount, instance.from_account, None)
-    send_payment(-instance.amount, instance.to_account, None)
+    credit_account(instance.amount, instance.from_account, None)
+    credit_account(-instance.amount, instance.to_account, None)
 
 
 # == Wiring ==
