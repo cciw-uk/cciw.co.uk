@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from functools import lru_cache
+from typing import TypeAlias
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -1889,6 +1890,9 @@ class AccountTransferPayment(NoEditMixin, models.Model):
         return f"Transfer: {self.amount} transferred from {self.from_account} to {self.to_account}"
 
 
+PaymentModel: TypeAlias = ManualPayment | RefundPayment | WriteOffDebt | AccountTransferPayment | PayPalIPN
+
+
 # This model abstracts the different types of payment that can be the source for
 # Payment. The real 'source' is the instance pointed to by one of the FKs it
 # contains.
@@ -1933,10 +1937,11 @@ class PaymentSource(models.Model):
             raise ValueError(f"No related object for PaymentSource {self.id}")
 
     @property
-    def model_source(self):
+    def model_source(self) -> PaymentModel | None:
         for att in self.MODEL_MAP.values():
             if getattr(self, f"{att}_id") is not None:
                 return getattr(self, att)
+        return None
 
     def _assert_one_source(self):
         attrs = [f"{a}_id" for a in self.MODEL_MAP.values()]
@@ -1944,7 +1949,7 @@ class PaymentSource(models.Model):
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
     @classmethod
-    def from_source_instance(cls, source_instance):
+    def from_source_instance(cls, source_instance: PaymentModel):
         """
         Create a PaymentSource from a real payment model
         """
@@ -1955,7 +1960,7 @@ class PaymentSource(models.Model):
         return cls.objects.create(**{attr_name_for_model: source_instance})
 
 
-def send_payment(amount, to_account, from_obj):
+def send_payment(amount: Decimal, to_account: BookingAccount, from_obj: PaymentModel):
     Payment.objects.create(
         amount=amount, account=to_account, source_instance=from_obj, processed=None, created_at=timezone.now()
     )
@@ -2013,7 +2018,7 @@ def expire_bookings(now=None):
 
 
 @transaction.atomic
-def process_one_payment(payment):
+def process_one_payment(payment: Payment):
     payment.account.receive_payment(payment.amount)
     payment.processed = timezone.now()
     # Payment.processed is ignored in Payment.save, so do update
