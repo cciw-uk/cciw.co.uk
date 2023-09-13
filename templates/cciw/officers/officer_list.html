@@ -86,20 +86,24 @@
                             {% elif search_query %}
                               value="{{ search_query }}"
                             {% endif %}
+                            {# fmt:off #}
                             _="
                                on keyup
-                               if the event's key is 'Escape'
-                               set my value to ''
-                               trigger keyup
-                               else
-                               show <tr/> in #id-chooseofficers__tablebody when its textContent.toLowerCase() contains (my value).toLowerCase()
+                                 if the event's key is 'Escape'
+                                   set my value to ''
+                                   trigger keyup
+                                 else
+                                   show <tr/> in #id-chooseofficers__tablebody when its textContent.toLowerCase() contains (my value).toLowerCase()
+                                 end
                                end
 
                                on load
-                               trigger keyup
+                                 trigger keyup
                                end
 
-                              ">
+                            "
+                            {# fmt:on #}
+                          >
                         </th>
                       </tr>
                       <tr>
