@@ -591,7 +591,7 @@ def htmx_reference_events_response(
     if refreshReferee is not None:
         events[f"refreshReferee-{refreshReferee.id}"] = True
     if closeModal:
-        events["closeModal"] = closeModal
+        events["jsCloseModal"] = closeModal
 
     return add_hx_trigger_header(HttpResponse(""), events)
 
@@ -1345,7 +1345,7 @@ def htmx_dbs_events_response(
     if refreshOfficer is not None:
         events[f"refreshOfficer-{refreshOfficer.id}"] = True
     if closeModal:
-        events["closeModal"] = closeModal
+        events["jsCloseModal"] = closeModal
 
     return add_hx_trigger_header(HttpResponse(""), events)
 

@@ -5,7 +5,7 @@
 
 (function () {
     document.body.addEventListener("htmx:afterSettle", function(detail) {
-        for (const dialog of detail.target.querySelectorAll('dialog[data-onload-showmodal]')) {
+        for (const dialog of detail.target.querySelectorAll('dialog[data-js-onload-showmodal]')) {
             dialog.addEventListener("close", () => {
                 // Cleanup and avoid interaction issues by removing entirely
                 dialog.remove();
@@ -14,7 +14,7 @@
         };
     });
 
-    document.body.addEventListener('closeModal', function() {
+    document.body.addEventListener('jsCloseModal', function() {
         document.querySelector('dialog[open]').close();
     });
 

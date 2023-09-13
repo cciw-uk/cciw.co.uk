@@ -380,7 +380,7 @@ def add_place_reuse_data(request: HttpRequest, booking_id: int | None = None):
                 for f in fields:
                     form_data[f] = getattr(previous_booking, f)
 
-        extra_response_headers = {"Hx-Trigger": json.dumps({"closeModal": True})}
+        extra_response_headers = {"Hx-Trigger": json.dumps({"jsCloseModal": True})}
 
     return add_or_edit_place(
         request, form_input_data=form_data, booking_id=booking_id, extra_response_headers=extra_response_headers
