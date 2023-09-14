@@ -1,0 +1,29 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+{% block content %}
+
+  {% if paypal_form %}
+    <p>Redirecting to PayPal...</p>
+    <noscript>
+      {{ paypal_form.render }}
+    </noscript>
+    <div style="display:none;" id="paypalform">
+      {{ paypal_form.render }}
+    </div>
+
+    <script>
+      document.querySelector("#paypalform form").submit();
+    </script>
+  {% else %}
+    {% htmlchunk donate_intro %}
+
+    <form method="POST" action=".">
+      {% csrf_token %}
+      {{ donate_form.as_p }}
+      <p><input type="submit" name="donate" value="Donate"></p>
+    </form>
+
+    {% htmlchunk donate_outro %}
+  {% endif %}
+
+{% endblock %}

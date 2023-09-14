@@ -1,0 +1,8 @@
+{% autoescape off %}
+A donation was received via PayPal.
+
+Please check it at:
+
+https://{{ domain }}{% url 'admin:ipn_paypalipn_change' ipn_obj.id %}
+
+{% endautoescape %}

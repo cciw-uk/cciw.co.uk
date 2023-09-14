@@ -179,19 +179,28 @@ def create_write_off_debt_payment(
     )
 
 
-def create_ipn(*, account: BookingAccount | None = None, **kwargs):
+def create_ipn(
+    *,
+    account: BookingAccount | None = None,
+    custom: str = Auto,
+    payer_email: str = Auto,
+    amount: Decimal | int = Auto,
+    **kwargs,
+):
     if account:
+        assert custom is Auto
         custom = build_paypal_custom_field(account)
     else:
-        custom = ""
+        custom = custom or ""
     defaults = dict(
-        mc_gross=Decimal("1.00"),
+        mc_gross=Decimal("1.00") if amount is Auto else Decimal(amount),
         custom=custom,
         ipaddress="127.0.0.1",
         payment_status="Completed",
         txn_id="1",
         business=settings.PAYPAL_RECEIVER_EMAIL,
         payment_date=timezone.now(),
+        payer_email="" if payer_email is Auto else payer_email,
     )
     defaults.update(kwargs)
     ipn = PayPalIPN.objects.create(**defaults)

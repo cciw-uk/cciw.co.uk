@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
+from cciw.donations.views import DONATION_CUSTOM_VALUE, send_donation_received_email
+
 from .email import send_pending_payment_email, send_unrecognised_payment_email
 from .models import (
     AccountTransferPayment,
@@ -25,6 +27,10 @@ def paypal_payment_received(sender, **kwargs):
     ipn_obj = sender
     if ipn_obj.business != settings.PAYPAL_RECEIVER_EMAIL:
         unrecognised_payment(ipn_obj, "Incorrect receiver email")
+        return
+
+    if ipn_obj.custom == DONATION_CUSTOM_VALUE:
+        send_donation_received_email(ipn_obj)
         return
 
     account = parse_paypal_custom_field(ipn_obj.custom)
