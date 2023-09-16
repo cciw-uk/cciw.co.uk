@@ -50,8 +50,8 @@ from cciw.utils import xl
 from cciw.utils.spreadsheet import ExcelBuilder, ExcelFromDataFrameBuilder
 from cciw.utils.views import for_htmx, get_redirect_from_request, make_get_request, user_passes_test_improved
 
-from . import create
-from .applications import (
+from .. import create
+from ..applications import (
     application_rtf_filename,
     application_to_rtf,
     application_to_text,
@@ -61,8 +61,8 @@ from .applications import (
     invitations_for_application,
     thisyears_applications,
 )
-from .dbs import get_officers_with_dbs_info_for_camps
-from .email import (
+from ..dbs import get_officers_with_dbs_info_for_camps
+from ..email import (
     make_ref_form_url,
     make_ref_form_url_hash,
     send_dbs_consent_alert_leaders_email,
@@ -70,8 +70,8 @@ from .email import (
     send_reference_request_email,
     send_request_for_dbs_form_email,
 )
-from .email_utils import formatted_email, send_mail_with_attachments
-from .forms import (
+from ..email_utils import formatted_email, send_mail_with_attachments
+from ..forms import (
     AdminReferenceForm,
     CciwPasswordResetForm,
     CorrectRefereeDetailsForm,
@@ -84,7 +84,7 @@ from .forms import (
     SendReferenceRequestForm,
     UpdateOfficerForm,
 )
-from .models import (
+from ..models import (
     Application,
     CampRole,
     DBSActionLogType,
@@ -100,8 +100,8 @@ from .models import (
     get_previous_references,
     remove_officer_from_camp,
 )
-from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
-from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
+from ..stats import get_camp_officer_stats, get_camp_officer_stats_trend
+from ..utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
 
 EXPORT_PAYMENT_DATE_FORMAT = "%Y-%m-%d"
 
