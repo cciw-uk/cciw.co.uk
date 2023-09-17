@@ -9,10 +9,11 @@ from django.utils import timezone
 
 from cciw.accounts.models import User, get_reference_contact_users
 from cciw.cciwmain.utils import is_valid_email
-from cciw.officers import create
-from cciw.officers.email import send_leaders_reference_email
-from cciw.officers.models import CampRole, DBSCheck, Invitation, Referee, Reference
-from cciw.officers.widgets import ExplicitBooleanFieldSelect
+
+from .create import create_officer
+from .email import send_leaders_reference_email
+from .models import CampRole, DBSCheck, Invitation, Referee, Reference
+from .widgets import ExplicitBooleanFieldSelect
 
 
 class StripStringsMixin:
@@ -37,7 +38,7 @@ class CreateOfficerForm(BaseForm):
     email = forms.EmailField()
 
     def save(self):
-        return create.create_officer(
+        return create_officer(
             self.cleaned_data["first_name"], self.cleaned_data["last_name"], self.cleaned_data["email"]
         )
 

@@ -7,8 +7,16 @@ urlpatterns = [
     # Application forms
     path("applications/", views.applications, name="cciw-officers-applications"),
     path("get-application/", views.get_application, name="cciw-officers-get_application"),
-    path("view-application/", views.view_application_redirect, name="cciw-officers-view_application_redirect"),
-    path("view-application/<int:application_id>/", views.view_application, name="cciw-officers-view_application"),
+    path(
+        "view-application/",
+        views.view_application_redirect,
+        name="cciw-officers-view_application_redirect",
+    ),
+    path(
+        "view-application/<int:application_id>/",
+        views.view_application,
+        name="cciw-officers-view_application",
+    ),
     path("correct-email/", views.correct_email, name="cciw-officers-correct_email"),
     path("correct-application/", views.correct_application, name="cciw-officers-correct_application"),
     # Leaders pages
@@ -112,7 +120,11 @@ urlpatterns = [
         views.create_reference,
         name="cciw-officers-create_reference",
     ),
-    path("ref/thanks/", views.create_reference_thanks, name="cciw-officers-create_reference_thanks"),
+    path(
+        "ref/thanks/",
+        views.create_reference_thanks,
+        name="cciw-officers-create_reference_thanks",
+    ),
     # Officer other
     path("files/<path:path>", views.officer_files, name="cciw-officers-officer_files"),
     path("info/", views.officer_info, name="cciw-officers-info"),

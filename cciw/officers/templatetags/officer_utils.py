@@ -1,7 +1,7 @@
 from django import template
 from django.urls import reverse
 
-from cciw.officers.views import BreadCrumb
+from cciw.officers.views.utils.breadcrumbs import BreadCrumb
 
 register = template.Library()
 

@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from cciw.bookings.middleware import get_booking_account_from_request
 from cciw.cciwmain.common import htmx_form_validate
-from cciw.officers.views import cciw_secretary_or_booking_secretary_required
+from cciw.officers.views.utils.auth import cciw_secretary_or_booking_secretary_required
 
 from .forms import ContactUsForm, ReclassifyForm, ValidationContactUsForm
 from .models import ContactType, Message

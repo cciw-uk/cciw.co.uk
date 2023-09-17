@@ -21,6 +21,8 @@ attrs==22.1.0
     #   trio
 backcall==0.2.0
     # via ipython
+backports-strenum==1.2.4
+    # via -r requirements.in
 bcrypt==4.0.0
     # via paramiko
 beautifulsoup4==4.11.1
