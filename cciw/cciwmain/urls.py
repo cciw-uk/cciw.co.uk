@@ -1,5 +1,6 @@
 from django.urls import path
 
+import cciw.data_retention.views
 from cciw.cciwmain.views import camps as camp_views
 from cciw.cciwmain.views import sites as sites_views
 from cciw.donations import views as donations_views
@@ -19,7 +20,11 @@ urlpatterns = [
     path("404/", views.show404, name="cciw-404"),
     path("500/", views.show500, name="cciw-500"),
     # Site content
-    path("data-retention-policy/", sitecontent_views.data_retention_policy, name="cciw-cciwmain-data_retention_policy"),
+    path(
+        "data-retention-policy/",
+        cciw.data_retention.views.data_retention_policy,
+        name="cciw-cciwmain-data_retention_policy",
+    ),
     path("donate/", donations_views.donate, name="cciw-donations-donate"),
     path("donate-done/", donations_views.donate_done, name="cciw-donations-donate_done"),
     path("", sitecontent_views.home, name="cciw-cciwmain-sitecontent_home"),
