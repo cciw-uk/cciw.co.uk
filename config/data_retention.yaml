@@ -392,7 +392,7 @@
 
   rules:
     keep: 1 year
-    deletable on request from data subject: no  # It is not directly linked to any data subject
+    deletable on request from data subject: yes
 
   tables:
     - name: mailer.Message

@@ -1,0 +1,83 @@
+{% extends "cciw/officers/base.html" %}
+{% load static %}
+{% load compress %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+{% endblock %}
+
+{% block bodyclass%}change-list{% endblock %}
+
+{% block content %}
+
+  <div id="content-main">
+    <p>This page is to be used in accordance with CCiW's documented procedures for data erasure requests.</p>
+
+    <div id="changelist" class="filtered">
+      <div class="changelist-form-container">
+        <div id="toolbar">
+          <form id="changelist-search" method="get">
+            <div>
+              <label for="searchbar"><img src="/static/admin/img/search.svg" alt="Search"></label>
+              {{ search_form.query }}
+              <input type="submit" value="Search">
+            </div>
+          </form>
+        </div>
+
+        {% if results is not None %}
+          {% if results %}
+            <form id="changelist-form" method="get" action="{% url 'cciw-officers-data_erasure_request_check' %}">
+              <input type="hidden" name="search_query" value="{{ search_query }}">
+              <div class="results">
+                <table>
+                  <tr>
+                    <th><input type="checkbox" class="action-select" name="selectall" onchange="toggleSelectAll()"></th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                  </tr>
+                  {% for result in results %}
+                    <tr>
+                      <td><input type="checkbox" class="action-select" name="selected" value="{{ result.result_id }}"></td>
+                      <td>{{ result.email }}</td>
+                      <td>{{ result.name }}</td>
+                      <td>{{ result.model_name }}</td>
+                      <td>{{ result.admin_link }}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+              </div>
+
+
+              <div class="submit-row">
+                <input type="submit" value="Check plan »">
+              </div>
+            </form>
+
+          {% else %}
+            {% if not search_form.valid %}
+              {{ search_form.errors }}
+            {% else %}
+              <p>No records matched</p>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleSelectAll(ev) {
+      const state = document.querySelector("[name=selectall]").checked;
+      for (checkbox of document.querySelectorAll("#changelist-form td input[type=checkbox]")) {
+        checkbox.checked = state;
+      }
+    }
+  </script>
+{% endblock %}

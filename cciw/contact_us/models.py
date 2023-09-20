@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from django.conf import settings
 from django.core import mail
@@ -16,7 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 class MessageQuerySet(models.QuerySet):
-    def older_than(self, before_datetime):
+    def not_in_use(self, now: datetime):
+        # The time period we put here is only relevant for manual erasure
+        # requests. We therefore include all records, so that if requests for
+        # erasure that come through the contact us page, we delete that request
+        # message as well.
+        return self.all()
+
+    def older_than(self, before_datetime: datetime):
         return self.filter(created_at__lt=before_datetime)
 
 
@@ -50,6 +58,10 @@ class SpamStatus(TextChoices):
 
 
 class Message(models.Model):
+    """
+    Stores messages received from the "contact us" page.
+    """
+
     subject = models.CharField(choices=ContactType.choices, max_length=max(map(len, ContactType.values)))
     email = models.EmailField("Email address")
     booking_account = models.ForeignKey(BookingAccount, null=True, blank=True, on_delete=models.SET_NULL)

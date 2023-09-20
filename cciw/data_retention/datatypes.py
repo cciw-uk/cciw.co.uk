@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 import pydantic.dataclasses
 from django.db import models
 from django.db.models.fields import Field
+from django.urls import reverse
+from django.utils.text import slugify
 
 
 class DataclassConfig:
@@ -40,6 +42,13 @@ class Group:
     name: str
     rules: Rules
     models: list[ModelDetail]
+
+    @property
+    def web_url(self):
+        # This works only if we keep the section title in the
+        # data_retention.yaml file the same as the group name,
+        # which is fragile but fine for our purposes.
+        return reverse("cciw-cciwmain-data_retention_policy") + "#" + slugify(self.name)
 
 
 @dataclass

@@ -1,0 +1,87 @@
+{% extends "cciw/officers/base.html" %}
+{% load static %}
+{% load compress %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+{% endblock %}
+
+{% block bodyclass%}change-list{% endblock %}
+
+{% block content %}
+
+  <section id="content-main">
+
+    <p>The following content can be reported back to the data subject for confirmation.</p>
+
+    {% if empty_plans %}
+      <p>You should first investigate the following items that cannot be erased,
+        to see if there is a reason that can be resolved or needs to be addressed first.</p>
+
+      <ul>
+        {% for plan in empty_plans %}
+          <li>{{ plan.admin_link }}</li>
+        {% endfor %}
+      </ul>
+
+      <p>Common reasons include:</p>
+      <ul>
+        <li><tt>accounts.User</tt>, <tt>officers.Application</tt>: the officer is on an <a href="{% url 'admin:officers_invitation_changelist' %}">invitation list</a> for a camp that is still in the future.  </li>
+        <li><tt>bookings.BookingAccount</tt>: the account balance is not zero.</li>
+        <li><tt>bookings.Booking</tt>: the booking is for a place which is still in the future.          </li>
+      </ul>
+    {% endif %}
+
+    <div class="data-erasure-report">
+
+      <h1>Data erasure request report</h1>
+
+      <p>Erasure requests are handled in accordance with our <a href="{% url 'cciw-cciwmain-data_retention_policy' %}">data retention policy</a>. Note particularly the “Camper and officer data to keep forever” section, which overrides a data subject's “right to be forgotten”, unless you appeal this due to special circumstances.
+      </p>
+
+      <p>The following records were found for erasure.
+        {% if empty_plans %}
+          In some cases below, records cannot be erased. This is normally
+          due to CCiW needing the records for legitimate business purposes.
+        {% endif %}
+      </p>
+
+    </p>
+
+    {% for plan in erasure_plans %}
+      <h2>{{ plan.result_id }}</h2>
+
+
+      {% for command in plan.commands %}
+        <ul>
+          <li><b>Record type:</b> {{ plan.result_type_description }}</li>
+          <li><b>Erasure policy:</b> <a href="{{ command.group.web_url }}" target="_new">{{ command.group.name }}</a></li>
+          <li><b>Action summary:</b> {{ command.summary }}</li>
+          <li>
+            <div>
+              <p>
+                <b>Action details:</b>
+              </p>
+              <p>
+                {{ command.details|linebreaksbr }}
+              </p>
+            </div>
+          </li>
+        </ul>
+      {% endfor %}
+    {% endfor %}
+
+  </div>
+  </section>
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="search_query" value="{{ search_query }}">
+    {% for result_id in selected_result_ids %}
+      <input type="hidden" name="selected" value="{{ result_id }}">
+    {% endfor %}
+  </form>
+
+{% endblock %}

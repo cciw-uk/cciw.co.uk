@@ -41,6 +41,24 @@ from .email import send_booking_expiry_mail, send_places_confirmed_email
 DEFAULT_COUNTRY = "GB"
 
 
+KEEP_FINANCIAL_RECORDS_FOR = timedelta(days=3 * 365 + 1)
+# By law we're required to keep financial records for 3 years (3 * 365 + one day for a
+# possible leap year)
+#
+# This mean the above constant is used in various `not_in_use()` methods
+# relating to payment information. In this context, it define the business
+# requirement that we must keep the data for a *minimum* amount of time.
+
+# We also have '3 years' (and '5 years') in data_retention.yaml. In that
+# context, it defines time periods we choose to automatically erase some data
+# (though we don't necessarily have to, depending on other concerns).
+
+# For the case of erasure requests under "right to erasure" laws, the values
+# defined in data_retention.yaml are not applied (since they define automatic
+# erasure, not manual ones), which is why they must also be present in
+# `not_in_use()` methods.
+
+
 class Sex(models.TextChoices):
     MALE = "m", "Male"
     FEMALE = "f", "Female"
@@ -247,8 +265,10 @@ class AgreementFetcher:
 
 
 class BookingAccountQuerySet(models.QuerySet):
-    def not_in_use(self):
-        return self.zero_final_balance().exclude(id__in=Booking.objects.in_use().values_list("account_id", flat=True))
+    def not_in_use(self, now: datetime):
+        return self.zero_final_balance().exclude(
+            id__in=Booking.objects.in_use(now).values_list("account_id", flat=True)
+        )
 
     def older_than(self, before_datetime):
         """
@@ -351,6 +371,10 @@ ACCOUNT_PUBLIC_ATTRS = [
 
 
 class BookingAccount(models.Model):
+    """
+    Login account for camp bookings system.
+    """
+
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
     # in the admin, all the address fields have 'blank=True'.
@@ -746,16 +770,15 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     # Data retention
 
-    def not_in_use(self):
-        return self.exclude(self._in_use_q())
+    def not_in_use(self, now: datetime):
+        return self.exclude(self._in_use_q(now))
 
-    def in_use(self):
-        return self.filter(self._in_use_q())
+    def in_use(self, now: datetime):
+        return self.filter(self._in_use_q(now))
 
-    def _in_use_q(self):
-        today = date.today()
+    def _in_use_q(self, now: datetime):
         return Q(
-            camp__end_date__gte=today,
+            camp__end_date__gte=now.date(),
         )
 
     def older_than(self, before_datetime):
@@ -776,6 +799,10 @@ BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 
 class Booking(models.Model):
+    """
+    Information regarding a camper's place on a camp.
+    """
+
     account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="bookings")
 
     # Booking details - from user
@@ -1527,6 +1554,9 @@ class SupportingInformationDocumentQuerySet(DocumentQuerySet):
     def for_year(self, year):
         return self.filter(supporting_information__booking__camp__year=year)
 
+    def not_in_use(self, now: datetime):
+        return self.filter(created_at__lt=now - KEEP_FINANCIAL_RECORDS_FOR)
+
 
 SupportingInformationDocumentManager = DocumentManager.from_queryset(SupportingInformationDocumentQuerySet)
 
@@ -1556,6 +1586,9 @@ class SupportingInformationQuerySet(models.QuerySet):
 
     def older_than(self, before_datetime):
         return self.filter(created_at__lt=before_datetime)
+
+    def not_in_use(self, now: datetime):
+        return self.filter(date_received__lt=now - KEEP_FINANCIAL_RECORDS_FOR)
 
 
 SupportingInformationManager = models.Manager.from_queryset(SupportingInformationQuerySet)

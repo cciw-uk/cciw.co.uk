@@ -2,6 +2,7 @@
 User accounts for staff
 """
 import logging
+from datetime import datetime
 
 import yaml
 from django.conf import settings
@@ -13,6 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.db import models, transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -90,7 +92,26 @@ def get_reference_contact_users():
 
 class UserQuerySet(models.QuerySet):
     def older_than(self, before_datetime):
-        return self.filter(date_joined__lt=before_datetime)
+        return self.filter(
+            Q(date_joined__lt=before_datetime) & (Q(last_login__isnull=True) | (Q(last_login__lt=before_datetime)))
+        )
+
+    def not_in_use(self, now: datetime):
+        # User can be considered not in use if the officer is not
+        # invited to any future camps. In other words, removing the officer from
+        # future camp list will free up User records for manual erasure
+        # requests. Default retention policies don't delete data in other cases.
+
+        return self.exclude(self._in_use_q(now))
+
+    def in_use(self, now: datetime):
+        return self.filter(self._in_use_q(now))
+
+    def _in_use_q(self, now: datetime):
+        from cciw.officers.models import Invitation
+
+        # TODO other ways an officer might be in use?
+        return Q(id__in=Invitation.objects.for_future_camps(now).values_list("officer_id"))
 
     def potential_officers(self):
         return self.filter(is_staff=True)
@@ -110,6 +131,10 @@ class UserManager(UserManagerDjango.from_queryset(UserQuerySet)):
 
 
 class User(AbstractBaseUser):
+    """
+    User account for cciw.co.uk staff functions, especially camp officers.
+    """
+
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(

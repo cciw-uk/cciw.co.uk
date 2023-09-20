@@ -26,3 +26,4 @@ secretary_or_committee_required = user_passes_test_improved(
     any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary, lambda u: u.is_committee_member)
 )
 potential_camp_officer_required = user_passes_test_improved(lambda u: u.is_potential_camp_officer)
+webmaster_required = user_passes_test_improved(lambda u: u.is_superuser)

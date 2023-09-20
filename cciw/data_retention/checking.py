@@ -4,7 +4,15 @@ Checks on data retention policy (beyond basic validity checks)
 from django.apps import apps
 from django.core.checks import Error
 
-from .applying import ERASABLE_RECORDS, ERASED_ON_EXCEPTIONS, find_erasure_method, load_actual_data_retention_policy
+from cciw.data_retention.erasure_requests import SEARCH_QUERIES_MODELS
+
+from .applying import (
+    ERASED_ON_EXCEPTIONS,
+    NOT_IN_USE_METHODS,
+    OLDER_THAN_METHODS,
+    find_erasure_method,
+    load_actual_data_retention_policy,
+)
 from .loading import Forever, Policy, field_requires_privacy_policy
 
 
@@ -64,6 +72,19 @@ def _check_exhaustiveness(policy: Policy) -> list[Error]:
             )
         )
 
+    for model in all_models:
+        if model not in SEARCH_QUERIES_MODELS:
+            continue
+
+        if model.__doc__.startswith(f"{model.__name__}("):
+            issues.append(
+                Error(
+                    f"{model._meta.app_label} doesn't have a docstring, which is needed for good erasure report messages",
+                    obj=model,
+                    id="dataretention.E006",
+                )
+            )
+
     return issues
 
 
@@ -80,7 +101,7 @@ def _check_erasable_records(policy: Policy) -> list[Error]:
             if model in seen_models:
                 continue
             seen_models.add(model)
-            if model not in ERASABLE_RECORDS:
+            if model not in NOT_IN_USE_METHODS or model not in OLDER_THAN_METHODS:
                 issues.append(
                     Error(
                         f"No method defined to obtain erasable records for {model.__name__}",

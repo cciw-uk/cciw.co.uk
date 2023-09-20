@@ -453,9 +453,15 @@ class InvitationAdmin(admin.ModelAdmin):
     list_display = ["officer", "camp", "role", "date_added"]
     list_filter = ["camp"]
     search_fields = ["officer__first_name", "officer__last_name", "officer__username"]
+    autocomplete_fields = ["officer"]
 
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).prefetch_related("camp__leaders")
+        return (
+            super()
+            .get_queryset(*args, **kwargs)
+            .select_related("camp__camp_name", "role")
+            .prefetch_related("camp__leaders")
+        )
 
 
 class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):

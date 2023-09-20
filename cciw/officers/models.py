@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from attr import dataclass
 from django.conf import settings
@@ -33,6 +33,9 @@ class ApplicationQuerySet(models.QuerySet):
     def older_than(self, before_datetime):
         return self.filter(date_saved__lt=before_datetime.date())
 
+    def not_in_use(self, now: datetime):
+        return self.exclude(officer__id__in=User.objects.in_use(now))
+
 
 class ApplicationManagerBase(models.Manager):
     def get_queryset(self):
@@ -47,6 +50,10 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 
 class Application(ClearCachedPropertyMixin, models.Model):
+    """
+    Officer's application form, required to come on camp.
+    """
+
     officer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, related_name="applications"
     )  # blank=True to get the admin to work
@@ -436,6 +443,9 @@ class CampRole(models.Model):
 class InvitationQuerySet(models.QuerySet):
     def name_order(self):
         return self.order_by("officer__first_name", "officer__last_name", "officer__email")
+
+    def for_future_camps(self, now: datetime):
+        return self.filter(camp__end_date__gte=now)
 
 
 class InvitationManager(models.Manager.from_queryset(InvitationQuerySet)):

@@ -205,4 +205,15 @@ urlpatterns = [
         views.booking_ages_stats_download,
         name="cciw-officers-booking_ages_stats_custom_download",
     ),
+    # Webmaster
+    path(
+        "data-erasure-request/",
+        views.data_erasure_request_start,
+        name="cciw-officers-data_erasure_request_start",
+    ),
+    path(
+        "data-erasure-request-plan/",
+        views.data_erasure_request_plan,
+        name="cciw-officers-data_erasure_request_check",
+    ),
 ]

@@ -15,22 +15,31 @@
 #   to a range of different erasing methods.
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from functools import cached_property
+from typing import Protocol
 
 from django.db import models, transaction
 from django.db.models.expressions import RawSQL
 from django.db.models.fields import Field
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django_countries.fields import CountryField
 from mailer import models as mailer_models
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.accounts.models import User
-from cciw.bookings.models import Booking, BookingAccount, SupportingInformation, SupportingInformationDocument
+from cciw.bookings.models import (
+    KEEP_FINANCIAL_RECORDS_FOR,
+    Booking,
+    BookingAccount,
+    SupportingInformation,
+    SupportingInformationDocument,
+)
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application
 
-from .datatypes import ErasureMethod, ForeverType, ModelDetail, Rules
+from .datatypes import ErasureMethod, ForeverType, Group, ModelDetail
 
 
 def load_actual_data_retention_policy():
@@ -54,25 +63,132 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
             raise AssertionError("Invalid data retention policy, aborting", issues)
 
     today = timezone.now()
-    retval = []
     with transaction.atomic():
         for group in policy.groups:
             for model_detail in group.models:
-                retval.append(apply_data_retention_single_model(today, rules=group.rules, model_detail=model_detail))
-    return retval
+                apply_data_retention_single_model(now=today, group=group, model_detail=model_detail)
 
 
-def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_detail: ModelDetail):
+def apply_data_retention_single_model(*, now: datetime, group: Group, model_detail: ModelDetail) -> None:
+    rules = group.rules
     if isinstance(rules.keep, ForeverType):
-        return []
-
+        return
     erase_before_datetime = now - rules.keep
-    # TODO probably want separate method for manual erasure requests,
-    # need to be careful about things that are still needed and
-    # how to respect `keep`
-    erasable_records = get_erasable(erase_before_datetime, model_detail.model)
+    records = get_automatically_erasable_records(now, erase_before_datetime, model_detail.model)
+    build_single_model_erase_command(
+        now=now,
+        group=group,
+        model_detail=model_detail,
+        records=records,
+    ).apply()
+
+
+class EraseCommand(Protocol):
+    def apply(self) -> None:
+        ...
+
+    # The following are used for manual erasure requests
+    group: Group
+
+    @property
+    def is_empty(self) -> bool:
+        ...
+
+    @property
+    def summary(self) -> str:
+        ...
+
+    @property
+    def details(self) -> str:
+        ...
+
+
+RECORD_IN_USE_MESSAGE = "Record could not be erased. This is normally because it is in use for business purposes. "
+
+
+class DeleteCommand:
+    def __init__(self, *, group: Group, records: QuerySet):
+        self.group: Group = group
+        self.records = records
+
+    def apply(self) -> None:
+        self.records.delete()
+
+    @property
+    def is_empty(self) -> bool:
+        return self.record_count == 0
+
+    @property
+    def summary(self) -> str:
+        return f"Delete {self.record_count} `{self.records.model._meta.label}` record(s)"
+
+    @property
+    def details(self) -> str:
+        if self.record_count == 0:
+            return RECORD_IN_USE_MESSAGE
+        return "The whole record will be deleted."
+
+    @cached_property
+    def record_count(self) -> int:
+        return self.records.count()
+
+
+class UpdateCommand:
+    def __init__(self, *, group: Group, records: QuerySet, update_dict: dict):
+        self.group: Group = group
+        self.records = records
+        self.update_dict = update_dict
+
+    def apply(self):
+        self.records.update(**self.update_dict)
+
+    @property
+    def is_empty(self) -> bool:
+        return self.record_count == 0
+
+    @property
+    def summary(self) -> str:
+        return f"Erase columns from {self.record_count} `{self.records.model._meta.label}` record(s)"
+
+    @property
+    def details(self) -> str:
+        if self.record_count == 0:
+            return RECORD_IN_USE_MESSAGE
+        return "The following columns will be erased:\n" + "\n".join(
+            f" - {key}" for key in self.update_dict.keys() if key != "erased_on"
+        )
+
+    @cached_property
+    def record_count(self) -> int:
+        return self.records.count()
+
+
+def get_not_in_use_records(now: datetime, model: type):
+    """
+    For a model, returns records that are not in business use
+    """
+    # This is important as a top-level function only for data erasure requests.
+    # For automatic data scrubbing, it is get_automatically_erasable_records() that counts
+    return NOT_IN_USE_METHODS[model](now)
+
+
+def get_automatically_erasable_records(now: datetime, before_datetime: date, model: type):
+    not_in_use_qs = get_not_in_use_records(now, model)
+    qs = OLDER_THAN_METHODS[model](not_in_use_qs, before_datetime)
+    assert qs.model == model
+    return qs
+
+
+def build_single_model_erase_command(
+    *,
+    now: datetime,
+    group: Group,
+    model_detail: ModelDetail,
+    records: QuerySet,
+) -> EraseCommand:
     if model_detail.delete_row:
-        retval = erasable_records.delete()
+        return DeleteCommand(group=group, records=records)
+
     else:
         update_dict = {}
         for field in model_detail.fields:
@@ -83,14 +199,7 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
             update_dict.update(method.build_update_dict(field))
         if model_detail.model not in ERASED_ON_EXCEPTIONS:
             update_dict["erased_on"] = update_erased_on_field(now)
-        retval = erasable_records.update(**update_dict)
-    return retval
-
-
-def get_erasable(before_datetime: date, model: type):
-    qs = ERASABLE_RECORDS[model](before_datetime)
-    assert qs.model == model
-    return qs
+        return UpdateCommand(group=group, records=records, update_dict=update_dict)
 
 
 def update_erased_on_field(now: datetime):
@@ -147,7 +256,7 @@ class CharFieldErasure(ErasureMethod):
         key = field.name
         if field.null:
             return {key: None}
-        elif field.max_length < len(DELETED_STRING):
+        elif field.max_length is not None and (field.max_length < len(DELETED_STRING)):
             return {key: ""}
         else:
             return {key: DELETED_STRING}
@@ -225,27 +334,39 @@ def find_erasure_method(field):
 # --- Domain specific knowledge ---
 
 
-# Dictionary from model to callable that retrieves the erasable records:
-ERASABLE_RECORDS = {
-    Message: lambda before_datetime: Message.objects.older_than(before_datetime),
-    Application: lambda before_datetime: Application.objects.older_than(before_datetime),
-    Booking: lambda before_datetime: Booking.objects.not_in_use().older_than(before_datetime),
-    BookingAccount: lambda before_datetime: BookingAccount.objects.not_in_use().older_than(before_datetime),
-    User: lambda before_datetime: User.objects.older_than(before_datetime),
-    SupportingInformation: lambda before_datetime: SupportingInformation.objects.older_than(before_datetime),
-    SupportingInformationDocument: lambda before_datetime: SupportingInformationDocument.objects.older_than(
-        before_datetime
-    ),
+# Dictionaries from model to callable for retrieving erasable records:
+
+NOT_IN_USE_METHODS = {
+    Message: lambda now: Message.objects.not_in_use(now),
+    Application: lambda now: Application.objects.not_in_use(now),
+    Booking: lambda now: Booking.objects.not_in_use(now),
+    BookingAccount: lambda now: BookingAccount.objects.not_in_use(now),
+    User: lambda now: User.objects.not_in_use(now),
+    SupportingInformation: lambda now: SupportingInformation.objects.not_in_use(now),
+    SupportingInformationDocument: lambda now: SupportingInformationDocument.objects.not_in_use(now),
+    # 3rd party models: (that's why they don't have their own `not_in_use()` QuerySet method)
+    #
+    # If a message hasn't been sent for more than a month of being on the queue, assume
+    # a permanent problem and that we can delete:
+    mailer_models.Message: lambda now: mailer_models.Message.objects.filter(when_added__lt=now - timedelta(days=30)),
+    # No MessageLogs are in use - they are a log of what has happened:
+    mailer_models.MessageLog: lambda now: mailer_models.MessageLog.objects.all(),
+    # PayPal records must be kept as financial records
+    PayPalIPN: lambda now: PayPalIPN.objects.filter(created_at__lt=now - KEEP_FINANCIAL_RECORDS_FOR),
+}
+
+OLDER_THAN_METHODS = {
+    Message: lambda qs, before_datetime: qs.older_than(before_datetime),
+    Application: lambda qs, before_datetime: qs.older_than(before_datetime),
+    Booking: lambda qs, before_datetime: qs.older_than(before_datetime),
+    BookingAccount: lambda qs, before_datetime: qs.older_than(before_datetime),
+    User: lambda qs, before_datetime: qs.older_than(before_datetime),
+    SupportingInformation: lambda qs, before_datetime: qs.older_than(before_datetime),
+    SupportingInformationDocument: lambda qs, before_datetime: qs.older_than(before_datetime),
     # 3rd party:
-    mailer_models.Message: lambda before_datetime: mailer_models.Message.objects.filter(
-        when_added__lt=before_datetime,
-    ),
-    mailer_models.MessageLog: lambda before_datetime: mailer_models.MessageLog.objects.filter(
-        when_added__lt=before_datetime,
-    ),
-    PayPalIPN: lambda before_datetime: PayPalIPN.objects.filter(
-        created_at__lt=before_datetime,
-    ),
+    mailer_models.Message: lambda qs, before_datetime: qs.filter(when_added__lt=before_datetime),
+    mailer_models.MessageLog: lambda qs, before_datetime: qs.filter(when_added__lt=before_datetime),
+    PayPalIPN: lambda qs, before_datetime: qs.filter(created_at__lt=before_datetime),
 }
 
 

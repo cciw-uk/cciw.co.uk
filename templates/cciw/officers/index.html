@@ -49,6 +49,9 @@
       {% if show_admin_link %}
         <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>
       {% endif %}
+      {% if user.is_superuser %}
+        <li><a href="{% url 'cciw-officers-data_erasure_request_start' %}">Data erasure request</a></li>
+      {% endif %}
       {% if user.has_usable_password %}
         <li><a href="{% url 'admin:password_change' %}">Change password</a></li>
       {% endif %}

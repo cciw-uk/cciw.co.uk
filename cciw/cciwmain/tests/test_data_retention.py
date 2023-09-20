@@ -15,7 +15,7 @@ from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us import tests as contact_us_factories
 from cciw.contact_us.models import Message
-from cciw.data_retention.applying import PreserveAgeOnCamp, apply_data_retention
+from cciw.data_retention.applying import NOT_IN_USE_METHODS, PreserveAgeOnCamp, apply_data_retention
 from cciw.data_retention.datatypes import ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, Rules
 from cciw.data_retention.loading import parse_keep
 from cciw.mail.tests import send_queued_mail
@@ -269,9 +269,13 @@ class TestApplyDataRetentionPolicy(TestBase):
             account.last_login = timezone.now()
             account.save()
         with travel("2002-01-01 01:00:00"):
-            assert account not in BookingAccount.objects.not_in_use().older_than(timezone.now() - timedelta(days=365))
+            assert account not in BookingAccount.objects.not_in_use(timezone.now()).older_than(
+                timezone.now() - timedelta(days=365)
+            )
         with travel("2002-10-02 01:00:00"):
-            assert account in BookingAccount.objects.not_in_use().older_than(timezone.now() - timedelta(days=365))
+            assert account in BookingAccount.objects.not_in_use(timezone.now()).older_than(
+                timezone.now() - timedelta(days=365)
+            )
 
     def test_BookingAccount_not_in_use_respects_payment_outstanding(self):
         policy = make_policy(
@@ -292,7 +296,7 @@ class TestApplyDataRetentionPolicy(TestBase):
                 amount_due=100,
             )
         with travel("2011-01-01"):
-            assert account not in BookingAccount.objects.not_in_use()
+            assert account not in BookingAccount.objects.not_in_use(timezone.now())
             # Should not be deleted despite age, because we have outstanding
             # payments due.
             apply_partial_policy(policy)
@@ -301,7 +305,7 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_BookingAccount_not_in_use_respects_current_booking(self):
         account = bookings_factories.create_booking_account()
-        assert account in BookingAccount.objects.not_in_use()
+        assert account in BookingAccount.objects.not_in_use(timezone.now())
         camp = camps_factories.create_camp(start_date=date.today())
         bookings_factories.create_booking(
             account=account,
@@ -309,10 +313,10 @@ class TestApplyDataRetentionPolicy(TestBase):
             camp=camp,
             amount_due=0,
         )
-        assert account not in BookingAccount.objects.not_in_use()
+        assert account not in BookingAccount.objects.not_in_use(timezone.now())
 
         with travel(camp.end_date + timedelta(days=1)):
-            assert account in BookingAccount.objects.not_in_use()
+            assert account in BookingAccount.objects.not_in_use(timezone.now())
 
             # Now have past booking, one future booking - should be 'in use' again
             camp2 = camps_factories.create_camp(start_date=date.today())
@@ -323,10 +327,10 @@ class TestApplyDataRetentionPolicy(TestBase):
                 amount_due=0,
             )
 
-            assert account not in BookingAccount.objects.not_in_use()
+            assert account not in BookingAccount.objects.not_in_use(timezone.now())
 
         with travel(camp2.end_date + timedelta(days=1)):
-            assert account in BookingAccount.objects.not_in_use()
+            assert account in BookingAccount.objects.not_in_use(timezone.now())
 
     def test_BookingAccount_not_in_use_query_issue(self):
         # Had some issues with not_in_use() and older_than() combinations with
@@ -354,12 +358,16 @@ class TestApplyDataRetentionPolicy(TestBase):
 
         with travel("2001-01-09"):
             # This has unfinished camps:
-            assert account not in BookingAccount.objects.not_in_use().older_than(make_datetime(2001, 1, 9))
+            assert account not in BookingAccount.objects.not_in_use(timezone.now()).older_than(
+                make_datetime(2001, 1, 9)
+            )
         with travel("2002-01-01"):
             # Now has no outstanding fees, nor unfinished camps
-            assert account in BookingAccount.objects.not_in_use().older_than(make_datetime(2002, 1, 1))
+            assert account in BookingAccount.objects.not_in_use(timezone.now()).older_than(make_datetime(2002, 1, 1))
             # This one has outstanding fees
-            assert other_account not in BookingAccount.objects.not_in_use().older_than(make_datetime(2002, 1, 1))
+            assert other_account not in BookingAccount.objects.not_in_use(timezone.now()).older_than(
+                make_datetime(2002, 1, 1)
+            )
 
     def test_BookingAccount_older_than_respects_last_payment_date(self):
         """
@@ -371,16 +379,18 @@ class TestApplyDataRetentionPolicy(TestBase):
 
         with travel("2001-02-01 01:00:00"):
             bookings_factories.create_processed_payment(account=account, amount=100)
-            assert account not in BookingAccount.objects.not_in_use()  # due to non zero balance
+            assert account not in BookingAccount.objects.not_in_use(timezone.now())  # due to non zero balance
             bookings_factories.create_processed_payment(account=account, amount=-100)
-            assert account in BookingAccount.objects.not_in_use()  # due to zero balance
+            assert account in BookingAccount.objects.not_in_use(timezone.now())  # due to zero balance
 
             # Although it is 'not_in_use', it is not yet considered as 'older_than(2001-02-01)'
             # because of payment
-            assert account not in BookingAccount.objects.not_in_use().older_than(make_datetime(2001, 2, 1))
+            assert account not in BookingAccount.objects.not_in_use(timezone.now()).older_than(
+                make_datetime(2001, 2, 1)
+            )
 
             # It is older than 2001-02-02
-            assert account in BookingAccount.objects.not_in_use().older_than(make_datetime(2001, 2, 2))
+            assert account in BookingAccount.objects.not_in_use(timezone.now()).older_than(make_datetime(2001, 2, 2))
 
     def test_BookingAccount_older_than_respects_last_booking_camp_date(self):
         """
@@ -393,13 +403,15 @@ class TestApplyDataRetentionPolicy(TestBase):
 
         after_camp = booking.camp.end_date + timedelta(days=10)
         with travel(after_camp):
-            assert account in BookingAccount.objects.not_in_use()  # due to zero balance, and being after camp
+            assert account in BookingAccount.objects.not_in_use(
+                timezone.now()
+            )  # due to zero balance, and being after camp
 
             # But it is not older than end date of camp
-            assert account not in BookingAccount.objects.not_in_use().older_than(
+            assert account not in BookingAccount.objects.not_in_use(timezone.now()).older_than(
                 date_to_datetime(booking.camp.end_date)
             )
-            assert account in BookingAccount.objects.not_in_use().older_than(
+            assert account in BookingAccount.objects.not_in_use(timezone.now()).older_than(
                 date_to_datetime(booking.camp.end_date) + timedelta(days=1)
             )
 
@@ -427,7 +439,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=PayPalIPN,
             delete_row=False,
-            keep=timedelta(days=365),
+            keep=timedelta(days=365),  # Less than KEEP_FINANCIAL_RECORDS_FOR
             fields=[
                 "payer_business_name",
             ],
@@ -438,10 +450,42 @@ class TestApplyDataRetentionPolicy(TestBase):
             apply_partial_policy(policy)
             ipn.refresh_from_db()
             assert ipn.payer_business_name == name
-        with travel("2002-01-01 01:00:00"):
+        with travel("2002-01-02 01:00:00"):
+            # because the record is still in use, we don't delete
+
+            # Lower level check
+            assert not NOT_IN_USE_METHODS[PayPalIPN](timezone.now()).filter(id=ipn.id).exists()
+
+            apply_partial_policy(policy)
+            ipn.refresh_from_db()
+            assert ipn.payer_business_name == "Peter"
+
+        with travel("2004-01-02 01:00:00"):
+            # Now we've reached KEEP_FINANCIAL_RECORDS_FOR limit
             apply_partial_policy(policy)
             ipn.refresh_from_db()
             assert ipn.payer_business_name == "[deleted]"
+
+    def test_keep_forever(self):
+        policy = make_policy(
+            model=Booking,
+            delete_row=False,
+            keep=Forever,
+            fields=[
+                "first_name",
+            ],
+        )
+        with travel("2001-01-01"):
+            booking = bookings_factories.create_booking(first_name="Mary")
+        with travel("2101-01-01"):
+            with self.assertNumQueries(2) as queries:
+                apply_partial_policy(policy)
+
+            booking.refresh_from_db()
+            assert booking.first_name == "Mary"
+
+            # No actual queries done, just the @atomic decorator:
+            assert [q["sql"].split()[0] for q in queries.captured_queries] == ["SAVEPOINT", "RELEASE"]
 
     def _assert_instance_deleted_after(self, *, instance: Model, start: datetime, policy: Policy, days: int):
         model = instance.__class__
@@ -452,3 +496,11 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel(start + timedelta(days=days) + timedelta(seconds=10)):
             apply_partial_policy(policy)
             assert model.objects.filter(id=instance.id).count() == 0
+
+
+# TODO
+# tests for
+#  Application.objects.not_in_use()
+#  User.objects.not_in_use()
+#  SupportingInformation.objects.not_in_use
+#  SupportingInformationDocument.objects.not_in_use

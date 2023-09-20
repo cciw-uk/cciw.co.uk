@@ -90,7 +90,7 @@ def load_data_retention_policy(available_erasure_methods: Mapping[str, ErasureMe
         try:
             group_name = yaml_group.pop("group")
         except KeyError:
-            raise ValueError('Every group should have a named defined in "group" key')
+            raise ValueError('Every group should have a name defined in "group" key')
         groups.append(
             Group(
                 name=group_name,

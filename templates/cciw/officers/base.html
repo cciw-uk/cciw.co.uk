@@ -47,6 +47,6 @@
     document.body.addEventListener('jsCloseModal', function(evt) {
       $('#modal-dialog-container > dialog')[0].close();
     });
-
+    document.body.setAttribute('hx-headers', '{"X-CSRFToken": "{{ csrf_token }}"}');
   </script>
 {% endblock %}
