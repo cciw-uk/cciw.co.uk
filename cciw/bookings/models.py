@@ -1790,6 +1790,7 @@ class PaymentManager(models.Manager):
                 "source",
                 "source__manual_payment",
                 "source__refund_payment",
+                "source__write_off_debt",
                 "source__account_transfer_payment",
                 "source__ipn_payment",
             )
@@ -1930,6 +1931,11 @@ PaymentModel: TypeAlias = ManualPayment | RefundPayment | WriteOffDebt | Account
 # Payment. The real 'source' is the instance pointed to by one of the FKs it
 # contains.
 class PaymentSource(models.Model):
+    # For every new FK added, we need to update:
+    # - payment_type
+    # - PaymentManager.get_queryset() select_related() call
+    # - PaymentModel alias
+
     manual_payment = models.OneToOneField(ManualPayment, null=True, blank=True, on_delete=models.CASCADE)
     refund_payment = models.OneToOneField(RefundPayment, null=True, blank=True, on_delete=models.CASCADE)
     write_off_debt = models.OneToOneField(WriteOffDebt, null=True, blank=True, on_delete=models.CASCADE)

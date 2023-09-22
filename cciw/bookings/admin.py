@@ -82,7 +82,16 @@ class ReadOnlyInline:
 # These inlines are used to display some info on BookingAccount admin
 class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
     model = Payment
-    fields = ["amount", "payment_type", "created_at"]
+
+    def link(self, payment: Payment) -> str:
+        source = payment.source.model_source
+        return format_html(
+            '<a href="{0}" target="_blank">{1}</a>',
+            reverse(f"admin:{source._meta.app_label}_{source._meta.model_name}_change", args=(source.pk,)),
+            f"{source._meta.app_label}.{source.__class__.__name__}:{source.pk}",
+        )
+
+    fields = ["amount", "payment_type", "created_at", "link"]
     readonly_fields = fields
 
 
