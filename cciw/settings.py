@@ -139,6 +139,7 @@ INSTALLED_APPS = [
     "cciw.bookings",
     "cciw.mail",
     "cciw.contact_us",
+    "cciw.data_retention",
     # 3rd party
     "django.contrib.messages",
     "paypal.standard.ipn",

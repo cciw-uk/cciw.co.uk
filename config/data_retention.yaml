@@ -520,6 +520,8 @@
       columns: all
     - name: officers.DBSActionLog
       columns: all
+    - name: data_retention.ErasureExecutionLog
+      columns: all
     - name: ipn.PayPalIPN
       columns:
       # Column names here are often confusing, this is due

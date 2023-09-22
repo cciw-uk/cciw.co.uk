@@ -89,7 +89,7 @@ class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
         return format_html(
             '<a href="{0}" target="_blank">{1}</a>',
             reverse(f"admin:{source._meta.app_label}_{source._meta.model_name}_change", args=(source.pk,)),
-            f"{source._meta.app_label}.{source.__class__.__name__}:{source.pk}",
+            f"{source._meta.label}:{source.pk}",
         )
 
     fields = ["amount", "payment_type", "created_at", "link"]

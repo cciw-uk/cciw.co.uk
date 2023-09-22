@@ -1,0 +1,21 @@
+{% extends "cciw/officers/base.html" %}
+{% load static %}
+{% load compress %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "admin/css/changelists.css" %}">
+  <link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+{% endblock %}
+
+{% block bodyclass%}change-list{% endblock %}
+
+{% block content %}
+
+  <section id="content-main">
+    <p>The erasure plan has been executed.</p>
+
+    <p><a href="{% url 'admin:data_retention_erasureexecutionlog_change' object_id=erasure_log.id %}">View the log</a></p>
+
+  </section>
+{% endblock %}

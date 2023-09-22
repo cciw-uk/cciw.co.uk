@@ -55,6 +55,13 @@ class SearchResult(Generic[M]):
         admin_change_url = reverse(url_name, args=[self.pk])
         return format_html('<a href="{0}" target="_new">{1}</a>', admin_change_url, self.result_id)
 
+    def as_json(self):
+        return {
+            "type": "SearchResult",
+            "model": self.model_name,
+            "pk": self.pk,
+        }
+
 
 def create_filter(field: str, query_term: str):
     # TODO support multiple email addresses
@@ -141,7 +148,7 @@ def data_erasure_request_search(query_term: str) -> list[SearchResult]:
 
 
 @dataclass(kw_only=True)
-class ErasurePlan:
+class ErasurePlanItem:
     result: SearchResult
 
     # The schema allows for multiple commands,
@@ -154,8 +161,8 @@ class ErasurePlan:
         return any(command.is_empty for command in self.commands)
 
     def execute(self) -> None:
-        # TODO
-        pass
+        for command in self.commands:
+            command.execute()
 
     execute.alters_data = True  # Stop it being used in the template
 
@@ -175,17 +182,41 @@ class ErasurePlan:
     def admin_link(self):
         return self.result.admin_link
 
+    def as_json(self):
+        return {
+            "type": "ErasurePlanItem",
+            "result": self.result.as_json(),
+            "commands": [command.as_json() for command in self.commands],
+        }
 
-def data_erasure_request_create_plans(results: list[SearchResult]) -> list[ErasurePlan]:
+
+@dataclass(kw_only=True)
+class ErasurePlan:
+    items: list[ErasurePlanItem]
+
+    def execute(self) -> None:
+        for item in self.items:
+            item.execute()
+
+    execute.alters_data = True  # Stop it being used in the template
+
+    def as_json(self):
+        return {
+            "type": "ErasurePlan",
+            "items": [item.as_json() for item in self.items],
+        }
+
+
+def data_erasure_request_create_plan(results: list[SearchResult]) -> ErasurePlan:
     policy = load_actual_data_retention_policy()
     # We could probably pull more common work out of the loop, but this code is
     # going to be used very rarely, on very few records.
     today = timezone.now()
 
-    return [build_erasure_plan(result, policy, today) for result in results]
+    return ErasurePlan(items=[build_erasure_plan_item(result, policy, today) for result in results])
 
 
-def build_erasure_plan(result: SearchResult, policy: Policy, now: datetime) -> ErasurePlan:
+def build_erasure_plan_item(result: SearchResult, policy: Policy, now: datetime) -> ErasurePlanItem:
     commands = []
     for group in policy.groups:
         if not group.rules.erasable_on_request:
@@ -203,4 +234,4 @@ def build_erasure_plan(result: SearchResult, policy: Policy, now: datetime) -> E
             )
             commands.append(command)
 
-    return ErasurePlan(result=result, commands=commands)
+    return ErasurePlanItem(result=result, commands=commands)

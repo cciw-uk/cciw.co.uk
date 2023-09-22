@@ -60,7 +60,7 @@ def _check_exhaustiveness(policy: Policy) -> list[Error]:
         msg_parts = ["Missing models/fields:"]
         for model, missing_for_model in missing:
             # Mimic the format of data_retention.yaml for easy copy/paste
-            msg_parts.append(f"    - name: {model._meta.app_label}.{model.__name__}")
+            msg_parts.append(f"    - name: {model._meta.label}")
             msg_parts.append("      columns:")
             for field in missing_for_model:
                 msg_parts.append(f"      - {field.name}")
@@ -79,7 +79,7 @@ def _check_exhaustiveness(policy: Policy) -> list[Error]:
         if model.__doc__.startswith(f"{model.__name__}("):
             issues.append(
                 Error(
-                    f"{model._meta.app_label} doesn't have a docstring, which is needed for good erasure report messages",
+                    f"{model._meta.label} doesn't have a docstring, which is needed for good erasure report messages",
                     obj=model,
                     id="dataretention.E006",
                 )

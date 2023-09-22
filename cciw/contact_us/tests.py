@@ -14,10 +14,10 @@ from cciw.utils.tests.webtest import WebTestBase
 from .models import ContactType, Message, SpamStatus
 
 
-def create_message(message: str = Auto, subject: ContactType = ContactType.WEBSITE) -> Message:
+def create_message(message: str = Auto, subject: ContactType = ContactType.WEBSITE, email: str = Auto) -> Message:
     return Message.objects.create(
         subject=subject,
-        email="someemail@example.com",
+        email=email or "someemail@example.com",
         name="Some Person",
         message="This is an important message please read it" if message is Auto else message,
     )

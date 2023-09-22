@@ -16,13 +16,13 @@
 
     <p>The following content can be reported back to the data subject for confirmation.</p>
 
-    {% if empty_plans %}
+    {% if empty_items %}
       <p>You should first investigate the following items that cannot be erased,
         to see if there is a reason that can be resolved or needs to be addressed first.</p>
 
       <ul>
-        {% for plan in empty_plans %}
-          <li>{{ plan.admin_link }}</li>
+        {% for item in empty_items %}
+          <li>{{ item.admin_link }}</li>
         {% endfor %}
       </ul>
 
@@ -42,46 +42,53 @@
       </p>
 
       <p>The following records were found for erasure.
-        {% if empty_plans %}
+        {% if empty_items %}
           In some cases below, records cannot be erased. This is normally
           due to CCiW needing the records for legitimate business purposes.
         {% endif %}
       </p>
 
-    </p>
 
-    {% for plan in erasure_plans %}
-      <h2>{{ plan.result_id }}</h2>
+      {% for item in erasure_plan.items %}
+        <h2>{{ item.result_id }}</h2>
 
 
-      {% for command in plan.commands %}
-        <ul>
-          <li><b>Record type:</b> {{ plan.result_type_description }}</li>
-          <li><b>Erasure policy:</b> <a href="{{ command.group.web_url }}" target="_new">{{ command.group.name }}</a></li>
-          <li><b>Action summary:</b> {{ command.summary }}</li>
-          <li>
-            <div>
-              <p>
-                <b>Action details:</b>
-              </p>
-              <p>
-                {{ command.details|linebreaksbr }}
-              </p>
-            </div>
-          </li>
-        </ul>
+        {% for command in item.commands %}
+          <ul>
+            <li><b>Record type:</b> {{ item.result_type_description }}</li>
+            <li><b>Erasure policy:</b> <a href="{{ command.group.web_url }}" target="_new">{{ command.group.name }}</a></li>
+            <li><b>Action summary:</b> {{ command.summary }}</li>
+            <li>
+              <div>
+                <p>
+                  <b>Action details:</b>
+                </p>
+                <p>
+                  {{ command.details|linebreaksbr }}
+                </p>
+              </div>
+            </li>
+          </ul>
+        {% endfor %}
       {% endfor %}
-    {% endfor %}
 
-  </div>
+    </div>
+
+    <br>
+    <h2>Execute</h2>
+
+    <p>Once confirmation is received, the erasure plan can be executed. This cannot be undone.</p>
+
+    <form method="post" action="{% url 'cciw-officers-data_erasure_request_execute' %}">
+      {% csrf_token %}
+      <input type="hidden" name="search_query" value="{{ search_query }}">
+      {% for result_id in selected_result_ids %}
+        <input type="hidden" name="selected" value="{{ result_id }}">
+      {% endfor %}
+      <p>
+        <button type="submit" name="execute">Execute</button>
+      </p>
+    </form>
   </section>
-
-  <form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="search_query" value="{{ search_query }}">
-    {% for result_id in selected_result_ids %}
-      <input type="hidden" name="selected" value="{{ result_id }}">
-    {% endfor %}
-  </form>
 
 {% endblock %}

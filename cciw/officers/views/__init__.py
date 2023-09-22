@@ -68,6 +68,6 @@ from .leaders import (
 )
 from .menus import index, leaders_index
 from .referees import create_reference, create_reference_thanks
-from .webmaster import data_erasure_request_plan, data_erasure_request_start
+from .webmaster import data_erasure_request_execute, data_erasure_request_plan, data_erasure_request_start
 
 cciw_password_reset = PasswordResetView.as_view(form_class=CciwPasswordResetForm)

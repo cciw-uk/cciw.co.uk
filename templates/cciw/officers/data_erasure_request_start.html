@@ -29,7 +29,7 @@
 
         {% if results is not None %}
           {% if results %}
-            <form id="changelist-form" method="get" action="{% url 'cciw-officers-data_erasure_request_check' %}">
+            <form id="changelist-form" method="get" action="{% url 'cciw-officers-data_erasure_request_plan' %}">
               <input type="hidden" name="search_query" value="{{ search_query }}">
               <div class="results">
                 <table>

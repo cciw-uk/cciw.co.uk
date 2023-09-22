@@ -80,11 +80,11 @@ def apply_data_retention_single_model(*, now: datetime, group: Group, model_deta
         group=group,
         model_detail=model_detail,
         records=records,
-    ).apply()
+    ).execute()
 
 
 class EraseCommand(Protocol):
-    def apply(self) -> None:
+    def execute(self) -> None:
         ...
 
     # The following are used for manual erasure requests
@@ -102,6 +102,9 @@ class EraseCommand(Protocol):
     def details(self) -> str:
         ...
 
+    def as_json(self) -> dict:
+        ...
+
 
 RECORD_IN_USE_MESSAGE = "Record could not be erased. This is normally because it is in use for business purposes. "
 
@@ -111,8 +114,10 @@ class DeleteCommand:
         self.group: Group = group
         self.records = records
 
-    def apply(self) -> None:
+    def execute(self) -> None:
         self.records.delete()
+
+    execute.alters_data = True
 
     @property
     def is_empty(self) -> bool:
@@ -132,6 +137,19 @@ class DeleteCommand:
     def record_count(self) -> int:
         return self.records.count()
 
+    def as_json(self):
+        return {
+            "type": "DeleteCommand",
+            "group": {"name": self.group.name},
+            "records": [
+                {
+                    "model": record._meta.label,
+                    "pk": record.pk,
+                }
+                for record in self.records
+            ],
+        }
+
 
 class UpdateCommand:
     def __init__(self, *, group: Group, records: QuerySet, update_dict: dict):
@@ -139,7 +157,7 @@ class UpdateCommand:
         self.records = records
         self.update_dict = update_dict
 
-    def apply(self):
+    def execute(self):
         self.records.update(**self.update_dict)
 
     @property
@@ -161,6 +179,22 @@ class UpdateCommand:
     @cached_property
     def record_count(self) -> int:
         return self.records.count()
+
+    def as_json(self):
+        return {
+            "type": "UpdateCommand",
+            "group": {"name": self.group.name},
+            "records": [
+                {
+                    "model": record._meta.label,
+                    "pk": record.pk,
+                }
+                for record in self.records
+            ],
+            "update_dict": {
+                "keys": list(self.update_dict.keys()),
+            },
+        }
 
 
 def get_not_in_use_records(now: datetime, model: type):

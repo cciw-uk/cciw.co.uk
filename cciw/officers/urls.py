@@ -214,6 +214,11 @@ urlpatterns = [
     path(
         "data-erasure-request-plan/",
         views.data_erasure_request_plan,
-        name="cciw-officers-data_erasure_request_check",
+        name="cciw-officers-data_erasure_request_plan",
+    ),
+    path(
+        "data-erasure-request-execute/",
+        views.data_erasure_request_execute,
+        name="cciw-officers-data_erasure_request_execute",
     ),
 ]
