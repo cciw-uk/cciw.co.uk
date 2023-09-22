@@ -1931,10 +1931,11 @@ PaymentModel: TypeAlias = ManualPayment | RefundPayment | WriteOffDebt | Account
 # Payment. The real 'source' is the instance pointed to by one of the FKs it
 # contains.
 class PaymentSource(models.Model):
-    # For every new FK added, we need to update:
-    # - payment_type
-    # - PaymentManager.get_queryset() select_related() call
-    # - PaymentModel alias
+    # For every different type of payment added with FK below, we need to update:
+    # - def payment_type() below
+    # - MODEL_MAP below
+    # - PaymentManager.get_queryset() above, select_related() call
+    # - PaymentModel alias above
 
     manual_payment = models.OneToOneField(ManualPayment, null=True, blank=True, on_delete=models.CASCADE)
     refund_payment = models.OneToOneField(RefundPayment, null=True, blank=True, on_delete=models.CASCADE)
@@ -1948,7 +1949,6 @@ class PaymentSource(models.Model):
 
     MODEL_MAP = {
         # Map of model class to FK attribute (above) for each payment source
-        # Also add to `payment_type` when adding to this
         ManualPayment: "manual_payment",
         RefundPayment: "refund_payment",
         WriteOffDebt: "write_off_debt",
