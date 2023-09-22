@@ -28,6 +28,7 @@ def classify_with_bogofilter(modeladmin, request, queryset: QuerySet[Message]):
     messages.info(request, f"{len(queryset)} messages classified using bogofilter")
 
 
+@admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("booking_account")
@@ -62,6 +63,3 @@ class MessageAdmin(admin.ModelAdmin):
     autocomplete_fields = ["booking_account"]
     list_filter = ["subject", "spam_classification_manual", "spam_classification_bogofilter"]
     actions = [mark_spam, mark_ham, classify_with_bogofilter]
-
-
-admin.site.register(Message, MessageAdmin)

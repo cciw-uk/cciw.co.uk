@@ -30,6 +30,7 @@ from .models import (
 FIRST_BOOKING_YEAR = 2012
 
 
+@admin.register(Price)
 class PriceAdmin(admin.ModelAdmin):
     list_display = ["price_type", "year", "price"]
     ordering = ["-year", "price_type"]
@@ -178,6 +179,7 @@ class FinalBalanceFilter(admin.SimpleListFilter):
         return queryset
 
 
+@admin.register(BookingAccount)
 class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "email", "address_post_code", "phone_number"]
     list_filter = [LoggedInFilter, BookingsYearFilter, FinalBalanceFilter, "subscribe_to_newsletter"]
@@ -333,6 +335,7 @@ def make_change_state_action(state, display_name):
     return change_state
 
 
+@admin.register(SupportingInformation)
 class SupportingInformationAdmin(DocumentRelatedModelAdminMixin, admin.ModelAdmin):
     @admin.display(ordering="document__filename")
     def document(supporting_information):
@@ -363,6 +366,7 @@ class SupportingInformationAdmin(DocumentRelatedModelAdminMixin, admin.ModelAdmi
         return super().get_queryset(*args, **kwargs).defer("document__content")
 
 
+@admin.register(SupportingInformationDocument)
 class SupportingInformationDocumentAdmin(DocumentAdmin):
     def booking(document):
         if hasattr(document, "supporting_information"):
@@ -427,6 +431,7 @@ class SupportingInformationInline(DocumentRelatedModelAdminMixin, admin.StackedI
         )
 
 
+@admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     def camp(booking):
         return str(booking.camp.url_id)
@@ -616,14 +621,17 @@ class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):
             return []
 
 
+@admin.register(ManualPayment)
 class ManualPaymentAdmin(ManualPaymentAdminBase):
     pass
 
 
+@admin.register(RefundPayment)
 class RefundPaymentAdmin(ManualPaymentAdminBase):
     pass
 
 
+@admin.register(WriteOffDebt)
 class WriteOffDebtAdmin(admin.ModelAdmin):
     list_display = ["id", "account", "amount", "created_at"]
     date_hierarchy = "created_at"
@@ -638,6 +646,7 @@ class WriteOffDebtAdmin(admin.ModelAdmin):
             return []
 
 
+@admin.register(AccountTransferPayment)
 class AccountTransferPaymentAdmin(admin.ModelAdmin):
     list_display = ["id", "from_account", "to_account", "amount", "created_at"]
     date_hierarchy = "created_at"
@@ -652,19 +661,10 @@ class AccountTransferPaymentAdmin(admin.ModelAdmin):
             return []
 
 
+@admin.register(CustomAgreement)
 class CustomAgreementAdmin(admin.ModelAdmin):
     list_display = ["name", "year", "active", "sort_order"]
     fieldsets = [(None, {"fields": ["name", "year", "text_html", "active", "sort_order"]})]
 
 
-admin.site.register(Price, PriceAdmin)
-admin.site.register(BookingAccount, BookingAccountAdmin)
-admin.site.register(Booking, BookingAdmin)
-admin.site.register(ManualPayment, ManualPaymentAdmin)
-admin.site.register(RefundPayment, RefundPaymentAdmin)
-admin.site.register(WriteOffDebt, WriteOffDebtAdmin)
-admin.site.register(AccountTransferPayment, AccountTransferPaymentAdmin)
-admin.site.register(CustomAgreement, CustomAgreementAdmin)
 admin.site.register(SupportingInformationType)
-admin.site.register(SupportingInformation, SupportingInformationAdmin)
-admin.site.register(SupportingInformationDocument, SupportingInformationDocumentAdmin)

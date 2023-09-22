@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group
 from .models import Role, User
 
 
+@admin.register(User)
 class MyUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
@@ -32,6 +33,7 @@ class MyUserAdmin(UserAdmin):
         return ", ".join(role.name for role in obj.roles.all())
 
 
+@admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     ordering = ["name"]
@@ -39,6 +41,4 @@ class RoleAdmin(admin.ModelAdmin):
     filter_horizontal = ["members", "email_recipients"]
 
 
-admin.site.register(User, MyUserAdmin)
 admin.site.unregister(Group)
-admin.site.register(Role, RoleAdmin)

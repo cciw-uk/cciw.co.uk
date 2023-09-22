@@ -31,16 +31,19 @@ admin.site.index = rename_app_list(admin.site.index)
 admin.site.app_index = rename_app_list(admin.site.app_index)
 
 
+@admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):
     fieldsets = ((None, {"fields": ("short_name", "long_name", "info")}),)
 
 
+@admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
     filter_horizontal = ("users",)
     search_fields = ["name"]
     list_display = ["name", "info"]
 
 
+@admin.register(CampName)
 class CampNameAdmin(admin.ModelAdmin):
     def color_swab(camp_name):
         return format_html(
@@ -53,6 +56,7 @@ class CampNameAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ["name"]}
 
 
+@admin.register(Camp)
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
         (
@@ -153,9 +157,3 @@ class CampAdmin(admin.ModelAdmin):
             if request.user.can_view_camp(obj):
                 return True
         return super().has_view_permission(request, obj=obj)
-
-
-admin.site.register(Site, SiteAdmin)
-admin.site.register(Person, PersonAdmin)
-admin.site.register(CampName, CampNameAdmin)
-admin.site.register(Camp, CampAdmin)

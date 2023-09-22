@@ -171,14 +171,17 @@ class CampAdminPermissionMixin:
         return super().has_change_permission(request, obj)
 
 
+@admin.register(Application)
 class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     save_as = False
 
+    @admin.display(
+        description="username",
+        ordering="officer__username",
+    )
     def officer_username(self, obj):
         return obj.officer.username
 
-    officer_username.admin_order_field = "officer__username"
-    officer_username.short_description = "username"
     list_display = ["full_name", "officer_username", "address_email", "finished", "date_saved"]
     list_filter = ["finished", "date_saved"]
     ordering = ["full_name"]
@@ -449,6 +452,7 @@ have to fill in another DBS form.</p> """,
             email.send_application_emails(application, notice_callback=partial(messages.info, request))
 
 
+@admin.register(Invitation)
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ["officer", "camp", "role", "date_added"]
     list_filter = ["camp"]
@@ -464,6 +468,7 @@ class InvitationAdmin(admin.ModelAdmin):
         )
 
 
+@admin.register(Reference)
 class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     save_as = False
     list_display = ["referee_name", "applicant_name", "date_created"]
@@ -515,6 +520,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             return super().response_change(request, obj)
 
 
+@admin.register(DBSCheck)
 class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
     search_fields = ["officer__first_name", "officer__last_name", "dbs_number"]
     list_display = ["first_name", "last_name", "dbs_number", "completed", "requested_by", "registered_with_dbs_update"]
@@ -524,17 +530,16 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
     date_hierarchy = "completed"
     autocomplete_fields = ["officer"]
 
+    @admin.display(ordering="officer__first_name")
     def first_name(self, obj):
         return obj.officer.first_name
 
-    first_name.admin_order_field = "officer__first_name"
-
+    @admin.display(ordering="officer__last_name")
     def last_name(self, obj):
         return obj.officer.last_name
 
-    last_name.admin_order_field = "officer__last_name"
 
-
+@admin.register(DBSActionLog)
 class DBSActionLogAdmin(admin.ModelAdmin):
     search_fields = ("officer__first_name", "officer__last_name")
     list_display = ["action_type", "first_name", "last_name", "created_at", "user"]
@@ -556,6 +561,7 @@ class DBSActionLogAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related("officer", "user")
 
 
+@admin.register(ReferenceAction)
 class ReferenceActionAdmin(admin.ModelAdmin):
     list_display = [
         "referee_name",
@@ -572,11 +578,5 @@ class ReferenceActionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related("referee__application__officer", "user")
 
 
-admin.site.register(Application, ApplicationAdmin)
-admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(Reference, ReferenceAdmin)
-admin.site.register(DBSCheck, DBSCheckAdmin)
-admin.site.register(DBSActionLog, DBSActionLogAdmin)
 admin.site.register(QualificationType)
 admin.site.register(CampRole)
-admin.site.register(ReferenceAction, ReferenceActionAdmin)
