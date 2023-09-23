@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from django.conf import settings
 from django.utils import timezone
 
 from cciw.accounts.models import (
@@ -142,6 +143,10 @@ def create_safeguarding_coordinator() -> User:
     )
 
 
+def create_webmaster() -> User:
+    return create_officer(is_superuser=True, email=settings.WEBMASTER_EMAILS[0])
+
+
 def create_application(
     officer: User = Auto,
     *,
@@ -179,7 +184,7 @@ def create_application(
         officer=officer,
         address_country="UK",
         address_county="Yorkshire",
-        address_email="hey@boo.com",
+        address_email=officer.email,
         address_firstline="654 Stupid Way" if address_firstline is Auto else address_firstline,
         address_mobile="",
         address_postcode="XY9 8WN",
