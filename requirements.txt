@@ -425,7 +425,7 @@ webtest==3.0.0
     #   django-webtest
 werkzeug==2.2.2
     # via -r requirements-dev.in
-wheel==0.40.0
+wheel==0.41.2
     # via pip-tools
 wiki==0.10
     # via -r requirements.in
