@@ -120,6 +120,9 @@ SEARCH_QUERIES = [
             "name",
         ),
     ),
+    # TODO SupportingInformation (doesn't make a difference as we have
+    # to keep it for 3 years, and we delete after 3 years automatically)
+    # TODO mechanism for ensuring this is complete.
 ]
 
 SEARCH_QUERIES_MODELS = [m for m, f in SEARCH_QUERIES]
