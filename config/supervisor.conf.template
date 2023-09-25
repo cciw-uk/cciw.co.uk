@@ -37,6 +37,7 @@ priority=990
 
 
 [program:%(PROJECT_NAME)s_runmailer]
+environment=HOME="/home/%(PROJECT_USER)s"
 command=%(VENV_ROOT)s/bin/python %(SRC_ROOT)s/manage.py runmailer_pg
 stdout_logfile = /home/%(PROJECT_USER)s/logs/%(PROJECT_NAME)s_runmailer.stdout
 directory=/home/%(PROJECT_USER)s
