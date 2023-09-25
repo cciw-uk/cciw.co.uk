@@ -162,7 +162,7 @@ def test_erase_mailer_Message(db):
         keep=timedelta(days=365),
     )
 
-    queued_mail.send_mail("Subject", "message", "from@example.com", ["to@example.com"])
+    queued_mail.send_mail("[CCIW] Subject", "message", "from@example.com", ["to@example.com"])
     start = timezone.now()
     message = mailer_models.Message.objects.get()
     _assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
@@ -175,7 +175,7 @@ def test_erase_mailer_MessageLog(db):
         keep=timedelta(days=365),
     )
 
-    queued_mail.send_mail("Subject", "message", "from@example.com", ["to@example.com"])
+    queued_mail.send_mail("[CCIW] Subject", "message", "from@example.com", ["to@example.com"])
     send_queued_mail()
     start = timezone.now()
     message_log = mailer_models.MessageLog.objects.get()

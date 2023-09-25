@@ -8,6 +8,7 @@ from unittest import mock
 
 import time_machine
 from django.conf import settings
+from django.core import mail
 from django.db.transaction import Atomic
 from django.test import TestCase
 from django.test.utils import TestContextDecorator
@@ -51,6 +52,8 @@ class TestBaseMixin(TimeTravelMixin):
         # at this point, due to how Django's test runner also sets this value:
         settings.EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
 
+        mail.queued_outbox = []
+
 
 class AtomicChecksMixin:
     def setUp(self):
@@ -69,22 +72,31 @@ class AtomicChecksMixin:
         # So, instead should use 'queued_mail' for mail, which stores something
         # on the DB and therefore participates in transactions.
 
+        # (At the same time, it's better to use non-queued mail for other
+        # things, so that the email is sent immediately, and they use gets
+        # immediate feedback if the email actually fails to send, so we don't use
+        # queued email for everything).
+
         # Currently, we only enforce this within some parts of the code base
         # (bookings), so this mixin is not a part of TestBaseMixin.
         # Ideally AtomicChecksMixin would be part of TestBaseMixin, but currently
         # it causes lots of failures generally in admin
-        from cciw.mail.tests import disable_email_sending, enable_email_sending
 
-        # So, for tests only, we monkey patch Atomic to add asserts
+        # To enforce the checks, we rely on:
+        # - using `EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"` while running tests.
+        # - monkey patching Atomic to add asserts, below
+
+        from cciw.mail.tests import disable_nonqueued_email_sending, enable_nonqueued_email_sending
+
         original_Atomic_enter = Atomic.__enter__
         original_Atomic_exit = Atomic.__exit__
 
         def replacement_Atomic_enter(self):
-            disable_email_sending()
+            disable_nonqueued_email_sending()
             original_Atomic_enter(self)
 
         def replacement_Atomic_exit(self, exc_type, exc_value, traceback):
-            enable_email_sending()
+            enable_nonqueued_email_sending()
             original_Atomic_exit(self, exc_type, exc_value, traceback)
 
         self.Atomic_enter_patcher = mock.patch("django.db.transaction.Atomic.__enter__", replacement_Atomic_enter)

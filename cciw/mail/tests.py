@@ -7,11 +7,11 @@ import mailer as queued_mail
 import mailer.engine
 import pytest
 from django.core import mail
+from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.db.transaction import atomic
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-from mailer.models import Message
 from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import Role, User
@@ -402,34 +402,29 @@ def emailify(msg):
     return msg.strip().replace("\n", "\r\n").encode("utf-8")
 
 
-_EMAIL_SENDING_DISALLOWED = []
+_NON_QUEUED_EMAIL_SENDING_DISALLOWED = []
 
 
-def disable_email_sending():
-    _EMAIL_SENDING_DISALLOWED.append(None)
+def disable_nonqueued_email_sending():
+    _NON_QUEUED_EMAIL_SENDING_DISALLOWED.append(None)
 
 
-def enable_email_sending():
-    _EMAIL_SENDING_DISALLOWED.pop(0)
+def enable_nonqueued_email_sending():
+    _NON_QUEUED_EMAIL_SENDING_DISALLOWED.pop(0)
 
 
 # Most mail is sent directly, but some is specifically put on a queue, to ensure
 # errors don't mess up payment processing. We 'send' and retrieve those here:
 def send_queued_mail() -> list[mail.EmailMessage]:
-    len_outbox_start = len(mail.outbox)
-    sent_count = Message.objects.all().count()
-    # mailer itself uses transactions for sending, triggering our AtomicChecksMixin
-    # logic and disabling email sending using TestMailBackend:
-    with override_settings(MAILER_EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"):
+    # mailer itself uses transactions for sending. Normally it runs in a
+    # separate process, but in tests we run it in process, which would trigger
+    # our AtomicChecksMixin logic. This means we can't do
+    # `MAILER_EMAIL_BACKEND=TestMailBackend`, so we use
+    # `QueuedMailTestEmailBackend`
+    with override_settings(MAILER_EMAIL_BACKEND="cciw.mail.tests.QueuedMailTestMailBackend"):
         mailer.engine.send_all()
-    len_outbox_end = len(mail.outbox)
-    assert (
-        len_outbox_start + sent_count == len_outbox_end
-    ), f"Expected {len_outbox_start} + {sent_count} == {len_outbox_end}"
-    sent = mail.outbox[len_outbox_start:]
-    mail.outbox[len_outbox_start:] = []
-    assert len(mail.outbox) == len_outbox_start
-    return sent
+
+    return mail.queued_outbox
 
 
 class EmailTransactionAssertionError(AssertionError):
@@ -440,23 +435,47 @@ class EmailSubjectAssertionError(AssertionError):
     pass
 
 
-class TestMailBackend(LocMemEmailBackend):
-    __test__ = False
-
-    def send_messages(self, messages):
-        # Transaction check
-        if len(_EMAIL_SENDING_DISALLOWED) > 0:
-            raise EmailTransactionAssertionError(
-                "Normal email should not be sent within transactions, " "use queued_mail instead"
-            )
-
+class CheckSubjectMixin:
+    def check_messages(self, messages):
         # Subject check
         for m in messages:
             if not m.subject.startswith("[CCIW]"):
                 if not _is_forwarded_message(m):
                     raise EmailSubjectAssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
 
+
+class TestMailBackend(CheckSubjectMixin, LocMemEmailBackend):
+    __test__ = False
+
+    def send_messages(self, messages):
+        # Transaction check
+        if len(_NON_QUEUED_EMAIL_SENDING_DISALLOWED) > 0:
+            raise EmailTransactionAssertionError(
+                "Normal email should not be sent within transactions, use queued_mail instead"
+            )
+        self.check_messages(messages)
+
         return super().send_messages(messages)
+
+
+class QueuedMailTestMailBackend(CheckSubjectMixin, BaseEmailBackend):
+    # Same as Django's locmem EmailBackend, but uses 'queued_outbox' instead of 'outbox',
+    # and uses CheckSubjectMixin
+    __test__ = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not hasattr(mail, "queued_outbox"):
+            mail.queued_outbox = []
+
+    def send_messages(self, messages):
+        self.check_messages(messages)
+        msg_count = 0
+        for message in messages:  # .message() triggers header validation
+            message.message()
+            mail.queued_outbox.append(message)
+            msg_count += 1
+        return msg_count
 
 
 class TestAtomicChecksMixin(AtomicChecksMixin, TestBase):
