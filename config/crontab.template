@@ -2,8 +2,6 @@ PYTHON=%(VENV_ROOT)s/bin/python
 DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 
-*       * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE send_mail 2>> /dev/null
-5,35    * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
 0,20,40 * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> /dev/null
 0       2 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE cleanup
 0       7 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE payment_reminder_emails

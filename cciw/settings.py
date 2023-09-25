@@ -300,6 +300,12 @@ LOGGING = {
             "maxBytes": 1000000,
             "backupCount": 5,
         },
+        "mailer_runmailer": {
+            "level": "DEBUG",
+            "class": "concurrent_log_handler.ConcurrentRotatingFileHandler",
+            "filename": LOG_PATH / "runmailer_pg.log",
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django.db.backends": {
@@ -325,6 +331,14 @@ LOGGING = {
             "level": "DEBUG",
             "handlers": ["aws_debug"],
             "propagate": False,
+        },
+        "mailer.postgres": {
+            "handlers": ["mailer_runmailer"],
+            "level": "DEBUG",
+        },
+        "mailer.engine": {
+            "handlers": ["mailer_runmailer"],
+            "level": "DEBUG",
         },
     },
     "root": {

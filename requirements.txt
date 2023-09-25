@@ -117,7 +117,7 @@ django-js-asset==2.0.0
     # via django-mptt
 django-libsass==0.9
     # via -r requirements.in
-django-mailer==2.2
+django-mailer==2.3
     # via -r requirements.in
 django-mptt==0.13.4
     # via wiki
@@ -341,7 +341,6 @@ six==1.16.0
     # via
     #   asttokens
     #   bleach
-    #   django-mailer
     #   django-spurl
     #   furl
     #   libsass

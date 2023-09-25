@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.contact_us.bogofilter import BogofilterStatus
+from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests import factories as officer_factories
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.tests.factories import Auto
@@ -50,7 +51,8 @@ class ContactUsPage(WebTestBase):
             }
         )
         self.submit('input[type="submit"]')
-        assert len(mail.outbox) == 0
+        send_queued_mail()
+        assert len(mail.queued_outbox) == 0
         assert Message.objects.count() == 0
 
     def test_cant_send_without_valid_email(self):
@@ -66,7 +68,8 @@ class ContactUsPage(WebTestBase):
             }
         )
         self.submit('input[type="submit"]')
-        assert len(mail.outbox) == 0
+        send_queued_mail()
+        assert len(send_queued_mail()) == 0
         assert Message.objects.count() == 0
 
     def test_cant_send_without_message(self):
@@ -82,7 +85,8 @@ class ContactUsPage(WebTestBase):
             }
         )
         self.submit('input[type="submit"]')
-        assert len(mail.outbox) == 0
+        send_queued_mail()
+        assert len(mail.queued_outbox) == 0
         assert Message.objects.count() == 0
 
     def test_send(self):
@@ -98,9 +102,10 @@ class ContactUsPage(WebTestBase):
             }
         )
         self.submit('input[type="submit"]')
-        assert len(mail.outbox) == 1
+        send_queued_mail()
+        assert len(mail.queued_outbox) == 1
         assert Message.objects.count() == 1
-        assert mail.outbox[0].to == settings.EMAIL_RECIPIENTS["GENERAL_CONTACT"]
+        assert mail.queued_outbox[0].to == settings.EMAIL_RECIPIENTS["GENERAL_CONTACT"]
         message = Message.objects.get()
         assert message.bogosity is not None
         assert message.spam_classification_bogofilter != BogofilterStatus.UNCLASSIFIED
@@ -118,8 +123,9 @@ class ContactUsPage(WebTestBase):
             }
         )
         self.submit('input[type="submit"]')
-        assert len(mail.outbox) == 1
-        assert sorted(mail.outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
+        send_queued_mail()
+        assert len(mail.queued_outbox) == 1
+        assert sorted(mail.queued_outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
         assert Message.objects.count() == 1
 
     def test_spam_filter_threshold(self):
@@ -138,7 +144,8 @@ class ContactUsPage(WebTestBase):
             m.return_value = (BogofilterStatus.SPAM, 0.98)
             self.submit('input[type="submit"]')
         assert Message.objects.count() == 1
-        assert len(mail.outbox) == 0
+        send_queued_mail()
+        assert len(mail.queued_outbox) == 0
 
 
 class ViewMessagePage(SiteSetupMixin, WebTestBase):
@@ -171,6 +178,7 @@ class ViewMessagePage(SiteSetupMixin, WebTestBase):
         self.fill({"#id_subject": ContactType.BOOKINGS})
         self.submit("[name=reclassify]")
         self.assertTextPresent(f"has been reclassified as '{ContactType.BOOKINGS.label}' and resent")
-        assert len(mail.outbox) == 1
-        assert sorted(mail.outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
+        send_queued_mail()
+        assert len(mail.queued_outbox) == 1
+        assert sorted(mail.queued_outbox[0].to) == sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
         assert Message.objects.count() == 1
