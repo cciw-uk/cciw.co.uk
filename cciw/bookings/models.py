@@ -652,12 +652,12 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(camp__year__exact=year)
 
     def in_basket(self):
-        return self._ready_to_book(False)
+        return self._ready_to_book(shelved=False)
 
     def on_shelf(self):
-        return self._ready_to_book(True)
+        return self._ready_to_book(shelved=True)
 
-    def _ready_to_book(self, shelved):
+    def _ready_to_book(self, *, shelved):
         qs = self.filter(shelved=shelved)
         return qs.filter(state=BookingState.INFO_COMPLETE) | qs.filter(state=BookingState.APPROVED)
 
