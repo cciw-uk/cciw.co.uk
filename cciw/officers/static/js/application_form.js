@@ -86,7 +86,7 @@ $(document).ready(function() {
         }
     })
 
-    var NA_SYNONYMS = ["N/A", "NOT APPLICABLE"];
+    var NA_SYNONYMS = ["N/A", "NOT APPLICABLE", "NONE", "NONE."];
     addValidator('input, textarea', function($field, val) {
         if (NA_SYNONYMS.indexOf(val.trim().toUpperCase()) !== -1) {
             return "Please leave blank if there is nothing applicable for this field."

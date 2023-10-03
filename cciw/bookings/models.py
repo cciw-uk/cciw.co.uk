@@ -870,7 +870,7 @@ class Booking(models.Model):
         models.IntegerField(),
         default=list,
         blank=True,
-        help_text="Comma separated list of IDs of custom agreements " "the user has agreed to.",
+        help_text="Comma separated list of IDs of custom agreements the user has agreed to.",
     )
 
     # Price - partly from user (must fit business rules)
