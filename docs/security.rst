@@ -278,8 +278,8 @@ access being given to the wrong people, or sent to the wrong person), you should
 * record the incident in
   https://docs.google.com/document/d/1ZtxOahH7ywNTPd2kuTtScn7OUPA5mloa
 
-Data rights
-~~~~~~~~~~~
+Data rights and retention
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The GDPR gives data subjects various rights regarding their data, and the CCiW
 webmaster is usually the person responsible for providing those facilities, either
@@ -299,4 +299,11 @@ usually best to encode the decisions into tested automated functionality to
 reduce human error. This functionality may grow as necessary as more requests
 of this nature are dealt with.
 
-**TODO** Details of what we don't provide, to be agreed.
+Details on what data can be erased at the request of data subjects are found in
+the `online data retention policy
+<https://www.cciw.co.uk/data-retention-policy/>`_. This retention is applied:
+
+- automatically - see `cciw/data_retention/ <../cciw/data_retention>`_
+- manually for erasure requests - see the Google doc `CCiW data
+  erasure requests
+  <https://docs.google.com/document/d/1pZwXQ2uZCsoP8_sF3aqHSTsAIKJVxqRsKcsg6Sn1fEE/>`_
