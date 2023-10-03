@@ -37,7 +37,13 @@ class MyUserAdmin(UserAdmin):
 class RoleAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     ordering = ["name"]
-    fields = ["name", "members", "email", "email_recipients", "allow_emails_from_public"]
+
+    @admin.display(description="Member's emails")
+    def members_emails(self, obj: Role):
+        return ", ".join(member.email for member in obj.members.all())
+
+    fields = ["name", "members", "email", "email_recipients", "allow_emails_from_public", "members_emails"]
+    readonly_fields = ["members_emails"]
     filter_horizontal = ["members", "email_recipients"]
 
 
