@@ -30,6 +30,16 @@
         {% if results is not None %}
           {% if results %}
             <form id="changelist-form" method="get" action="{% url 'cciw-officers-data_erasure_request_plan' %}">
+
+              <script>
+                function toggleSelectAll(ev) {
+                  const state = document.querySelector("[name=selectall]").checked;
+                  for (checkbox of document.querySelectorAll("#changelist-form td input[type=checkbox]")) {
+                    checkbox.checked = state;
+                  }
+                }
+              </script>
+
               <input type="hidden" name="search_query" value="{{ search_query }}">
               <div class="results">
                 <table>
@@ -52,7 +62,6 @@
                 </table>
               </div>
 
-
               <div class="submit-row">
                 <input type="submit" name="plan" value="Make erasure plan »">
               </div>
@@ -72,12 +81,4 @@
 
   </div>
 
-  <script>
-    function toggleSelectAll(ev) {
-      const state = document.querySelector("[name=selectall]").checked;
-      for (checkbox of document.querySelectorAll("#changelist-form td input[type=checkbox]")) {
-        checkbox.checked = state;
-      }
-    }
-  </script>
 {% endblock %}
