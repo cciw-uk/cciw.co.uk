@@ -56,8 +56,6 @@ def data_erasure_request_plan(request: HttpRequest):
     erasure_plan = data_erasure_request_create_plan(selected_results)
     empty_items = [item for item in erasure_plan.items if item.contains_empty_commands]
 
-    # TODO POST
-
     return TemplateResponse(
         request,
         "cciw/officers/data_erasure_request_plan.html",
