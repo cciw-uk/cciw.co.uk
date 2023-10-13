@@ -32,12 +32,14 @@
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Actions</th>
+                  {% if not readonly %}
+                    <th>Actions</th>
+                  {% endif %}
                 </tr>
               </thead>
               <tbody>
                 {% for invitation in invitations %}
-                  {% include "cciw/officers/officer_list_officer_row_inc.html" with invitation=invitation mode="display" %}
+                  {% include "cciw/officers/officer_list_officer_row_inc.html" with invitation=invitation mode="display" readonly=readonly %}
                 {% empty %}
                   <tr>
                     <td colspan="4">
@@ -52,40 +54,41 @@
           </div>
         {% endblock %}
       </div>
-      <div> {# column 2 #}
-        <div class="chooseofficers">
+      {% if not readonly %}
+        <div> {# column 2 #}
+          <div class="chooseofficers">
 
-          <details {% if open_chooseofficers %}open{% endif %}>
-            <summary>
-              Available officers
-            </summary>
-            {% block chooseofficers__form %}
-              <form
-                id="id_chooseofficer__form"
-                method="POST"
-                action="."
-                hx-post="."
-                hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
-                hx-swap-oob="true"
-              >
-                {% csrf_token %}
-                <div
-                  class="chooseofficers__tablewrapper"
+            <details {% if open_chooseofficers %}open{% endif %}>
+              <summary>
+                Available officers
+              </summary>
+              {% block chooseofficers__form %}
+                <form
+                  id="id_chooseofficer__form"
+                  method="POST"
+                  action="."
+                  hx-post="."
+                  hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
+                  hx-swap-oob="true"
                 >
-                  <table>
-                    <thead>
-                      <tr>
-                        <th colspan="4">
-                          <input
-                            name="search"
-                            type="search"
-                            placeholder="Search officers"
+                  {% csrf_token %}
+                  <div
+                    class="chooseofficers__tablewrapper"
+                  >
+                    <table>
+                      <thead>
+                        <tr>
+                          <th colspan="4">
+                            <input
+                              name="search"
+                              type="search"
+                              placeholder="Search officers"
 
-                            {% if created_officer %}
-                              value="{{ created_officer.full_name }}"
-                            {% elif search_query %}
-                              value="{{ search_query }}"
-                            {% endif %}
+                              {% if created_officer %}
+                                value="{{ created_officer.full_name }}"
+                              {% elif search_query %}
+                                value="{{ search_query }}"
+                              {% endif %}
                             {# fmt:off #}
                             _="
                                on keyup
@@ -103,81 +106,82 @@
 
                             "
                             {# fmt:on #}
-                          >
-                        </th>
-                      </tr>
-                      <tr>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Previous role</th>
-                      </tr>
-                    </thead>
-                    <tbody id="id-chooseofficers__tablebody">
-                      {% for candidate_officer in candidate_officers %}
-                        <tr class="chooseofficers__officer
-                                   {% if candidate_officer.is_previous %}
-                                     chooseofficers__officer--previous
-                                   {% endif %}
-                                  ">
-                          <td><input type="checkbox"
-                                     name="chooseofficer_{{ candidate_officer.id }}"
-                                     id="id_chooseofficer_{{ candidate_officer.id }}"
-                                     {% if candidate_officer.officer in selected_officers or candidate_officer.id == created_officer.id %}checked{% endif %}
-                            ></td>
-                          <td><label for="id_chooseofficer_{{ candidate_officer.id }}">{{ candidate_officer.full_name }}</label></td>
-                          <td>{{ candidate_officer.email }}</td>
-                          <td>
-                            {% if candidate_officer.previous_role %}
-                              {{ candidate_officer.previous_role.name }}
-                            {% elif candidate_officer.is_previous %}
-                              <i>Unknown</i>
-                            {% endif %}
-                          </td>
+                            >
+                          </th>
                         </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-                <div>
-                  {% if add_officer_message %}
-                    <p class="errornote">
-                      {{ add_officer_message }}
-                    </p>
-                  {% endif %}
-                  <input type="submit" name="add_previous_role" value="Add with previous role">
-                  &nbsp;
-                  <input type="submit" name="add_new_role" value="Add with new role:">
-                  <select name="new_role" id="id_chooseofficer-role">
-                    {% for role in camp_roles %}
-                      <option value="{{ role.id }}"
-                              {% if role.id == selected_role %}
-                                selected
+                        <tr>
+                          <th></th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Previous role</th>
+                        </tr>
+                      </thead>
+                      <tbody id="id-chooseofficers__tablebody">
+                        {% for candidate_officer in candidate_officers %}
+                          <tr class="chooseofficers__officer
+                                     {% if candidate_officer.is_previous %}
+                                       chooseofficers__officer--previous
+                                     {% endif %}
+                                    ">
+                            <td><input type="checkbox"
+                                       name="chooseofficer_{{ candidate_officer.id }}"
+                                       id="id_chooseofficer_{{ candidate_officer.id }}"
+                                       {% if candidate_officer.officer in selected_officers or candidate_officer.id == created_officer.id %}checked{% endif %}
+                              ></td>
+                            <td><label for="id_chooseofficer_{{ candidate_officer.id }}">{{ candidate_officer.full_name }}</label></td>
+                            <td>{{ candidate_officer.email }}</td>
+                            <td>
+                              {% if candidate_officer.previous_role %}
+                                {{ candidate_officer.previous_role.name }}
+                              {% elif candidate_officer.is_previous %}
+                                <i>Unknown</i>
                               {% endif %}
-                      >{{ role.name }}</option>
-                    {% endfor %}
-                  </select>
-                  <p>Roles are displayed when collecting references, and not used otherwise.</p>
-                </div>
-              </form>
-            {% endblock %}
-          </details>
-        </div>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div>
+                    {% if add_officer_message %}
+                      <p class="errornote">
+                        {{ add_officer_message }}
+                      </p>
+                    {% endif %}
+                    <input type="submit" name="add_previous_role" value="Add with previous role">
+                    &nbsp;
+                    <input type="submit" name="add_new_role" value="Add with new role:">
+                    <select name="new_role" id="id_chooseofficer-role">
+                      {% for role in camp_roles %}
+                        <option value="{{ role.id }}"
+                                {% if role.id == selected_role %}
+                                  selected
+                                {% endif %}
+                        >{{ role.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <p>Roles are displayed when collecting references, and not used otherwise.</p>
+                  </div>
+                </form>
+              {% endblock %}
+            </details>
+          </div>
 
-        <div class="newofficers">
-          <details>
-            <summary>
-              New officers
-            </summary>
-            <p>Got a new officer who isn't in the list above? <a href="{% url 'cciw-officers-create_officer' %}?next={{ request.get_full_path|urlencode }}">Add new officer</a></p>
-            <p>If you have a list on a computer, you can
-              <a href="mailto:webmaster@cciw.co.uk">email the webmaster</a>
-              to have them imported more quickly.
-            </p>
-          </details>
-        </div>
+          <div class="newofficers">
+            <details>
+              <summary>
+                New officers
+              </summary>
+              <p>Got a new officer who isn't in the list above? <a href="{% url 'cciw-officers-create_officer' %}?next={{ request.get_full_path|urlencode }}">Add new officer</a></p>
+              <p>If you have a list on a computer, you can
+                <a href="mailto:webmaster@cciw.co.uk">email the webmaster</a>
+                to have them imported more quickly.
+              </p>
+            </details>
+          </div>
 
-      </div>
+        </div>
+      {% endif %}
     </div>
 
     <h2>Email list</h2>

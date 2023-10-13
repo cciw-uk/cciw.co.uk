@@ -60,6 +60,7 @@ def _officer_list(
     officer_list = OfficerList(camp)
     camp_roles = CampRole.objects.all()
 
+    readonly = camp.is_past()
     try:
         # From create_officer view
         created_officer = User.objects.get(id=int(request.GET.get("created_officer_id", "")))
@@ -68,7 +69,7 @@ def _officer_list(
 
     selected_officers = selected_officers or set()
 
-    if request.method == "POST":
+    if request.method == "POST" and not readonly:
         # "Add officer" functionality
         chosen_officers = [
             officer for officer in officer_list.addable_officers if f"chooseofficer_{officer.id}" in request.POST
@@ -128,6 +129,7 @@ def _officer_list(
         "address_all": address_for_camp_officers(camp),
         "created_officer": created_officer,
         "search_query": search_query,
+        "readonly": readonly,
     }
 
     return TemplateResponse(request, "cciw/officers/officer_list.html", context)

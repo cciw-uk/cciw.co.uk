@@ -1,34 +1,36 @@
 <tr data-officer-id="{{ invitation.officer.id }}">
-  {% if mode == "display" %}
+  {% if mode == "display" or readonly %}
     <td>{{ invitation.officer.full_name }}</td>
     <td><a href="mailto:{{ invitation.officer.email }}">{{ invitation.officer.email }}</a></td>
     <td>{{ invitation.role.name }}</td>
-    <td>
-      <form
-        hx-get="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
-        hx-target="[data-officer-id='{{ invitation.officer.id }}']"
-        hx-swap="outerHTML"
-      >
-        <input type="submit" name="edit" value="Edit">
-      </form>
+    {% if not readonly %}
+      <td>
+        <form
+          hx-get="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
+          hx-target="[data-officer-id='{{ invitation.officer.id }}']"
+          hx-swap="outerHTML"
+        >
+          <input type="submit" name="edit" value="Edit">
+        </form>
 
-      <form
-        method="POST"
-        action="."
-        hx-post="."
-        hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
+        <form
+          method="POST"
+          action="."
+          hx-post="."
+          hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
         {# propagate selected 'role': #}
-        hx-include="#id_chooseofficer__form"
-      >
-        {% csrf_token %}
+          hx-include="#id_chooseofficer__form"
+        >
+          {% csrf_token %}
         {# htmx issue 1132 - use form instead of putting things on button #}
-        <input type="hidden" name="officer_id" value="{{ invitation.officer.id }}">
-        <input type="submit" name="remove" value="Remove">
-      </form>
+          <input type="hidden" name="officer_id" value="{{ invitation.officer.id }}">
+          <input type="submit" name="remove" value="Remove">
+        </form>
 
-      {% include "cciw/officers/resend_email_form_inc.html" with caption="Resend email" officer_id=invitation.officer_id %}
+        {% include "cciw/officers/resend_email_form_inc.html" with caption="Resend email" officer_id=invitation.officer_id %}
 
-    </td>
+      </td>
+    {% endif %}
   {% elif mode == "edit" %}
     <td>{{ form.first_name }} {{ form.last_name }}</td>
     <td>{{ form.email }}</td>

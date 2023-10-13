@@ -5,6 +5,7 @@ import openpyxl
 from django.conf import settings
 from django.core import mail
 from openpyxl.utils import get_column_letter
+from time_machine import travel
 
 from cciw.accounts.models import User
 from cciw.cciwmain.tests import factories as camp_factories
@@ -225,6 +226,23 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
         assert not self.is_element_present(f'[data-officer-id="{officer.id}"]')
 
         assert officer not in camp.officers.all()
+
+    def test_remove_readonly(self):
+        camp = camp_factories.create_camp(
+            leader=(leader := factories.create_officer()),
+            officers=[
+                officer := factories.create_officer(),
+            ],
+        )
+        self.officer_login(leader)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
+
+        # Tine travel at this point, so that we still have enabled interface:
+        with travel(camp.end_date + timedelta(days=1)):
+            self.click(self.remove_button_selector(officer))
+            assert self.is_element_present(f'[data-officer-id="{officer.id}"]')
+
+            assert officer in camp.officers.all()
 
     def test_resend_email(self):
         camp = camp_factories.create_camp(
