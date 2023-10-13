@@ -244,6 +244,13 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
 
             assert officer in camp.officers.all()
 
+        # Check that leaders don't have another way to remove invitations:
+        invitation = camp.invitations.get()
+        self.get_url("admin:officers_invitation_change", invitation.id)
+        self.assertTextPresent("403 Forbidden")
+        self.get_url("admin:officers_invitation_delete", invitation.id)
+        self.assertTextPresent("403 Forbidden")
+
     def test_resend_email(self):
         camp = camp_factories.create_camp(
             leader=(leader := factories.create_officer()),
