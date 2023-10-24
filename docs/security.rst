@@ -59,7 +59,7 @@ things as simple as possible. The application is very small, with a tiny amount
 of data by modern standards. This means it can be easily served by a single
 machine, so we have a single Virtual Private Server which hosts both the
 database and the web servers. If more resources are needed, vertical scaling
-(i.e. more powerful machines) will likely be a much better solution that
+(i.e. more powerful machines) will likely be a much better solution than
 horizontal scaling. This allows us to avoid the complexities of things like AWS
 services or other systems where there are many policies regarding security that
 can easily be misconfigured. It also means we can keep our database locked down
