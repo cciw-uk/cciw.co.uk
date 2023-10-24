@@ -10,8 +10,6 @@ This module provides functionality for formatting them.
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 
-from .rst import rst_to_html
-
 # Current strategy:
 #
 # - For marked up text, we support only "top level" comments i.e. comments with
@@ -59,11 +57,6 @@ class YamlBlock:
 
     def as_rst(self):
         return ".. code-block:: yaml\n\n" + "\n".join("   " + line for line in self.text.strip().split("\n")) + "\n"
-
-
-def format_literate_yaml(yaml_source: str):
-    rst = literate_yaml_to_rst(yaml_source)
-    return rst_to_html(rst)
 
 
 def literate_yaml_to_rst(yaml_source):
