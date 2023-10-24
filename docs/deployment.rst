@@ -3,7 +3,7 @@ Deployment
 
 This document describes how to deploy new versions of the code from a local
 development machine to the server. It assumes that the server provisioning in
-`<server_server.rst>`_ has already been done.
+`<server_setup.rst>`_ has already been done.
 
 To be able to deploy, you need the following:
 

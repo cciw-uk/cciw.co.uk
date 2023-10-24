@@ -4,7 +4,7 @@ CCiW project overview
 Architecture
 ------------
 
-The CCiW site is fairly standard Django site. We use:
+The CCiW site is a fairly standard Django site. We use:
 
 * nginx as main webserver
 * postgresql as database
@@ -25,7 +25,7 @@ Components
 
 The major components of the site are:
 
-1) Information about the camps that are run. This is all on publically
+1) Information about the camps that are run. This is on publicly
    accessible parts of the site.
 
 2) Booking - for campers (or their parents) to book places on camp and pay.
@@ -45,15 +45,13 @@ The major components of the site are:
    * to manage references for officers
    * to download booking information about campers booked on the camp
 
-   …and other things
-
-   It also contains utilities for officers to submit their application forms,
-   and helps for the booking secretary.
+   …and other things, such as DBS checks, pages for officers to submit their
+   application forms, helpers for the booking secretary etc etc.
 
    Where possible, the Django admin is used for some of these functions.
 
 There used to be a 'forums' section with photos, topics, members etc. and its
-own login system. This is almost entirely unused since 2007 and removed in 2015.
+own login system. This was almost entirely unused since 2007 and removed in 2015.
 Backups of the data are available.
 
 Login
