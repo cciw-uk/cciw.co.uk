@@ -188,6 +188,7 @@ $menubarUnselectedColor: #909090;
 
 :root {
     --menubar-line-height: #{$lineHeight};
+    --menubar-border-color: #6668;
 }
 
 #menubar {
@@ -272,6 +273,16 @@ $menubarUnselectedColor: #909090;
                     background-color: transparent;
                 }
             }
+
+            a, .spacer {
+                border-bottom: 1px solid var(--menubar-border-color);
+                &[aria-current="page"] {
+                    border-left: 1px solid var(--menubar-border-color);
+                    border-right: 1px solid var(--menubar-border-color);
+                    border-bottom-color: transparent;
+                }
+            }
+
         }
     }
 
