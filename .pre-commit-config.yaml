@@ -30,3 +30,4 @@ repos:
     hooks:
       - id: django-upgrade
         args: [--target-version, "4.2"]
+exclude: '.*\.min\..*'
