@@ -125,8 +125,13 @@ header {
     background-repeat: no-repeat;
     background-position: center top -10vw;
     background-size: 100% auto;
+    border-bottom: 1px solid var(--menubar-border-color);
 }
 
+
+body:not(.homepage) .headerinner {
+    background-image: linear-gradient(#fff0, #eeed);
+}
 
 #headerlogo {
     margin-left: 0px;
