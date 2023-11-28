@@ -3,13 +3,41 @@
 // TODO - lots of sorting out needed here.
 // We should probably following CUBE CSS principles https://cube.fyi/
 // which we've already started to use
+// And use CSS variables instead of Sass variables for most things
 
 // Imports
 
-@import "variables.scss";
 @import "mixins.scss";
 @import "camp_colors.scss";
 @import "utilities.scss";
+
+
+
+// Colours
+//  Primary Color:
+//  007633 22884F		(37DA7E) BACB97
+//
+// Secondary Color A: A65900
+
+$textColor: black;
+$textLighterColor: #404040;
+
+$primaryColor: #007633;
+$primaryColorLighter: #BACB97;
+
+$secondaryColor: #A65900;
+
+$pageTitleColor: $primaryColor;
+$headerColor: scale-color($pageTitleColor, $alpha: -50%);
+$contentBackgroundColor: white;
+$footerBackgroundColor: #0b2333;
+
+$smallMenubarFontScreenWidth: 800px;
+$mobileMenuWidth: 600px;
+$smallScreenWidth: 600px;
+$noColumnsScreenWidth: 400px;
+$responsiveTablesScreenWidth: 480px;
+$contentWidth: 850px;
 
 
 // Fonts
