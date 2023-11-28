@@ -120,16 +120,13 @@ button, input[type=submit] {
 // Header
 
 header {
-    background-color: $primaryColor;
-    background-image: url('/static/images/topbanner_1600x1200.jpeg');
+    background-color: #3462AA; // hand-picked to match image
+    background-image: url('/static/images/topbanner_1920x819.webp');
     background-repeat: no-repeat;
     background-position: center top -10vw;
     background-size: 100% auto;
 }
 
-.headerinner {
-    background-color: $headerColor;
-}
 
 #headerlogo {
     margin-left: 0px;
@@ -187,9 +184,7 @@ header {
 
 $menubarPaddingHeight: 3px;
 
-// menubar unselected wants to look about same as $primaryColorLighter, but due
-// to contrast from dark background in header we have to darken and destaturate it
-$menubarUnselectedColor: #90ab70;
+$menubarUnselectedColor: #909090;
 
 :root {
     --menubar-line-height: #{$lineHeight};
@@ -943,16 +938,21 @@ table.bookinglist {
         background-color: transparent;
     }
     header {
-        background-color: #738a2c; // hand-picked to match image
-        background-image: url('/static/images/topbanner_1600x1200.jpeg');
+        background-color: #3462AA; // hand-picked to match image
+        background-image: url('/static/images/topbanner_1920x819.webp');
         background-repeat: no-repeat;
         background-position: center top;
         background-size: 100% auto;
-        height: 75vw;  // 1200/1600 - fit whole of topbanner image
-        max-height: 60vh;
+        // If changing this, change #page-title padding-top as well
+        height: calc(100vw * 819 / 1920);  // fit whole of topbanner image, ideally
+        max-height: 75vh; // But don't make it take too much space vertically, we should see sone text
     }
     #pagetitle {
-        padding-top: 20vh;
+        // Center within header
+        padding-top: calc(min(
+                            75vh / 2 - 1em, /* header max-height */
+                            100vw * 819 / 1920 / 2 - 1em /* header height, halved */
+                           ));
     }
     // Shift menubar down to below photo
     // and center it.
