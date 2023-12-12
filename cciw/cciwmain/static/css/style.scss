@@ -149,7 +149,7 @@ button, input[type=submit] {
 
 header {
     background-color: #3462AA; // hand-picked to match image
-    background-image: url('/static/images/topbanner_1920x819.webp');
+    background-image: url('/static/images/topbanner_1920x774.webp');
     background-repeat: no-repeat;
     background-position: center top -10vw;
     background-size: 100% auto;
@@ -983,19 +983,19 @@ table.bookinglist {
     }
     header {
         background-color: #3462AA; // hand-picked to match image
-        background-image: url('/static/images/topbanner_1920x819.webp');
+        background-image: url('/static/images/topbanner_1920x774.webp');
         background-repeat: no-repeat;
         background-position: center top;
         background-size: 100% auto;
         // If changing this, change #page-title padding-top as well
-        height: calc(100vw * 819 / 1920);  // fit whole of topbanner image, ideally
+        height: calc(100vw * 774 / 1920);  // fit whole of topbanner image, ideally
         max-height: 75vh; // But don't make it take too much space vertically, we should see sone text
     }
     #pagetitle {
         // Center within header
         padding-top: calc(min(
                             75vh / 2 - 1em, /* header max-height */
-                            100vw * 819 / 1920 / 2 - 1em /* header height, halved */
+                            100vw * 774 / 1920 / 2 - 1em /* header height, halved */
                            ));
     }
     // Shift menubar down to below photo
