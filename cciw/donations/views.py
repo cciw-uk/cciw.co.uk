@@ -84,4 +84,4 @@ def send_donation_received_email(ipn: PayPalIPN) -> None:
         },
     )
     subject = "[CCIW] Donation received"
-    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, settings.WEBMASTER_EMAILS)
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, settings.EMAIL_RECIPIENTS["FINANCE"])

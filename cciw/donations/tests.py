@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core import mail
 
 from cciw.bookings.factories import create_ipn
@@ -29,3 +30,4 @@ def test_receive_donation(db):
     assert "unrecognised" not in msg.subject
     assert msg.subject == "[CCIW] Donation received"
     assert "A donation was received" in msg.body
+    assert msg.to == settings.EMAIL_RECIPIENTS["FINANCE"]
