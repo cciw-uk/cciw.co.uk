@@ -365,7 +365,12 @@ def deploy_checks(c):
     # run in production, nor as a test for the same reason.
     # Here we are assuming that the local DB already has migrations applied
     # and so has ContentType set up correctly.
-    c.local("./manage.py setup_auth_roles --check-only")
+    c.local("./manage.py setup_auth_roles --check-only", echo=True, pty=True)
+    c.local(
+        "./manage.py makemigrations --check accounts cciwmain sitecontent officers utils bookings mail contact_us data_retention",
+        echo=True,
+        pty=True,
+    )
 
 
 @task()
