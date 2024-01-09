@@ -15,7 +15,7 @@
       document.querySelector("#paypalform form").submit();
     </script>
   {% else %}
-    {% htmlchunk donate_intro %}
+    {% htmlchunk "donate_intro" %}
 
     <form method="POST" action=".">
       {% csrf_token %}
@@ -23,7 +23,7 @@
       <p><input type="submit" name="donate" value="Donate"></p>
     </form>
 
-    {% htmlchunk donate_outro %}
+    {% htmlchunk "donate_outro" %}
   {% endif %}
 
 {% endblock %}

@@ -2,7 +2,7 @@
 {% load standardpage %}
 {% block content %}
 
-  {% htmlchunk booking-index-top ignoremissing %}
+  {% htmlchunk "booking-index-top" ignore_missing=True %}
 
   {% if request.booking_account %}
     <h2>Your account</h2>
@@ -130,7 +130,7 @@
     <li>Postal address:<br/><br/>
 
 
-      {% htmlchunk booking_secretary_address %}
+      {% htmlchunk "booking_secretary_address" %}
     </li>
 
     <li>Email: <a href="mailto:cciwbookings@gmail.com">cciwbookings@gmail.com</a><br/><br/></li>

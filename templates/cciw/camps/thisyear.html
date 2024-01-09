@@ -2,7 +2,7 @@
 {% load standardpage %}
 {% block content %}
   {% if camps %}
-    {% htmlchunk camp_dates_intro_text %}
+    {% htmlchunk "camp_dates_intro_text" %}
     <h2>Dates</h2>
     <div>
       <table class="topheaders responsive" summary="Details of all camps running in {{ thisyear }}">
@@ -51,7 +51,7 @@
         </tbody>
       </table>
     </div>
-    {% htmlchunk camp_dates_outro_text %}
+    {% htmlchunk "camp_dates_outro_text" %}
   {% else %}
     <p>Information for camps in {{ thisyear }} is not yet available. You can
       browse our list of <a href="{% url "cciw-cciwmain-camps_index" %}">previous camps</a>

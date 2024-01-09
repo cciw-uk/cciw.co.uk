@@ -2,7 +2,7 @@
 {% load standardpage %}
 {% block content %}
 
-  {% htmlchunk contact_us_intro %}
+  {% htmlchunk "contact_us_intro" %}
 
   {% if form.errors %}
     <div class="userError">Please check your input below:</div>
@@ -13,6 +13,6 @@
 
     <p><input type="submit" name="submit" value="Send" /></p>
   </form>
-  {% htmlchunk contact_us_outro %}
+  {% htmlchunk "contact_us_outro" %}
 
 {% endblock %}
