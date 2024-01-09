@@ -39,7 +39,7 @@ class MenuLink(models.Model):
 
 
 class HtmlChunk(models.Model):
-    name = models.SlugField("name", primary_key=True, db_index=True)
+    name = models.SlugField("name", db_index=True, unique=True)
     html = models.TextField("HTML")
     menu_link = models.ForeignKey(
         MenuLink, on_delete=models.CASCADE, verbose_name="Associated URL", null=True, blank=True
@@ -66,3 +66,4 @@ class HtmlChunk(models.Model):
 
     class Meta:
         verbose_name = "HTML chunk"
+        ordering = ["name"]
