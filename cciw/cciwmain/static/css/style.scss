@@ -321,14 +321,14 @@ $menubarUnselectedColor: #909090;
 
     // Large screen - shift to right
     ul li.spacerend {
-        width: 0;
-        flex: 0 1 auto;
+        display: none;
     }
 
     // Smaller: center
     @media screen and (max-width: $mobileMenuWidth) {
         ul li {
             &.spacerend, &.spacerstart {
+                display: inherit;
                 width: auto;
                 flex: 1 1 auto;
             }

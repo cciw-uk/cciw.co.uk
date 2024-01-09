@@ -242,7 +242,7 @@ pillow==9.2.0
     # via
     #   django-simple-captcha
     #   wiki
-pip-tools==6.14.0
+pip-tools==7.3.0
     # via -r requirements.in
 pluggy==1.0.0
     # via pytest
