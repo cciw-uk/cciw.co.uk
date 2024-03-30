@@ -121,16 +121,7 @@ ALLOWED_HOSTS = [".cciw.co.uk"]
 if DEVBOX:
     ALLOWED_HOSTS.extend(["cciw.local", ".ngrok.io", ".ngrok-free.app"])
 
-INSTALLED_APPS = [
-    # 3rd party
-    "django.contrib.auth",
-    "cciw.apps.CciwAdminConfig",  # admin replacement
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.sites",
-    "django.contrib.staticfiles",
-    "django.forms",
-    # Ours
+FIRST_PARTY_APPS = [
     "cciw.accounts",
     "cciw.cciwmain.apps.CciwmainConfig",
     "cciw.sitecontent",
@@ -140,29 +131,46 @@ INSTALLED_APPS = [
     "cciw.mail",
     "cciw.contact_us",
     "cciw.data_retention",
-    # 3rd party
-    "django.contrib.messages",
-    "paypal.standard.ipn",
-    "django.contrib.humanize",
-    "mptt",
-    "sekizai",
-    "sorl.thumbnail",
-    "wiki",
-    "wiki.plugins.attachments",
-    "wiki.plugins.notifications",
-    "wiki.plugins.images",
-    "wiki.plugins.macros",
-    "django_nyt",
-    "compressor",
-    "django_countries",
-    "mailer",
-    "captcha",
-    "django_urlconfchecks",
-    "spurl",
-    "widget_tweaks",
-    # Where we need to override something added:
-    "cciw.overrides",
 ]
+
+INSTALLED_APPS = (
+    [
+        # 3rd party
+        "django.contrib.auth",
+        "cciw.apps.CciwAdminConfig",  # admin replacement
+        "django.contrib.contenttypes",
+        "django.contrib.sessions",
+        "django.contrib.sites",
+        "django.contrib.staticfiles",
+        "django.forms",
+        # Ours
+    ]
+    + FIRST_PARTY_APPS
+    + [
+        # 3rd party
+        "django.contrib.messages",
+        "paypal.standard.ipn",
+        "django.contrib.humanize",
+        "mptt",
+        "sekizai",
+        "sorl.thumbnail",
+        "wiki",
+        "wiki.plugins.attachments",
+        "wiki.plugins.notifications",
+        "wiki.plugins.images",
+        "wiki.plugins.macros",
+        "django_nyt",
+        "compressor",
+        "django_countries",
+        "mailer",
+        "captcha",
+        "django_urlconfchecks",
+        "spurl",
+        "widget_tweaks",
+        # Where we need to override something added:
+        "cciw.overrides",
+    ]
+)
 
 if DEVBOX and DEBUG:
     INSTALLED_APPS += [
