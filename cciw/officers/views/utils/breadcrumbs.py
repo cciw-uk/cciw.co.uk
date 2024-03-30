@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.template.response import TemplateResponse
 
 NamedUrl: TypeAlias = str
-BreadCrumb = tuple[NamedUrl, str]
+BreadCrumb = tuple[NamedUrl | None, str]
 
 
 def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):

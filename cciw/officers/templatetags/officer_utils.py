@@ -6,7 +6,7 @@ from cciw.officers.views.utils.breadcrumbs import BreadCrumb
 register = template.Library()
 
 
-@register.inclusion_tag(filename="cciw/officers/breadcrumbs.html", takes_context=True)
+@register.inclusion_tag(filename="cciw/officers/officers_breadcrumbs.html", takes_context=True)
 def officers_breadcrumbs(context):
     breadcrumbs: list[BreadCrumb] = list(context.get("breadcrumbs", []))
     if "title" in context and breadcrumbs:

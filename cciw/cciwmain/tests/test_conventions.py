@@ -1,0 +1,90 @@
+from pathlib import Path
+from unittest.mock import Mock
+
+from boltons import iterutils
+from pyastgrep.api import Match, search_python_files
+
+SRC_ROOT = Path(__file__).parent.parent.parent.resolve()
+
+
+def assert_expected_pyastgrep_matches(xpath_expr: str, *, expected_count: int, message: str):
+    """
+    Asserts that the pyastgrep XPath expression matches only `expected_count` times,
+    each of which must be marked with `pyastgrep_exception`
+
+    `message` is a message to be printed on failure.
+
+    """
+    xpath_expr = xpath_expr.strip()
+    matches: list[Match] = [item for item in search_python_files([SRC_ROOT], xpath_expr) if isinstance(item, Match)]
+
+    expected_matches, other_matches = iterutils.partition(
+        matches, key=lambda match: "pyastgrep: expected" in match.matching_line
+    )
+
+    if len(expected_matches) < expected_count:
+        assert False, f"Expected {expected_count} matches but found {len(expected_matches)} for {xpath_expr}"
+
+    assert not other_matches, (
+        message
+        + "\n Failing examples:\n"
+        + "\n".join(
+            f"  {match.path}:{match.position.lineno}:{match.position.col_offset}:{match.matching_line}"
+            for match in other_matches
+        )
+    )
+
+
+def test_inclusion_tag_names():
+    """
+    Check that all @inclusion_tag usages have a function name matching the file name.
+    """
+
+    assert_expected_pyastgrep_matches(
+        """
+          //FunctionDef[
+            decorator_list/Call/func/Attribute[@attr="inclusion_tag"] and not(
+              contains(decorator_list/Call/args/Constant/@value,
+                       concat("/", @name, ".html")) or
+              contains(decorator_list/Call/keywords/keyword[@arg="filename"]/value/Constant/@value,
+                       concat("/", @name, ".html"))
+              )
+          ]
+          """,
+        message="The @inclusion_tag function name should match the template file name",
+        expected_count=2,
+    )
+
+
+# Examples of what test_inclusion_tag_names is looking for:
+
+register = Mock()
+
+
+@register.inclusion_tag(filename="something/not_bad.html", takes_context=True)
+def bad(context):  # pyastgrep: expected
+    pass
+
+
+@register.inclusion_tag(filename="something/not_bad2.html")
+def bad2():  # pyastgrep: expected
+    pass
+
+
+# positional arg
+@register.inclusion_tag("something/not_bad3.html")
+def bad3():  # pyastgrep: expected
+    pass
+
+
+# Good examples that don't need `pyastgrep: expected`, for debugging:
+
+
+@register.inclusion_tag(filename="something/good.html")
+def good():
+    pass
+
+
+@register.inclusion_tag("something/good2.html")
+def good2():
+    pass
