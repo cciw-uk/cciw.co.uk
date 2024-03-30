@@ -310,7 +310,7 @@ class BookingAdminForm(forms.ModelForm):
         fields = [
             f.name
             for f in Booking._meta.get_fields()
-            if f.name not in ["erased_on"] and not isinstance(f, ManyToOneRel)
+            if f.name not in ["erased_at"] and not isinstance(f, ManyToOneRel)
         ]
 
 
@@ -356,9 +356,9 @@ class SupportingInformationAdmin(DocumentRelatedModelAdminMixin, admin.ModelAdmi
         "from_telephone",
         "notes",
         "document",
-        "erased_on",
+        "erased_at",
     ]
-    readonly_fields = ["erased_on"]
+    readonly_fields = ["erased_at"]
 
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).defer("document__content")

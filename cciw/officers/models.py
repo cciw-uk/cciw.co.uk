@@ -129,7 +129,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
     # True.
     date_saved = models.DateField("date saved", null=True, blank=True)
 
-    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+    erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     objects = ApplicationManager()
 

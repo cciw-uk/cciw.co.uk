@@ -95,7 +95,7 @@ class Document(models.Model):
     mimetype = models.CharField(max_length=255)
     size = models.PositiveIntegerField()
     content = models.BinaryField()
-    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+    erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f"{self.filename}, {self.created_at}"

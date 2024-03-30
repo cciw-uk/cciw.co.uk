@@ -406,7 +406,7 @@ class BookingAccount(models.Model):
     last_login = models.DateTimeField(null=True, blank=True)
     last_payment_reminder = models.DateTimeField(null=True, blank=True)
 
-    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+    erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     objects = BookingAccountManager()
 
@@ -787,7 +787,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         )
 
     def non_erased(self):
-        return self.filter(erased_on__isnull=True)
+        return self.filter(erased_at__isnull=True)
 
 
 class BookingManagerBase(models.Manager):
@@ -898,7 +898,7 @@ class Booking(models.Model):
     booking_expires = models.DateTimeField(null=True, blank=True)
     created_online = models.BooleanField(blank=True, default=False)
 
-    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+    erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     objects = BookingManager()
 
@@ -1616,7 +1616,7 @@ class SupportingInformation(models.Model):
         null=True,
         blank=True,
     )
-    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+    erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     objects = SupportingInformationManager()
 

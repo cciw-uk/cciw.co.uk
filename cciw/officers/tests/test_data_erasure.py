@@ -80,7 +80,7 @@ class DataErasureRequestTestsBase(FuncBaseMixin):
                             ],
                             "type": "UpdateCommand",
                             "update_dict": {
-                                "keys": ["password", "contact_phone_number", "erased_on"],
+                                "keys": ["password", "contact_phone_number", "erased_at"],
                             },
                         }
                     ],
@@ -114,7 +114,7 @@ class DataErasureRequestTestsBase(FuncBaseMixin):
                                     "address_tel",
                                     "address_mobile",
                                     "address_email",
-                                    "erased_on",
+                                    "erased_at",
                                 ]
                             },
                         }

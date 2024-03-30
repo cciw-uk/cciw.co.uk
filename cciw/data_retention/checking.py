@@ -7,7 +7,7 @@ from django.core.checks import Error
 from cciw.data_retention.erasure_requests import SEARCH_QUERIES_MODELS
 
 from .applying import (
-    ERASED_ON_EXCEPTIONS,
+    ERASED_AT_EXCEPTIONS,
     NOT_IN_USE_METHODS,
     OLDER_THAN_METHODS,
     find_erasure_method,
@@ -123,10 +123,10 @@ def _check_erasable_records(policy: Policy) -> list[Error]:
                                 id="dataretention.E004",
                             )
                         )
-                if "erased_on" not in [f.name for f in model._meta.get_fields()] and model not in ERASED_ON_EXCEPTIONS:
+                if "erased_at" not in [f.name for f in model._meta.get_fields()] and model not in ERASED_AT_EXCEPTIONS:
                     issues.append(
                         Error(
-                            'No "erased_on" field present',
+                            'No "erased_at" field present',
                             obj=model,
                             id="dataretention.E005",
                         )

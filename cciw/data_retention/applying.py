@@ -173,7 +173,7 @@ class UpdateCommand:
         if self.record_count == 0:
             return RECORD_IN_USE_MESSAGE
         return "The following columns will be erased:\n" + "\n".join(
-            f" - {key}" for key in self.update_dict.keys() if key != "erased_on"
+            f" - {key}" for key in self.update_dict.keys() if key != "erased_at"
         )
 
     @cached_property
@@ -231,16 +231,16 @@ def build_single_model_erase_command(
             else:
                 method = find_erasure_method(field)
             update_dict.update(method.build_update_dict(field))
-        if model_detail.model not in ERASED_ON_EXCEPTIONS:
-            update_dict["erased_on"] = update_erased_on_field(now)
+        if model_detail.model not in ERASED_AT_EXCEPTIONS:
+            update_dict["erased_at"] = update_erased_at_field(now)
         return UpdateCommand(group=group, records=records, update_dict=update_dict)
 
 
-def update_erased_on_field(now: datetime):
+def update_erased_at_field(now: datetime):
     return RawSQL(
         """
-        CASE WHEN erased_on IS NULL THEN %s
-        ELSE erased_on
+        CASE WHEN erased_at IS NULL THEN %s
+        ELSE erased_at
         END
     """,
         [now],
@@ -404,8 +404,8 @@ OLDER_THAN_METHODS = {
 }
 
 
-# Models for which we don't expect an 'erased_on' field:
-ERASED_ON_EXCEPTIONS = [
+# Models for which we don't expect an 'erased_at' field:
+ERASED_AT_EXCEPTIONS = [
     # This is in a 3rd party library, can't add a field to it:
     PayPalIPN,
 ]

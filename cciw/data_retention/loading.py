@@ -168,6 +168,6 @@ def field_requires_privacy_policy(field: Field) -> bool:
         return False
     if field.auto_created:
         return False
-    if field.name == "erased_on" and isinstance(field, models.DateTimeField):
+    if field.name == "erased_at" and isinstance(field, models.DateTimeField):
         return False
     return True
