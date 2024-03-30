@@ -16,22 +16,22 @@ def get_camp_officer_stats(camp) -> pd.DataFrame:
     graph_start_date = camp.start_date - timedelta(365)
     graph_end_date = min(camp.start_date, date.today())
 
-    invited_officers = list(camp.invitations.all().order_by("date_added").values_list("officer_id", "date_added"))
-    application_forms = list(applications_for_camp(camp).order_by("date_saved").values_list("id", "date_saved"))
+    invited_officers = list(camp.invitations.all().order_by("added_on").values_list("officer_id", "added_on"))
+    application_forms = list(applications_for_camp(camp).order_by("saved_on").values_list("id", "saved_on"))
 
     officer_ids = [o[0] for o in invited_officers]
     officer_dates = [o[1] for o in invited_officers]
     app_ids = [a[0] for a in application_forms]
     app_dates = [a[1] for a in application_forms]
     ref_dates = list(
-        Reference.objects.filter(referee__application__in=app_ids, date_created__lte=camp.start_date)
-        .order_by("date_created")
-        .values_list("date_created", flat=True)
+        Reference.objects.filter(referee__application__in=app_ids, created_on__lte=camp.start_date)
+        .order_by("created_on")
+        .values_list("created_on", flat=True)
     )
     all_dbs_info = list(
-        DBSCheck.objects.filter(officer__in=officer_ids, completed__lte=camp.start_date)
-        .order_by("completed")
-        .values_list("completed", "officer_id")
+        DBSCheck.objects.filter(officer__in=officer_ids, completed_on__lte=camp.start_date)
+        .order_by("completed_on")
+        .values_list("completed_on", "officer_id")
     )
     # There can be multiple DBSs for each officer. For 'all DBSs' and 'valid
     # DBSs', we only care about the first.
@@ -102,13 +102,13 @@ def get_camp_officer_stats_trend(start_year, end_year) -> pd.DataFrame:
             application_form_ids = list(applications_for_camp(camp).values_list("id", flat=True))
             application_count += len(application_form_ids)
             reference_in_time_count += Reference.objects.filter(
-                referee__application__in=application_form_ids, date_created__lte=camp.start_date
+                referee__application__in=application_form_ids, created_on__lte=camp.start_date
             ).count()
             dbs_in_time_count += DBSCheck.objects.filter(
                 officer__in=officer_ids,
-                completed__isnull=False,
-                completed__lte=camp.start_date,
-                completed__gte=camp.start_date - timedelta(days=settings.DBS_VALID_FOR),
+                completed_on__isnull=False,
+                completed_on__lte=camp.start_date,
+                completed_on__gte=camp.start_date - timedelta(days=settings.DBS_VALID_FOR),
             ).count()  # ignores the possibility that an officer can have more than one
         officer_counts.append(officer_count)
         application_counts.append(application_count)
@@ -138,7 +138,7 @@ def get_first(date_officer_list):
     date for each officer.
     """
     d = {}
-    for completed, off_id in sorted(date_officer_list):
+    for completed_on, off_id in sorted(date_officer_list):
         if off_id not in d:
-            d[off_id] = completed
+            d[off_id] = completed_on
     return sorted(d.values())

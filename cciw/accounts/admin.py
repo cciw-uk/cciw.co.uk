@@ -21,7 +21,7 @@ class MyUserAdmin(UserAdmin):
                 )
             },
         ),
-        ("Important dates", {"fields": ("last_login", "date_joined")}),
+        ("Important dates", {"fields": ("last_login", "joined_at")}),
     )
     filter_horizontal = []
     list_filter = ["is_staff", "is_superuser", "is_active", "roles"]

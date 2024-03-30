@@ -31,7 +31,7 @@ REFEREE_DATA_FIELDS = ["name", "capacity_known", "address", "tel", "mobile", "em
 
 class ApplicationQuerySet(models.QuerySet):
     def older_than(self, before_datetime):
-        return self.filter(date_saved__lt=before_datetime.date())
+        return self.filter(saved_on__lt=before_datetime.date())
 
     def not_in_use(self, now: datetime):
         return self.exclude(officer__id__in=User.objects.in_use(now))
@@ -127,7 +127,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
 
     # Date the information was saved - not updated after 'finished' is set to
     # True.
-    date_saved = models.DateField("date saved", null=True, blank=True)
+    saved_on = models.DateField("date saved", null=True, blank=True)
 
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
@@ -135,7 +135,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
 
     class Meta:
         ordering = (
-            "-date_saved",
+            "-saved_on",
             "officer__first_name",
             "officer__last_name",
         )
@@ -163,8 +163,8 @@ class Application(ClearCachedPropertyMixin, models.Model):
         )
 
     def __str__(self):
-        if self.date_saved is not None:
-            submitted = ("submitted " if self.finished else "saved ") + self.date_saved.strftime("%Y-%m-%d")
+        if self.saved_on is not None:
+            submitted = ("submitted " if self.finished else "saved ") + self.saved_on.strftime("%Y-%m-%d")
         else:
             submitted = "incomplete"
         return f"Application from {self.full_name} ({submitted})"
@@ -180,7 +180,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
     def could_be_for_camp(self, camp):
         # An application is 'for' a camp if it is submitted in the year before
         # the camp start date. Logic duplicated in applications_for_camp
-        return self.date_saved <= camp.start_date and self.date_saved > camp.start_date - timedelta(days=365)
+        return self.saved_on <= camp.start_date and self.saved_on > camp.start_date - timedelta(days=365)
 
     def clear_out_old_unfinished(self):
         # This is called when an application is created and saved by the
@@ -190,15 +190,15 @@ class Application(ClearCachedPropertyMixin, models.Model):
 
         others = self.officer.applications.exclude(id=self.id)
         unfinished = others.filter(finished=False)
-        unsaved = unfinished.filter(date_saved__isnull=True)
+        unsaved = unfinished.filter(saved_on__isnull=True)
 
         # We can definitely delete all other old unsaved applications:
         to_delete = unsaved
 
         # We can also delete any unfinished application forms with
-        # a date_saved before this one:
-        if self.date_saved is not None:
-            unfinshed_saved_earlier = unfinished.filter(date_saved__lt=self.date_saved)
+        # a saved_on before this one:
+        if self.saved_on is not None:
+            unfinshed_saved_earlier = unfinished.filter(saved_on__lt=self.saved_on)
             to_delete = to_delete | unfinshed_saved_earlier
         to_delete.delete()
 
@@ -278,7 +278,7 @@ class Referee(models.Model):
 
     class Meta:
         ordering = (
-            "application__date_saved",
+            "application__saved_on",
             "application__officer__first_name",
             "application__officer__last_name",
             "referee_number",
@@ -356,7 +356,7 @@ class Reference(models.Model):
         help_text="""Is this reference given "in confidence"? If yes, in the case that the applicant wishes to see the contents of the references made about them under a GDPR "Right of access" request, we will exclude the contents of this reference. It is important to us that you feel at liberty to tell us any concerns you have about the applicant, so you may tick this box if you feel it is necessary.""",
         default=False,
     )
-    date_created = models.DateField("date created")
+    created_on = models.DateField("date created")
     referee = models.OneToOneField(Referee, on_delete=models.CASCADE)
 
     # This is set to True only for some records which had to be partially
@@ -411,7 +411,7 @@ class QualificationType(models.Model):
 class Qualification(models.Model):
     application = models.ForeignKey(Application, related_name="qualifications", on_delete=models.CASCADE)
     type = models.ForeignKey(QualificationType, related_name="qualifications", on_delete=models.PROTECT)
-    date_issued = models.DateField()
+    issued_on = models.DateField("date issued")
 
     def __str__(self):
         return f"{self.type} qualification for {self.application.officer}"
@@ -420,7 +420,7 @@ class Qualification(models.Model):
         q = Qualification()
         q.application = self.application
         q.type = self.type
-        q.date_issued = self.date_issued
+        q.issued_on = self.issued_on
         for k, v in kwargs.items():
             setattr(q, k, v)
         return q
@@ -458,7 +458,7 @@ class Invitation(models.Model):
     officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="invitations")
     camp = models.ForeignKey(Camp, on_delete=models.CASCADE, related_name="invitations")
     role = models.ForeignKey(CampRole, on_delete=models.PROTECT, null=True, blank=True, related_name="invitations")
-    date_added = models.DateField(default=date.today)
+    added_on = models.DateField("date added", default=date.today)
     notes = models.CharField(max_length=255, blank=True)
 
     objects = InvitationManager()
@@ -603,9 +603,9 @@ class DBSCheckManager(models.Manager):
         # We include DBS applications that are after the camp date, for the sake
         # of the 'manage_dbss' function which might be used even after the camp
         # has run.
-        qs = self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.DBS_VALID_FOR))
+        qs = self.get_queryset().filter(completed_on__gte=camp.start_date - timedelta(settings.DBS_VALID_FOR))
         if not include_late:
-            qs = qs.filter(completed__lte=camp.start_date)
+            qs = qs.filter(completed_on__lte=camp.start_date)
         return qs
 
 
@@ -622,7 +622,7 @@ class DBSCheck(models.Model):
     officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="dbs_checks")
     dbs_number = models.CharField("Disclosure number", max_length=20)
     check_type = models.CharField("check type", max_length=20, choices=CheckType.choices, default=CheckType.FORM)
-    completed = models.DateField(
+    completed_on = models.DateField(
         "Date of issue/check",
         help_text="For full forms, use the date of issue. For online checks, use the date of the check",
     )
@@ -644,7 +644,7 @@ class DBSCheck(models.Model):
     objects = DBSCheckManager()
 
     def __str__(self):
-        return f"DBS check for {self.officer.full_name}, {self.completed:%Y-%m-%d}"
+        return f"DBS check for {self.officer.full_name}, {self.completed_on:%Y-%m-%d}"
 
     class Meta:
         verbose_name = "DBS/CRB check"
@@ -659,8 +659,8 @@ class DBSCheck(models.Model):
 
     def could_be_for_camp(self, camp):
         return (
-            self.completed >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)
-            and self.completed <= camp.start_date
+            self.completed_on >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)
+            and self.completed_on <= camp.start_date
         )
 
 
@@ -750,16 +750,16 @@ def get_previous_references(referee: Referee) -> tuple[Reference | None, list[Re
     # Look for References for same officer, within the previous five years.
     # Don't look for references from this year's application (which will be the
     # other referee).
-    cutoffdate = referee.application.date_saved - timedelta(365 * 5)
+    cutoffdate = referee.application.saved_on - timedelta(365 * 5)
     previous = list(
         Reference.objects.filter(
             referee__application__officer=referee.application.officer,
             referee__application__finished=True,
-            date_created__gte=cutoffdate,
+            created_on__gte=cutoffdate,
         )
         .select_related("referee__application")
         .exclude(referee__application=referee.application)
-        .order_by("-referee__application__date_saved")
+        .order_by("-referee__application__saved_on")
     )
 
     # Sort by relevance

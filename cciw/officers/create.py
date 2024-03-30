@@ -45,7 +45,7 @@ def create_officer(first_name, last_name, email):
 
 def _create_officer(username, first_name, last_name, email):
     officer = User(username=username)
-    officer.date_joined = timezone.now()
+    officer.joined_at = timezone.now()
     officer.last_login = None
     officer.first_name = first_name
     officer.last_name = last_name

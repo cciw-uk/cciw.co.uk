@@ -93,7 +93,7 @@ def get_reference_contact_users():
 class UserQuerySet(models.QuerySet):
     def older_than(self, before_datetime):
         return self.filter(
-            Q(date_joined__lt=before_datetime) & (Q(last_login__isnull=True) | (Q(last_login__lt=before_datetime)))
+            Q(joined_at__lt=before_datetime) & (Q(last_login__isnull=True) | (Q(last_login__lt=before_datetime)))
         )
 
     def not_in_use(self, now: datetime):
@@ -160,7 +160,7 @@ class User(AbstractBaseUser):
         help_text="Designates whether this user should be treated as active. "
         "Unselect this instead of deleting accounts.",
     )
-    date_joined = models.DateTimeField(default=timezone.now)
+    joined_at = models.DateTimeField(default=timezone.now)
     is_superuser = models.BooleanField(
         "superuser status",
         default=False,

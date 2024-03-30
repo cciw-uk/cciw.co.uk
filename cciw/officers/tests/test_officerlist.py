@@ -83,7 +83,7 @@ class TestSlackers(TestBase):
 
         # Officer 1 submitted an Application, but officer 2 did not
         app = officer1.applications.create(
-            date_saved=camp1.start_date - timedelta(days=10),
+            saved_on=camp1.start_date - timedelta(days=10),
             finished=True,
         )
 
@@ -94,7 +94,7 @@ class TestSlackers(TestBase):
         # Officer 1 got a DBS done, but officer 2 did not
         officer1.dbs_checks.create(
             dbs_number="123456",
-            completed=camp1.start_date - timedelta(days=5),
+            completed_on=camp1.start_date - timedelta(days=5),
         )
 
         serious_slackers = camp_serious_slacker_list(camp2)

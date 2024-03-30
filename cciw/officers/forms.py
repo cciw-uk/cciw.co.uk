@@ -181,7 +181,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
     def save(self, referee, user=None):
         obj = super().save(commit=False)
         obj.referee = referee
-        obj.date_created = date.today()
+        obj.created_on = date.today()
         obj.save()
         self.log_reference_received(referee, user=user)
         self.send_emails(obj)
@@ -230,14 +230,14 @@ class DBSCheckForm(ModelForm):
         fields = [
             "dbs_number",
             "check_type",
-            "completed",
+            "completed_on",
             "requested_by",
             "other_organisation",
             "applicant_accepted",
             "registered_with_dbs_update",
         ]
         widgets = {
-            "completed": forms.DateInput(attrs={"type": "date"}),
+            "completed_on": forms.DateInput(attrs={"type": "date"}),
         }
 
     def save(self, *, officer: User, **kwargs):

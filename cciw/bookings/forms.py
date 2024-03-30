@@ -124,7 +124,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             "first_name",
             "last_name",
             "sex",
-            "date_of_birth",
+            "birth_date",
             "address_line1",
             "address_line2",
             "address_city",
@@ -169,7 +169,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
 
 AddPlaceForm.base_fields["agreement"].required = True
-for f in ["date_of_birth", "last_tetanus_injection_date"]:
+for f in ["birth_date", "last_tetanus_injection_date"]:
     AddPlaceForm.base_fields[f].widget.attrs["placeholder"] = "YYYY-MM-DD"
     AddPlaceForm.base_fields[f].widget.format = "%Y-%m-%d"
 

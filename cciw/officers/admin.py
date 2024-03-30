@@ -108,7 +108,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
         if editing_old:
             # Ensure we don't overwrite this
-            self.cleaned_data["date_saved"] = self.instance.date_saved
+            self.cleaned_data["saved_on"] = self.instance.saved_on
 
         if app_finished:
             # All fields decorated with 'required_field' need to be
@@ -122,7 +122,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
     def save(self, **kwargs):
         if not self.editing_old:
-            self.instance.date_saved = datetime.date.today()
+            self.instance.saved_on = datetime.date.today()
         retval = super().save(**kwargs)
         for n in REFEREE_NUMBERS:
             ref = self.instance.referees[n - 1]
@@ -182,12 +182,12 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     def officer_username(self, obj):
         return obj.officer.username
 
-    list_display = ["full_name", "officer_username", "address_email", "finished", "date_saved"]
-    list_filter = ["finished", "date_saved"]
+    list_display = ["full_name", "officer_username", "address_email", "finished", "saved_on"]
+    list_filter = ["finished", "saved_on"]
     ordering = ["full_name"]
     search_fields = ["full_name"]
-    readonly_fields = ["date_saved"]
-    date_hierarchy = "date_saved"
+    readonly_fields = ["saved_on"]
+    date_hierarchy = "saved_on"
     form = ApplicationAdminModelForm
 
     camp_officer_application_fieldsets = [
@@ -360,7 +360,7 @@ have to fill in another DBS form.</p> """,
     ]
 
     camp_leader_application_fieldsets = [
-        (None, {"fields": ["officer", "date_saved"], "classes": ["wide"]})
+        (None, {"fields": ["officer", "saved_on"], "classes": ["wide"]})
     ] + camp_officer_application_fieldsets
     autocomplete_fields = ["officer"]
 
@@ -454,7 +454,7 @@ have to fill in another DBS form.</p> """,
 
 @admin.register(Invitation)
 class InvitationAdmin(admin.ModelAdmin):
-    list_display = ["officer", "camp", "role", "date_added"]
+    list_display = ["officer", "camp", "role", "added_on"]
     list_filter = ["camp"]
     search_fields = ["officer__first_name", "officer__last_name", "officer__username"]
     autocomplete_fields = ["officer"]
@@ -471,14 +471,14 @@ class InvitationAdmin(admin.ModelAdmin):
 @admin.register(Reference)
 class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     save_as = False
-    list_display = ["referee_name", "applicant_name", "date_created"]
+    list_display = ["referee_name", "applicant_name", "created_on"]
     ordering = ["referee_name"]
     search_fields = [
         "referee_name",
         "referee__application__officer__last_name",
         "referee__application__officer__first_name",
     ]
-    date_hierarchy = "date_created"
+    date_hierarchy = "created_on"
     raw_id_fields = ["referee"]
 
     fieldsets = [
@@ -496,7 +496,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                     "concerns",
                     "comments",
                     "given_in_confidence",
-                    "date_created",
+                    "created_on",
                     "referee",
                 ],
                 "classes": ["wide"],
@@ -523,11 +523,18 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 @admin.register(DBSCheck)
 class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
     search_fields = ["officer__first_name", "officer__last_name", "dbs_number"]
-    list_display = ["first_name", "last_name", "dbs_number", "completed", "requested_by", "registered_with_dbs_update"]
+    list_display = [
+        "first_name",
+        "last_name",
+        "dbs_number",
+        "completed_on",
+        "requested_by",
+        "registered_with_dbs_update",
+    ]
     list_display_links = ("first_name", "last_name", "dbs_number")
     list_filter = ["requested_by", "registered_with_dbs_update", "check_type"]
-    ordering = ("-completed",)
-    date_hierarchy = "completed"
+    ordering = ("-completed_on",)
+    date_hierarchy = "completed_on"
     autocomplete_fields = ["officer"]
 
     @admin.display(ordering="officer__first_name")

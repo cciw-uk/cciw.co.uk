@@ -413,11 +413,11 @@ ERASED_AT_EXCEPTIONS = [
 
 class PreserveAgeOnCamp(ErasureMethod):
     def allowed_for_field(self, field):
-        return field.model == Booking and field.name == "date_of_birth"
+        return field.model == Booking and field.name == "birth_date"
 
     def build_update_dict(self, field: Field):
         return {
-            "date_of_birth":
+            "birth_date":
             # Birthdates after YYYY-08-31 get counted as next school year,
             # so we anonymise those to YYYY-12-01, everything else to YYYY-01-01
             # See also Booking.age_base_date
@@ -425,8 +425,8 @@ class PreserveAgeOnCamp(ErasureMethod):
             RawSQL(
                 """
             make_date(
-                EXTRACT(YEAR FROM date_of_birth)::int,
-                CASE WHEN EXTRACT(MONTH FROM date_of_birth) > 8 THEN 12
+                EXTRACT(YEAR FROM birth_date)::int,
+                CASE WHEN EXTRACT(MONTH FROM birth_date) > 8 THEN 12
                      ELSE 1
                 END,
                 1

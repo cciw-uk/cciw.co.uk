@@ -24,7 +24,7 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
         ("First name", lambda b: b.first_name),
         ("Last name", lambda b: b.last_name),
         ("Sex", lambda b: b.get_sex_display()),
-        ("Date of birth", lambda b: b.date_of_birth),
+        ("Date of birth", lambda b: b.birth_date),
         ("Age on camp", lambda b: b.age_on_camp()),
         ("Address", lambda b: b.get_address_display()),
         ("Email (camper)", lambda b: b.email),
@@ -42,7 +42,7 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
         ("First name", lambda b: b.first_name),
         ("Last name", lambda b: b.last_name),
         ("Sex", lambda b: b.get_sex_display()),
-        ("Date of birth", lambda b: b.date_of_birth),
+        ("Date of birth", lambda b: b.birth_date),
         ("Age on camp", lambda b: b.age_on_camp()),
         ("Parent/guardian", lambda b: b.account.name),
         ("Contact phone number", lambda b: b.contact_phone_number),
@@ -77,9 +77,9 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
     bday_columns = [
         ("First name", lambda b: b.first_name),
         ("Last name", lambda b: b.last_name),
-        ("Birthday", lambda b: get_birthday(b.date_of_birth).strftime("%A %d %B")),
-        ("Age", lambda b: str(relativedelta(get_birthday(b.date_of_birth), b.date_of_birth).years)),
-        ("Date of birth", lambda b: b.date_of_birth),
+        ("Birthday", lambda b: get_birthday(b.birth_date).strftime("%A %d %B")),
+        ("Age", lambda b: str(relativedelta(get_birthday(b.birth_date), b.birth_date).years)),
+        ("Date of birth", lambda b: b.birth_date),
     ]
 
     bday_officer_columns = [
@@ -96,7 +96,7 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
         [
             [f(b) for n, f in bday_columns]
             for b in bookings
-            if camp.start_date <= get_birthday(b.date_of_birth) <= camp.end_date
+            if camp.start_date <= get_birthday(b.birth_date) <= camp.end_date
         ]
         + [
             [f(app) for f in bday_officer_columns]
@@ -141,7 +141,7 @@ def year_bookings_to_spreadsheet(year: int) -> ExcelSimpleBuilder:
         ("First name", lambda b: b.first_name),
         ("Last name", lambda b: b.last_name),
         ("Sex", lambda b: b.get_sex_display()),
-        ("DOB", lambda b: b.date_of_birth),
+        ("DOB", lambda b: b.birth_date),
         ("Age", lambda b: b.age_on_camp()),
         ("Email (camper)", lambda b: b.email),
         ("Email (account)", lambda b: b.account.email if b.account_id else None),

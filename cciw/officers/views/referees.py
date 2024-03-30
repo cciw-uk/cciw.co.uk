@@ -41,7 +41,7 @@ def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | Non
 
         if prev_reference is not None:
             context["update"] = True
-            context["last_form_date"] = prev_reference.date_created if not prev_reference.inaccurate else None
+            context["last_form_date"] = prev_reference.created_on if not prev_reference.inaccurate else None
             context["last_empty"] = empty_reference(prev_reference)
 
         reference = referee.reference if hasattr(referee, "reference") else None
@@ -80,7 +80,7 @@ def initial_reference_form_data(referee: Referee, prev_reference: Reference | No
         # Copy data over
         for f in Reference._meta.fields:
             fname = f.attname
-            if fname not in ["id", "date_created"]:
+            if fname not in ["id", "created_on"]:
                 retval[fname] = getattr(prev_reference, fname)
     retval["referee_name"] = referee.name
     return retval

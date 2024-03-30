@@ -37,11 +37,11 @@ from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
-    finished_applications = user.applications.filter(finished=True).order_by("-date_saved")
-    # A NULL date_saved means they never pressed save, so there is no point
+    finished_applications = user.applications.filter(finished=True).order_by("-saved_on")
+    # A NULL saved_on means they never pressed save, so there is no point
     # re-editing, so we ignore them.
     unfinished_applications = (
-        user.applications.filter(finished=False).exclude(date_saved__isnull=True).order_by("-date_saved")
+        user.applications.filter(finished=False).exclude(saved_on__isnull=True).order_by("-saved_on")
     )
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
@@ -85,7 +85,7 @@ def _copy_application(application):
     new_obj.allegation_declaration = None
     new_obj.dbs_check_consent = None
     new_obj.finished = False
-    new_obj.date_saved = None
+    new_obj.saved_on = None
     new_obj.save()
 
     for old_ref, new_ref in zip(application.referees, new_obj.referees):

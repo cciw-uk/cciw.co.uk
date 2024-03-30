@@ -164,7 +164,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         last_name: str = Auto,
         name: str = Auto,
         sex="m",
-        date_of_birth: date = Auto,
+        birth_date: date = Auto,
         serious_illness: bool = False,
         price_type=PriceType.FULL,
     ) -> Booking:
@@ -183,7 +183,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             last_name=last_name,
             name=name,
             sex=sex,
-            date_of_birth=date_of_birth,
+            birth_date=birth_date,
             price_type=price_type,
             serious_illness=serious_illness,
         )
@@ -216,7 +216,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         last_name: str = Auto,
         name: str = Auto,
         camp: Camp = Auto,
-        date_of_birth: date = Auto,
+        birth_date: date = Auto,
         serious_illness: bool = False,
         price_type=PriceType.FULL,
         sex="m",
@@ -230,8 +230,8 @@ class CreateBookingWebMixin(BookingLogInMixin):
             last_name = last_name or "Bloggs"
         if camp is Auto:
             camp = self.camp
-        if date_of_birth is Auto:
-            date_of_birth = date(camp.year - 14, 1, 1)
+        if birth_date is Auto:
+            birth_date = date(camp.year - 14, 1, 1)
         if sex is Auto:
             sex = "m"
         return {
@@ -241,7 +241,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             "first_name": first_name,
             "last_name": last_name,
             "sex": sex,
-            "date_of_birth": date_of_birth,
+            "birth_date": birth_date,
             "address_line1": "123 My street",
             "address_city": "Metrocity",
             "address_country": "GB",
@@ -347,7 +347,7 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         # Place should be booked AND should not expire
         booking.refresh_from_db()
         assert booking.state == BookingState.BOOKED
-        assert booking.booking_expires is None
+        assert booking.booking_expires_at is None
 
         # balance should be zero
         price_checker = PriceChecker()
@@ -513,8 +513,8 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
         self.assertTextPresent("Logged in as booker@bookers.com! You will stay logged in for two weeks")
         account = BookingAccount.objects.get(email="booker@bookers.com")
-        assert account.last_login is not None
-        assert account.first_login is not None
+        assert account.last_login_at is not None
+        assert account.first_login_at is not None
 
     def _add_booking_account_address(self, email="booker@bookers.com"):
         account, _ = BookingAccount.objects.get_or_create(email=email)
@@ -545,8 +545,8 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         self._start()
         self._add_booking_account_address()
         account = BookingAccount.objects.get(email="booker@bookers.com")
-        account.first_login = timezone.now() - timedelta(30 * 7)
-        account.last_login = account.first_login
+        account.first_login_at = timezone.now() - timedelta(30 * 7)
+        account.last_login_at = account.first_login_at
         account.save()
 
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
@@ -1369,14 +1369,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
         # minimum_age == 11
         self.booking_login()
-        self.create_booking(date_of_birth=date(year=self.camp.year - self.camp_minimum_age, month=8, day=31))
+        self.create_booking(birth_date=date(year=self.camp.year - self.camp_minimum_age, month=8, day=31))
         self.get_url(self.urlname)
         self.assertTextAbsent(self.BELOW_MINIMUM_AGE)
 
         # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
-        self.create_booking(date_of_birth=date(year=self.camp.year - self.camp_minimum_age, month=9, day=1))
+        self.create_booking(birth_date=date(year=self.camp.year - self.camp_minimum_age, month=9, day=1))
         self.get_url(self.urlname)
         self.assertTextPresent(self.BELOW_MINIMUM_AGE)
 
@@ -1384,14 +1384,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
         # maximum_age == 17
         self.booking_login()
-        self.create_booking(date_of_birth=date(year=self.camp.year - (self.camp_maximum_age + 1), month=9, day=1))
+        self.create_booking(birth_date=date(year=self.camp.year - (self.camp_maximum_age + 1), month=9, day=1))
         self.get_url(self.urlname)
         self.assertTextAbsent(self.ABOVE_MAXIMUM_AGE)
 
         # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
-        self.create_booking(date_of_birth=date(year=self.camp.year - (self.camp_maximum_age + 1), month=8, day=31))
+        self.create_booking(birth_date=date(year=self.camp.year - (self.camp_maximum_age + 1), month=8, day=31))
         self.get_url(self.urlname)
         self.assertTextPresent(self.ABOVE_MAXIMUM_AGE)
 
@@ -1891,7 +1891,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         account = booking.account
         book_basket_now([booking])
         booking.refresh_from_db()
-        assert booking.booking_expires is not None
+        assert booking.booking_expires_at is not None
 
         mail.outbox = []
         ManualPayment.objects.create(
@@ -1907,7 +1907,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # Check we updated the bookings
         booking.refresh_from_db()
-        assert booking.booking_expires is None
+        assert booking.booking_expires_at is None
 
         # Check for emails sent
         # 1 to account
@@ -1929,7 +1929,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         booking2 = factories.create_booking(price_type=PriceType.SECOND_CHILD, name="Mary Bloggs", account=account)
         book_basket_now([booking1, booking2])
         booking1.refresh_from_db()
-        assert booking1.booking_expires is not None
+        assert booking1.booking_expires_at is not None
 
         assert booking1.amount_due > booking2.amount_due
         # Pay an amount between the two:
@@ -1941,15 +1941,15 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # Check we updated the one we had enough funds for
         booking2.refresh_from_db()
-        assert booking2.booking_expires is None
+        assert booking2.booking_expires_at is None
         # but not the one which was too much.
         booking1.refresh_from_db()
-        assert booking1.booking_expires is not None
+        assert booking1.booking_expires_at is not None
 
         # We can rectify it with a payment of the rest
         account.receive_payment((booking1.amount_due + booking2.amount_due) - p)
         booking1.refresh_from_db()
-        assert booking1.booking_expires is None
+        assert booking1.booking_expires_at is None
 
     def test_email_for_bad_payment_1(self):
         ipn_1 = IpnMock()
@@ -2082,7 +2082,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # Sanity check initial condition:
         mail.outbox = []
         booking.refresh_from_db()
-        assert booking.booking_expires is not None
+        assert booking.booking_expires_at is not None
 
         # Send payment that doesn't complete immediately
         ipn_1 = factories.create_ipn(
@@ -2118,7 +2118,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         mail.outbox = []
         expire_bookings(now=three_days_later)
         booking.refresh_from_db()
-        assert booking.booking_expires is not None
+        assert booking.booking_expires_at is not None
 
         # Once confirmed payment comes in, we consider that there are no pending payments.
 
@@ -2384,7 +2384,7 @@ class TestExpireBookingsCommand(TestBase):
         booking = factories.create_booking()
         book_basket_now([booking])
         booking.refresh_from_db()
-        booking.booking_expires = booking.booking_expires - timedelta(0.49)
+        booking.booking_expires_at = booking.booking_expires_at - timedelta(0.49)
         booking.save()
 
         mail.outbox = []
@@ -2393,7 +2393,7 @@ class TestExpireBookingsCommand(TestBase):
         assert "warning" in mail.outbox[0].subject
 
         booking.refresh_from_db()
-        assert booking.booking_expires is not None
+        assert booking.booking_expires_at is not None
         assert booking.state == BookingState.BOOKED
 
     def test_expires(self):
@@ -2403,7 +2403,7 @@ class TestExpireBookingsCommand(TestBase):
         booking = factories.create_booking()
         book_basket_now([booking])
         booking.refresh_from_db()
-        booking.booking_expires = booking.booking_expires - timedelta(1.01)
+        booking.booking_expires_at = booking.booking_expires_at - timedelta(1.01)
         booking.save()
 
         mail.outbox = []
@@ -2414,7 +2414,7 @@ class TestExpireBookingsCommand(TestBase):
         assert "have expired" in mail.outbox[0].body
 
         booking.refresh_from_db()
-        assert booking.booking_expires is None
+        assert booking.booking_expires_at is None
         assert booking.state == BookingState.INFO_COMPLETE
 
     def test_grouping(self):
@@ -2426,7 +2426,7 @@ class TestExpireBookingsCommand(TestBase):
         booking2 = factories.create_booking(name="Child Two", account=account)
 
         book_basket_now([booking1, booking2])
-        account.bookings.update(booking_expires=timezone.now() - timedelta(1))
+        account.bookings.update(booking_expires_at=timezone.now() - timedelta(1))
 
         mail.outbox = []
         ExpireBookingsCommand().handle()
@@ -2439,7 +2439,7 @@ class TestExpireBookingsCommand(TestBase):
         assert "Child Two" in mail.outbox[0].body
 
         for b in account.bookings.all():
-            assert b.booking_expires is None
+            assert b.booking_expires_at is None
             assert b.state == BookingState.INFO_COMPLETE
 
 
@@ -2629,7 +2629,7 @@ class TestExportPlaces(TestBase):
         camp = camps_factories.create_camp()
         bday = camp.start_date + timedelta(1)
         dob = bday.replace(bday.year - 12)
-        booking = factories.create_booking(date_of_birth=dob, camp=camp, state=BookingState.BOOKED)
+        booking = factories.create_booking(birth_date=dob, camp=camp, state=BookingState.BOOKED)
 
         workbook = camp_bookings_to_spreadsheet(booking.camp).to_bytes()
         wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
@@ -2684,7 +2684,7 @@ class TestBookingModel(TestBase):
         assert len(Booking.objects.need_approving()) == 1
 
         Booking.objects.update(serious_illness=False)
-        Booking.objects.update(date_of_birth=date(1980, 1, 1))
+        Booking.objects.update(birth_date=date(1980, 1, 1))
         assert len(Booking.objects.need_approving()) == 1
 
         assert Booking.objects.get().approval_reasons() == ["Too old"]

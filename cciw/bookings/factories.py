@@ -39,7 +39,7 @@ def create_booking(
     last_name: str = Auto,
     name: str = Auto,
     sex: str = "m",
-    date_of_birth: date = Auto,
+    birth_date: date = Auto,
     address_line1="123 My street",
     address_city="Metrocity",
     address_country="GB",
@@ -66,8 +66,8 @@ def create_booking(
 ) -> Booking:
     account = account or create_booking_account()
     camp = camp or camps_factories.get_any_camp()
-    if date_of_birth is Auto:
-        date_of_birth = date(date.today().year - camp.minimum_age - 2, 1, 1)
+    if birth_date is Auto:
+        birth_date = date(date.today().year - camp.minimum_age - 2, 1, 1)
     # Prices are pre-condition for creating booking in normal situation
     create_prices(year=camp.year)
     if name is not Auto:
@@ -87,7 +87,7 @@ def create_booking(
         first_name=first_name,
         last_name=last_name,
         sex=sex,
-        date_of_birth=date_of_birth,
+        birth_date=birth_date,
         address_line1=address_line1,
         address_city=address_city,
         address_country=address_country,
@@ -140,7 +140,7 @@ def create_processed_payment(
     manual_payment = create_manual_payment(account=account, amount=amount)
     payment = manual_payment.paymentsource.payment
     payment.refresh_from_db()
-    assert payment.processed  # should have been done via process_all_payments via signals
+    assert payment.processed_at  # should have been done via process_all_payments via signals
     return payment
 
 

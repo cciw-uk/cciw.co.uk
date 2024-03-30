@@ -185,7 +185,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
     list_filter = [LoggedInFilter, BookingsYearFilter, FinalBalanceFilter, "subscribe_to_newsletter"]
     ordering = ["email"]
     search_fields = ["email", "name", "address_post_code"]
-    readonly_fields = ["first_login", "last_login", "total_received", "admin_balance"]
+    readonly_fields = ["first_login_at", "last_login_at", "total_received", "admin_balance"]
     form = BookingAccountForm
 
     inlines = [
@@ -222,8 +222,8 @@ class BookingAccountAdmin(admin.ModelAdmin):
                     "Automatically managed",
                     {
                         "fields": [
-                            "first_login",
-                            "last_login",
+                            "first_login_at",
+                            "last_login_at",
                             "total_received",
                             "admin_balance",
                         ]
@@ -346,11 +346,11 @@ class SupportingInformationAdmin(DocumentRelatedModelAdminMixin, admin.ModelAdmi
     search_fields = ["booking__first_name", "booking__last_name"]
     list_select_related = ["booking__account", "booking__camp__camp_name", "information_type", "document"]
     list_filter = [YearFilter]
-    date_hierarchy = "date_received"
+    date_hierarchy = "received_on"
     fields = [
         "booking",
         "information_type",
-        "date_received",
+        "received_on",
         "from_name",
         "from_email",
         "from_telephone",
@@ -407,7 +407,7 @@ class SupportingInformationInline(DocumentRelatedModelAdminMixin, admin.StackedI
     fields = [
         "booking",
         "information_type",
-        "date_received",
+        "received_on",
         "from_name",
         "from_email",
         "from_telephone",
@@ -479,7 +479,7 @@ class BookingAdmin(admin.ModelAdmin):
                     "first_name",
                     "last_name",
                     "sex",
-                    "date_of_birth",
+                    "birth_date",
                     "address_line1",
                     "address_line2",
                     "address_city",
@@ -560,7 +560,7 @@ class BookingAdmin(admin.ModelAdmin):
                 ]
             },
         ),
-        ("Internal", {"fields": ["state", "booking_expires", "created_at", "shelved", "created_online"]}),
+        ("Internal", {"fields": ["state", "booking_expires_at", "created_at", "shelved", "created_online"]}),
         ("Add a payment for account (optional)", {"fields": ["manual_payment_amount", "manual_payment_payment_type"]}),
     )
 

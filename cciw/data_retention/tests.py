@@ -118,7 +118,7 @@ def test_blank_data(db):
     start = date.today()
     application = officers_factories.create_application(
         officer,
-        date_saved=start,
+        saved_on=start,
         full_name=(full_name := "Charlie Cook"),
         birth_date=(dob := date(1960, 5, 6)),
         address_firstline=(address := "1 The Way"),
@@ -211,10 +211,10 @@ def test_erase_Booking_PreserveAgeOnCamp(db):
         model=Booking,
         delete_row=False,
         keep=timedelta(days=365),
-        fields=["date_of_birth"],
-        custom_erasure_methods={"date_of_birth": PreserveAgeOnCamp()},
+        fields=["birth_date"],
+        custom_erasure_methods={"birth_date": PreserveAgeOnCamp()},
     )
-    for date_of_birth, age_on_camp in [
+    for birth_date, age_on_camp in [
         (date(1988, 8, 31), 13),
         (date(1988, 9, 1), 12),
     ]:
@@ -222,17 +222,17 @@ def test_erase_Booking_PreserveAgeOnCamp(db):
             camp = camps_factories.create_camp(start_date=date(2001, 8, 1))
             booking = bookings_factories.create_booking(
                 camp=camp,
-                date_of_birth=date_of_birth,
+                birth_date=birth_date,
             )
-            assert booking.date_of_birth == date_of_birth
+            assert booking.birth_date == birth_date
             assert booking.age_on_camp() == age_on_camp
 
         with travel(booking.camp.end_date + timedelta(days=365 + 1)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
             assert booking.age_on_camp() == age_on_camp
-            assert booking.date_of_birth.year == date_of_birth.year
-            assert booking.date_of_birth != date_of_birth
+            assert booking.birth_date.year == birth_date.year
+            assert booking.birth_date != birth_date
 
 
 def test_erase_BookingAccount(db):
@@ -263,7 +263,7 @@ def test_erase_BookingAccount(db):
         assert account.address_line1 == "[deleted]"
 
 
-def test_BookingAccount_older_than_respects_last_login(db):
+def test_BookingAccount_older_than_respects_last_login_at(db):
     # Use of `travel()` is not necessary here because `older_than()` takes
     # explicit datetime object, but it helps keep all the tests consistent
     # in style.
@@ -272,7 +272,7 @@ def test_BookingAccount_older_than_respects_last_login(db):
             address_line1="123 Main St",
         )
     with travel("2001-10-01"):
-        account.last_login = timezone.now()
+        account.last_login_at = timezone.now()
         account.save()
     with travel("2002-01-01 01:00:00"):
         assert account not in BookingAccount.objects.not_in_use(timezone.now()).older_than(

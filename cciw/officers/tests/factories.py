@@ -151,7 +151,7 @@ def create_application(
     officer: User = Auto,
     *,
     year: int = Auto,
-    date_saved: date = Auto,
+    saved_on: date = Auto,
     full_name: str = Auto,
     address_firstline: str = Auto,
     birth_date: date = Auto,
@@ -170,11 +170,11 @@ def create_application(
     finished=True,
     qualifications: list[Qualification] = Auto,
 ) -> Application:
-    if date_saved is Auto:
+    if saved_on is Auto:
         if year is not Auto:
-            date_saved = datetime(year, 1, 1)
+            saved_on = datetime(year, 1, 1)
         else:
-            date_saved = timezone.now().date()
+            saved_on = timezone.now().date()
 
     if officer is Auto:
         officer = get_any_officer()
@@ -202,7 +202,7 @@ def create_application(
         dbs_number=dbs_number,
         crime_declaration=False,
         crime_details="",
-        date_saved=date_saved,
+        saved_on=saved_on,
         finished=finished,
         full_name=full_name,
         illness_details="",
@@ -250,5 +250,5 @@ def create_complete_reference(referee: Referee) -> Reference:
         character="Almost sinless",
         concerns="Perhaps too good for camp",
         comments="",
-        date_created=date.today(),
+        created_on=date.today(),
     )

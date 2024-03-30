@@ -193,7 +193,7 @@ def get_update_service_dbs_numbers(officers):
     # listed.
 
     # These may or may not be update-service registered
-    dbs_checks = DBSCheck.objects.filter(officer__in=officers).order_by("completed")  # most recent last
+    dbs_checks = DBSCheck.objects.filter(officer__in=officers).order_by("completed_on")  # most recent last
 
     update_service_dbs_numbers = []
     applicant_accepted_dict = {}
@@ -208,20 +208,20 @@ def get_update_service_dbs_numbers(officers):
             applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
 
         if dbs_check.registered_with_dbs_update:
-            update_service_dbs_numbers.append((dbs_check.completed, dbs_check.officer_id, dbs_number))
+            update_service_dbs_numbers.append((dbs_check.completed_on, dbs_check.officer_id, dbs_number))
 
     # According to instructions given officers, these should all be
     # update-service registered
     update_service_dbs_numbers_from_application_form = (
         Application.objects.filter(officer__in=officers, finished=True)
         .exclude(dbs_number="")
-        .order_by("date_saved")  # most recent last
-        .values_list("officer_id", "dbs_number", "date_saved")
+        .order_by("saved_on")  # most recent last
+        .values_list("officer_id", "dbs_number", "saved_on")
     )
 
-    for o_id, dbs_number, completed in update_service_dbs_numbers_from_application_form:
+    for o_id, dbs_number, completed_on in update_service_dbs_numbers_from_application_form:
         dbs_number = dbs_number.strip()
-        update_service_dbs_numbers.append((completed, o_id, dbs_number))
+        update_service_dbs_numbers.append((completed_on, o_id, dbs_number))
 
     retval = {}
 

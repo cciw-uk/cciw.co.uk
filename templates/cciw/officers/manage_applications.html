@@ -24,7 +24,7 @@
             <label for="application">Choose application</label>
             <select name="application_id" id="application">
               {% for app in finished_applications %}
-                <option value="{{ app.id }}">{{ app.officer.full_name }}, submitted {{ app.date_saved|date:"Y-m-d" }}</option>
+                <option value="{{ app.id }}">{{ app.officer.full_name }}, submitted {{ app.saved_on|date:"Y-m-d" }}</option>
               {% endfor %}
             </select>
           </div>

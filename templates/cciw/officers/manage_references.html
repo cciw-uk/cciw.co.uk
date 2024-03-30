@@ -197,7 +197,7 @@
                               {% for reference in referee.possible_previous_references %}
                                 <option value="{{ reference.id }}">
                                   {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
-                                  ({{ reference.date_created|date:"Y" }})
+                                  ({{ reference.created_on|date:"Y" }})
                                 </option>
                               {% endfor %}
                             </select><br>

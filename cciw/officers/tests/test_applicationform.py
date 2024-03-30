@@ -81,7 +81,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
             "allegation_declaration": "2",
             "dbs_check_consent": "2",
             "qualifications-0-type": str(self.first_aid_qualification.id),
-            "qualifications-0-date_issued": "2016-01-01",
+            "qualifications-0-issued_on": "2016-01-01",
             "finished": True,
         }
         if enter_dbs_number:
@@ -262,7 +262,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         self.assertUrlsEqual(url)  # Same page
         self.assertTextPresent("Please correct the errors below")
         self.assertTextPresent("form-row errors field-address")
-        assert user.applications.exclude(date_saved__isnull=True).count() == 0  # shouldn't have been saved
+        assert user.applications.exclude(saved_on__isnull=True).count() == 0  # shouldn't have been saved
 
     def test_finish_complete(self):
         user = self._setup()
@@ -271,7 +271,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         self._start_new()
 
         # Add two applications
-        factories.create_application(officer=user, finished=False, date_saved=date(2010, 1, 1))
+        factories.create_application(officer=user, finished=False, saved_on=date(2010, 1, 1))
         # Most recent one:
         application = factories.create_application(officer=user, finished=False)
         self.get_literal_url(self._application_edit_url(application.id))
@@ -366,13 +366,13 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         Test that we can't add a new application twice in a year
         """
         user = self._setup()
-        factories.create_application(officer=user, date_saved=date.today(), finished=True)
-        a2 = factories.create_application(officer=user, date_saved=None, finished=False)
+        factories.create_application(officer=user, saved_on=date.today(), finished=True)
+        a2 = factories.create_application(officer=user, saved_on=None, finished=False)
         self.get_literal_url(self._application_edit_url(a2.id))
         self._finish_application_form()
         self._save()
         self.assertTextPresent("You've already submitted")
-        assert user.applications.exclude(date_saved__isnull=True).count() == 1
+        assert user.applications.exclude(saved_on__isnull=True).count() == 1
 
     def test_save_partial(self):
         user = self._setup()

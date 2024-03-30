@@ -277,11 +277,11 @@ class BookingAccountQuerySet(models.QuerySet):
         """
         return (
             self.filter(
-                # last_login/created_at
+                # last_login_at/created_at
                 models.ExpressionWrapper(
                     RawSQL(
                         """
-              (CASE WHEN bookings_bookingaccount.last_login IS NOT NULL THEN bookings_bookingaccount.last_login
+              (CASE WHEN bookings_bookingaccount.last_login_at IS NOT NULL THEN bookings_bookingaccount.last_login_at
                     ELSE bookings_bookingaccount.created_at
                END) < %s
               """,
@@ -402,9 +402,9 @@ class BookingAccount(models.Model):
     subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False)
     total_received = models.DecimalField(default=Decimal("0.00"), decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(blank=False)
-    first_login = models.DateTimeField(null=True, blank=True)
-    last_login = models.DateTimeField(null=True, blank=True)
-    last_payment_reminder = models.DateTimeField(null=True, blank=True)
+    first_login_at = models.DateTimeField(null=True, blank=True)
+    last_login_at = models.DateTimeField(null=True, blank=True)
+    last_payment_reminder_at = models.DateTimeField(null=True, blank=True)
 
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
@@ -501,18 +501,18 @@ class BookingAccount(models.Model):
         # simple case where everything matches up as a special case.
         #
         # For online bookings, when the user clicks 'book place', the places are
-        # marked as 'booked', but with a 'booking_expires' field set to a
+        # marked as 'booked', but with a 'booking_expires_at' field set to a
         # non-NULL timestamp, so that the bookings will expire if the user does
         # not complete payment.
         #
-        # If the user does complete payment, the booking_expires field must be cleared,
+        # If the user does complete payment, the booking_expires_at field must be cleared,
         # so that the place becomes 'confirmed'.
         #
         # When an online payment is received, django-paypal creates a record
         # and a signal handler indirectly calls this method which must update
         # the 'total_received' field.
         #
-        # At the same time we also need to set the 'Booking.booking_expires'
+        # At the same time we also need to set the 'Booking.booking_expires_at'
         # field of relevant Booking objects to null, so that the places are
         # securely booked.
         #
@@ -539,14 +539,14 @@ class BookingAccount(models.Model):
         #   the total amount paid against the total amount due.
         #
         # Therefore, we ignore the partially paid case, and for distributing payment treat
-        # any place which is 'booked' with no 'booking_expires' as fully paid.
+        # any place which is 'booked' with no 'booking_expires_at' as fully paid.
         #
         # When a payment is received, we don't know which place it is for, and
         # in general it could be for any combination of the places that need
         # payment. There could also be money in the account that is still
         # 'unclaimed'. So, for simplicity we simply go through all places which
-        # are 'booked' and have a 'booking_expires' date, starting with the
-        # earliest 'booking_expires', on the assumption that we will get payment
+        # are 'booked' and have a 'booking_expires_at' date, starting with the
+        # earliest 'booking_expires_at', on the assumption that we will get payment
         # for that one first.
         #
         # The manual booking process, which uses the admin to record cheque
@@ -572,9 +572,9 @@ class BookingAccount(models.Model):
         all_payable_bookings = list(self.bookings.payable(confirmed_only=False).select_related("camp"))
 
         # Bookings we might want to confirm.
-        # Order by booking_expires ascending i.e. earliest first.
+        # Order by booking_expires_at ascending i.e. earliest first.
         candidate_bookings = sorted(
-            (b for b in all_payable_bookings if b.is_booked and not b.is_confirmed), key=lambda b: b.booking_expires
+            (b for b in all_payable_bookings if b.is_booked and not b.is_confirmed), key=lambda b: b.booking_expires_at
         )
         price_checker = PriceChecker(expected_years=[b.camp.year for b in all_payable_bookings])
         confirmed_bookings = []
@@ -668,10 +668,10 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.in_basket() | self.booked()
 
     def confirmed(self):
-        return self.filter(state=BookingState.BOOKED, booking_expires__isnull=True)
+        return self.filter(state=BookingState.BOOKED, booking_expires_at__isnull=True)
 
     def unconfirmed(self):
-        return self.filter(state=BookingState.BOOKED, booking_expires__isnull=False)
+        return self.filter(state=BookingState.BOOKED, booking_expires_at__isnull=False)
 
     def payable(self, *, confirmed_only: bool):
         """
@@ -708,13 +708,13 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         # See also Booking.age_on_camp()
         qs_too_young = qs.extra(
             where=[
-                """ "bookings_booking"."date_of_birth" > """
+                """ "bookings_booking"."birth_date" > """
                 """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
             ]
         )
         qs_too_old = qs.extra(
             where=[
-                """ "bookings_booking"."date_of_birth" <= """
+                """ "bookings_booking"."birth_date" <= """
                 """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
             ]
         )
@@ -810,7 +810,7 @@ class Booking(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=Sex.choices)
-    date_of_birth = models.DateField()
+    birth_date = models.DateField("date of birth")
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255)
@@ -895,7 +895,7 @@ class Booking(models.Model):
     )
 
     created_at = models.DateTimeField(default=timezone.now)
-    booking_expires = models.DateTimeField(null=True, blank=True)
+    booking_expires_at = models.DateTimeField(null=True, blank=True)
     created_online = models.BooleanField(blank=True, default=False)
 
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
@@ -945,7 +945,7 @@ class Booking(models.Model):
 
     @property
     def is_confirmed(self):
-        return self.is_booked and self.booking_expires is None
+        return self.is_booked and self.booking_expires_at is None
 
     def expected_amount_due(self):
         if self.price_type == PriceType.CUSTOM:
@@ -1009,7 +1009,7 @@ class Booking(models.Model):
         return Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT, year=self.camp.year).price
 
     def age_on_camp(self):
-        return relativedelta(self.age_base_date(), self.date_of_birth).years
+        return relativedelta(self.age_base_date(), self.birth_date).years
 
     def age_base_date(self):
         # Age is calculated based on school years, i.e. age on 31st August
@@ -1330,7 +1330,7 @@ class Booking(models.Model):
         return warnings
 
     def confirm(self):
-        self.booking_expires = None
+        self.booking_expires_at = None
         self.save()
 
     def expire(self):
@@ -1343,7 +1343,7 @@ class Booking(models.Model):
         self.save()
 
     def _unbook(self):
-        self.booking_expires = None
+        self.booking_expires_at = None
         # Here we don't use BookingState.CANCELLED_FULL_REFUND,
         # because we assume the user might want to edit and book
         # again:
@@ -1428,7 +1428,7 @@ BOOKING_PLACE_USER_VISIBLE_ATTRS = [
     "first_name",
     "last_name",
     "sex",
-    "date_of_birth",
+    "birth_date",
     "address_line1",
     "address_line2",
     "address_city",
@@ -1491,7 +1491,7 @@ BOOKING_PLACE_CAMPER_DETAILS = [
     "first_name",
     "last_name",
     "sex",
-    "date_of_birth",
+    "birth_date",
     "church",
     "dietary_requirements",
     "medical_card_number",
@@ -1588,7 +1588,7 @@ class SupportingInformationQuerySet(models.QuerySet):
         return self.filter(created_at__lt=before_datetime)
 
     def not_in_use(self, now: datetime):
-        return self.filter(date_received__lt=now - KEEP_FINANCIAL_RECORDS_FOR)
+        return self.filter(received_on__lt=now - KEEP_FINANCIAL_RECORDS_FOR)
 
 
 SupportingInformationManager = models.Manager.from_queryset(SupportingInformationQuerySet)
@@ -1602,7 +1602,7 @@ class SupportingInformation(models.Model):
 
     booking = models.ForeignKey(Booking, related_name="supporting_information_records", on_delete=models.PROTECT)
     created_at = models.DateTimeField(default=timezone.now)
-    date_received = models.DateField(default=date.today)
+    received_on = models.DateField("date received", default=date.today)
     information_type = models.ForeignKey(SupportingInformationType, on_delete=models.PROTECT)
     from_name = models.CharField(max_length=100, help_text="Name of person or organisation the information is from")
     from_email = models.EmailField(blank=True)
@@ -1670,7 +1670,7 @@ def book_basket_now(bookings):
         b.early_bird_discount = b.can_have_early_bird_discount()
         b.auto_set_amount_due()
         b.state = BookingState.BOOKED
-        b.booking_expires = now + timedelta(1)  # 24 hours
+        b.booking_expires_at = now + timedelta(1)  # 24 hours
         b.save()
 
     # In some cases we may have enough money to pay for places from money in
@@ -1817,7 +1817,7 @@ class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount, related_name="payments", on_delete=models.PROTECT)
     source = models.OneToOneField("PaymentSource", null=True, blank=True, on_delete=models.SET_NULL)
-    processed = models.DateTimeField(null=True)
+    processed_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField()
 
     objects = PaymentManager()
@@ -2001,7 +2001,7 @@ class PaymentSource(models.Model):
 
 def credit_account(amount: Decimal, to_account: BookingAccount, from_obj: PaymentModel):
     Payment.objects.create(
-        amount=amount, account=to_account, source_instance=from_obj, processed=None, created_at=timezone.now()
+        amount=amount, account=to_account, source_instance=from_obj, processed_at=None, created_at=timezone.now()
     )
     process_all_payments()
 
@@ -2032,8 +2032,8 @@ def expire_bookings(now=None):
     nowplus13h = now + timedelta(0, 3600 * 13)
 
     unconfirmed = Booking.objects.unconfirmed().order_by("account")
-    to_warn = unconfirmed.filter(booking_expires__lte=nowplus13h, booking_expires__gte=nowplus12h)
-    to_expire = unconfirmed.filter(booking_expires__lte=now)
+    to_warn = unconfirmed.filter(booking_expires_at__lte=nowplus13h, booking_expires_at__gte=nowplus12h)
+    to_expire = unconfirmed.filter(booking_expires_at__lte=now)
 
     for booking_set, expired in [(to_expire, True), (to_warn, False)]:
         groups = []
@@ -2059,9 +2059,9 @@ def expire_bookings(now=None):
 @transaction.atomic
 def process_one_payment(payment: Payment):
     payment.account.receive_payment(payment.amount)
-    payment.processed = timezone.now()
-    # Payment.processed is ignored in Payment.save, so do update
-    Payment.objects.filter(id=payment.id).update(processed=payment.processed)
+    payment.processed_at = timezone.now()
+    # Payment uses NoEditMixin which disables save(), so do update()
+    Payment.objects.filter(id=payment.id).update(processed_at=payment.processed_at)
 
 
 # When processing payments, we need to alter the BookingAccount.total_received
@@ -2081,7 +2081,10 @@ def process_one_payment(payment: Payment):
 def process_all_payments():
     # Use select_for_update to serialize usages of this function.
     for payment in (
-        Payment.objects.select_related(None).select_for_update().filter(processed__isnull=True).order_by("created_at")
+        Payment.objects.select_related(None)
+        .select_for_update()
+        .filter(processed_at__isnull=True)
+        .order_by("created_at")
     ):
         process_one_payment(payment)
 

@@ -34,7 +34,7 @@ Details:
 Qualifications
 ==============
 {% for q in app.qualifications.all %}
-{{ q.type }}, issued {{ q.date_issued|date:"Y-m-d" }}{% endfor %}
+{{ q.type }}, issued {{ q.issued_on|date:"Y-m-d" }}{% endfor %}
 ----------------------------------------------------------------------
 Health
 ======

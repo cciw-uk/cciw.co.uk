@@ -54,21 +54,21 @@ class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
             factories.create_application(
                 officer=officer,
                 finished=True,
-                date_saved=date.today() - timedelta(days=365),
+                saved_on=date.today() - timedelta(days=365),
                 qualifications=qualifications,
             )
         if finished:
             factories.create_application(
                 officer=officer,
                 finished=True,
-                date_saved=date.today() - timedelta(days=1),
+                saved_on=date.today() - timedelta(days=1),
                 qualifications=qualifications,
             )
         if unfinished:
             factories.create_application(
                 officer=officer,
                 finished=False,
-                date_saved=date.today() - timedelta(days=1),
+                saved_on=date.today() - timedelta(days=1),
                 qualifications=qualifications,
             )
         self.officer_login(officer)
@@ -101,7 +101,7 @@ class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
     def test_create_from_old(self):
         officer = self._start(
             old=True,
-            qualifications=[Qualification(type=self.first_aid_qualification, date_issued=date(2016, 1, 1))],
+            qualifications=[Qualification(type=self.first_aid_qualification, issued_on=date(2016, 1, 1))],
         )
         application = officer.applications.get()
 
@@ -111,15 +111,15 @@ class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
         for a in officer.applications.all():
             assert a.full_name == application.full_name
             assert a.referee_set.get(referee_number=1).name == application.referee_set.get(referee_number=1).name
-            assert list([q.type, q.date_issued] for q in a.qualifications.all()) == list(
-                [q.type, q.date_issued] for q in application.qualifications.all()
+            assert list([q.type, q.issued_on] for q in a.qualifications.all()) == list(
+                [q.type, q.issued_on] for q in application.qualifications.all()
             )
 
     def test_create_when_already_done(self):
         officer = self._start(old=True)
 
         # Page is already loaded, at this point we submit an application (e.g. in different tab)
-        factories.create_application(officer=officer, finished=True, date_saved=date.today() - timedelta(days=1))
+        factories.create_application(officer=officer, finished=True, saved_on=date.today() - timedelta(days=1))
         assert officer.applications.count() == 2
 
         # And then try to create.
@@ -170,7 +170,7 @@ class PersonalApplicationView(WebTestBase):
         m = mail.outbox[0]
         assert "Joe Winston Bloggs" in m.body
         fname, fdata, ftype = m.attachments[0]
-        app_date = application.date_saved
+        app_date = application.saved_on
 
         assert fname == f"Application_{officer.username}_{app_date.year:04}-{app_date.month:02}-{app_date.day:02}.rtf"
         assert "\\cell Joe Winston Bloggs" in fdata
@@ -178,7 +178,7 @@ class PersonalApplicationView(WebTestBase):
 
 
 class ApplicationUtils(TestBase):
-    def test_date_saved_logic(self):
+    def test_saved_on_logic(self):
         # Setup::
         # * two camps, different years, but within 12 months of each
         #   other.
@@ -205,13 +205,13 @@ class ApplicationUtils(TestBase):
         u.invitations.create(camp=c1)
         u.invitations.create(camp=c2)
 
-        app1 = Application.objects.create(officer=u, finished=True, date_saved=past_camp_start - timedelta(1))
+        app1 = Application.objects.create(officer=u, finished=True, saved_on=past_camp_start - timedelta(1))
 
         # First, check we don't have any apps that are counted as 'this years'
         assert not applications.thisyears_applications(u).exists()
 
         # Create an application for this year
-        app2 = Application.objects.create(officer=u, finished=True, date_saved=past_camp_start + timedelta(10))
+        app2 = Application.objects.create(officer=u, finished=True, saved_on=past_camp_start + timedelta(10))
 
         # Now we should have one
         assert applications.thisyears_applications(u).exists()

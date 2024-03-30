@@ -338,7 +338,7 @@ def officer_history(request, officer_id: int):
     referee_pairs = [
         app.referees
         for app in (
-            officer.applications.all().prefetch_related("referee_set", "referee_set__reference").order_by("-date_saved")
+            officer.applications.all().prefetch_related("referee_set", "referee_set__reference").order_by("-saved_on")
         )
     ]
 

@@ -112,7 +112,7 @@ def send_places_confirmed_email(bookings):
     if not account.email:
         return
 
-    # We can't use 'processed' here, because this email can be sent
+    # We can't use 'processed_at' here, because this email can be sent
     # in the middle of processing before that flag is updated.
     payment_received_recently = account.payments.received_since(timezone.now() - timedelta(hours=1)).exists()
     c = {
@@ -215,15 +215,15 @@ def send_payment_reminder_emails():
     now = timezone.now()
     for account in accounts:
         if (
-            account.last_payment_reminder is not None
-            and (now - account.last_payment_reminder) < settings.BOOKING_EMAIL_REMINDER_FREQUENCY
+            account.last_payment_reminder_at is not None
+            and (now - account.last_payment_reminder_at) < settings.BOOKING_EMAIL_REMINDER_FREQUENCY
         ):
             continue
 
         if account.email is None:
             continue
 
-        account.last_payment_reminder = now
+        account.last_payment_reminder_at = now
         account.save()
 
         c = {

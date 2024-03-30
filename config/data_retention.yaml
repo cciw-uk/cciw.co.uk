@@ -230,7 +230,7 @@
       columns:
       - dbs_number
       - check_type
-      - completed
+      - completed_on
       - requested_by
       - other_organisation
       - applicant_accepted
@@ -267,7 +267,7 @@
 
     - name: bookings.Booking
       columns:
-      - date_of_birth
+      - birth_date
       - address_line1
       - address_line2
       - address_city
@@ -299,7 +299,7 @@
         # campers on camp. So we here configure a custom deletion method that
         # chooses a date of birth that will preserve the calculated "age on
         # camp", but anonymise.
-        date_of_birth: preserve age on camp
+        birth_date: preserve age on camp
 
     - name: ipn.PayPalIPN
       # This contains all the data PayPal sends to us about a payment,
@@ -432,9 +432,9 @@
       columns:
       - total_received
       - created_at
-      - first_login
-      - last_login
-      - last_payment_reminder
+      - first_login_at
+      - last_login_at
+      - last_payment_reminder_at
 
     - name: bookings.Booking
       columns:
@@ -446,7 +446,7 @@
       - shelved
       - state
       - created_at
-      - booking_expires
+      - booking_expires_at
       - created_online
 
     - name: accounts.User
@@ -454,7 +454,7 @@
       - last_login
       - is_staff
       - is_active
-      - date_joined
+      - joined_at
       - is_superuser
       - bad_password
       - password_validators_used
@@ -469,12 +469,12 @@
 
     - name: officers.Application
       columns:
-      - date_saved
+      - saved_on
 
     - name: bookings.SupportingInformation
       columns:
       - created_at
-      - date_received
+      - received_on
 
     - name: bookings.SupportingInformationDocument
       columns:

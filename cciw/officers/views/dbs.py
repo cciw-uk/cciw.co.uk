@@ -189,11 +189,11 @@ def request_dbs_form_action(request, application_id: int):
 def dbs_checked_online(request: HttpRequest, officer_id: int):
     officer = User.objects.get(id=officer_id)
     dbs_number = request.GET.get("dbs_number", "")
-    old_dbs_check = officer.dbs_checks.filter(dbs_number=dbs_number).order_by("-completed").first()
+    old_dbs_check = officer.dbs_checks.filter(dbs_number=dbs_number).order_by("-completed_on").first()
     form_initial = {
         "dbs_number": dbs_number,
         "registered_with_dbs_update": True,
-        "completed": date.today(),
+        "completed_on": date.today(),
         "check_type": DBSCheck.CheckType.ONLINE,
     }
     if old_dbs_check:
@@ -231,8 +231,8 @@ def _dbscheck_create_form(request: HttpRequest, officer: User, form_initial: dic
         else:
             return htmx_dbs_events_response(closeModal=True)
     else:
-        if "completed" in form_initial and not isinstance(form_initial["completed"], str):
-            form_initial["completed"] = form_initial["completed"].strftime("%Y-%m-%d")
+        if "completed_on" in form_initial and not isinstance(form_initial["completed_on"], str):
+            form_initial["completed_on"] = form_initial["completed_on"].strftime("%Y-%m-%d")
         form = DBSCheckForm(initial=form_initial)
 
     return TemplateResponse(

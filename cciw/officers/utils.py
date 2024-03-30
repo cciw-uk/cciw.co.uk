@@ -55,7 +55,7 @@ def camp_serious_slacker_list(camp: Camp) -> list[User]:
         Invitation.objects.filter(camp__in=relevant_camps, officer__in=officers).select_related("camp", "officer")
     )
     all_apps = list(
-        Application.objects.filter(finished=True, officer__in=officers, date_saved__lte=latest_camp.start_date)
+        Application.objects.filter(finished=True, officer__in=officers, saved_on__lte=latest_camp.start_date)
     )
 
     all_received_refs = list(Reference.objects.select_related("referee").filter(referee__application__in=all_apps))
@@ -205,7 +205,7 @@ def officer_data_to_spreadsheet(camp: Camp):
         "Qualifications",
         ["First name", "Last name", "Qualification", "Date issued"],
         [
-            [a.officer.first_name, a.officer.last_name, q.type.name, q.date_issued]
+            [a.officer.first_name, a.officer.last_name, q.type.name, q.issued_on]
             for a in apps
             for q in a.qualifications.all()
         ],

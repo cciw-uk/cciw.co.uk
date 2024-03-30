@@ -201,14 +201,14 @@ def verify_and_continue(request):
     account = request.booking_account
 
     now = timezone.now()
-    last_login = account.last_login
+    last_login_at = account.last_login_at
 
-    if account.first_login is None:
-        account.first_login = now
-    account.last_login = now
+    if account.first_login_at is None:
+        account.first_login_at = now
+    account.last_login_at = now
     account.save()
 
-    if last_login is not None and ((now - last_login) > timedelta(30 * 6)):  # six months
+    if last_login_at is not None and ((now - last_login_at) > timedelta(30 * 6)):  # six months
         messages.info(request, "Welcome back! Please check and update your account details")
         return HttpResponseRedirect(reverse("cciw-bookings-account_details"))
     else:

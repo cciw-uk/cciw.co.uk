@@ -81,7 +81,7 @@
         {% for q in qualifications %}
           <tr>
             <td>{{ q.type }}</td>
-            <td>{{ q.date_issued|date:"Y-m-d" }}</td>
+            <td>{{ q.issued_on|date:"Y-m-d" }}</td>
           </tr>
         {% endfor %}
       </table>

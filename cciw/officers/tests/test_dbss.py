@@ -85,7 +85,7 @@ class DbsInfoTests(TestBase):
     def test_can_check_dbs_online_previous_check_dbs_number(self):
         application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_saved - timedelta(365 * 10),
+            completed_on=application.saved_on - timedelta(365 * 10),
             dbs_number="001234",
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
@@ -103,7 +103,7 @@ class DbsInfoTests(TestBase):
         # DBS check indicates good DBS, but don't know if it is
         # registered as update-enabled
         self.officer_user.dbs_checks.create(
-            completed=application.date_saved - timedelta(365 * 10),
+            completed_on=application.saved_on - timedelta(365 * 10),
             dbs_number="00123",
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=None,
@@ -119,7 +119,7 @@ class DbsInfoTests(TestBase):
     def test_applicant_rejected_recent(self):
         application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_saved - timedelta(days=10),
+            completed_on=application.saved_on - timedelta(days=10),
             dbs_number="00123",
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
@@ -132,7 +132,7 @@ class DbsInfoTests(TestBase):
     def test_applicant_rejected_old(self):
         application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_saved - timedelta(days=365 * 10),
+            completed_on=application.saved_on - timedelta(days=365 * 10),
             dbs_number="00123",
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
@@ -145,7 +145,7 @@ class DbsInfoTests(TestBase):
     def test_can_check_dbs_online_previous_check_bad(self):
         application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_saved - timedelta(365 * 10),
+            completed_on=application.saved_on - timedelta(365 * 10),
             dbs_number="00123",
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
@@ -160,7 +160,7 @@ class DbsInfoTests(TestBase):
         # Test that data from Application/DBSCheck is prioritised by date
         application = factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
         self.officer_user.dbs_checks.create(
-            completed=application.date_saved - timedelta(365 * 10),
+            completed_on=application.saved_on - timedelta(365 * 10),
             dbs_number="00456",
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
@@ -282,7 +282,7 @@ class ManageDbsPageSL(SeleniumBase):
         self.fill(
             {
                 "#id_dbs_number": "1234",
-                "#id_completed": date.today().strftime("%Y-%m-%d"),
+                "#id_completed_on": date.today().strftime("%Y-%m-%d"),
             }
         )
         self.click('input[name="save"]')
@@ -306,7 +306,7 @@ class ManageDbsPageSL(SeleniumBase):
         assert self.officer_user.dbs_checks.count() == 0
         self.officer_user.dbs_checks.create(
             dbs_number="00123400001",
-            completed=date(1990, 1, 1),
+            completed_on=date(1990, 1, 1),
             requested_by=DBSCheck.RequestedBy.CCIW,
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
@@ -323,12 +323,12 @@ class ManageDbsPageSL(SeleniumBase):
 
         # Check created DBS:
         assert self.officer_user.dbs_checks.count() == 2
-        dbs_check = self.officer_user.dbs_checks.all().order_by("-completed")[0]
+        dbs_check = self.officer_user.dbs_checks.all().order_by("-completed_on")[0]
 
         # Should have copied other info from old DBS check automatically.
         assert dbs_check.dbs_number == "00123400001"
         assert dbs_check.check_type == DBSCheck.CheckType.ONLINE
-        assert dbs_check.completed == today
+        assert dbs_check.completed_on == today
         assert dbs_check.requested_by == DBSCheck.RequestedBy.CCIW
         assert dbs_check.registered_with_dbs_update
 
