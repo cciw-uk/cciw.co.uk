@@ -88,7 +88,8 @@ def standard_subs(value):
     )
 
 
-standard_subs.is_safe = True  # noqa:305 provided our substitutions don't introduce anything that must be escaped
+# This assumes our substitutions don't introduce anything that must be escaped
+standard_subs.is_safe = True
 
 
 def create_breadcrumb(links):
@@ -113,7 +114,7 @@ def standard_processor(request):
 
     thisyear = get_thisyear()
     context["thisyear"] = thisyear
-    assert type(request.path) is str
+    assert isinstance(request.path, str)
     context["homepage"] = request.path == "/"
 
     # Ugly special casing for 'thisyear' camps

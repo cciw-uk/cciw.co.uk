@@ -1,3 +1,4 @@
+# ruff: noqa: UP032
 import contextlib
 import logging
 from collections.abc import Callable
@@ -165,7 +166,7 @@ This was an automated response by the CCiW website.
         new=application.address_email,
         correct_email_url=make_update_email_url(application),
         correct_application_url=make_update_application_url(application, officer.email),
-    )
+    )  # noqa: UP032
 
     send_mail(subject, user_msg, settings.SERVER_EMAIL, [user_email, application.address_email], fail_silently=True)
 

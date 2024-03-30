@@ -62,8 +62,9 @@ def booking_secretary_reports(request, year: int):
 
     export_start = datetime(year - 1, 11, 1)  # November previous year
     export_end = datetime(year, 10, 31)  # November this year
-    export_data_link = reverse("cciw-officers-export_payment_data") + "?start={start}&end={end}".format(
-        start=export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT), end=export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
+    export_data_link = (
+        reverse("cciw-officers-export_payment_data")
+        + f"?start={export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT)}&end={export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)}"
     )
 
     return TemplateResponse(

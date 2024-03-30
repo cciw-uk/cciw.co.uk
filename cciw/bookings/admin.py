@@ -241,9 +241,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
         if "_popup" in request.POST:
             return HttpResponse(
                 "<!DOCTYPE html><html><head><title></title></head><body>"
-                '<script type="text/javascript">opener.dismissAddAnotherPopup(window, "{}", "{}");</script></body></html>'.format(
-                    escape(obj._get_pk_val()), escapejs(obj)
-                )
+                f'<script type="text/javascript">opener.dismissAddAnotherPopup(window, "{escape(obj._get_pk_val())}", "{escapejs(obj)}");</script></body></html>'
             )
         else:
             return super().response_change(request, obj)

@@ -112,9 +112,9 @@ class NoEditMixin:
         retval = super().clean()
         if self.id is not None:
             raise ValidationError(
-                "A {} record cannot be changed "
+                f"A {self.__class__._meta.verbose_name} record cannot be changed "
                 "after being created. If an error was made, "
-                "delete this record and create a new one. ".format(self.__class__._meta.verbose_name)
+                "delete this record and create a new one. "
             )
         return retval
 
