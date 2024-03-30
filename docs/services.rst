@@ -169,6 +169,14 @@ This was done for both eu-west-2 (London) and eu-west-1 (Ireland). Because
 eu-west-2 doesn't have support for inbound email (yet), we use eu-west-1 only
 (both send and receive).
 
+Later:
+
+* Under “Configuration / Verified identities”, choose “Create Identity” and
+  follow instructions for “Domain” identity type, see
+  https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html#verify-domain-procedure
+
+  The DNS CNAME entries need to be created in DigitalOcean DNS.
+
 Bounce notification
 ~~~~~~~~~~~~~~~~~~~
 
