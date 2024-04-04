@@ -23,7 +23,7 @@ def check_data_retention(app_configs, **kwargs):
 @register()
 def check_date_fields(app_configs, **kwargs):
     exceptions = [
-        "User.last_login",  # Provided by Django's AbstractBaseUser, we don't control
+        "accounts.User.last_login",  # Provided by Django's AbstractBaseUser, we don't control
     ]
     from django.db.models import DateField, DateTimeField
 
@@ -32,7 +32,7 @@ def check_date_fields(app_configs, **kwargs):
         field_name = field.name
         model = field.model
 
-        if f"{model.__name__}.{field_name}" in exceptions:
+        if f"{model._meta.app_label}.{model.__name__}.{field_name}" in exceptions:
             continue
 
         # Order of checks here is important, because DateTimeField inherits from DateField
@@ -41,18 +41,20 @@ def check_date_fields(app_configs, **kwargs):
             if not field_name.endswith("_at"):
                 errors.append(
                     Warning(
-                        f"{model.__name__}.{field_name} field expected to end with `_at`",
+                        f"{model.__name__}.{field_name} field expected to end with `_at`, "
+                        + "or be added to the exceptions in this check.",
                         obj=field,
-                        id="cciw.conventions.E002",
+                        id="cciw.conventions.E001",
                     )
                 )
         elif isinstance(field, DateField):
             if not (field_name.endswith("_date") or field_name.endswith("_on")):
                 errors.append(
                     Warning(
-                        f"{model.__name__}.{field_name} field expected to end with `_date` or `_on`",
+                        f"{model.__name__}.{field_name} field expected to end with `_date` or `_on`, "
+                        + "or be added to the exceptions in this check.",
                         obj=field,
-                        id="cciw.conventions.E003",
+                        id="cciw.conventions.E002",
                     )
                 )
     return errors
@@ -65,7 +67,7 @@ def get_first_party_fields():
 
 
 def get_first_party_apps() -> list[AppConfig]:
-    return [app_config for app_config in apps.app_configs.values() if is_first_party_app(app_config)]
+    return [app_config for app_config in apps.get_app_configs() if is_first_party_app(app_config)]
 
 
 def is_first_party_app(app_config: AppConfig) -> bool:
