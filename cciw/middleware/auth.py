@@ -15,7 +15,7 @@ def private_wiki(get_response):
             if not (hasattr(request, "user") and request.user.is_authenticated):
                 return HttpResponseForbidden(
                     "<h1>Forbidden</h1>"
-                    "<p>You must be <a href='{}?next={}'>logged in</a> to use this.</p>".format(
+                    + "<p>You must be <a href='{}?next={}'>logged in</a> to use this.</p>".format(  # noqa: UP032
                         settings.LOGIN_URL, escape(urlquote(request.get_full_path()))
                     )
                 )
