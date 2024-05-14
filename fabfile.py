@@ -378,7 +378,7 @@ def code_quality_checks(c):
     """
     Run code quality checks, including tests.
     """
-    c.local("ruff .", echo=True)
+    c.local("ruff check .", echo=True)
     c.local("pytest", echo=True, pty=True)
 
 
