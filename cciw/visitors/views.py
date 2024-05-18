@@ -1,17 +1,30 @@
 from datetime import date
 
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.crypto import salted_hmac
 from furl.furl import furl
 
+from cciw.cciwmain import common
 from cciw.visitors.forms import VisitorLogForm
 from cciw.visitors.models import VisitorLog
 
 
-def create_visitor_log(request) -> HttpResponse:
+def make_visitor_log_token(year: int) -> str:
+    # Relatively low security needed on this, and people might need to be
+    # entering the link manually, so we use just 8 digits.
+    return salted_hmac("cciw.visitors.create_visitor_log", f"year:{year}").hexdigest()[0:8]
+
+
+def create_visitor_log(request: HttpRequest, token: str) -> HttpResponse:
+    correct_token = make_visitor_log_token(common.get_thisyear())
+
+    if token != correct_token:
+        return TemplateResponse(request, "cciw/visitors/create_log.html", {"incorrect_url": True})
+
     if request.method == "POST":
         form = VisitorLogForm(data=request.POST)
         if form.is_valid():
