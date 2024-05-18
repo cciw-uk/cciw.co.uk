@@ -1,0 +1,31 @@
+{% extends "cciw/visitors/create_log_base.html" %}
+
+
+{% block title %}Visitor book | CCiW{% endblock %}
+
+{% block content %}
+  {% if incorrect_url %}
+    <p>The link used was incorrect, sorry.</p>
+
+  {% else %}
+
+    <h1>Visitor book</h1>
+
+    <p>This page can be used to log visitors who come on camp – people who are
+      neither campers nor officers but spend time on the camp site.</p>
+
+
+    {% if form.errors %}
+      <p class="errornote">
+        Please correct the error(s) below.
+      </p>
+    {% endif %}
+
+
+    <form method="post" action="">{% csrf_token %}
+      {{ form.as_p }}
+      <div><input type="submit" name="save" value="Save details" /></div>
+
+    </form>
+  {% endif %}
+{% endblock %}

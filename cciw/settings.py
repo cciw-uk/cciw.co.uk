@@ -131,6 +131,7 @@ FIRST_PARTY_APPS = [
     "cciw.mail",
     "cciw.contact_us",
     "cciw.data_retention",
+    "cciw.visitors",
 ]
 
 INSTALLED_APPS = (

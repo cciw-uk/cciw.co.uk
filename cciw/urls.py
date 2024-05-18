@@ -50,6 +50,7 @@ urlpatterns = [
     path("mail/", include("cciw.mail.urls")),
     path("contact/", include("cciw.contact_us.urls")),
     path("documents/", include("cciw.documents.urls")),
+    path("visitors/", include("cciw.visitors.urls")),
 ]
 
 if settings.DEVBOX:

@@ -216,11 +216,12 @@ tr.reference-list {
     }
 }
 
-/* Create reference */
+/* Create reference, create visitor log */
 
-// Quick and dirty fixes to make the form work nicely on small screens
 
-.create-reference-page {
+// Quick and dirty fixes to make the forms work nicely on small screens
+
+.standalone-form-submission-page {
     .main > .content {
         max-width: 62em;
     }
@@ -231,9 +232,13 @@ tr.reference-list {
         justify-content: center;
     }
 
-    #id_create_reference {
+    form {
         p > input:not([type=checkbox]), textarea {
             display: block;
+        }
+        p > select {
+            display: block;
+            max-width: 90vw;
         }
         input[type=checkbox] + span.helptext {
             display: block;
