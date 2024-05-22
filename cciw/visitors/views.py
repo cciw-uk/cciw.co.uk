@@ -39,7 +39,7 @@ def create_visitor_log(request: HttpRequest, token: str) -> HttpResponse:
                 + "You can add another entry below if you need to, which has been pre-filled with some previous values.",
             )
 
-            url = furl(reverse("cciw-visitors-create_log"))
+            url = furl(reverse("cciw-visitors-create_log", kwargs={"token": token}))
             url = url.add(
                 {
                     "camp": log.camp.id,
