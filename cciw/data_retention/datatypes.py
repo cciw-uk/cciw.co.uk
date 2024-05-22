@@ -84,9 +84,3 @@ class ErasureMethod:
         to a QuerySet.update() call.
         """
         raise NotImplementedError(f"{self.__class__} needs to implement build_update_dict")
-
-
-Policy.__pydantic_model__.update_forward_refs()
-Group.__pydantic_model__.update_forward_refs()
-Rules.__pydantic_model__.update_forward_refs()
-ModelDetail.__pydantic_model__.update_forward_refs()

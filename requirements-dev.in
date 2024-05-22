@@ -1,6 +1,7 @@
 beautifulsoup4>=4.11.1
 django-debug-toolbar>=4.1.0
-django-functest>=1.5.2
+# See https://github.com/django-functest/django-functest/issues/55
+django-functest==1.5.4
 hypothesis>=6.54.6
 ipython>=8.5.0
 lxml>=4.9.1

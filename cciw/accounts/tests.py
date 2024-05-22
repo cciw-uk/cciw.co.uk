@@ -77,7 +77,9 @@ class PwnedPasswordPatcherMixin:
 
     def setUp(self):
         super().setUp()
-        self.pwned_password_patcher = patch("pwned_passwords_django.api.pwned_password", new=self.pwned_password)
+        self.pwned_password_patcher = patch(
+            "pwned_passwords_django.api.default_client.check_password", new=self.check_password
+        )
         self.pwned_password_patcher.start()
         self.pwned_password_call_count = 0
 
@@ -85,7 +87,7 @@ class PwnedPasswordPatcherMixin:
         self.pwned_password_patcher.stop()
         super().tearDown()
 
-    def pwned_password(self, password):
+    def check_password(self, password):
         self.pwned_password_call_count += 1
         return password in self.PWNED_PASSWORDS
 

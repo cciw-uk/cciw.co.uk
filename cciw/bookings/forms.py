@@ -58,11 +58,14 @@ class FixPriceMixin:
         year = common.get_thisyear()
         prices = {p.price_type: p.price for p in Price.objects.filter(year=year)}
 
+        price_choices_2 = []
         for i, (price_type, label) in enumerate(price_choices):
             if price_type in prices:
-                caption = price_choices[i][1] + f" - £{prices[price_type]}"
-                price_choices[i] = (price_choices[i][0], caption)
-        self.fields["price_type"].choices = price_choices
+                caption = label + f" - £{prices[price_type]}"
+                price_choices_2.append((price_type, caption))
+            else:
+                price_choices_2.append((price_type, label))
+        self.fields["price_type"].choices = price_choices_2
 
 
 class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):

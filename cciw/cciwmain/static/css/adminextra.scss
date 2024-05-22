@@ -7,10 +7,13 @@
     --primary: #1e913b;
     --secondary: #065a1b;
     --breadcrumbs-fg: #cce8c4;
+    --breadcrumbs-bg: var(--primary);
     --link-fg: #3b8439;
     --link-hover-color: #0d6600;
     --link-selected-fg: #0d5902;
+    --button-bg: var(--primary);
     --button-hover-bg: #6bb660;
+    --default-button-bg: var(--secondary);
     --default-button-hover-bg: #226720;
 }
 
