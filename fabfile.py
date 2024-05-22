@@ -104,6 +104,8 @@ REQS = [
     "zlib1g-dev",
     # Soft uwsgi requirement (for harakiri alerts)
     "libpcre3-dev",
+    # for pango, weasyprint
+    "libpangocairo-1.0-0",
     # Other
     "certbot",
     "bogofilter",
@@ -180,10 +182,15 @@ def provision(c):
     _fix_startup_services(c)
 
 
-def _install_system(c: Connection):
-    # Install system requirements
+@root_task()
+def install_apt_requirements(c):
     apt.update_upgrade(c)
     apt.install(c, REQS)
+
+
+def _install_system(c: Connection):
+    # Install system requirements
+    install_apt_requirements(c)
     # Remove some bloat:
     apt.remove(c, ["snapd"])
     disks.add_swap(c, size="1G", swappiness="10")
