@@ -40,6 +40,9 @@
       {% if show_dbs_officer_links %}
         <li><a href="{% url 'cciw-officers-manage_dbss' thisyear %}">Manage DBSs</a></li>
       {% endif %}
+      {% if show_visitor_book_links %}
+        <li><a href="{% url 'cciw-officers-visitor_book_utilities' %}">Visitor book utilities</a></li>
+      {% endif %}
       {% if show_secretary_links or show_booking_secretary_links %}
         <li>Download {{ thisyear }} brochure mailing list:
           <a href="{% url 'cciw-officers-brochure_mailing_list' thisyear %}">XLS</a>

@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.template.response import TemplateResponse
 
 NamedUrl: TypeAlias = str
-BreadCrumb = tuple[NamedUrl | None, str]
+BreadCrumb: TypeAlias = tuple[NamedUrl | None, str]
 
 
 def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):
@@ -22,5 +22,5 @@ def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):
     return decorator
 
 
-officers_breadcrumbs = [("cciw-officers-index", "Officer home page")]
-leaders_breadcrumbs = officers_breadcrumbs + [("cciw-officers-leaders_index", "Leaders' tools")]
+officers_breadcrumbs: list[BreadCrumb] = [("cciw-officers-index", "Officer home page")]
+leaders_breadcrumbs: list[BreadCrumb] = officers_breadcrumbs + [("cciw-officers-leaders_index", "Leaders' tools")]

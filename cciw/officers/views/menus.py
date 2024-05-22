@@ -4,6 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
 
+from cciw.accounts.models import User
 from cciw.bookings.models import most_recent_booking_year
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
@@ -27,8 +28,8 @@ def index(request):
     if redirect_resp is not None:
         return redirect_resp
 
-    user = request.user
-    context = {
+    user: User = request.user
+    context: dict = {
         "title": "Officer home page",
     }
     context["thisyear"] = common.get_thisyear()
@@ -36,6 +37,7 @@ def index(request):
     if user.is_camp_admin or user.is_superuser:
         context["show_leader_links"] = True
         context["show_admin_link"] = True
+        context["show_visitor_book_links"] = True
     if user.is_cciw_secretary or user.is_superuser:
         context["show_secretary_links"] = True
         context["show_admin_link"] = True
@@ -51,6 +53,7 @@ def index(request):
         if booking_year is not None:
             context["booking_stats_end_year"] = booking_year
             context["booking_stats_start_year"] = booking_year - BOOKING_STATS_PREVIOUS_YEARS
+        context["show_visitor_book_links"] = True
 
     return TemplateResponse(request, "cciw/officers/index.html", context)
 

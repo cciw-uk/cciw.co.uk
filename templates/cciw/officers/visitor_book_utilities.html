@@ -1,0 +1,19 @@
+{% extends "cciw/officers/base.html" %}
+
+{% block content %}
+  <div id="content-main">
+
+    <h2>Visitor book</h2>
+
+    <ul>
+      <li>
+        <a href="{{ create_log_url }}">Add visitor book entry for {{ thisyear }}</a>
+      </li>
+      <li>
+        <a href="{% url 'cciw-officers-visitor_book_printout' %}">Printout for camp for {{ thisyear }}</a>
+        (<a download href="{% url 'cciw-officers-visitor_book_printout' %}">download</a>)
+      </li>
+    </ul>
+  </div>
+
+{% endblock %}

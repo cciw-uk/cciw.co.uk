@@ -19,10 +19,14 @@ def make_visitor_log_token(year: int) -> str:
     return salted_hmac("cciw.visitors.create_visitor_log", f"year:{year}").hexdigest()[0:8]
 
 
+def make_visitor_log_url(year: int) -> str:
+    return reverse("cciw-visitors-create_log", kwargs={"token": make_visitor_log_token(year)})
+
+
 def create_visitor_log(request: HttpRequest, token: str) -> HttpResponse:
     correct_token = make_visitor_log_token(common.get_thisyear())
 
-    if token != correct_token:
+    if token.lower() != correct_token:
         return TemplateResponse(request, "cciw/visitors/create_log.html", {"incorrect_url": True})
 
     if request.method == "POST":

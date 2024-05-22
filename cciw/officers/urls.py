@@ -97,6 +97,17 @@ urlpatterns = [
         views.dbs_register_received,
         name="cciw-officers-dbs_register_received",
     ),
+    # Visitor book
+    path(
+        "visitor-book-utilities/",
+        views.visitor_book_utilities,
+        name="cciw-officers-visitor_book_utilities",
+    ),
+    path(
+        "visitor-book-utilities/printout/",
+        views.visitor_book_printout,
+        name="cciw-officers-visitor_book_printout",
+    ),
     # Officer stats
     path("leaders/officer-stats/<yyyy:year>/", views.officer_stats, name="cciw-officers-officer_stats"),
     path(

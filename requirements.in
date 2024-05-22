@@ -44,3 +44,5 @@ pygments==2.14.0
 git+https://github.com/cciw-uk/fabutils.git@b891d25ddfe465a49b3ce12dcfcde0e2f14f15da#fabutils
 django-widget-tweaks==1.4.12
 backports.strenum
+weasyprint==62.1
+qrcode[pil]==7.4.2

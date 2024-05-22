@@ -1,0 +1,11 @@
+<html>
+  <head><title>Camp Visitor Book</title></head>
+  <body>
+    <h1>Camp Visitor Book {{ year }}</h1>
+    <p>Visitors on camp need to be logged in our visitor book.</p>
+    <p>Please fill in the form at:</p>
+    <p><a href="{{ create_log_url }}">{{ create_log_url }}</a></p>
+    <p>or scan the QR code:</p>
+    <p><img src="{{ qrcode }}" alt="QR Code"></p>
+  </body>
+</html>
