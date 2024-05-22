@@ -236,6 +236,19 @@
       - applicant_accepted
       - registered_with_dbs_update
 
+    - name: visitors.VisitorLog
+      # This is our "visitor book" that records people who were on the camp site
+      # but were not officers or campers. It is stored forever for legal reasons.
+      columns:
+      - camp
+      - guest_name
+      - arrived_on
+      - left_on
+      - purpose_of_visit
+      - logged_at
+      - remote_addr
+
+
 # Deletable camper and parent booking data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
