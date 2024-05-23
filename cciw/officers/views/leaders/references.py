@@ -318,6 +318,7 @@ def view_reference(request, reference_id: int):
 
 
 def htmx_reference_events_response(
+    *,
     closeModal: bool = False,
     refreshReferee: Referee | None = None,
 ):

@@ -91,6 +91,7 @@ def manage_dbss(request, year: int) -> HttpResponse:
 
 
 def htmx_dbs_events_response(
+    *,
     closeModal: bool = False,
     refreshOfficer: User | None = None,
 ) -> HttpResponse:

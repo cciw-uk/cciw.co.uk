@@ -52,7 +52,7 @@ def test_inclusion_tag_names():
           ]
           """,
         message="The @inclusion_tag function name should match the template file name",
-        expected_count=2,
+        expected_count=3,
     )
 
 
@@ -87,4 +87,51 @@ def good():
 
 @register.inclusion_tag("something/good2.html")
 def good2():
+    pass
+
+
+def test_boolean_arguments_are_keyword_only():
+    """
+    Check that any function arguments with type hint of `bool` should be keyword argument only.
+
+    This is because in calls like `do_thing(123, True)`, the `True` argument is almost always
+    difficult to decipher, while `do_thing(123, dry_run=True)` is much better.
+    """
+    assert_expected_pyastgrep_matches(
+        """
+        .//FunctionDef/args/arguments/args/arg/annotation/Name[@id="bool"]
+        """,
+        message="Function arguments with type `bool` should be keyword-only",
+        expected_count=3,
+    )
+
+
+# Examples:
+
+
+def good_boolean_arg(*, foo: bool):
+    pass
+
+
+def good_boolean_arg_2(*, foo: bool = True):
+    pass
+
+
+def good_boolean_arg_3(*, x: int, foo: bool = True):
+    pass
+
+
+def good_boolean_arg_4(x: int, *, foo: bool = True):
+    pass
+
+
+def bad_boolean_arg(foo: bool):  # pyastgrep: expected
+    pass
+
+
+def bad_boolean_arg_2(foo: bool = True):  # pyastgrep: expected
+    pass
+
+
+def bad_boolean_arg_3(x: int, foo: bool = True):  # pyastgrep: expected
     pass

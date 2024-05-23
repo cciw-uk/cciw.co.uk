@@ -158,6 +158,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
 
     def create_booking(
         self,
+        *,
         shortcut: bool = Auto,
         camp: Camp = Auto,
         first_name: str = Auto,

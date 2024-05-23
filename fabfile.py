@@ -526,7 +526,7 @@ def upload_project_templates(c: Connection, target: Version):
         upload_template_and_reload(c, template, context_data)
 
 
-def update_database(c: Connection, target: Version, fake_migrations: bool = False):
+def update_database(c: Connection, target: Version, *, fake_migrations: bool = False):
     if fake_migrations:
         args = "--fake"
     else:
