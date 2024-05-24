@@ -253,7 +253,7 @@ packaging==24.0
     # via
     #   build
     #   pytest
-pandas==2.2.2
+pandas==1.5.3
     # via
     #   -r requirements.in
     #   pandas-highcharts
@@ -453,8 +453,6 @@ typing-extensions==4.11.0
     #   pydantic
     #   pydantic-core
     #   qrcode
-tzdata==2024.1
-    # via pandas
 urllib3[socks]==1.26.18
     # via
     #   botocore

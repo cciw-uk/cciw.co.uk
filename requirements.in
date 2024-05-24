@@ -15,7 +15,8 @@ frozendict>=2.3.4
 furl>=2.1.3
 numpy>=1.23.3
 pandas-highcharts>=0.5.2
-pandas>=1.4.4
+# pandas-highcharts fails with recent pandas:
+pandas<2
 pip-tools>=7.3.0
 psutil>=5.9.2
 psycopg2-binary>=2.9.3
