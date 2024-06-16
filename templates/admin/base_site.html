@@ -42,7 +42,10 @@
 
       <a href="{% url 'cciw-officers-index' %}">Officer homepage</a> /
 
-      <a href="{% url 'admin:logout' %}">Log out</a>
+      <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Log out</button>
+      </form>
     {% endblock %}
   </div>
 {% endblock %}

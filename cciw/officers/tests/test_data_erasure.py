@@ -21,7 +21,7 @@ class DataErasureRequestTestsBase(FuncBaseMixin):
         self.get_url("cciw-officers-data_erasure_request_start")
         self.fill({"#searchbar": "joe@example.com"})
 
-        self.submit("[type=submit]")
+        self.submit("[type=submit][value=Search]")
         self.assertTextPresent("Joe Bloggs")
         self.assertTextAbsent("Joan Bloggs")
         self.assertTextAbsent(officer2.email)
