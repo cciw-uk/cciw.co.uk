@@ -1,5 +1,7 @@
+from collections.abc import Callable
 from datetime import date, timedelta
 from itertools import groupby
+from typing import Any
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.sites.shortcuts import get_current_site
@@ -113,10 +115,11 @@ def camp_sharable_transport_details_to_spreadsheet(camp: Camp):
     accounts = (
         BookingAccount.objects.filter(share_phone_number=True).filter(bookings__in=camp.bookings.confirmed()).distinct()
     )
-    columns = [
+    columns: list[tuple[str, Callable[[BookingAccount], Any]]] = [
         ("Name", lambda a: a.name),
         ("Post code", lambda a: a.address_post_code),
         ("Phone number", lambda a: a.phone_number),
+        ("Email address", lambda a: a.email),
     ]
 
     spreadsheet.add_sheet_with_header_row(

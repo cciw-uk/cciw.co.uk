@@ -389,7 +389,7 @@ class BookingAccount(models.Model):
     address_post_code = models.CharField("post code", blank=True, max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
     share_phone_number = models.BooleanField(
-        "Allow this phone number to be passed on " "to other parents to help organise transport",
+        "Allow this phone number to be passed on to other parents to help organise transport",
         blank=True,
         default=False,
     )
