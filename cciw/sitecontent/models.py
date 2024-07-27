@@ -59,7 +59,7 @@ class HtmlChunk(models.Model):
                 """<div class="editChunkLink">&laquo;
                                 <a href="{0}">Edit {1}</a> &raquo;
                                 </div>""",
-                reverse("admin:sitecontent_htmlchunk_change", args=(quote(self.name),)),
+                reverse("admin:sitecontent_htmlchunk_change", args=(quote(self.id),)),
                 self.name,
             )
         return html
