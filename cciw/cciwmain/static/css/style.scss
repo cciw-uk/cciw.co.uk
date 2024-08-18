@@ -310,7 +310,7 @@ $menubarUnselectedColor: #909090;
 
             a, .spacer {
                 border-bottom: var(--menubar-border-thickness) solid var(--menubar-border-color);
-                &[aria-current="page"] {
+                &[aria-current="page"], &.currentSection {
                     border-left: var(--menubar-border-thickness) solid var(--menubar-border-color);
                     border-right: var(--menubar-border-thickness) solid var(--menubar-border-color);
                     border-bottom-color: transparent;
