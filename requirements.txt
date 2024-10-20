@@ -359,7 +359,7 @@ pytz==2024.1
     #   pandas
 pywatchman==2.0.0
     # via -r requirements.in
-pyyaml==6.0
+pyyaml==6.0.2
     # via
     #   -r requirements.in
     #   pymdown-extensions
