@@ -266,7 +266,7 @@ def account_details(request):
 @htmx_form_validate(form_class=AddPlaceForm)
 def add_or_edit_place(
     request,
-    booking_id: int = None,
+    booking_id: int | None = None,
     *,
     context: dict | None = None,
     form_input_data: dict | None = None,
