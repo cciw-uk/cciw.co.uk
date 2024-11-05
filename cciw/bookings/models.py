@@ -1,12 +1,12 @@
 """
 Accounts and places for campers coming in camps
 """
+
 import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from functools import lru_cache
-from typing import TypeAlias
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -1924,7 +1924,7 @@ class AccountTransferPayment(NoEditMixin, models.Model):
         return f"Transfer: {self.amount} transferred from {self.from_account} to {self.to_account}"
 
 
-PaymentModel: TypeAlias = ManualPayment | RefundPayment | WriteOffDebt | AccountTransferPayment | PayPalIPN
+type PaymentModel = ManualPayment | RefundPayment | WriteOffDebt | AccountTransferPayment | PayPalIPN
 
 
 # This model abstracts the different types of payment that can be the source for

@@ -77,7 +77,7 @@ def _merge_blocks(blocks: Iterable[RstBlock | YamlBlock]) -> Generator[RstBlock 
             yield growing_block
 
     for block in blocks:
-        if growing_block is not None and type(growing_block) == type(block):
+        if growing_block is not None and type(growing_block) is type(block):
             growing_block.text += "\n" + block.text
         else:
             yield from yield_growing()

@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable
+from typing import assert_never
 
 import furl
 from django.conf import settings
@@ -8,7 +9,6 @@ from django.http import HttpResponseRedirect
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.urls import reverse
-from typing_extensions import assert_never
 
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_verify_email
 from cciw.bookings.models import BookingAccount

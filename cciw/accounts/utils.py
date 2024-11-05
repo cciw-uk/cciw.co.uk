@@ -8,7 +8,7 @@ def merge_model_instances(from_instances: list, to_instance):
     if not from_instances:
         return
     for from_instance in from_instances:
-        assert type(from_instance) == type(to_instance)
+        assert type(from_instance) is type(to_instance)
     model_cls = from_instances[0].__class__
     relations = [f for f in model_cls._meta.get_fields() if f.is_relation]
     many_to_many_fields = [f for f in relations if f.many_to_many]

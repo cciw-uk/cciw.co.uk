@@ -385,7 +385,7 @@ def code_quality_checks(c):
     """
     Run code quality checks, including tests.
     """
-    c.local("ruff check .", echo=True)
+    c.local("pre-commit run ruff --all-files", echo=True)
     c.local("pytest", echo=True, pty=True)
 
 

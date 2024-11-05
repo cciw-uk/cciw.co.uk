@@ -1,11 +1,10 @@
 from functools import wraps
-from typing import TypeAlias
 
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 
-NamedUrl: TypeAlias = str
-BreadCrumb: TypeAlias = tuple[NamedUrl | None, str]
+type NamedUrl = str
+type BreadCrumb = tuple[NamedUrl | None, str]
 
 
 def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):

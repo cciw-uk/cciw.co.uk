@@ -1,7 +1,7 @@
+from enum import StrEnum
 from functools import wraps
 
 import furl
-from backports.strenum import StrEnum
 from django.template.response import TemplateResponse
 
 
