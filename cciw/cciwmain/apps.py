@@ -12,6 +12,16 @@ class CciwmainConfig(AppConfig):
         # Setup signals
         import cciw.cciwmain.hooks  # NOQA
 
+        # Hacks:
+        # Monkey patch pandas_highcharts to fix failure with pandas >= 2
+        import pandas_highcharts.core
+        import pandas
+
+        def json_encode(obj):
+            return pandas.io.json.ujson_dumps(obj)
+
+        pandas_highcharts.core.json_encode = json_encode
+
 
 @register(Tags.models)
 def check_data_retention(app_configs, **kwargs):
