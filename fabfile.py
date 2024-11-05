@@ -493,7 +493,7 @@ def create_venv(c, target):
     if files.exists(c, venv_root):
         return
 
-    c.run(f"uv python install {PYTHON_BIN}")
+    c.run(f"uv python install {PYTHON_BIN}", echo=True)
     c.run(f"uv venv --seed --python={PYTHON_BIN} {venv_root}", echo=True)
     c.run(f"echo {target.SRC_ROOT} > {target.VENV_ROOT}/lib/{PYTHON_BIN}/site-packages/projectsource.pth", echo=True)
 
