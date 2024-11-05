@@ -4,15 +4,15 @@ Development setup
 Using local machine
 -------------------
 
-(Ideally we would include a Vagrant/Docker setup, but these always seem to be
-more trouble than they are worth, they always get out of date if they are not
-actually being using for deployment).
+This assumes a Linux machine, but Windows/Mac may work.
 
-Assuming a Linux/Unix machine, the requirements are:
+First, install:
 
-* Python 3.10
-* Postgres 14
-* bogofilter
+- `uv <https://docs.astral.sh/uv/>`_. This will be used to install Python and manage all Python dependencies
+- `Nix <https://nix.dev/>`_
+- `Devbox <https://www.jetify.com/docs/devbox/>`_. Devbox (which relies on Nix) will install all other “system” dependencies.
+
+- Optionally, install `direnv <https://github.com/direnv/direnv>`_ to make it easier to activate the devbox/uv environments.
 
 For tests, see also:
 
@@ -30,26 +30,43 @@ These steps have only been tested on Ubuntu-based Linux installations.
   Edit your ``.git/config`` and ensure the GitHub remote is called ``origin``
   - this is needed for deploying.
 
-* Make a virtualenv using Python 3.10 e.g. using mkvirtualenv/virtualenv_wrapper::
+* Switch into the devbox shell. This will take a long time the first time, as everything is installed::
 
-    mkvirtualenv --python=`which python3.10` -a `pwd` cciw
+    devbox shell
 
-  Add project path to the venv::
+* Install Python 3.12::
 
-    pwd > $VIRTUAL_ENV/lib/python3.10/site-packages/project.pth
+    uv python install 3.12
+
+* Make a virtualenv using Python 3.12::
+
+    uv venv --python python3.12 --prompt cciw
+
+* Install the requirements using uv and then the fabfile::
+
+    uv sync
+    uv run fab initial-dev-setup
 
 * Create an alias for 'cciw.local' that points to localhost, 127.0.0.1. On
   Linux, you do this by adding the following line to /etc/hosts::
 
     127.0.0.1          cciw.local
 
-* Install the requirements using the fabfile::
-
-    pip install --upgrade pip wheel
-    pip install -r requirements.txt
-    fab initial-dev-setup
-
 * Make any local changes needed in ``cciw/settings_local.py``.
+
+* Initialise the Postgres DB files::
+
+    devbox run init_db
+
+* In another terminal, start the services (including Postgres)::
+
+    devbox services up
+
+  You will need to leave this running.
+
+* In the first terminal, create the development database::
+
+    devbox run create_dev_db
 
 * Populate the DB::
 
@@ -72,18 +89,15 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     $ pre-commit install
 
-  (this assumes you have already `installed pre-commit
-  <https://pre-commit.com/>`_)
-
 * To be able to mark releases in Sentry, you need Sentry credentials. To
   activate them, you should create a ``cciw_sentry_env`` file like the
-  following, preferably stored in an encrypted folder::
+  following, preferably stored in an encrypted folder, and not in the repo::
 
     export SENTRY_AUTH_TOKEN=MYSECRETTOKEN
 
-  Then add it to the venv::
+  Then add it to the dotenv file ::
 
-    echo "source /path/to/my/cciw_sentry_env" >> $VIRTUAL_ENV/bin/postactivate
+    echo "source /path/to/my/cciw_sentry_env" >> .env
 
 See also `<deployment.rst>`_ for docs on deploying, and setup you might
 want to do now for that.

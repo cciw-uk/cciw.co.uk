@@ -379,9 +379,9 @@ if LIVEBOX and not CHECK_DEPLOY:
     DB_PASSWORD = SECRETS["PRODUCTION_DB_PASSWORD"]
     DB_PORT = SECRETS["PRODUCTION_DB_PORT"]
 else:
-    DB_NAME = "cciw"
-    DB_USER = "cciw"
-    DB_PASSWORD = "cciw"
+    DB_NAME = "cciw_dev"
+    DB_USER = "cciw_dev"
+    DB_PASSWORD = "cciw_dev"
     DB_PORT = "5432"
 
 
