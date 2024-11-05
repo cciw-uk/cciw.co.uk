@@ -28,7 +28,7 @@ DOMAINS = ["www.cciw.co.uk"]
 PROJECT_LOCALE = "en_GB.UTF-8"
 
 
-PYTHON_BIN = "python3.10"  # See also packages below
+PYTHON_BIN = "python3.12"  # See also packages below
 PYTHON_PREFIX = ""  # e.g. /usr/local.  Use "" for automatic
 PYTHON_FULL_PATH = f"{PYTHON_PREFIX}/bin/{PYTHON_BIN}" if PYTHON_PREFIX else PYTHON_BIN
 
@@ -81,7 +81,7 @@ REQS = [
     # Daemons
     "supervisor",  # For running uwsgi and php-cgi daemons
     "nginx",
-    # Python stuff
+    # Python stuff - currently just for install uv, which then installs everything else.
     "python3.10",
     "python3.10-venv",
     "python3-pip",
@@ -194,7 +194,7 @@ def _install_system(c: Connection):
     # Remove some bloat:
     apt.remove(c, ["snapd"])
     disks.add_swap(c, size="1G", swappiness="10")
-    c.run("pip install -U pip virtualenv wheel virtualenvwrapper", echo=True)
+    c.run("pip install -U pip virtualenv wheel virtualenvwrapper uv", echo=True)
     ssl.generate_ssl_dhparams(c)
 
 
@@ -493,7 +493,8 @@ def create_venv(c, target):
     if files.exists(c, venv_root):
         return
 
-    c.run(f"virtualenv --python={PYTHON_BIN} {venv_root}", echo=True)
+    c.run(f"uv python install {PYTHON_BIN}")
+    c.run(f"uv venv --seed --python={PYTHON_BIN} {venv_root}", echo=True)
     c.run(f"echo {target.SRC_ROOT} > {target.VENV_ROOT}/lib/{PYTHON_BIN}/site-packages/projectsource.pth", echo=True)
 
 
@@ -502,8 +503,7 @@ def install_requirements(c: Connection, target: Version):
 
 
 def install_requirements_with(run_command: Callable):
-    run_command("pip install --progress-bar off --upgrade setuptools pip wheel six", echo=True)
-    run_command("pip install --progress-bar off -r requirements.txt --exists-action w", echo=True)
+    run_command("uv sync --no-progress", echo=True)
 
 
 def build_static(c: Connection, target: Version):
