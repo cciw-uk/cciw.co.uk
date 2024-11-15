@@ -610,20 +610,9 @@ def restart_webserver(c):
     """
     Gracefully restarts the webserver that is running the Django instance
     """
-    # Do we need this if supervisor is controlling gunicorn?
-
-    pidfile = f"/tmp/{PROJECT_NAME}_gunicorn.pid"
-    if files.exists(c, pidfile):
-        # This is the graceful way that reduces downtime to minimum
-        result = c.run(f"kill -HUP `cat {pidfile}`", warn=True)
-
-        # Fall back to worse method
-        if result.failed:
-            stop_webserver(c)
-            start_webserver(c)
-    else:
-        stop_webserver(c)
-        start_webserver(c)
+    # We don't use `kill -HUP` against the pidfile, as it seems
+    # to be introduce bugs - gunicorn keeps working in the old directory I think?
+    supervisorctl(c, f"restart {PROJECT_NAME}_gunicorn", ignore_errors="already started")
 
 
 @root_task()
