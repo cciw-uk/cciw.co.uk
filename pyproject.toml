@@ -111,6 +111,7 @@ dev-dependencies = [
     "texttable>=1.7.0",
     "time-machine>=2.8.1",
     "vcrpy>=4.2.1",
+    "visidata>=3.1.1",
     "werkzeug>=3.1.1",
 ]
 
