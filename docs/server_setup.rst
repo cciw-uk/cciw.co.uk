@@ -68,6 +68,10 @@ the same provider. If moving to a new host, some steps will need to be changed.
 
    167.99.206.14 cciw4.digitalocean.com
 
+   You should also have an entry for the old machine (cciw3.digitalocean.com),
+   so you can refer specifically to the correct one without relying on DNS
+   records for ``cciw.co.uk``
+
    Check you can login to the new VPS with ``ssh root@cciw4.digitalocean.com``
 
 5. Change ``DEFAULT_HOST`` in ``fabfile.py`` to point to the new VPS. Remember that
@@ -109,7 +113,7 @@ the process works.
 7. Download DB and media from old server. Note use of ``-H`` flag to point to old
    server temporarily::
 
-     fab -H cciw2.digitalocean.com download-app-data get-live-db
+     fab -H cciw3.digitalocean.com download-app-data get-live-db
 
 8. Upload media and DB to new server - make sure -H is correct, and change
    ``<filename>`` to the file downloaded in step 7::
@@ -134,7 +138,7 @@ Now we'll repeat some steps, with changes:
 
 11. Stop the old server (or set to “maintenance mode” somehow, TODO)::
 
-    fab -H cciw2.digitalocean.com stop-all
+    fab -H cciw3.digitalocean.com stop-all
 
 12. Same as step 7 - download media and DB from old server
 
