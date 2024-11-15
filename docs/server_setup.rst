@@ -22,7 +22,7 @@ the same provider. If moving to a new host, some steps will need to be changed.
    Later on, at least 1 hour before switch over, we'll reduce it further to 5
    minutes.
 
-   On Digital Ocean, these setting can be done on the `Networking page
+   On Digital Ocean, these settings can be done on the `Networking page
    <https://cloud.digitalocean.com/networking/domains>`_.
 
 2. Fetch old SSL certificates::
