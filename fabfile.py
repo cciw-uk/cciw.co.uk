@@ -82,13 +82,13 @@ REQS = [
     "supervisor",  # For running gunicorn and php-cgi daemons
     "nginx",
     # Python stuff - currently just for install uv, which then installs everything else.
-    "python3.10",
-    "python3.10-venv",
+    "python3.12",
+    "python3.12-venv",
     "python3-pip",
     # For building Python extensions
     "build-essential",
     "python3-dev",
-    "python3.10-dev",
+    "python3.12-dev",
     "libpq-dev",  # For psycopg2
     "libxml2-dev",  # For lxml
     "libxslt-dev",  # For lxml

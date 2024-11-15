@@ -39,33 +39,36 @@ the same provider. If moving to a new host, some steps will need to be changed.
 
    Choose:
 
-   - Latest Ubuntu LTS (last time - 22.04 x64)
-   - Basic plan
-   - Smallest box (last time - $6/month, 1 Gb mem, 25 Gb disk, 1000 Gb transfer)
    - London datacenter
+   - Latest Ubuntu LTS (last time - 24.04 (LTS) x64)
+   - Size: Shared CPU, Basic
+   - CPU: Premium Intel, NVMe SSD
+   - Smallest box (last time - $8/month, 1 Gb mem, 35 Gb disk, 1000 Gb transfer)
+
    - SSH authentication
      - choose an SSH key - will need to upload one if there isn't one configured
 
        This key should be the same as ~/.ssh/id_rsa.pub on the machine you deploy from.
 
-   - Enable backups
-   - Enable IPv6
+   - Enable backups - weekly
+   - Advanced options:
+     - Enable IPv6
 
    - 1 droplet
-   - Hostname: 'cciw' plus an incrementing number (last time: cciw3)
+   - Hostname: 'cciw' plus an incrementing number (last time: cciw4)
 
      Use incrementing numbers for each new VM, to ensure you don't confuse with
      previous one. This is not the same as the public domain name. Substitute
-     this name wherever ``cciw3`` appears below.
+     this name wherever ``cciw4`` appears below.
 
    - Project: CCIW
 
 4. Add new VPS to your local /etc/hosts so that it can be accessed easily, using
    the IP address given e.g.::
 
-   157.245.36.120 cciw3.digitalocean.com
+   167.99.206.14 cciw4.digitalocean.com
 
-   Check you can login to the new VPS with ``ssh root@cciw3.digitalocean.com``
+   Check you can login to the new VPS with ``ssh root@cciw4.digitalocean.com``
 
 5. Change ``DEFAULT_HOST`` in ``fabfile.py`` to point to the new VPS. Remember that
    from now on it will use the new VPS by default, unless ``-H`` flag is passed.
@@ -111,11 +114,11 @@ the process works.
 8. Upload media and DB to new server - make sure -H is correct, and change
    ``<filename>`` to the file downloaded in step 7::
 
-     fab -H cciw3.digitalocean.com upload-app-data stop-all migrate-upload-db <filename>
+     fab -H cciw4.digitalocean.com upload-app-data stop-all migrate-upload-db <filename>
 
    This may return some errors, while still being successful. Restart webserver::
 
-     fab -H cciw3.digitalocean.com restart-webserver
+     fab -H cciw4.digitalocean.com restart-webserver
 
 9. Use your local /etc/hosts to point www.cciw.co.uk to the new server, and test
    the new site works as expected. Revert /etc/hosts so that you don’t
