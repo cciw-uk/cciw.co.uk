@@ -1,8 +1,12 @@
 """
 User accounts for staff
 """
+
+from __future__ import annotations
+
 import logging
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import yaml
 from django.conf import settings
@@ -17,6 +21,9 @@ from django.db import models, transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.functional import cached_property
+
+if TYPE_CHECKING:
+    from cciw.cciwmain.models import Camp
 
 # These names need to be synced with /config/static_roles.yaml
 WIKI_USERS_ROLE_NAME = "Wiki users"
@@ -416,7 +423,7 @@ class User(AbstractBaseUser):
         return self.current_camps_as_admin_or_leader
 
     @cached_property
-    def camps_as_admin_or_leader(self):
+    def camps_as_admin_or_leader(self) -> models.QuerySet[Camp]:
         """
         Returns all the camps for which the user is an admin or leader.
         """
@@ -436,7 +443,7 @@ class User(AbstractBaseUser):
         return camps.distinct()
 
     @cached_property
-    def current_camps_as_admin_or_leader(self):
+    def current_camps_as_admin_or_leader(self) -> list[Camp]:
         from cciw.cciwmain import common
 
         # re-use cached camps_as_admin_or_leader here.
