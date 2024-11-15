@@ -85,6 +85,7 @@ REQS = [
     "python3.12",
     "python3.12-venv",
     "python3-pip",
+    "pipx",
     # For building Python extensions
     "build-essential",
     "python3-dev",
@@ -197,7 +198,8 @@ def _install_system(c: Connection):
     # Remove some bloat:
     apt.remove(c, ["snapd"])
     disks.add_swap(c, size="1G", swappiness="10")
-    c.run("pip install -U pip virtualenv wheel virtualenvwrapper uv", echo=True)
+    # We will use uv to install everything else
+    c.run("pipx install uv", echo=True)
     ssl.generate_ssl_dhparams(c)
 
 
@@ -499,6 +501,8 @@ def create_venv(c, target):
     if files.exists(c, venv_root):
         return
 
+    c.run("pipx install uv")
+    c.run("pipx ensurepath")
     c.run(f"uv python install {PYTHON_BIN}", echo=True)
     c.run(f"uv venv --seed --python={PYTHON_BIN} {venv_root}", echo=True)
     c.run(f"echo {target.SRC_ROOT} > {target.VENV_ROOT}/lib/{PYTHON_BIN}/site-packages/projectsource.pth", echo=True)

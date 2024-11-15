@@ -274,7 +274,6 @@ dependencies = [
     { name = "pymemcache" },
     { name = "python-dateutil" },
     { name = "pytz" },
-    { name = "pywatchman" },
     { name = "pyyaml" },
     { name = "qrcode", extra = ["pil"] },
     { name = "requests" },
@@ -353,7 +352,6 @@ requires-dist = [
     { name = "pymemcache", specifier = ">=3.5.2" },
     { name = "python-dateutil", specifier = ">=2.8.2" },
     { name = "pytz", specifier = ">=2022.2.1" },
-    { name = "pywatchman", specifier = ">=1.4.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "qrcode", extras = ["pil"], specifier = ">=7.4.2" },
     { name = "requests", specifier = ">=2.28.1" },
@@ -1924,15 +1922,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/3a/31/3c70bf7603cc2dca0f19bdc53b4537a797747a58875b552c8c413d963a3f/pytz-2024.2.tar.gz", hash = "sha256:2aa355083c50a0f93fa581709deac0c9ad65cca8a9e9beac660adcbd493c798a", size = 319692 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/11/c3/005fcca25ce078d2cc29fd559379817424e94885510568bc1bc53d7d5846/pytz-2024.2-py2.py3-none-any.whl", hash = "sha256:31c7c1817eb7fae7ca4b8c7ee50c72f93aa2dd863de768e1ef4245d426aa0725", size = 508002 },
-]
-
-[[package]]
-name = "pywatchman"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cf/39/fc10dd952ac72a3a293936cd66a4551fdeb9012d2db99234a376100641ce/pywatchman-2.0.0.tar.gz", hash = "sha256:25354d9e3647f94411a4c13e510c83a1ceecc17977b0525ba41b16e7019c7b0c", size = 40570 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/51/7f/5d68d803489770cffa5d2b44be99b978c866f8a4d8e835f9da850415ed8a/pywatchman-2.0.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:51c2b4c72bea6b9fd90caf20759f5bc47febf0fd27bf2f247b87c66e2f6bab02", size = 52557 },
 ]
 
 [[package]]
