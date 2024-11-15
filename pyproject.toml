@@ -50,9 +50,9 @@ dependencies = [
     "requests>=2.28.1",
     "sentry-sdk>=1.14.0",
     "sorl-thumbnail>=12.10.0",
-    "uwsgi>=2.0.20",
     "weasyprint>=61.2",
     "wiki==0.11.1",
+    "gunicorn>=23.0.0",
 ]
 
 

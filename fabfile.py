@@ -79,7 +79,7 @@ REQS = [
     "postgresql-contrib",
     "memcached",
     # Daemons
-    "supervisor",  # For running uwsgi and php-cgi daemons
+    "supervisor",  # For running gunicorn and php-cgi daemons
     "nginx",
     # Python stuff - currently just for install uv, which then installs everything else.
     "python3.10",
@@ -90,8 +90,8 @@ REQS = [
     "python3-dev",
     "python3.10-dev",
     "libpq-dev",  # For psycopg2
-    "libxml2-dev",  # For lxml/uwsgi
-    "libxslt-dev",  # For lxml/uwsgi
+    "libxml2-dev",  # For lxml
+    "libxslt-dev",  # For lxml
     "libffi-dev",  # For cffi
     # Soft PIL + jpegtran-cffi dependencies
     "libturbojpeg",
@@ -102,8 +102,6 @@ REQS = [
     "libfreetype6-dev",
     "zlib1g",
     "zlib1g-dev",
-    # Soft uwsgi requirement (for harakiri alerts)
-    "libpcre3-dev",
     # for pango, weasyprint
     "libpangocairo-1.0-0",
     # Other
@@ -124,6 +122,11 @@ TEMPLATES = [
         local_path="config/supervisor.conf.template",
         remote_path=f"/etc/supervisor/conf.d/{PROJECT_NAME}.conf",
         reload_command="supervisorctl reread; supervisorctl update",
+    ),
+    Template(
+        system=True,
+        local_path="config/gunicorn_logging.conf.template",
+        remote_path="/etc/gunicorn_logging.conf",
     ),
     Template(
         system=True,
@@ -587,7 +590,7 @@ def stop_webserver(c):
     """
     Stop the webserver that is running the Django instance
     """
-    supervisorctl(c, f"stop {PROJECT_NAME}_uwsgi", ignore_errors="no such process")
+    supervisorctl(c, f"stop {PROJECT_NAME}_gunicorn", ignore_errors="no such process")
 
 
 @root_task()
@@ -595,7 +598,7 @@ def start_webserver(c):
     """
     Starts the webserver that is running the Django instance
     """
-    supervisorctl(c, f"start {PROJECT_NAME}_uwsgi", ignore_errors="already started")
+    supervisorctl(c, f"start {PROJECT_NAME}_gunicorn", ignore_errors="already started")
 
 
 @root_task()
@@ -603,7 +606,9 @@ def restart_webserver(c):
     """
     Gracefully restarts the webserver that is running the Django instance
     """
-    pidfile = f"/tmp/{PROJECT_NAME}_uwsgi.pid"
+    # Do we need this if supervisor is controlling gunicorn?
+
+    pidfile = f"/tmp/{PROJECT_NAME}_gunicorn.pid"
     if files.exists(c, pidfile):
         # This is the graceful way that reduces downtime to minimum
         result = c.run(f"kill -HUP `cat {pidfile}`", warn=True)

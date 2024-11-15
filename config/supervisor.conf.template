@@ -1,27 +1,18 @@
-[program:%(PROJECT_NAME)s_uwsgi]
-command=%(VENV_ROOT)s/bin/uwsgi
-    --home %(VENV_ROOT)s
+[program:%(PROJECT_NAME)s_gunicorn]
+command=%(VENV_ROOT)s/bin/gunicorn
     --env PATH=%(VENV_ROOT)s/bin:%%(ENV_PATH)s
     --env HOME=/home/%(PROJECT_USER)s
     --env LANG=%(LOCALE)s --env LC_ALL=%(LOCALE)s --env LC_LANG=%(LOCALE)s
-    -s /tmp/%(PROJECT_NAME)s_uwsgi.sock
-    -w %(PROJECT_PYTHON_MODULE)s.wsgi
-    --master
-    --process 3
-    --harakiri 30 --http-timeout 180 --reload-on-rss 300
-    -C
-    -M
-    --logger file:logfile=/home/%(PROJECT_USER)s/logs/%(PROJECT_NAME)s_uwsgi.log,maxsize=200000
-    --buffer-size 16384
-    --ignore-sigpipe --ignore-write-errors --disable-write-exception
-    --pidfile=/tmp/%(PROJECT_NAME)s_uwsgi.pid
-# We are careful not to choose a directory within the 'current' symlink here,
-# otherwise uwsgi will not see the change to the symlink when it does a graceful
-# restart.
+    --bind unix:/tmp/gunicorn.sock
+    --workers 4
+    --log-config /etc/gunicorn_logging.conf
+    --pid=/tmp/%(PROJECT_NAME)s_gunicorn.pid
+    %(PROJECT_PYTHON_MODULE)s.wsgi
+# Choose a directory outside the 'current' symlink
 directory=/home/%(PROJECT_USER)s
 user=%(PROJECT_USER)s
 autostart=true
-stdout_logfile = /home/%(PROJECT_USER)s/logs/%(PROJECT_NAME)s_uwsgi.stdout
+stdout_logfile=/home/%(PROJECT_USER)s/logs/%(PROJECT_NAME)s_gunicorn.stdout
 autorestart=true
 redirect_stderr=true
 environment=LANG="%(LOCALE)s",LC_ALL="%(LOCALE)s",LC_LANG="%(LOCALE)s"
