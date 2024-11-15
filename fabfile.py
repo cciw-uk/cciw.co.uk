@@ -267,6 +267,9 @@ class Version:
 
     def project_run(self, c: Connection, cmd: str, **kwargs):
         with c.cd(self.SRC_ROOT), c.prefix(f"source {self.VENV_ROOT}/bin/activate"):
+            env = kwargs.pop("env", {})
+            env["UV_PROJECT_ENVIRONMENT"] = self.VENV_ROOT
+            kwargs["env"] = env
             return c.run(cmd, **kwargs)
 
 
