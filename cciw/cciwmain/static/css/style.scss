@@ -583,7 +583,7 @@ table.actiongrid {
     > tbody > tr {
         border-top: 1px solid #336633;
         border-bottom: 1px solid #336633;
-   }
+    }
     > tbody > tr > td {
         padding: 6px;
         vertical-align: middle;
@@ -998,9 +998,9 @@ table.bookinglist {
     #pagetitle {
         // Center within header
         padding-top: calc(min(
-                            75vh / 2 - 1em, /* header max-height */
-                            100vw * 774 / 1920 / 2 - 1em /* header height, halved */
-                           ));
+           75vh / 2 - 1em, /* header max-height */
+           100vw * 774 / 1920 / 2 - 1em /* header height, halved */
+        ));
     }
     // Shift menubar down to below photo
     // and center it.
