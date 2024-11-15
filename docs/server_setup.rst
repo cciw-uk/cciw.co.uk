@@ -125,8 +125,14 @@ the process works.
      fab -H cciw4.digitalocean.com restart-webserver
 
 9. Use your local /etc/hosts to point www.cciw.co.uk to the new server, and test
-   the new site works as expected. Revert /etc/hosts so that you don’t
-   confuse yourself.
+   the new site works as expected.
+
+   Check that you really are on the new site by monitoring logs on the new box::
+
+     ssh cciw@cciw4.digitalocean.com
+     tail -f ~/logs/cciw_gunicorn_access.log
+
+   Revert /etc/hosts so that you don’t confuse yourself.
 
 10. If everything works, prepare to do it for real
 
