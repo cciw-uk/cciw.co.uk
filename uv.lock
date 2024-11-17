@@ -288,6 +288,7 @@ dev = [
     { name = "django-debug-toolbar" },
     { name = "django-extensions" },
     { name = "django-functest" },
+    { name = "faker" },
     { name = "hypothesis" },
     { name = "ipython" },
     { name = "lxml" },
@@ -303,6 +304,7 @@ dev = [
     { name = "selenium" },
     { name = "texttable" },
     { name = "time-machine" },
+    { name = "tqdm" },
     { name = "vcrpy" },
     { name = "visidata" },
     { name = "werkzeug" },
@@ -365,6 +367,7 @@ dev = [
     { name = "django-debug-toolbar", specifier = ">=4.1.0" },
     { name = "django-extensions", specifier = ">=3.2.3" },
     { name = "django-functest", specifier = "==1.5.4" },
+    { name = "faker", specifier = ">=33.0.0" },
     { name = "hypothesis", specifier = ">=6.54.6" },
     { name = "ipython", specifier = ">=8.5.0" },
     { name = "lxml", specifier = ">=4.9.1" },
@@ -380,6 +383,7 @@ dev = [
     { name = "selenium", specifier = "==4.4.3" },
     { name = "texttable", specifier = ">=1.7.0" },
     { name = "time-machine", specifier = ">=2.8.1" },
+    { name = "tqdm", specifier = ">=4.67.0" },
     { name = "vcrpy", specifier = ">=4.2.1" },
     { name = "visidata", specifier = ">=3.1.1" },
     { name = "werkzeug", specifier = ">=3.1.1" },
@@ -962,6 +966,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c4/cf/63d6c433004760349d8a08ea9463c43b797bafd614b6017942577846b495/fabutils_cciw-0.1.1.tar.gz", hash = "sha256:03174e022692b04ff3af9608aa0aa9e152a09b01a41dbfe3136c8fcfaa3b7955", size = 9942 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/22/bb/909ed8651c48d74b0483177903d3f430750f5940dbcbb3c09b1ad154e80c/fabutils_cciw-0.1.1-py3-none-any.whl", hash = "sha256:74b1dbbf9db425d3b7730da26e7454bc66c1f1fa790a8ab39af2c8ad62ee106c", size = 11710 },
+]
+
+[[package]]
+name = "faker"
+version = "33.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5b/c7/0782eb872b96ee571701237be0dd85aef3713a15045ba42752a8aac7c8ce/faker-33.0.0.tar.gz", hash = "sha256:9b01019c1ddaf2253ca2308c0472116e993f4ad8fc9905f82fa965e0c6f932e9", size = 1850076 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c0/c3/0451555e7a9a233bc17f128cff7654ec60036d4ccbb8397dd949f28df176/Faker-33.0.0-py3-none-any.whl", hash = "sha256:68e5580cb6b4226710886e595eabc13127149d6e71e9d1db65506a7fbe2c7fce", size = 1889118 },
 ]
 
 [[package]]
@@ -2220,6 +2237,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fd/03/6111ed99e9bf7dfa1c30baeef0e0fb7e0bd387bd07f8e5b270776fe1de3f/tinyhtml5-2.0.0.tar.gz", hash = "sha256:086f998833da24c300c414d9fe81d9b368fd04cb9d2596a008421cbc705fcfcc", size = 179507 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/de/27c57899297163a4a84104d5cec0af3b1ac5faf62f44667e506373c6b8ce/tinyhtml5-2.0.0-py3-none-any.whl", hash = "sha256:13683277c5b176d070f82d099d977194b7a1e26815b016114f581a74bbfbf47e", size = 39793 },
+]
+
+[[package]]
+name = "tqdm"
+version = "4.67.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "platform_system == 'Windows'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e8/4f/0153c21dc5779a49a0598c445b1978126b1344bab9ee71e53e44877e14e0/tqdm-4.67.0.tar.gz", hash = "sha256:fe5a6f95e6fe0b9755e9469b77b9c3cf850048224ecaa8293d7d2d31f97d869a", size = 169739 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2b/78/57043611a16c655c8350b4c01b8d6abfb38cc2acb475238b62c2146186d7/tqdm-4.67.0-py3-none-any.whl", hash = "sha256:0cd8af9d56911acab92182e88d763100d4788bdf421d251616040cc4d44863be", size = 78590 },
 ]
 
 [[package]]
