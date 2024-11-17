@@ -255,7 +255,6 @@ dependencies = [
     { name = "django-widget-tweaks" },
     { name = "docutils" },
     { name = "fabric" },
-    { name = "fabutils" },
     { name = "fabutils-cciw" },
     { name = "frozendict" },
     { name = "furl" },
@@ -333,8 +332,7 @@ requires-dist = [
     { name = "django-widget-tweaks", specifier = ">=1.4.12" },
     { name = "docutils", specifier = ">=0.19" },
     { name = "fabric", specifier = ">3" },
-    { name = "fabutils", git = "https://github.com/cciw-uk/fabutils?rev=b891d25ddfe465a49b3ce12dcfcde0e2f14f15da" },
-    { name = "fabutils-cciw", specifier = "==0.1.1" },
+    { name = "fabutils-cciw", specifier = ">=0.1.1" },
     { name = "frozendict", specifier = ">=2.3.4" },
     { name = "furl", specifier = ">=2.1.3" },
     { name = "gunicorn", specifier = ">=23.0.0" },
@@ -951,11 +949,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/0d/3f/337f278b70ba339c6
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d6/1f/e99e23ee01847147fa194e8d41cfcf2535a2dbfcb51414c541cadb15c5d7/fabric-3.2.2-py3-none-any.whl", hash = "sha256:91c47c0be68b14936c88b34da8a1f55e5710fd28397dac5d4ff2e21558113a6f", size = 59417 },
 ]
-
-[[package]]
-name = "fabutils"
-version = "0.0.0"
-source = { git = "https://github.com/cciw-uk/fabutils?rev=b891d25ddfe465a49b3ce12dcfcde0e2f14f15da#b891d25ddfe465a49b3ce12dcfcde0e2f14f15da" }
 
 [[package]]
 name = "fabutils-cciw"
