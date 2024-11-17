@@ -59,16 +59,16 @@ class Application(ClearCachedPropertyMixin, models.Model):
     )  # blank=True to get the admin to work
     full_name = RequiredCharField("full name", max_length=NAME_LENGTH)
     birth_date = RequiredDateField("date of birth", null=True, default=None)
-    birth_place = RequiredCharField("place of birth", max_length=60)
-    address_firstline = RequiredCharField("address", max_length=40)
+    birth_place = RequiredCharField("place of birth", max_length=100)
+    address_firstline = RequiredCharField("address", max_length=100)
     address_town = RequiredCharField(
         "town/city", max_length=60
     )  # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
-    address_county = RequiredCharField("county", max_length=30)
+    address_county = RequiredCharField("county", max_length=100)
     address_postcode = RequiredCharField("post code", max_length=10)
-    address_country = RequiredCharField("country", max_length=30)
-    address_tel = RequiredCharField("telephone", max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
-    address_mobile = models.CharField("mobile", max_length=22, blank=True)
+    address_country = RequiredCharField("country", max_length=100)
+    address_tel = RequiredCharField("telephone", max_length=30, blank=True)  # +44-(0)1224-XXXX-XXXX
+    address_mobile = models.CharField("mobile", max_length=30, blank=True)
     address_email = RequiredEmailField("email")
 
     christian_experience = RequiredTextField("christian experience")
@@ -219,8 +219,8 @@ class Referee(models.Model):
         "Capacity known", max_length=255, help_text="In what capacity does the referee know you? (see above)"
     )
     address = RequiredAddressField("address")
-    tel = models.CharField("telephone", max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
-    mobile = models.CharField("mobile", max_length=22, blank=True)
+    tel = models.CharField("telephone", max_length=30, blank=True)  # +44-(0)1224-XXXX-XXXX
+    mobile = models.CharField("mobile", max_length=30, blank=True)
     email = models.EmailField("email", blank=True)
 
     def __str__(self):
