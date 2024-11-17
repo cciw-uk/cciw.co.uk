@@ -42,6 +42,11 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     uv venv --python python3.12 --prompt cciw
 
+
+* Ensure the current directory is on your Python path::
+
+    pwd > .venv/lib/python3.12/site-packages/projectsource.pth
+
 * Install the requirements using uv and then the fabfile::
 
     uv sync
