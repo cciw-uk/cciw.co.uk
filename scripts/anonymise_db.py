@@ -23,6 +23,13 @@ from django.db import models
 from faker import Faker
 
 from cciw.accounts import models as accounts
+from cciw.accounts.models import (
+    BOOKING_SECRETARY_ROLE_NAME,
+    DBS_OFFICER_ROLE_NAME,
+    User,
+)
+from cciw.bookings import models as bookings
+from cciw.cciwmain import models as cciwmain
 from cciw.officers import models as officers
 
 faker = Faker("en_GB")
@@ -34,13 +41,55 @@ faker = Faker("en_GB")
 def main():
     # test_anonymisation()
     anonymise_db()
-    # create_dummy_users()  # TODO
+    create_users_for_roles()
+    print_interesting_people()
 
 
 def anonymise_db():
     for model, anonymiser in MODEL_HANDLERS.items():
         print(f"Anonymising {model._meta.label}")
         anonymiser.execute()
+
+
+def create_users_for_roles():
+    for username, is_superuser, role in [
+        ("superuser", True, None),
+        ("bookingsec", False, BOOKING_SECRETARY_ROLE_NAME),
+        ("dbsofficer", False, DBS_OFFICER_ROLE_NAME),
+    ]:
+        if User.objects.filter(username=username).exists():
+            User.objects.filter(username=username).delete()
+        user = User(
+            username=username,
+            first_name=faker.first_name(),
+            last_name=faker.last_name(),
+            is_active=True,
+            is_superuser=is_superuser,
+            is_staff=True,
+            email=f"{username}@example.com",
+            contact_phone_number="",
+        )
+        user.set_password("passwordpassword")
+        user.save()
+        if role is not None:
+            user.roles.set([accounts.Role.objects.get(name=role)])
+
+        print(f"{username} created with {role=}, login using: ?as={username}")
+    print()
+
+
+def print_interesting_people():
+    print("Interesting people:")
+    last_active_year = bookings.Booking.objects.order_by("-camp__year").first().camp.year
+    recent_leaders = [
+        user
+        for camp in cciwmain.Camp.objects.filter(year=last_active_year)
+        for person in camp.leaders.all()
+        for user in person.users.all()
+    ]
+    for user in recent_leaders:
+        camp_count = len(user.camps_as_admin_or_leader)
+        print(f"  {user.username}  - Camp leader ({camp_count})")
 
 
 # --- Field Fixers ---
