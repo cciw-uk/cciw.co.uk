@@ -9,3 +9,5 @@ TODO.org
 cciw/cciwmain/static/css/camp_colors.scss
 .hypothesis
 settings_local.py
+.env
+geckodriver.log
