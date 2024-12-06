@@ -44,7 +44,16 @@
                     TBA
                   {% endif %}
                 </td>
-                <td data-label="Chaplain">{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
+                <td data-label="Chaplain">
+                  {% if camp.chaplain %}
+                    <a href="{{ camp.get_absolute_url }}"
+                       title="{{ camp.nice_name }}">
+                      {{ camp.chaplain }}
+                    </a>
+                  {% else %}
+                    TBA
+                  {% endif %}
+                </td>
               </tr>
             {% endfor %}
           {% endfor %}
