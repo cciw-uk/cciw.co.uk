@@ -28,3 +28,6 @@ indent_size = 2
 
 [*.yaml]
 indent_size = 2
+
+[*.js]
+indent_size = 4
