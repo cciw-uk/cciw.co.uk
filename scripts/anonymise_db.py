@@ -15,6 +15,8 @@ from typing import TypeVar
 
 import django
 
+from cciw.data_retention.applying import DELETED_STRING
+
 django.setup()
 
 import tqdm
@@ -128,11 +130,11 @@ def keep(field, instance, value):
 
 
 def similar_length_text(field, instance, value) -> str:
-    return faker.text(max_nb_chars=len(value)) if len(value) > 10 else ""
+    return value if value == DELETED_STRING else faker.text(max_nb_chars=len(value)) if len(value) > 10 else ""
 
 
 def same_length_number(field, instance, value) -> str:
-    return faker.numerify("#" * len(value))
+    return value if value == DELETED_STRING else faker.numerify("#" * len(value))
 
 
 def const(constant_val) -> Fixer:
@@ -140,7 +142,11 @@ def const(constant_val) -> Fixer:
 
 
 def make_birth_date_adult(field, instance, value) -> date:
-    return faker.date_of_birth(minimum_age=18)
+    return value if value is None else faker.date_of_birth(minimum_age=18)
+
+
+def make_date_same_year(field, instance, value) -> date:
+    return value if value is None else value.replace(month=1, day=1)
 
 
 # ---- More specific fixers ----
@@ -161,6 +167,54 @@ def dummy_password(field, user: accounts.User, value):
     # Return a password that looks valid, but much much faster
     # than user user.set_password
     return "pbkdf2_sha256$720000$XXXX"
+
+
+def full_name(f, i, v):
+    return f"{faker.first_name()} {faker.last_name()}"
+
+
+def first_name(f, b, v):
+    return faker.first_name()
+
+
+def last_name(f, b, v):
+    return faker.last_name()
+
+
+def address_line_1(f, i, v):
+    return faker.address().split("\n")[0] if v else ""
+
+
+def city(f, i, v):
+    return faker.city() if v else ""
+
+
+def county(f, i, v):
+    return faker.county() if v else ""
+
+
+def country(f, i, v):
+    return faker.country() if v else ""
+
+
+def post_code(f, i, v):
+    return faker.postcode() if v else ""
+
+
+def phone_number(f, i, v):
+    return faker.phone_number() if v else ""
+
+
+def email_from_name(f, instance, v):
+    return f"{instance.name.replace(' ','.')}{abs(hash(v)) % 1000}@example.com"
+
+
+def mobile_number(f, a, v):
+    return faker.cellphone_number() if v else ""
+
+
+def application_birth_place(f, a, v):
+    return faker.city() if v else ""
 
 
 # --- Anonymisation methods for tables ---
@@ -291,20 +345,16 @@ def anonymize_model_with_map_and_groups(
 # from the same booking account.
 
 BOOKINGACCOUNT_FIELD_MAP: dict[str, Fixer[bookings.BookingAccount, object]] = {
-    "name": lambda f, account, v: f"{faker.first_name()} {faker.last_name()}",
-    # "address": lambda f, referee, v: faker.address(),
-    # "tel": lambda f, referee, v: faker.phone_number(),
-    # "mobile": lambda f, referee, v: faker.cellphone_number(),
-    # "capacity_known": similar_length_text,
+    "name": full_name,
     # After name has been changed, make email based on it:
-    "email": lambda f, account, v: f"{account.name.replace(' ','.')}{abs(hash(v)) % 1000}@example.com",
-    "address_line1": lambda f, a, v: faker.address().split("\n")[0] if v else "",
+    "email": email_from_name,
+    "address_line1": address_line_1,
     "address_line2": const(""),
-    "address_city": lambda f, a, v: faker.city() if v else "",
-    "address_county": lambda f, a, v: faker.county() if v else "",
-    "address_country": lambda f, a, v: faker.country() if v else "",
-    "address_post_code": lambda f, a, v: faker.postcode() if v else "",
-    "phone_number": lambda f, a, v: faker.phone_number() if v else "",
+    "address_city": city,
+    "address_county": county,
+    "address_country": country,
+    "address_post_code": post_code,
+    "phone_number": phone_number,
     "share_phone_number": keep,
     "email_communication": keep,
     "subscribe_to_mailings": keep,
@@ -315,6 +365,82 @@ BOOKINGACCOUNT_FIELD_MAP: dict[str, Fixer[bookings.BookingAccount, object]] = {
     "last_login_at": keep,
     "last_payment_reminder_at": keep,
 }
+
+BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
+    "first_name": first_name,
+    "last_name": last_name,
+    "sex": keep,
+    "birth_date": make_date_same_year,
+    "address_line1": address_line_1,
+    "address_line2": const(""),
+    "address_city": city,
+    "address_county": county,
+    "address_country": country,
+    "address_post_code": post_code,
+    "phone_number": phone_number,
+    "email": email_from_name,
+    "church": lambda f, b, v: "Bethel" if v else "",
+    "south_wales_transport": keep,
+    # Contact
+    "contact_name": full_name,
+    "contact_line1": address_line_1,
+    "contact_line2": const(""),
+    "contact_city": city,
+    "contact_county": county,
+    "contact_country": country,
+    "contact_post_code": post_code,
+    "contact_phone_number": phone_number,
+    "dietary_requirements": similar_length_text,
+    "gp_name": full_name,
+    "gp_line1": address_line_1,
+    "gp_line2": const(""),
+    "gp_city": city,
+    "gp_county": county,
+    "gp_country": country,
+    "gp_post_code": post_code,
+    "gp_phone_number": phone_number,
+    "medical_card_number": same_length_number,
+    "last_tetanus_injection_date": make_date_same_year,
+    "allergies": make_empty,
+    "regular_medication_required": keep,
+    "illnesses": similar_length_text,
+    "can_swim_25m": keep,
+    "learning_difficulties": similar_length_text,
+    "serious_illness": keep,
+    "agreement": keep,
+    "publicity_photos_agreement": keep,
+    "custom_agreements_checked": keep,
+    "price_type": keep,
+    "early_bird_discount": keep,
+    "booked_at": keep,
+    "amount_due": keep,
+    "shelved": keep,
+    "state": keep,
+    "created_at": keep,
+    "booking_expires_at": keep,
+    "created_online": keep,
+    "erased_at": keep,
+}
+
+BOOKING_MAPPED_FIELD_GROUPS = [
+    (
+        "account_id",  # Makes the mapping specific to different accounts.
+        "first_name",
+        "last_name",
+    ),
+    (
+        "account_id",
+        "address_line1",
+        "address_line2",
+        "address_city",
+        "address_county" "address_country",
+        "address_post_code",
+    ),
+    (
+        "account_id",
+        "email",
+    ),
+]
 
 
 # Anonymising Application and other models:
@@ -341,13 +467,13 @@ APPLICATION_FIELD_MAP: dict[str, Fixer[officers.Application, object]] = {
     "id": keep,
     "officer": keep,
     "full_name": lambda f, application, v: application.officer.full_name,
-    "address_firstline": lambda f, a, v: faker.address().split("\n")[0] if v else "",
-    "address_town": lambda f, a, v: faker.city() if v else "",
-    "address_county": lambda f, a, v: faker.county() if v else "",
-    "address_postcode": lambda f, a, v: faker.postcode() if v else "",
-    "address_country": lambda f, a, v: faker.country() if v else "",
-    "address_tel": lambda f, a, v: faker.phone_number() if v else "",
-    "address_mobile": lambda f, a, v: faker.cellphone_number() if v else "",
+    "address_firstline": address_line_1,
+    "address_town": city,
+    "address_county": county,
+    "address_postcode": post_code,
+    "address_country": country,
+    "address_tel": phone_number,
+    "address_mobile": mobile_number,
     "address_email": lambda f, application, v: application.officer.email,
     "christian_experience": similar_length_text,
     "youth_experience": similar_length_text,
@@ -368,7 +494,7 @@ APPLICATION_FIELD_MAP: dict[str, Fixer[officers.Application, object]] = {
     "finished": keep,
     "saved_on": keep,
     "birth_date": make_birth_date_adult,
-    "birth_place": lambda f, a, v: faker.city() if v else "",
+    "birth_place": application_birth_place,
 }
 
 APPLICATION_MAPPED_FIELD_GROUPS = [
@@ -401,13 +527,12 @@ APPLICATION_MAPPED_FIELD_GROUPS = [
 
 REFEREE_FIELD_MAP: dict[str, Fixer[officers.Referee, object]] = {
     "referee_number": keep,
-    "name": lambda f, referee, v: faker.name(),
-    "address": lambda f, referee, v: faker.address(),
-    "tel": lambda f, referee, v: faker.phone_number(),
-    "mobile": lambda f, referee, v: faker.cellphone_number(),
+    "name": full_name,
+    "address": address_line_1,
+    "tel": phone_number,
+    "mobile": mobile_number,
     "capacity_known": similar_length_text,
-    # After name has been changed, make email based on it:
-    "email": lambda f, referee, v: f"{referee.name.replace(' ','.')}{abs(hash(v)) % 1000}@example.com",
+    "email": email_from_name,
 }
 
 # Referees are almost always the same from one year to the next,
@@ -451,8 +576,8 @@ REFERENCE_FIELD_MAP: dict[str, Fixer[officers.Reference, object]] = {
 USER_FIELD_MAP: dict[str, Fixer[accounts.User, object]] = {
     "contact_phone_number": lambda f, user, v: "01234 567 890" if user.contact_phone_number else "",
     # Order: first_name and last_name before username
-    "first_name": lambda f, user, v: faker.first_name(),
-    "last_name": lambda f, user, v: faker.last_name(),
+    "first_name": first_name,
+    "last_name": last_name,
     "username": auto_username,
     "email": lambda f, user, v: f"{user.username}@example.com",
     "password": dummy_password,
@@ -523,6 +648,11 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
     bookings.BookingAccount: AnonymiseWithMap(
         bookings.BookingAccount,
         BOOKINGACCOUNT_FIELD_MAP,
+    ),
+    bookings.Booking: AnonymiseWithMapAndGroups(
+        bookings.Booking,
+        BOOKING_FIELD_MAP,
+        BOOKING_MAPPED_FIELD_GROUPS,
     ),
     # Applications and officers
     # NB: Application is after User, because it depends on it
