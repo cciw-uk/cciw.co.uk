@@ -9,13 +9,12 @@ from django.db import models
 from django.db.models.fields import Field
 from django.urls import reverse
 from django.utils.text import slugify
+from pydantic import ConfigDict
+
+DATACLASS_CONFIG: ConfigDict = {"arbitrary_types_allowed": True}
 
 
-class DataclassConfig:
-    arbitrary_types_allowed = True
-
-
-dataclass = pydantic.dataclasses.dataclass(config=DataclassConfig)
+dataclass = pydantic.dataclasses.dataclass(config=DATACLASS_CONFIG)
 
 if TYPE_CHECKING:
     # Help some type checkers/IDE tools to understand pydantic
