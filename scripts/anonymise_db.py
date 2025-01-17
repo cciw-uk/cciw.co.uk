@@ -33,15 +33,13 @@ several years will be given the same 'first_name' and 'last_name'
 
 # ruff: noqa:E402
 
-
+import fnmatch
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from datetime import date
 from typing import TypeVar
 
 import django
-
-from cciw.data_retention.applying import DELETED_STRING
 
 django.setup()
 
@@ -54,6 +52,8 @@ from django.contrib.sessions import models as sessions
 from django.contrib.sites import models as sites
 from django.db import models
 from faker import Faker
+from mailer import models as mailer
+from paypal.standard.ipn import models as paypal
 
 from cciw.accounts import models as accounts
 from cciw.accounts.models import (
@@ -63,8 +63,12 @@ from cciw.accounts.models import (
 )
 from cciw.bookings import models as bookings
 from cciw.cciwmain import models as cciwmain
+from cciw.contact_us import models as contact_us
+from cciw.data_retention import models as data_retention
+from cciw.data_retention.applying import DELETED_STRING
 from cciw.officers import models as officers
 from cciw.sitecontent import models as sitecontent
+from cciw.visitors import models as visitors
 
 faker = Faker("en_GB")
 
@@ -149,6 +153,8 @@ class IgnoreFixerValue:
 def make_empty(field, instance, value):
     if isinstance(field, models.CharField | models.TextField):
         return ""
+    if isinstance(field, models.BinaryField):
+        return b""
     return None
 
 
@@ -174,6 +180,15 @@ def make_birth_date_adult(field, instance, value) -> date:
 
 def make_date_same_year(field, instance, value) -> date:
     return value if value is None else value.replace(month=1, day=1)
+
+
+def filename_same_extension(field, instance, value: str) -> str:
+    if not value:
+        return value
+    if "." in value:
+        ext = value.split(".")[-1]
+        return similar_length_text(field, instance, value) + "." + ext
+    return similar_length_text(field, instance, value)
 
 
 # ---- More specific fixers ----
@@ -221,6 +236,10 @@ def county(f, i, v):
 
 
 def country(f, i, v):
+    if not v:
+        return v
+    if f.max_length == 2:
+        return faker.country_code()
     return faker.country() if v else ""
 
 
@@ -232,8 +251,20 @@ def phone_number(f, i, v):
     return faker.phone_number() if v else ""
 
 
-def email_from_name(f, instance, v):
-    return f"{instance.name.replace(' ','.')}{abs(hash(v)) % 1000}@example.com"
+def email_from_name(field_name):
+    def func(f, instance, v):
+        name = getattr(instance, field_name)
+        return f"{name.replace(' ','.')}{abs(hash(v)) % 1000}@example.com"
+
+    return func
+
+
+def email_from_name_unique(field_name):
+    def func(f, instance, v):
+        name = getattr(instance, field_name)
+        return f"{name.replace(' ','.')}{abs(hash(v)) % 1000}{abs(hash(instance.id)) % 100}@example.com"
+
+    return func
 
 
 def mobile_number(f, a, v):
@@ -374,7 +405,7 @@ def anonymize_model_with_map_and_groups(
 BOOKINGACCOUNT_FIELD_MAP: dict[str, Fixer[bookings.BookingAccount, object]] = {
     "name": full_name,
     # After name has been changed, make email based on it:
-    "email": email_from_name,
+    "email": email_from_name_unique("name"),
     "address_line1": address_line_1,
     "address_line2": make_empty,
     "address_city": city,
@@ -405,7 +436,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "address_country": country,
     "address_post_code": post_code,
     "phone_number": phone_number,
-    "email": email_from_name,
+    "email": email_from_name("name"),
     "church": lambda f, b, v: "Bethel" if v else "",
     "south_wales_transport": keep,
     # Contact
@@ -460,15 +491,132 @@ BOOKING_MAPPED_FIELD_GROUPS = [
         "address_line1",
         "address_line2",
         "address_city",
-        "address_county" "address_country",
+        "address_county",
+        "address_country",
         "address_post_code",
     ),
     (
         "account_id",
         "email",
     ),
+    # TODO more here?
 ]
 
+PAYPAL_IPN_FIELD_MAP = {
+    "business": make_empty,  # email address
+    "charset": keep,
+    "custom": keep,
+    "notify_version": keep,
+    "parent_txn_id": keep,
+    "receiver_email": keep,
+    "receiver_id": keep,
+    "residence_country": make_empty,
+    "test_ipn": keep,
+    "txn_id": keep,
+    "txn_type": keep,
+    "verify_sign": keep,
+    "address_country": make_empty,
+    "address_city": make_empty,
+    "address_country_code": make_empty,
+    "address_name": make_empty,
+    "address_state": make_empty,
+    "address_status": make_empty,
+    "address_street": make_empty,
+    "address_zip": make_empty,
+    "contact_phone": make_empty,
+    "first_name": make_empty,
+    "last_name": make_empty,
+    "payer_business_name": make_empty,
+    "payer_email": make_empty,
+    "payer_id": keep,
+    "auth_amount": keep,
+    "auth_exp": keep,
+    "auth_id": keep,
+    "auth_status": keep,
+    "exchange_rate": keep,
+    "invoice": keep,
+    "item_name": keep,
+    "item_number": keep,
+    "mc_currency": keep,
+    "mc_fee": keep,
+    "mc_gross": keep,
+    "mc_handling": keep,
+    "mc_shipping": keep,
+    "memo": keep,
+    "num_cart_items": keep,
+    "option_name1": keep,
+    "option_name2": keep,
+    "option_selection1": keep,
+    "option_selection2": keep,
+    "payer_status": keep,
+    "payment_date": keep,
+    "payment_gross": keep,
+    "payment_status": keep,
+    "payment_type": keep,
+    "pending_reason": keep,
+    "protection_eligibility": keep,
+    "quantity": keep,
+    "reason_code": keep,
+    "remaining_settle": keep,
+    "settle_amount": keep,
+    "settle_currency": keep,
+    "shipping": keep,
+    "shipping_method": keep,
+    "tax": keep,
+    "transaction_entity": keep,
+    "auction_buyer_id": keep,
+    "auction_closing_date": keep,
+    "auction_multi_item": keep,
+    "for_auction": keep,
+    "amount": keep,
+    "amount_per_cycle": keep,
+    "initial_payment_amount": keep,
+    "next_payment_date": keep,
+    "outstanding_balance": keep,
+    "payment_cycle": keep,
+    "period_type": keep,
+    "product_name": keep,
+    "product_type": keep,
+    "profile_status": keep,
+    "recurring_payment_id": keep,
+    "rp_invoice_id": keep,
+    "time_created": keep,
+    "amount1": keep,
+    "amount2": keep,
+    "amount3": keep,
+    "mc_amount1": keep,
+    "mc_amount2": keep,
+    "mc_amount3": keep,
+    "password": make_empty,
+    "period1": keep,
+    "period2": keep,
+    "period3": keep,
+    "reattempt": keep,
+    "recur_times": keep,
+    "recurring": keep,
+    "retry_at": keep,
+    "subscr_date": keep,
+    "subscr_effective": keep,
+    "subscr_id": keep,
+    "username": make_empty,
+    "mp_id": keep,
+    "case_creation_date": keep,
+    "case_id": keep,
+    "case_type": keep,
+    "receipt_id": keep,
+    "currency_code": keep,
+    "handling_amount": keep,
+    "transaction_subject": keep,
+    "ipaddress": keep,
+    "flag": keep,
+    "flag_code": keep,
+    "flag_info": keep,
+    "query": make_empty,
+    "response": make_empty,
+    "created_at": keep,
+    "updated_at": keep,
+    "from_view": keep,
+}
 
 # Anonymising Application and other models:
 #
@@ -559,7 +707,7 @@ REFEREE_FIELD_MAP: dict[str, Fixer[officers.Referee, object]] = {
     "tel": phone_number,
     "mobile": mobile_number,
     "capacity_known": similar_length_text,
-    "email": email_from_name,
+    "email": email_from_name("name"),
 }
 
 # Referees are almost always the same from one year to the next,
@@ -670,7 +818,6 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
         },
     ),
     # Bookings
-    bookings.Price: IgnoreTable(),
     bookings.CustomAgreement: IgnoreTable(),
     bookings.BookingAccount: AnonymiseWithMap(
         bookings.BookingAccount,
@@ -681,6 +828,39 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
         BOOKING_FIELD_MAP,
         BOOKING_MAPPED_FIELD_GROUPS,
     ),
+    bookings.SupportingInformation: AnonymiseWithMap(
+        bookings.SupportingInformation,
+        {
+            "from_name": full_name,
+            "from_email": email_from_name("from_name"),
+            "from_telephone": phone_number,
+            "notes": similar_length_text,
+            "received_on": keep,
+            "created_at": keep,
+            "erased_at": keep,
+        },
+    ),
+    bookings.SupportingInformationDocument: AnonymiseWithMap(
+        bookings.SupportingInformationDocument,
+        {
+            "created_at": keep,
+            "filename": filename_same_extension,
+            "mimetype": keep,
+            "size": keep,
+            "content": make_empty,
+            "erased_at": keep,
+        },
+    ),
+    bookings.SupportingInformationType: IgnoreTable(),
+    bookings.Price: IgnoreTable(),
+    bookings.Payment: IgnoreTable(),
+    bookings.ManualPayment: IgnoreTable(),
+    bookings.AccountTransferPayment: IgnoreTable(),
+    bookings.RefundPayment: IgnoreTable(),
+    bookings.WriteOffDebt: IgnoreTable(),
+    bookings.PaymentSource: IgnoreTable(),
+    #
+    paypal.PayPalIPN: AnonymiseWithMap(paypal.PayPalIPN, PAYPAL_IPN_FIELD_MAP),
     # Applications and officers
     # NB: Application is after User, because it depends on it
     officers.Application: AnonymiseWithMapAndGroups(
@@ -755,7 +935,38 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
     contenttypes.ContentType: IgnoreTable(),
     sessions.Session: TruncateTable(sessions.Session),
     sites.Site: IgnoreTable(),
+    # Contact us messages
+    contact_us.Message: TruncateTable(contact_us.Message),
+    # Visitor logs
+    visitors.VisitorLog: AnonymiseWithMap(
+        visitors.VisitorLog,
+        {
+            "camp": keep,
+            "guest_name": full_name,
+            "arrived_on": keep,
+            "left_on": keep,
+            "purpose_of_visit": similar_length_text,
+            "logged_at": keep,
+            "logged_by": keep,
+            "remote_addr": const("127.0.0.1"),
+        },
+    ),
+    # Data retention
+    data_retention.ErasureExecutionLog: IgnoreTable(),
+    # Mails
+    mailer.Message: TruncateTable(mailer.Message),
+    mailer.MessageLog: TruncateTable(mailer.MessageLog),
+    mailer.DontSendEntry: TruncateTable(mailer.DontSendEntry),
+    # Other 3rd party:
 }
+
+IGNORE_TABLES = [
+    "sorl.thumbnail.*",
+    "wiki.models.*",
+    "wiki.plugins.*",
+    "django_nyt.models.*",
+    "captcha.models.*",
+]
 
 
 # --- self tests ---
@@ -769,6 +980,7 @@ def test_anonymisation():
 
     for model, anonymiser in MODEL_HANDLERS.items():
         missing = []
+
         model_field_list = model._meta.get_fields()
         fields_covered = anonymiser.get_fields_covered()
         for f in model_field_list:
@@ -806,7 +1018,9 @@ def test_anonymisation():
     all_models = apps.get_models()
 
     for model in all_models:
-        assert model in MODEL_HANDLERS, f"{model} needs an entry in MODEL_HANDLERS"
+        name = f"{model.__module__}.{model.__name__}"
+        if model not in MODEL_HANDLERS and not any(fnmatch.fnmatch(name, pat) for pat in IGNORE_TABLES):
+            raise AssertionError(f"{model} needs an entry in MODEL_HANDLERS or IGNORE_TABLES")
 
 
 if __name__ == "__main__":
