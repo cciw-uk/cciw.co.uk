@@ -767,6 +767,14 @@ def test_anonymisation():
                 f"  - {f}" for f in missing
             )
 
+        if isinstance(fields_covered, set):
+            real_field_names = set(f.name for f in model_field_list)
+            unexpected_names = fields_covered - real_field_names
+            if unexpected_names:
+                assert False, f"The following fields for {model.__name__} are not recognised: " + ", ".join(
+                    sorted(unexpected_names)
+                )
+
     # Check that we have covered all models
     all_models = apps.get_models()
 
