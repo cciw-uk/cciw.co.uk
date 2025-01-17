@@ -1,12 +1,38 @@
 #!/usr/bin/env python
-"""
-Functions to remove sensitive user information
+"""Functions to remove sensitive user information
+
+This script is used as a one-off to produce a DB that had realistic
+amounts/structure of data but can be shared without problems.
+
+The following rules are to be applied:
+
+- For models with no personally identifying information, the entire model should be kept
+  fully intact (ignored). This includes many internal Django models, and many models
+  from third party apps.
+
+- For models with personal information:
+  - person names are replaced with realistic looking random names.
+  - address are replaced with randomised addresses.
+  - dates relating to personal information such as date of birth
+    are replaced with a date in the same year..
+  - other dates are left as they are.
+  - sensitive longer text fields are replaced with text of similar size.
+  - any potentially sensitive booleans are set to a sensible default.
+  - fields that represent internal state or tracking are left as they are.
+
+- For temporary tables that may have sensitive data, such as outgoing email or
+  mailer logs, we truncate the table.
+
+In some cases when randomising we put extra effort in to maintain the structure
+of existing data, in order to keep realistic data. For example, if the same name
+(or other value) is used in a group of related records, we try to replace it
+with the same name each time e.g. Bookings from the same BookingAccount over
+several years will be given the same 'first_name' and 'last_name'
+
 """
 
 # ruff: noqa:E402
 
-# Used as a one-off to produce a DB that had realistic amounts/structure of data
-# but can be shared without problems.
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -60,6 +86,7 @@ def anonymise_db():
 
 
 def create_users_for_roles():
+    # This creates some users roles to make it easy to test out specific roles
     for username, is_superuser, role in [
         ("superuser", True, None),
         ("bookingsec", False, BOOKING_SECRETARY_ROLE_NAME),
@@ -349,7 +376,7 @@ BOOKINGACCOUNT_FIELD_MAP: dict[str, Fixer[bookings.BookingAccount, object]] = {
     # After name has been changed, make email based on it:
     "email": email_from_name,
     "address_line1": address_line_1,
-    "address_line2": const(""),
+    "address_line2": make_empty,
     "address_city": city,
     "address_county": county,
     "address_country": country,
@@ -372,7 +399,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "sex": keep,
     "birth_date": make_date_same_year,
     "address_line1": address_line_1,
-    "address_line2": const(""),
+    "address_line2": make_empty,
     "address_city": city,
     "address_county": county,
     "address_country": country,
@@ -384,7 +411,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     # Contact
     "contact_name": full_name,
     "contact_line1": address_line_1,
-    "contact_line2": const(""),
+    "contact_line2": make_empty,
     "contact_city": city,
     "contact_county": county,
     "contact_country": country,
@@ -393,7 +420,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "dietary_requirements": similar_length_text,
     "gp_name": full_name,
     "gp_line1": address_line_1,
-    "gp_line2": const(""),
+    "gp_line2": make_empty,
     "gp_city": city,
     "gp_county": county,
     "gp_country": country,
