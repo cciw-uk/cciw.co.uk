@@ -773,6 +773,15 @@ must be deleted immediately after.
 
 @local_task()
 def local_restore_db_from_dump(c, filename):
+    db = _local_db_obj()
+    filename = os.path.abspath(filename)
+    # We don't use fabutils postgresql commands because they assume postgres is
+    # running as global service, and that doesn't seem to work when running with devbox
+    c.run("devbox run create_dev_db", echo=True)
+    postgresql.restore_db(c, db, filename)
+
+
+def _local_db_obj():
     _local_django_setup()
     from django.conf import settings
 
@@ -784,20 +793,23 @@ def local_restore_db_from_dump(c, filename):
         port=db_settings["PORT"],
         locale=PROJECT_LOCALE,
     )
+    return db
 
+
+@local_task()
+def local_db_dump(c, filename):
+    db = _local_db_obj()
     filename = os.path.abspath(filename)
-    # We don't use fabutils postgresql commands because they assume postgres is
-    # running as global service, and that doesn't seem to work when running with devbox
-    c.run("devbox run create_dev_db", echo=True)
-    postgresql.restore_db(c, db, filename)
+    dump_db(c, db, filename=filename)
 
 
 def make_django_db_filename(db: Database):
     return f"/home/{PROJECT_USER}/db-{db.name}.django.{datetime.now().strftime('%Y-%m-%d_%H.%M.%S')}.pgdump"
 
 
-def dump_db(c: Connection, db: Database):
-    filename = make_django_db_filename(db)
+def dump_db(c: Connection, db: Database, filename: str = ""):
+    if filename == "":
+        filename = make_django_db_filename(db)
     c.run(f"pg_dump -Fc -U {db.user} -O -f {filename} {db.name}", echo=True)
     return filename
 
