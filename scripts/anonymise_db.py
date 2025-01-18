@@ -33,12 +33,12 @@ several years will be given the same 'first_name' and 'last_name'
 # Usage normally looks like this:
 
 
-# fab get-and-load-production-db
-# ./scripts/anonymise_db.py
+#   fab get-and-load-production-db
+#   ./scripts/anonymise_db.py
 
 # Copy the notes at the end into a text file
 
-# fab local-db-dump ../db_backups/anonymized.$(date +%Y-%m-%d-%H.%M.%S).pgdump
+#   fab local-db-dump ../db_backups/anonymized.$(date +%Y-%m-%d-%H.%M.%S).pgdump
 
 # Finally delete the downloaded production databases, keeping only the anonymized copies
 
@@ -102,6 +102,8 @@ def anonymise_db():
 
 def create_users_for_roles():
     # This creates some users roles to make it easy to test out specific roles
+    print()
+    print("== Creating special roles ==")
     for username, is_superuser, role in [
         ("superuser", True, None),
         ("bookingsec", False, BOOKING_SECRETARY_ROLE_NAME),
@@ -125,11 +127,11 @@ def create_users_for_roles():
             user.roles.set([accounts.Role.objects.get(name=role)])
 
         print(f"{username} created with {role=}, login using: ?as={username}")
-    print()
 
 
 def print_interesting_people():
-    print("Interesting people:")
+    print()
+    print("== Interesting people ==")
     last_active_year = bookings.Booking.objects.order_by("-camp__year").first().camp.year
     recent_leaders = [
         user
