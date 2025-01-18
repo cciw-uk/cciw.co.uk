@@ -88,7 +88,7 @@ faker = Faker("en_GB")
 
 
 def main():
-    # test_anonymisation()
+    test_anonymisation()
     anonymise_db()
     create_users_for_roles()
     print_interesting_people()
