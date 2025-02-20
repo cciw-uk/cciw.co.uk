@@ -539,6 +539,14 @@ class BookingAdmin(admin.ModelAdmin):
             },
         ),
         (
+            "Requests",
+            {
+                "fields": [
+                    "friends_for_tent_sharing",
+                ]
+            },
+        ),
+        (
             "Camper/parent agree to terms",
             {
                 "fields": [
