@@ -856,6 +856,9 @@ class Booking(models.Model):
     learning_difficulties = models.TextField(blank=True)
     serious_illness = models.BooleanField(blank=True, default=False)
 
+    # Other
+    friends_for_tent_sharing = models.CharField(max_length=1000, blank=True, default="")
+
     # Agreement - from user
     agreement = models.BooleanField(default=False)
     publicity_photos_agreement = models.BooleanField(default=False, blank=True)

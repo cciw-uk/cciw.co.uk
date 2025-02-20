@@ -306,6 +306,7 @@
       - gp_country
       - gp_post_code
       - gp_phone_number
+      - friends_for_tent_sharing
 
       deletion methods:
         # It is useful for our statistics and records to know the approx age of

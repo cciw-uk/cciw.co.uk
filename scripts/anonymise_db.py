@@ -478,6 +478,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "can_swim_25m": keep,
     "learning_difficulties": similar_length_text,
     "serious_illness": keep,
+    "friends_for_tent_sharing": similar_length_text,
     "agreement": keep,
     "publicity_photos_agreement": keep,
     "custom_agreements_checked": keep,
