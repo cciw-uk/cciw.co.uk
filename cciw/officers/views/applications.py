@@ -2,7 +2,6 @@
 Views relating to officers submitting and viewing their application forms.
 """
 
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -26,6 +25,7 @@ from cciw.officers.applications import (
 
 from ..email_utils import formatted_email, send_mail_with_attachments
 from ..models import (
+    REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS,
     Application,
 )
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
@@ -89,7 +89,7 @@ def _copy_application(application):
     new_obj.save()
 
     for old_ref, new_ref in zip(application.referees, new_obj.referees):
-        for f in ["name", "address", "tel", "mobile", "email"]:
+        for f in REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS:
             setattr(new_ref, f, getattr(old_ref, f))
         new_ref.save()
 

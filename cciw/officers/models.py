@@ -27,6 +27,7 @@ from cciw.utils.models import ClearCachedPropertyMixin
 REFEREE_NUMBERS = [1, 2]
 
 REFEREE_DATA_FIELDS = ["name", "capacity_known", "address", "tel", "mobile", "email"]
+REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS = REFEREE_DATA_FIELDS
 
 
 class ApplicationQuerySet(models.QuerySet):
