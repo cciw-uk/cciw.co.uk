@@ -121,7 +121,9 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, **kw
 @staff_member_required
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
-def booking_progress_stats(request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None):
+def booking_progress_stats(
+    request, start_year: int | None = None, end_year: int | None = None, camp_ids: list[CampId] | None = None
+):
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=True
     )
@@ -149,7 +151,7 @@ def booking_progress_stats(request, start_year: int = None, end_year: int = None
 @staff_member_required
 @camp_admin_required
 def booking_progress_stats_download(
-    request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None
+    request, start_year: int | None = None, end_year: int | None = None, camp_ids: list[CampId] | None = None
 ):
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=False
@@ -172,7 +174,11 @@ def booking_progress_stats_download(
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
 def booking_ages_stats(
-    request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None, single_year: int = None
+    request,
+    start_year: int | None = None,
+    end_year: int | None = None,
+    camp_ids: list[CampId] | None = None,
+    single_year: int | None = None,
 ):
     if single_year is not None:
         camps = Camp.objects.filter(year=int(single_year))
@@ -219,7 +225,9 @@ def booking_ages_stats(
 
 @staff_member_required
 @camp_admin_required
-def booking_ages_stats_download(request, start_year: int = None, end_year: int = None, camp_ids: list[CampId] = None):
+def booking_ages_stats_download(
+    request, start_year: int | None = None, end_year: int | None = None, camp_ids: list[CampId] | None = None
+):
     start_year, end_year, camps, data = _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
     builder = ExcelFromDataFrameBuilder()
     builder.add_sheet_from_dataframe("Age of campers", data)
@@ -230,7 +238,9 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
     return spreadsheet_response(builder, filename, notice=None)
 
 
-def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids) -> tuple[int, int, list[Camp], pd.DataFrame]:
+def _get_booking_ages_stats_from_params(
+    start_year: int | None, end_year: int | None, camp_ids: list[CampId] | None
+) -> tuple[int | None, int | None, list[Camp] | None, pd.DataFrame]:
     start_year, end_year, camps = _parse_year_or_camp_ids(start_year, end_year, camp_ids)
     if camps is not None:
         data = get_booking_ages_stats(camps=camps, include_total=True)
