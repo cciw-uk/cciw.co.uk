@@ -1,6 +1,7 @@
 """
 Utility functions and base classes that are common to all views etc.
 """
+
 import re
 from datetime import date, timedelta
 from functools import wraps

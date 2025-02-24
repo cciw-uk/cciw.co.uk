@@ -5,6 +5,7 @@ This set of modules is organised roughly by role, although this is difficult to
 do exactly.
 
 """
+
 # ruff: noqa: F401
 
 from django.contrib.auth.views import PasswordResetView

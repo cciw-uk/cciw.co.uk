@@ -354,9 +354,10 @@ class TestMailingLists(RolesSetupMixin, TestBase):
 
     def test_ses_incoming(self):
         request = make_plain_text_request("/", AWS_SNS_NOTIFICATION["body"], AWS_SNS_NOTIFICATION["headers"])
-        with mock.patch("cciw.aws.verify_sns_notification") as m1, mock.patch(
-            "cciw.mail.views.handle_mail_from_s3_async"
-        ) as m2:
+        with (
+            mock.patch("cciw.aws.verify_sns_notification") as m1,
+            mock.patch("cciw.mail.views.handle_mail_from_s3_async") as m2,
+        ):
             m1.side_effect = [True]  # fake verify
             response = views.ses_incoming_notification(request)
 

@@ -1,6 +1,7 @@
 """
 Checks on data retention policy (beyond basic validity checks)
 """
+
 from django.apps import apps
 from django.core.checks import Error
 

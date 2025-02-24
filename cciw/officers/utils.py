@@ -1,6 +1,7 @@
 """
 Utility functions for officers app.
 """
+
 from collections import defaultdict
 
 from cciw.accounts.models import User

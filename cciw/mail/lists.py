@@ -424,16 +424,14 @@ def forward_email_to_list(mail, email_list: EmailList):
         # Attempt to report problem
         address_messages = [f"{address}: {str(e)}" for address, e in errors]
         subject = mail["Subject"]
-        msg = """
-You attempted to email the list {address}
+        msg = f"""
+You attempted to email the list {email_list.address}
 with an email titled "{subject}".
 
 There were problems with the following addresses:
 
-{addresses}
-""".format(
-            address=email_list.address, subject=subject, addresses="\n".join(address_messages)
-        )
+{'\n'.join(address_messages)}
+"""
         send_mail(
             f"[CCIW] Error with email to list {email_list.address}",
             msg,

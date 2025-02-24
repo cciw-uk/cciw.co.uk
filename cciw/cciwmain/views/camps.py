@@ -46,11 +46,13 @@ def detail(request, year: int, slug: str):
             "title": camp.nice_name + camp.bracketted_old_name,
             "is_booking_open": is_booking_open(camp.year),
             "today": date.today(),
-            "breadcrumb": common.create_breadcrumb(
-                [format_html('<a href="{0}">See all camps</a>', reverse("cciw-cciwmain-camps_index"))]
-            )
-            if camp.is_past()
-            else None,
+            "breadcrumb": (
+                common.create_breadcrumb(
+                    [format_html('<a href="{0}">See all camps</a>', reverse("cciw-cciwmain-camps_index"))]
+                )
+                if camp.is_past()
+                else None
+            ),
         },
     )
 

@@ -58,7 +58,7 @@ def get_camp_officer_stats(camp) -> pd.DataFrame:
                 "References": accumulate_dates(ref_dates),
                 "Any DBS": accumulate_dates(trim(any_dbs_dates)),
                 "Recent DBS": accumulate_dates(trim(recent_dbs_dates)),
-            }
+            },
             # Fill forward so that accumulated
             # values get propagated to all rows,
             # and then backwards with zeros.

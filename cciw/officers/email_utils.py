@@ -1,6 +1,7 @@
 """
 Utilities for sending email with attachments
 """
+
 from django.core.mail import EmailMessage, get_connection
 
 from cciw.accounts.models import User

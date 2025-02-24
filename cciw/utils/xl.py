@@ -1,6 +1,7 @@
 """
 Simplified xlwt interface
 """
+
 from datetime import date, datetime
 from io import BytesIO
 

@@ -1,6 +1,7 @@
 """
 Parse and load data retention policy
 """
+
 from collections.abc import Mapping
 from datetime import timedelta
 
