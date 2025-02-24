@@ -287,6 +287,7 @@ dev = [
     { name = "beautifulsoup4" },
     { name = "django-debug-toolbar" },
     { name = "django-extensions" },
+    { name = "django-find-view" },
     { name = "django-functest" },
     { name = "faker" },
     { name = "hypothesis" },
@@ -367,6 +368,7 @@ dev = [
     { name = "beautifulsoup4", specifier = ">=4.11.1" },
     { name = "django-debug-toolbar", specifier = ">=4.1.0" },
     { name = "django-extensions", specifier = ">=3.2.3" },
+    { name = "django-find-view", specifier = ">=0.1.0" },
     { name = "django-functest", specifier = "==1.5.4" },
     { name = "faker", specifier = ">=33.0.0" },
     { name = "hypothesis", specifier = ">=6.54.6" },
@@ -706,6 +708,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8a/f1/318684c9466968bf9a9c221663128206e460c1a67f595055be4b284cde8a/django-extensions-3.2.3.tar.gz", hash = "sha256:44d27919d04e23b3f40231c4ab7af4e61ce832ef46d610cc650d53e68328410a", size = 277216 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/7e/ba12b9660642663f5273141018d2bec0a1cae1711f4f6d1093920e157946/django_extensions-3.2.3-py3-none-any.whl", hash = "sha256:9600b7562f79a92cbf1fde6403c04fee314608fefbb595502e34383ae8203401", size = 229868 },
+]
+
+[[package]]
+name = "django-find-view"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cd/19/a90adb2b3a9e67223d6c1508c909caf81cdba93f5b8471a5e604c762f086/django_find_view-0.1.0.tar.gz", hash = "sha256:cb7a1c64778f8bc4aaf799845358e5f8c028f888b460bfc6910b27d61ba52a7c", size = 3272 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/cf/725b1a4eb1d69defcd418cbcac9defb06a4bbda5695cff53109e7496849f/django_find_view-0.1.0-py3-none-any.whl", hash = "sha256:0c9f8e3312b79c441ab61c727ad7afad8ffc43f2b0318dc156c788238d3520cc", size = 3622 },
 ]
 
 [[package]]

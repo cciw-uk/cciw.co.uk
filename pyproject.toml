@@ -92,6 +92,7 @@ dev-dependencies = [
     "beautifulsoup4>=4.11.1",
     "django-debug-toolbar>=4.1.0",
     "django-extensions>=3.2.3",
+    "django-find-view>=0.1.0",
     "django-functest==1.5.4",
     "faker>=33.0.0",
     "hypothesis>=6.54.6",
