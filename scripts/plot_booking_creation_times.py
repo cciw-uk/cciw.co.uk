@@ -89,7 +89,7 @@ def plot_booking_creation_times(year):
     
     plt.tight_layout()
     plt.savefig(f'booking_creation_times_{year}.png')
-    plt.show()
+    plt.close()
     
     # Additional analysis: Distribution of bookings by hour of day
     hour_counts = Counter([b.created_at.hour for b in bookings])
@@ -105,7 +105,7 @@ def plot_booking_creation_times(year):
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
     plt.savefig(f'booking_creation_by_hour_{year}.png')
-    plt.show()
+    plt.close()
     
     # Find the busiest day
     bookings_per_day = (
@@ -168,7 +168,7 @@ def plot_booking_creation_times(year):
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
         plt.savefig(f'busiest_day_booking_times_{year}.png')
-        plt.show()
+        plt.close()
         
         # Also create a minute-by-minute histogram for the busiest day
         plt.figure(figsize=(12, 6))
@@ -181,8 +181,52 @@ def plot_booking_creation_times(year):
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
         plt.savefig(f'busiest_day_booking_histogram_{year}.png')
-        plt.show()
+        plt.close()
 
+
+def combine_images(year):
+    """Combine all generated PNG files into a single vertical image and clean up individual files."""
+    import glob
+    from PIL import Image
+    import os
+    
+    # Find all PNG files generated for this year
+    pattern = f'*_{year}.png'
+    image_files = glob.glob(pattern)
+    
+    if not image_files:
+        print(f"No images found for year {year}")
+        return None
+    
+    # Open all images
+    images = [Image.open(file) for file in image_files]
+    
+    # Calculate dimensions for the combined image
+    width = max(img.width for img in images)
+    height = sum(img.height for img in images)
+    
+    # Create a new image with the calculated dimensions
+    combined_image = Image.new('RGB', (width, height), color='white')
+    
+    # Paste each image into the combined image
+    y_offset = 0
+    for img in images:
+        # Center the image horizontally if it's narrower than the widest image
+        x_offset = (width - img.width) // 2
+        combined_image.paste(img, (x_offset, y_offset))
+        y_offset += img.height
+        img.close()
+    
+    # Save the combined image
+    output_filename = f'booking_analysis_{year}_combined.png'
+    combined_image.save(output_filename)
+    
+    # Clean up individual files
+    for file in image_files:
+        os.remove(file)
+    
+    print(f"Combined image saved as: {output_filename}")
+    return output_filename
 
 def main():
     parser = argparse.ArgumentParser(description='Analyze and plot booking creation times for a specific year')
@@ -191,6 +235,7 @@ def main():
     args = parser.parse_args()
     
     plot_booking_creation_times(args.year)
+    combine_images(args.year)
 
 if __name__ == "__main__":
     main()
