@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 """
-Script to analyze and plot booking creation times for 2024.
+Script to analyze and plot booking creation times for a specified year.
 Shows a timeline of bookings and calculates the maximum bookings per minute.
 """
 
 import os
 import sys
 import django
+import argparse
 from datetime import datetime, timedelta
 from collections import Counter
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ import matplotlib.dates as mdates
 import numpy as np
 from django.utils import timezone
 from django.db.models import Count
-from django.db.models.functions import TruncMinute
+from django.db.models.functions import TruncMinute, TruncDay
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cciw.settings")
@@ -23,10 +24,10 @@ django.setup()
 from cciw.bookings.models import Booking
 
 
-def plot_booking_creation_times():
-    # Get all bookings created in 2024
-    year_start = datetime(2024, 1, 1, tzinfo=timezone.get_current_timezone())
-    year_end = datetime(2025, 1, 1, tzinfo=timezone.get_current_timezone())
+def plot_booking_creation_times(year):
+    # Get all bookings created in the specified year
+    year_start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
+    year_end = datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone())
     
     bookings = Booking.objects.filter(
         created_at__gte=year_start,
@@ -34,7 +35,7 @@ def plot_booking_creation_times():
     ).order_by('created_at')
     
     if not bookings.exists():
-        print("No bookings found for 2024")
+        print(f"No bookings found for {year}")
         return
     
     # Count bookings per minute
@@ -59,7 +60,7 @@ def plot_booking_creation_times():
     
     # Plot 1: Bookings per minute over time
     ax1.bar(minutes, counts, width=0.01, color='blue', alpha=0.7)
-    ax1.set_title('Bookings Created Per Minute in 2024')
+    ax1.set_title(f'Bookings Created Per Minute in {year}')
     ax1.set_ylabel('Bookings Count')
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     ax1.xaxis.set_major_locator(mdates.MonthLocator())
@@ -76,7 +77,7 @@ def plot_booking_creation_times():
     # Plot 2: Cumulative bookings over time
     all_dates = [b.created_at for b in bookings]
     ax2.hist(all_dates, bins=100, cumulative=True, histtype='step', linewidth=2)
-    ax2.set_title('Cumulative Bookings in 2024')
+    ax2.set_title(f'Cumulative Bookings in {year}')
     ax2.set_xlabel('Date')
     ax2.set_ylabel('Total Bookings')
     ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
@@ -87,7 +88,7 @@ def plot_booking_creation_times():
     ax2.grid(True, linestyle='--', alpha=0.7)
     
     plt.tight_layout()
-    plt.savefig('booking_creation_times_2024.png')
+    plt.savefig(f'booking_creation_times_{year}.png')
     plt.show()
     
     # Additional analysis: Distribution of bookings by hour of day
@@ -97,17 +98,37 @@ def plot_booking_creation_times():
     
     plt.figure(figsize=(10, 6))
     plt.bar(hours, hour_values, color='green', alpha=0.7)
-    plt.title('Distribution of Bookings by Hour of Day (2024)')
+    plt.title(f'Distribution of Bookings by Hour of Day ({year})')
     plt.xlabel('Hour of Day (24h format)')
     plt.ylabel('Number of Bookings')
     plt.xticks(range(0, 24))
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
-    plt.savefig('booking_creation_by_hour_2024.png')
+    plt.savefig(f'booking_creation_by_hour_{year}.png')
     plt.show()
     
-    # Zoom in on the busiest day (March 1st, 2024)
-    busiest_day_start = datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone())
+    # Find the busiest day
+    bookings_per_day = (
+        bookings
+        .annotate(day=TruncDay('created_at'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    
+    if not bookings_per_day:
+        print(f"No booking data available for {year}")
+        return
+        
+    busiest_day = bookings_per_day[0]['day']
+    print(f"Busiest day: {busiest_day.strftime('%Y-%m-%d')} with {bookings_per_day[0]['count']} bookings")
+    
+    # Zoom in on the busiest day
+    busiest_day_start = datetime.combine(
+        busiest_day.date(), 
+        datetime.min.time(), 
+        tzinfo=timezone.get_current_timezone()
+    )
     busiest_day_end = busiest_day_start + timedelta(hours=12)  # First 12 hours
     
     busiest_day_bookings = bookings.filter(
@@ -141,12 +162,12 @@ def plot_booking_creation_times():
                 fontsize=8
             )
         
-        plt.title(f'Booking Times on Busiest Day (March 1st, 2024) - First 12 Hours')
+        plt.title(f'Booking Times on Busiest Day ({busiest_day.strftime("%Y-%m-%d")}) - First 12 Hours')
         plt.xlabel('Time')
         plt.ylabel('Bookings')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig('busiest_day_booking_times_2024.png')
+        plt.savefig(f'busiest_day_booking_times_{year}.png')
         plt.show()
         
         # Also create a minute-by-minute histogram for the busiest day
@@ -154,14 +175,22 @@ def plot_booking_creation_times():
         plt.hist(booking_times, bins=24, alpha=0.7, color='purple')
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
         plt.gca().xaxis.set_major_locator(mdates.HourLocator())
-        plt.title(f'Booking Frequency on March 1st, 2024 (First 12 Hours)')
+        plt.title(f'Booking Frequency on {busiest_day.strftime("%Y-%m-%d")} (First 12 Hours)')
         plt.xlabel('Time')
         plt.ylabel('Number of Bookings')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig('busiest_day_booking_histogram_2024.png')
+        plt.savefig(f'busiest_day_booking_histogram_{year}.png')
         plt.show()
 
 
+def main():
+    parser = argparse.ArgumentParser(description='Analyze and plot booking creation times for a specific year')
+    parser.add_argument('year', type=int, nargs='?', default=datetime.now().year,
+                        help='Year to analyze (defaults to current year)')
+    args = parser.parse_args()
+    
+    plot_booking_creation_times(args.year)
+
 if __name__ == "__main__":
-    plot_booking_creation_times()
+    main()
