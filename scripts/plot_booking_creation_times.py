@@ -21,6 +21,12 @@ with the following requirements:
 4. "Combine all the PNG files into a single PNG, with the plots arranged vertically,
    and print the final filename as output. Cleanup intermediate files that were created,
    so there is just one output."
+
+5. "The definition of bookings created in a given "year" should be fixed - it's
+   not a 365 day period, but bookings where
+   `Bookings.object.filter(camp__year=year)`. Also, the cumulative chart shows the
+   bookings go to zero at the end, which is wrong."
+
 """
 
 import argparse
@@ -44,11 +50,8 @@ from cciw.bookings.models import Booking  # noqa:E402
 
 
 def plot_booking_creation_times(year):
-    # Get all bookings created in the specified year
-    year_start = datetime(year, 1, 1, tzinfo=timezone.get_current_timezone())
-    year_end = datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone())
-
-    bookings = Booking.objects.filter(created_at__gte=year_start, created_at__lt=year_end).order_by("created_at")
+    # Get all bookings for camps in the specified year
+    bookings = Booking.objects.filter(camp__year=year).order_by("created_at")
 
     if not bookings.exists():
         print(f"No bookings found for {year}")
@@ -93,7 +96,15 @@ def plot_booking_creation_times(year):
 
     # Plot 2: Cumulative bookings over time
     all_dates = [b.created_at for b in bookings]
-    ax2.hist(all_dates, bins=100, cumulative=True, histtype="step", linewidth=2)
+
+    # Sort dates and ensure we have at least one booking
+    if all_dates:
+        # Create a proper time series for cumulative plot
+        sorted_dates = sorted(all_dates)
+        # Create cumulative count data
+        cumulative_data = np.arange(1, len(sorted_dates) + 1)
+        # Plot as a line chart instead of histogram for better accuracy
+        ax2.plot(sorted_dates, cumulative_data, linewidth=2)
     ax2.set_title(f"Cumulative Bookings in {year}")
     ax2.set_xlabel("Date")
     ax2.set_ylabel("Total Bookings")
@@ -193,7 +204,9 @@ def plot_booking_creation_times(year):
 
 
 def combine_images(year):
-    """Combine all generated PNG files into a single vertical image and clean up individual files."""
+    """
+    Combine all generated PNG files into a single vertical image and clean up individual files.
+    """
     import glob
     import os
 
