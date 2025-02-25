@@ -105,6 +105,62 @@ def plot_booking_creation_times():
     plt.tight_layout()
     plt.savefig('booking_creation_by_hour_2024.png')
     plt.show()
+    
+    # Zoom in on the busiest day (March 1st, 2024)
+    busiest_day_start = datetime(2024, 3, 1, tzinfo=timezone.get_current_timezone())
+    busiest_day_end = busiest_day_start + timedelta(hours=12)  # First 12 hours
+    
+    busiest_day_bookings = bookings.filter(
+        created_at__gte=busiest_day_start,
+        created_at__lt=busiest_day_end
+    )
+    
+    if busiest_day_bookings.exists():
+        # Create a detailed timeline for the busiest day
+        fig, ax = plt.figure(figsize=(12, 6)), plt.gca()
+        
+        # Plot individual booking times
+        booking_times = [b.created_at for b in busiest_day_bookings]
+        
+        # Create a scatter plot with jitter for better visibility if times are close
+        y_jitter = np.random.normal(0, 0.1, size=len(booking_times))
+        ax.scatter(booking_times, y_jitter, alpha=0.7, s=50, color='blue')
+        
+        # Format the x-axis to show hours and minutes
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+        ax.xaxis.set_major_locator(mdates.HourLocator())
+        ax.xaxis.set_minor_locator(mdates.MinuteLocator(byminute=range(0, 60, 15)))
+        
+        # Add booking details as annotations
+        for i, booking in enumerate(busiest_day_bookings):
+            ax.annotate(
+                f"{booking.created_at.strftime('%H:%M:%S')}",
+                (booking.created_at, y_jitter[i]),
+                xytext=(5, 5),
+                textcoords='offset points',
+                fontsize=8
+            )
+        
+        plt.title(f'Booking Times on Busiest Day (March 1st, 2024) - First 12 Hours')
+        plt.xlabel('Time')
+        plt.ylabel('Bookings')
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig('busiest_day_booking_times_2024.png')
+        plt.show()
+        
+        # Also create a minute-by-minute histogram for the busiest day
+        plt.figure(figsize=(12, 6))
+        plt.hist(booking_times, bins=24, alpha=0.7, color='purple')
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+        plt.gca().xaxis.set_major_locator(mdates.HourLocator())
+        plt.title(f'Booking Frequency on March 1st, 2024 (First 12 Hours)')
+        plt.xlabel('Time')
+        plt.ylabel('Number of Bookings')
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig('busiest_day_booking_histogram_2024.png')
+        plt.show()
 
 
 if __name__ == "__main__":
