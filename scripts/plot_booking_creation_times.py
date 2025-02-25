@@ -2,6 +2,24 @@
 """
 Script to analyze and plot booking creation times for a specified year.
 Shows a timeline of bookings and calculates the maximum bookings per minute.
+
+This script was created through an iterative process with the following requirements:
+1. "Write a standalone script that will use the Booking model in cciw/bookings/models.py 
+   and plot a chart showing when bookings were created, in the year 2024, using 
+   `created_at` field. Use any convenient plotting library. I'm particularly interested 
+   in seeing what was the maximum number of bookings created per minute, but would like 
+   to see the whole chart as well."
+
+2. "Include a chart that zooms in on the first few hours of the busiest day - 2024-03-01, 
+   I want to see how closely packed those times are."
+
+3. "Make the script re-usable for future years: it should take an argument which is the 
+   year we are interested it, and use that everywhere instead of 2024. Use argparse. 
+   It should calculate the busiest day automatically instead of hard-coding it."
+
+4. "Combine all the PNG files into a single PNG, with the plots arranged vertically, 
+   and print the final filename as output. Cleanup intermediate files that were created, 
+   so there is just one output."
 """
 
 import os
