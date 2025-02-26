@@ -56,7 +56,7 @@ _thisyear = None
 _thisyear_timestamp = None
 
 
-def get_thisyear():
+def get_thisyear() -> int:
     """
     Get the year the website is currently on.  The website year is
     equal to the year of the last camp in the database, or the year

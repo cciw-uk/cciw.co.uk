@@ -1689,21 +1689,21 @@ def book_basket_now(bookings):
     return True
 
 
-def get_early_bird_cutoff_date(year):
+def get_early_bird_cutoff_date(year: int) -> datetime:
     # 1st May
     return datetime(year, 5, 1, tzinfo=timezone.get_default_timezone())
 
 
-def early_bird_is_available(year, booked_at_date):
+def early_bird_is_available(year: int, booked_at_date: datetime):
     return booked_at_date < get_early_bird_cutoff_date(year)
 
 
-def any_bookings_possible(year):
+def any_bookings_possible(year: int):
     camps = Camp.objects.filter(year=year)
     return any(c.get_places_left().total > 0 and c.is_open_for_bookings for c in camps)
 
 
-def is_booking_open(year):
+def is_booking_open(year: int):
     """
     When passed a given year, returns True if booking is open.
     """
