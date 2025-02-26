@@ -76,38 +76,41 @@ class BookingStage:
 def index(request):
     year = common.get_thisyear()
     bookingform_relpath = f"{settings.BOOKINGFORMDIR}/booking_form_{year}.pdf"
-    context = {
+    context: dict = {
         "title": "Booking",
     }
     if os.path.isfile(f"{settings.MEDIA_ROOT}/{bookingform_relpath}"):
         context["bookingform"] = bookingform_relpath
     booking_open = is_booking_open(year)
+
+    def getp(v):
+        # Helper for getting price from incomplete list
+        try:
+            return [p for p in prices if p.price_type == v][0].price
+        except IndexError:
+            return None
+
     if booking_open:
         prices = Price.objects.for_year(year)
         now = timezone.now()
         early_bird_available = early_bird_is_available(year, now)
         context["early_bird_available"] = early_bird_available
         context["early_bird_date"] = get_early_bird_cutoff_date(year)
+        early_bird_discount = getp(PriceType.EARLY_BIRD_DISCOUNT)
     else:
         # Show last year's prices
         prices = Price.objects.for_year(year - 1)
         early_bird_available = False
+        early_bird_discount = None  # Don't show early bird in price list, it might not be available.
 
     prices = list(prices.required_for_booking())
 
-    def getp(v):
-        try:
-            return [p for p in prices if p.price_type == v][0].price
-        except IndexError:
-            return None
-
-    early_bird_discount = getp(PriceType.EARLY_BIRD_DISCOUNT)
     price_list = [
         ("Full price", getp(PriceType.FULL)),
         ("2nd camper from the same family", getp(PriceType.SECOND_CHILD)),
         ("Subsequent children from the same family", getp(PriceType.THIRD_CHILD)),
     ]
-    if any(p is None for caption, p in price_list):
+    if any(p is None for _, p in price_list):
         price_list = []
     # Add discounts:
     price_list = [
