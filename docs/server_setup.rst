@@ -63,6 +63,8 @@ the same provider. If moving to a new host, some steps will need to be changed.
 
    - Project: CCIW
 
+   - Enable Metrics agent: https://docs.digitalocean.com/products/monitoring/how-to/install-agent/
+
 4. Add new VPS to your local /etc/hosts so that it can be accessed easily, using
    the IP address given e.g.::
 
