@@ -33,6 +33,7 @@ import argparse
 import os
 from collections import Counter
 from datetime import datetime, timedelta
+from typing import Literal
 
 import django
 import matplotlib.dates as mdates
@@ -49,9 +50,15 @@ django.setup()
 from cciw.bookings.models import Booking  # noqa:E402
 
 
-def plot_booking_creation_times(year):
+def plot_booking_creation_times(
+    year: int, timestamp_field: Literal["created_at"] | Literal["booked_at"], fileprefix: str
+):
     # Get all bookings for camps in the specified year
-    bookings = Booking.objects.filter(camp__year=year).order_by("created_at")
+    bookings = (
+        Booking.objects.filter(camp__year=year)
+        .exclude(**{f"{timestamp_field}__isnull": True})
+        .order_by(timestamp_field)
+    )
 
     if not bookings.exists():
         print(f"No bookings found for {year}")
@@ -59,7 +66,7 @@ def plot_booking_creation_times(year):
 
     # Count bookings per minute
     bookings_per_minute = (
-        bookings.annotate(minute=TruncMinute("created_at"))
+        bookings.annotate(minute=TruncMinute(timestamp_field))
         .values("minute")
         .annotate(count=Count("id"))
         .order_by("minute")
@@ -95,7 +102,7 @@ def plot_booking_creation_times(year):
     )
 
     # Plot 2: Cumulative bookings over time
-    all_dates = [b.created_at for b in bookings]
+    all_dates = [getattr(b, timestamp_field) for b in bookings]
 
     # Sort dates and ensure we have at least one booking
     if all_dates:
@@ -116,11 +123,11 @@ def plot_booking_creation_times(year):
     ax2.grid(True, linestyle="--", alpha=0.7)
 
     plt.tight_layout()
-    plt.savefig(f"booking_creation_times_{year}.png")
+    plt.savefig(f"{fileprefix}_perminute_and_cumulative.png")
     plt.close()
 
     # Additional analysis: Distribution of bookings by hour of day
-    hour_counts = Counter([b.created_at.hour for b in bookings])
+    hour_counts = Counter([getattr(b, timestamp_field).hour for b in bookings])
     hours = sorted(hour_counts.keys())
     hour_values = [hour_counts[h] for h in hours]
 
@@ -132,12 +139,12 @@ def plot_booking_creation_times(year):
     plt.xticks(range(0, 24))
     plt.grid(True, linestyle="--", alpha=0.7)
     plt.tight_layout()
-    plt.savefig(f"booking_creation_by_hour_{year}.png")
+    plt.savefig(f"{fileprefix}_by_hour.png")
     plt.close()
 
     # Find the busiest day
     bookings_per_day = (
-        bookings.annotate(day=TruncDay("created_at")).values("day").annotate(count=Count("id")).order_by("-count")
+        bookings.annotate(day=TruncDay(timestamp_field)).values("day").annotate(count=Count("id")).order_by("-count")
     )
 
     if not bookings_per_day:
@@ -153,14 +160,19 @@ def plot_booking_creation_times(year):
     )
     busiest_day_end = busiest_day_start + timedelta(hours=12)  # First 12 hours
 
-    busiest_day_bookings = bookings.filter(created_at__gte=busiest_day_start, created_at__lt=busiest_day_end)
+    busiest_day_bookings = bookings.filter(
+        **{
+            f"{timestamp_field}__gte": busiest_day_start,
+            f"{timestamp_field}__lt": busiest_day_end,
+        }
+    )
 
     if busiest_day_bookings.exists():
         # Create a detailed timeline for the busiest day
         _, ax = plt.figure(figsize=(12, 6)), plt.gca()
 
         # Plot individual booking times
-        booking_times = [b.created_at for b in busiest_day_bookings]
+        booking_times = [getattr(b, timestamp_field) for b in busiest_day_bookings]
 
         # Create a scatter plot with jitter for better visibility if times are close
         y_jitter = np.random.normal(0, 0.1, size=len(booking_times))
@@ -174,8 +186,8 @@ def plot_booking_creation_times(year):
         # Add booking details as annotations
         for i, booking in enumerate(busiest_day_bookings):
             ax.annotate(
-                f"{booking.created_at.strftime('%H:%M:%S')}",
-                (booking.created_at, y_jitter[i]),
+                f"{getattr(booking, timestamp_field).strftime('%H:%M:%S')}",
+                (getattr(booking, timestamp_field), y_jitter[i]),
                 xytext=(5, 5),
                 textcoords="offset points",
                 fontsize=8,
@@ -186,7 +198,7 @@ def plot_booking_creation_times(year):
         plt.ylabel("Bookings")
         plt.grid(True, linestyle="--", alpha=0.7)
         plt.tight_layout()
-        plt.savefig(f"busiest_day_booking_times_{year}.png")
+        plt.savefig(f"{fileprefix}_busiest_day_booking_times.png")
         plt.close()
 
         # Also create a minute-by-minute histogram for the busiest day
@@ -199,11 +211,11 @@ def plot_booking_creation_times(year):
         plt.ylabel("Number of Bookings")
         plt.grid(True, linestyle="--", alpha=0.7)
         plt.tight_layout()
-        plt.savefig(f"busiest_day_booking_histogram_{year}.png")
+        plt.savefig(f"{fileprefix}_busiest_day_booking_histogram.png")
         plt.close()
 
 
-def combine_images(year):
+def combine_images(fileprefix):
     """
     Combine all generated PNG files into a single vertical image and clean up individual files.
     """
@@ -213,15 +225,15 @@ def combine_images(year):
     from PIL import Image
 
     # Find all PNG files generated for this year
-    pattern = f"*_{year}.png"
-    image_files = glob.glob(pattern)
+    pattern = f"{fileprefix}_*.png"
+    image_files = list(glob.glob(pattern))
 
     if not image_files:
-        print(f"No images found for year {year}")
+        print(f"No images found matching {fileprefix}")
         return None
 
     # Open all images
-    images = [Image.open(file) for file in image_files]
+    images = [Image.open(file) for file in sorted(image_files)]
 
     # Calculate dimensions for the combined image
     width = max(img.width for img in images)
@@ -240,7 +252,7 @@ def combine_images(year):
         img.close()
 
     # Save the combined image
-    output_filename = f"booking_analysis_{year}_combined.png"
+    output_filename = f"{fileprefix}_combined.png"
     combined_image.save(output_filename)
 
     # Clean up individual files
@@ -258,8 +270,11 @@ def main():
     )
     args = parser.parse_args()
 
-    plot_booking_creation_times(args.year)
-    combine_images(args.year)
+    year = int(args.year)
+    for timestamp_field in ("created_at", "booked_at"):
+        fileprefix = f"booking_{timestamp_field}_{year}"
+        plot_booking_creation_times(year, timestamp_field=timestamp_field, fileprefix=fileprefix)
+        combine_images(fileprefix)
 
 
 if __name__ == "__main__":
