@@ -9,8 +9,8 @@ import sys
 import time
 import traceback
 import types
+from dataclasses import dataclass
 
-import attr
 import texttable
 from django.core.signals import request_finished
 from django.db import connection
@@ -107,7 +107,7 @@ class QueryRecorder:
             self.queries.append(current_query)
 
 
-@attr.s(auto_attribs=True)
+@dataclass
 class QueryInfo:
     sql: str
     params: list
@@ -115,14 +115,14 @@ class QueryInfo:
     stacktrace: str
     status: str = "ok"
     exception: object = None
-    duration: float = None
+    duration: float | None = None
     original_order: int = 0
 
 
 # Query analysis
 
 
-@attr.s(auto_attribs=True)
+@dataclass
 class OutputInfo:
     count: int
     sql: str

@@ -14,8 +14,8 @@ import os
 import re
 import tempfile
 from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass
 
-import attr
 from django.conf import settings
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 #   stop them having to do lots of the same DB queries over and over.
 
 
-@attr.s(auto_attribs=True)
+@dataclass
 class EmailList:
     local_address: str
     get_members: Callable[[], Iterable[User]]

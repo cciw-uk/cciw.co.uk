@@ -1,11 +1,14 @@
 # Utilities for dealing with our Amazon Simple Email Service integration
+from __future__ import annotations
+
+import dataclasses
 import io
 import re
 import warnings
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-import attr
 import boto3
 from django.conf import settings
 
@@ -47,15 +50,18 @@ def get_ses_api():
 
 class Action:
     @classmethod
-    def from_api(cls, data):
+    def from_api(cls, data) -> S3Action | None:
         if "S3Action" in data:
             return S3Action.from_api(data["S3Action"])
 
         warnings.warn(f"Unrecognised action {data}")
         return None
 
+    def to_api(self):
+        raise NotImplementedError()
 
-@attr.s(auto_attribs=True)
+
+@dataclass
 class S3Action(Action):
     bucket_name: str
     topic_arn: str
@@ -75,7 +81,7 @@ class S3Action(Action):
         }
 
 
-@attr.s(auto_attribs=True)
+@dataclass
 class Rule:
     name: str
     recipients: list[str]
@@ -84,15 +90,15 @@ class Rule:
     scan_enabled: bool
     tls_policy: str = "Optional"
 
-    def __attrs_post_init__(self):
+    def __post_init__(self):
         self.name = _clean_name(self.name)
 
     @classmethod
-    def from_api(cls, data):
+    def from_api(cls, data) -> Rule:
         return cls(
             name=data["Name"],
             recipients=data["Recipients"],
-            actions=[Action.from_api(item) for item in data["Actions"]],
+            actions=[action for item in data["Actions"] if (action := Action.from_api(item)) is not None],
             enabled=data["Enabled"],
             scan_enabled=data["ScanEnabled"],
             tls_policy=data["TlsPolicy"],
@@ -136,13 +142,13 @@ class _Missing:
 Missing: Any = _Missing()
 
 
-@attr.s(auto_attribs=True)
+@dataclass
 class RuleSet:
     name: str
-    created_timestamp: datetime = Missing
-    rules: list[Rule] = attr.Factory(list)
+    created_timestamp: datetime = dataclasses.field(default_factory=lambda: Missing)
+    rules: list[Rule] = dataclasses.field(default_factory=list)
 
-    def __attrs_post_init__(self):
+    def __post_init__(self):
         self.name = _clean_name(self.name)
 
     @classmethod
