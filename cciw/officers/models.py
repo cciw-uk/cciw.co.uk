@@ -347,7 +347,7 @@ class Reference(models.Model):
         "Please comment on the applicant's capability of working with children and young people (ie. previous experience of similar work, sense of responsibility, sensitivity, ability to work with others, ability to communicate with children and young people, leadership skills)"
     )
     character = models.TextField(
-        "Please comment on aspects of the applicants character (ie. Christian experience honesty, trustworthiness, reliability, disposition, faithful attendance at worship/prayer meetings.)"
+        "Please comment on aspects of the applicant's character (ie. Christian experience honesty, trustworthiness, reliability, disposition, faithful attendance at worship/prayer meetings.)"
     )
     concerns = models.TextField(
         "Have you ever had concerns about either this applicant's ability or suitability to work with children and young people?"
