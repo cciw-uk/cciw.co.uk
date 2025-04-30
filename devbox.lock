@@ -29,6 +29,9 @@
         }
       }
     },
+    "github:NixOS/nixpkgs/nixpkgs-unstable": {
+      "resolved": "github:NixOS/nixpkgs/74a40410369a1c35ee09b8a1abee6f4acbedc059?lastModified=1743938762&narHash=sha256-UgFYn8sGv9B8PoFpUfCa43CjMZBl1x%2FShQhRDHBFQdI%3D"
+    },
     "glibcLocales@latest": {
       "last_modified": "2024-10-13T23:44:06Z",
       "resolved": "github:NixOS/nixpkgs/d4f247e89f6e10120f911e2e2d2254a050d0f732#glibcLocales",
