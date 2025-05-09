@@ -2810,7 +2810,7 @@ class SupportingInformationAdminBase(fix_autocomplete_fields("booking"), FuncBas
         self.officer_login(officers_factories.create_booking_secretary())
         self.get_url("admin:bookings_booking_change", booking.id)
         if self.is_full_browser_test:
-            self.click("#supporting_information_records-group .collapse-toggle")
+            self.click("#supporting_information_records-group details")
             self.click("#supporting_information_records-group .add-row a")
         else:
             self.add_admin_inline_form_to_page("supporting_information_records")
@@ -2833,7 +2833,7 @@ class SupportingInformationAdminBase(fix_autocomplete_fields("booking"), FuncBas
 
         # Test clear
         if self.is_full_browser_test:
-            self.click("#supporting_information_records-group .collapse-toggle")
+            self.click("#supporting_information_records-group details")
         self.fill_by_name({"supporting_information_records-0-document-clear": True})
         self.submit("[name=_continue]")
         self.assertTextPresent("was changed successfully")

@@ -22,7 +22,7 @@ dependencies = [
     "django-spurl>=0.6.8",
     "django-urlconfchecks>=0.11.0",
     "django-widget-tweaks>=1.4.12",
-    "django>=5",
+    "django>=5.2",
     "docutils>=0.19",
     "fabric>3",
     "frozendict>=2.3.4",
@@ -47,7 +47,7 @@ dependencies = [
     "sentry-sdk>=1.14.0",
     "sorl-thumbnail>=12.10.0",
     "weasyprint>=61.2",
-    "wiki==0.11.1",
+    "wiki>=0.12",
     "gunicorn>=23.0.0",
     "fabutils-cciw>=0.1.1",
 ]
@@ -115,3 +115,4 @@ dev-dependencies = [
     "visidata>=3.1.1",
     "werkzeug>=3.1.1",
 ]
+environments = ["platform_python_implementation != 'PyPy'"]
