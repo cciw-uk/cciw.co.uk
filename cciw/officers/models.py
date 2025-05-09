@@ -692,7 +692,7 @@ class DBSActionLog(models.Model):
     """
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="dbsactionlogs", on_delete=models.PROTECT)
-    action_type = models.CharField("action type", max_length=40, choices=DBSActionLogType.choices)
+    action_type = models.CharField("action type", max_length=40, choices=DBSActionLogType)
     created_at = models.DateTimeField("Created at", default=timezone.now)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

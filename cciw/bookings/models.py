@@ -809,7 +809,7 @@ class Booking(models.Model):
     camp = models.ForeignKey(Camp, on_delete=models.PROTECT, related_name="bookings")
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    sex = models.CharField(max_length=1, choices=Sex.choices)
+    sex = models.CharField(max_length=1, choices=Sex)
     birth_date = models.DateField("date of birth")
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
@@ -887,7 +887,7 @@ class Booking(models.Model):
 
     # State - internal
     state = models.IntegerField(
-        choices=BookingState.choices,
+        choices=BookingState,
         help_text=mark_safe(
             "<ul>"
             "<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
@@ -1857,7 +1857,7 @@ class ManualPaymentManager(models.Manager):
 class ManualPaymentBase(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(default=timezone.now)
-    payment_type = models.PositiveSmallIntegerField(choices=ManualPaymentType.choices, default=ManualPaymentType.CHEQUE)
+    payment_type = models.PositiveSmallIntegerField(choices=ManualPaymentType, default=ManualPaymentType.CHEQUE)
 
     class Meta:
         abstract = True

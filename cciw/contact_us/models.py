@@ -62,7 +62,7 @@ class Message(models.Model):
     Stores messages received from the "contact us" page.
     """
 
-    subject = models.CharField(choices=ContactType.choices, max_length=max(map(len, ContactType.values)))
+    subject = models.CharField(choices=ContactType, max_length=max(map(len, ContactType.values)))
     email = models.EmailField("Email address")
     booking_account = models.ForeignKey(BookingAccount, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=200, blank=True)
@@ -72,7 +72,7 @@ class Message(models.Model):
     spam_classification_manual = models.CharField(
         verbose_name="Marked spam",
         max_length=12,
-        choices=SpamStatus.choices,
+        choices=SpamStatus,
         default=SpamStatus.UNCLASSIFIED,
     )
     spam_classification_bogofilter = models.CharField(
