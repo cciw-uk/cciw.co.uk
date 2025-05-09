@@ -295,6 +295,7 @@ def forward_with_text(email_addresses, subject, text, original_message):
 def forward_bounce_to(email_addresses, bounced_email_address, original_message, camp):
     forward_body = f"""
 A reference request (see attached), sent to {bounced_email_address} was not received.
+This usually means the email address is incorrect.
 
 Please find a correct email address for this referee.
 """
