@@ -496,8 +496,9 @@ def _list_bookings(request):
             b.bookable = len(b.booking_problems) == 0
             b.manually_approved = b.state == BookingState.APPROVED
 
-            # Where booking.price_type = PriceType.CUSTOM, and state is not approved,
-            # amount_due is meaningless. So we have a new attr, amount_due_normalised
+            # Where booking.price_type == PriceType.CUSTOM, and state is not approved,
+            # amount_due is zero, but this is meaningless.
+            # So we have a new attr, amount_due_normalised
             if b.price_type == PriceType.CUSTOM and b.state != BookingState.APPROVED:
                 b.amount_due_normalised = None
             else:

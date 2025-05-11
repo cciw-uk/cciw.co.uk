@@ -936,21 +936,21 @@ class Booking(models.Model):
             self.custom_agreements_checked = [agreement.id for agreement in custom_agreements]
         self.save()
 
-    def is_payable(self, *, confirmed_only: bool):
+    def is_payable(self, *, confirmed_only: bool) -> bool:
         # See also BookingQuerySet.payable()
         return self.state in [BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND] or (
             self.is_confirmed if confirmed_only else self.is_booked
         )
 
     @property
-    def is_booked(self):
+    def is_booked(self) -> bool:
         return self.state == BookingState.BOOKED
 
     @property
-    def is_confirmed(self):
+    def is_confirmed(self) -> bool:
         return self.is_booked and self.booking_expires_at is None
 
-    def expected_amount_due(self):
+    def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:
             return None
         if self.state == BookingState.CANCELLED_DEPOSIT_KEPT:
@@ -975,7 +975,7 @@ class Booking(models.Model):
 
             return amount
 
-    def auto_set_amount_due(self):
+    def auto_set_amount_due(self) -> None:
         amount = self.expected_amount_due()
         if amount is None:
             # This happens for PriceType.CUSTOM
