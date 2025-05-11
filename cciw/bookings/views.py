@@ -626,6 +626,9 @@ def pay(request, *, installment: bool = False):
     domain = get_current_domain()
     protocol = "https" if request.is_secure() else "http"
 
+    custom_min_amount = 0 if installment else max(balance_due_now, 0)
+    custom_max_amount = balance_full
+
     return TemplateResponse(
         request,
         "cciw/bookings/pay.html",
@@ -646,8 +649,8 @@ def pay(request, *, installment: bool = False):
                 max(0, balance_due_now),
                 protocol,
                 domain,
-                min_amount=max(balance_due_now, 0),
-                max_amount=balance_full,
+                min_amount=custom_min_amount,
+                max_amount=custom_max_amount,
             ),
             "paypal_form_other_person": mk_paypal_form(
                 acc,
