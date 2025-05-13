@@ -67,8 +67,9 @@ class BookingLogInMixin:
     booker_email = "booker@bookers.com"
 
     def booking_login(self, add_account_details=True, shortcut=None) -> BookingAccount:
-        if getattr(self, "_logged_in", False):
-            return
+        account: BookingAccount | None = getattr(self, "_logged_in_account", None)
+        if account is not None:
+            return account
 
         if shortcut is None:
             shortcut = self.is_full_browser_test
@@ -93,7 +94,7 @@ class BookingLogInMixin:
             account.address_post_code = "XYZ"
             account.phone_number = "0123 456789"
             account.save()
-        self._logged_in = True
+        self._logged_in_account = account
         return account
 
     def _set_signed_cookie(self, key, value, salt=""):
