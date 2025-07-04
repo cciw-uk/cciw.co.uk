@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 
+from cciw.cciwmain.colors import Color, contrast_color
+
 from .common import CampId
 
 
@@ -71,6 +73,14 @@ class CampName(models.Model):
 
     def natural_key(self):
         return (self.slug,)
+
+    @cached_property
+    def contrast_color(self) -> str:
+        """
+        Returns a color (black/white) that contrasts with `.color`,
+        as CSS color.
+        """
+        return contrast_color(Color.from_rgb_string(self.color)).to_rgb_string()
 
 
 @dataclass
@@ -299,8 +309,8 @@ def generate_colors_scss(update_existing=False):
     colors_scss = render_to_string("cciw/camps/camp_colors_tpl.scss", {"names": camp_names}).encode("utf-8")
     paths = [
         os.path.join(settings.PROJECT_ROOT, settings.COLORS_SCSS_DIR, settings.COLORS_SCSS_FILE),  # dev
-        os.path.join(settings.STATIC_ROOT, settings.COLORS_SCSS_FILE),
-    ]  # production
+        os.path.join(settings.STATIC_ROOT, settings.COLORS_SCSS_FILE),  # production
+    ]
     for p in paths:
         if os.path.exists(os.path.dirname(p)):
             if update_existing or not os.path.exists(p):
