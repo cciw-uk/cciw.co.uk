@@ -19,18 +19,17 @@
 //
 // Secondary Color A: A65900
 
-$textColor: black;
-$textLighterColor: #404040;
+:root {
+    --textColor: black;
+    --textLighterColor: #404040;
+    --primaryColor: #007633;
+    --primaryColorLighter: #BACB97;
+    --secondaryColor: #A65900;
+    --pageTitleColor: var(--primaryColor);
+    --contentBackgroundColor: white;
+    --footerBackgroundColor: #0b2333;
+}
 
-$primaryColor: #007633;
-$primaryColorLighter: #BACB97;
-
-$secondaryColor: #A65900;
-
-$pageTitleColor: $primaryColor;
-$headerColor: scale-color($pageTitleColor, $alpha: -50%);
-$contentBackgroundColor: white;
-$footerBackgroundColor: #0b2333;
 
 $smallMenubarFontScreenWidth: 800px;
 $mobileMenuWidth: 600px;
@@ -56,8 +55,8 @@ $contentWidth: 850px;
 $lineHeight: 26px;
 
 body {
-    color: $textColor;
-    background-color: $footerBackgroundColor;
+    color: var(--textColor);
+    background-color: var(--footerBackgroundColor);
     margin: 0;
     padding: 0;
 }
@@ -79,7 +78,7 @@ a img, a {
 }
 
 a:link {
-    color: $primaryColor;
+    color: var(--primaryColor);
     text-decoration: underline;
 }
 
@@ -217,11 +216,11 @@ body:not(.homepage) .headerinner {
 
 $menubarPaddingHeight: 3px;
 
-$menubarUnselectedColor: #909090;
 
 :root {
     --menubar-line-height: #{$lineHeight};
     --menubar-border-color: #6668;
+    --menubarUnselectedColor: #90909080;
     --menubar-border-thickness: 1px;
 }
 
@@ -255,7 +254,7 @@ $menubarUnselectedColor: #909090;
             z-index: 0;
 
             a, .spacer {
-                background-color: scale-color($menubarUnselectedColor, $alpha: -50%);
+                background-color: var(--menubarUnselectedColor);
                 line-height: var(--menubar-line-height);
                 display: block;
             }
@@ -297,7 +296,7 @@ $menubarUnselectedColor: #909090;
                 color: white;
 
                 &:hover {
-                    background-color: lighten($menubarUnselectedColor, 20%);
+                    background-color: color-mix(in hsl, var(--menubarUnselectedColor) 80%, white 20%);
                 }
 
                 &[aria-current="page"],
@@ -368,7 +367,7 @@ $contentPadding: 16px;
 }
 
 #content {
-    background-color: $contentBackgroundColor;
+    background-color: var(--contentBackgroundColor);
 }
 
 .content {
@@ -386,7 +385,7 @@ footer {
         font-size: inherit;
     }
 
-    background-color: $footerBackgroundColor;
+    background-color: var(--footerBackgroundColor);
     text-align: left;
     color: #e0e0e0;
     min-height: 10em;
@@ -411,9 +410,8 @@ footer {
     }
 
     .websiteinfo {
-        $websiteinfoColor: lighten($footerBackgroundColor, 5%);
-        background-color: $websiteinfoColor;
-        box-shadow: 0px 3px 2px darken($websiteinfoColor, 10%);
+        background-color: color-mix(in hsl, var(--footerBackgroundColor) 95%, white 5%);
+        box-shadow: 0px 3px 2px color-mix(in hsl, var(--footerBackgroundColor) 70%, black 30%);
         padding: 0 0 2em 0;
     }
 
@@ -478,7 +476,7 @@ footer {
 }
 
 h2 {
-    border-bottom: 2px solid $secondaryColor;
+    border-bottom: 2px solid var(--secondaryColor);
 }
 
 h2[class^=with-camp-colors-] {
@@ -529,7 +527,7 @@ table.topheaders {
     }
 
     > * > tr > th {
-        background-color: $primaryColorLighter;
+        background-color: var(--primaryColorLighter);
         font-weight: bold;
         a:link {
             text-decoration: none;
@@ -537,7 +535,7 @@ table.topheaders {
     }
 
     > tbody > tr > td:not([class^=with-camp-colors-]) {
-        background-color: $contentBackgroundColor;
+        background-color: var(--contentBackgroundColor);
     }
     box-shadow: 0px 2px 4px #888;
     margin-bottom: 1.5em;
@@ -651,7 +649,7 @@ div.formrow {
 
     .helptext {
         font-size: 90%;
-        color: $textLighterColor;
+        color: var(--textLighterColor);
     }
 
     .fieldErrorMessages {
@@ -686,8 +684,8 @@ input.placeholder {
 }
 
 .successMessage {
-    border: 1px solid $primaryColor;
-    background-color: $primaryColorLighter;
+    border: 1px solid var(--primaryColor);
+    background-color: var(--rimaryColorLighter);
     padding: 5px 9px;
     text-align: left;
     margin-bottom: 1em;
@@ -703,19 +701,19 @@ img.captcha {
 // Account details
 .mailchimp-notice {
     font-size: 90%;
-    color: $textLighterColor;
+    color: var(--textLighterColor);
 }
 
 
 // Breadcrumbs
 
 div.breadcrumb {
-    border-bottom: 1px solid $primaryColor;
+    border-bottom: 1px solid var(--primaryColor);
     margin-bottom: 5px;
 }
 
 div.bottombreadcrumb {
-    border-top: 1px solid $primaryColor;
+    border-top: 1px solid var(--primaryColor);
     margin-top: 1em;
 }
 
@@ -758,7 +756,7 @@ ul.messagelist {
     font-size: 120%;
     line-height: 150%;
     border-radius: 6px;
-    background-color: $secondaryColor;
+    background-color: var(--secondaryColor);
     color: white;
 }
 
@@ -812,7 +810,7 @@ a.booknow, a.bigaction, input.bigaction {
                 font-weight: bold;
 
                 &:hover {
-                    background-color: lighten($menubarUnselectedColor, 20%);
+                    background-color: #e0e0e0;
                 }
             }
 
@@ -878,7 +876,7 @@ table.prices td {
 }
 
 .placeAvailability {
-    color: $textLighterColor;
+    color: var(--textLighterColor);
 }
 
 

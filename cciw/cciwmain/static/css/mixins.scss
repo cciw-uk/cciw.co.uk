@@ -40,7 +40,7 @@
     -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
     -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
     box-shadow:inset 0px 1px 0px 0px #729e48;
-    background-color: $primaryColor;
+    background-color: var(--primaryColor);
     background-image: none;
     -moz-border-radius:6px;
     -webkit-border-radius:6px;
@@ -60,7 +60,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: $primaryColorLighter;
+        background-color: var(--primaryColorLighter);
         background-image: none;
         border-color:#f0fff0;
     }
