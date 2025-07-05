@@ -31,7 +31,6 @@
 }
 
 
-$smallMenubarFontScreenWidth: 800px;
 $mobileMenuWidth: 600px;
 $smallScreenWidth: 600px;
 $noColumnsScreenWidth: 400px;
@@ -259,15 +258,7 @@ $menubarPaddingHeight: 3px;
                 display: block;
             }
             a {
-                padding: $menubarPaddingHeight 20px;
-                @media screen and (max-width: $smallMenubarFontScreenWidth) {
-                    padding-left: 10px;
-                    padding-right: 10px;
-                }
-                @media screen and (max-width: 400px) {
-                    padding-left: 5px;
-                    padding-right: 5px;
-                }
+                padding: $menubarPaddingHeight calc(min(20px, 1.25vw));
 
                 // For really narrow screens:
                 white-space: nowrap;
@@ -341,14 +332,6 @@ $menubarPaddingHeight: 3px;
 @media screen and (max-width: $mobileMenuWidth) {
     body:not(.homepage) #headerlogo {
         top: calc(var(--menubarLineHeight) + #{$menubarPaddingHeight} * 2 + 2px);
-    }
-}
-@media screen and (max-width: $smallMenubarFontScreenWidth) {
-    #menubar {
-        font-size: 80%;
-    }
-    :root {
-        --menubarLineHeight: #{$lineHeight * 0.7};
     }
 }
 
