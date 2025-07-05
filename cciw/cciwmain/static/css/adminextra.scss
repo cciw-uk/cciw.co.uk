@@ -1,5 +1,3 @@
-@import "utilities.css";
-
 
 // Admin re-theme
 
@@ -413,4 +411,40 @@ details summary {
 .data-erasure-report {
     padding: 1em;
     border: 1px solid #888;
+}
+
+/* Utilities */
+
+
+.layout-table {
+    display: table;
+}
+.layout-tr {
+    display: table-row;
+}
+.layout-td {
+    display: table-cell;
+}
+
+.columns-space-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.columns-align-left {
+    display: flex;
+    justify-content: left;
+    & > * {
+        margin-right: 1rem;
+    }
+}
+
+.columns-wrap {
+    flex-wrap: wrap;
+}
+
+@media screen and (max-width: 1024px) {
+    .columns-stacked-for-small {
+        flex-direction: column;
+    }
 }
