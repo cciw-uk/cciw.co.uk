@@ -31,7 +31,6 @@
 }
 
 
-$mobileMenuWidth: 600px;
 $smallScreenWidth: 600px;
 $contentWidth: 850px;
 
@@ -298,24 +297,20 @@ $menubarPaddingHeight: 3px;
     ul li.spacerend {
         display: none;
     }
-
-    // Smaller: center
-    @media screen and (max-width: $mobileMenuWidth) {
-        ul li {
-            &.spacerend, &.spacerstart {
-                display: inherit;
-                width: auto;
-                flex: 1 1 auto;
-            }
-        }
-    }
 }
 
-// Menubar for mobile:
-
-@media screen and (max-width: $mobileMenuWidth) {
+@media screen and (max-width: 600px) {
+    // Menubar for mobile:
+    // Shift the logo down, and put menu in center
     body:not(.homepage) #headerlogo {
         top: calc(var(--menubarLineHeight) + #{$menubarPaddingHeight} * 2 + 2px);
+    }
+    #menubar ul li {
+        &.spacerend, &.spacerstart {
+            display: inherit;
+            width: auto;
+            flex: 1 1 auto;
+        }
     }
 }
 
