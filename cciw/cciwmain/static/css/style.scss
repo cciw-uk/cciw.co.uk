@@ -202,10 +202,11 @@ $menubarPaddingHeight: 3px;
 
 
 :root {
-    --menubarLineHeight: #{$lineHeight};
+    --menubarLineHeight: var(--lineHeight);
     --menubarBorderColor: #6668;
     --menubarUnselectedColor: #90909080;
     --menubarBorderThickness: 1px;
+    --menubarPaddingHeight: 3px;
 }
 
 #menubar {
@@ -243,7 +244,7 @@ $menubarPaddingHeight: 3px;
                 display: block;
             }
             a {
-                padding: $menubarPaddingHeight calc(min(20px, 1.25vw));
+                padding: var(--menubarPaddingHeight) calc(min(20px, 1.25vw));
 
                 // For really narrow screens:
                 white-space: nowrap;
@@ -251,7 +252,7 @@ $menubarPaddingHeight: 3px;
                 text-overflow: ellipsis;
             }
             .spacer {
-                padding: $menubarPaddingHeight 0;
+                padding: var(--menubarPaddingHeight) 0;
             }
 
             flex: 0 1 auto;
@@ -305,7 +306,7 @@ $menubarPaddingHeight: 3px;
     // Menubar for mobile:
     // Shift the logo down, and put menu in center
     body:not(.homepage) #headerlogo {
-        top: calc(var(--menubarLineHeight) + #{$menubarPaddingHeight} * 2 + 2px);
+        top: calc(var(--menubarLineHeight) + var(--menubarPaddingHeight) * 2 + 2px);
     }
     #menubar ul li {
         &.spacerend, &.spacerstart {
