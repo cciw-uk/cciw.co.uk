@@ -9,10 +9,10 @@
 // - Add CSS layers
 // - Put 'camp colors' in very high priority layer,
 //   to avoid with-camp-colors- hacks
+// - Ensure .compactButton, .bigaction is in a utilities layer with high priority
 
 // Imports
 
-@import "mixins.scss";
 @import "camp_colors.scss";
 @import "utilities.scss";
 
@@ -133,7 +133,18 @@ p {
 }
 
 button, input[type=submit] {
-    @include normalButton();
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 10%, #e8e8e8 90%, #d0d0d0 100%);
+    &:hover {
+        background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
+    }
+    &:active {
+        // Press down appearance
+        position:relative;
+        top:1px;
+    }
+    padding: 3px 8px;
 }
 
 
@@ -208,7 +219,7 @@ body:not(.homepage) .headerinner {
 
     font-weight: bold;
     width: 100%;
-    @include topnavlinks();
+    text-shadow: 0px 1px 3px #222;
 
     // Note some constraints:
     //
@@ -513,9 +524,6 @@ table.actiongrid {
         padding: 6px;
         vertical-align: middle;
     }
-    button {
-        @include compactButton();
-    }
 }
 
 
@@ -689,10 +697,6 @@ ul.messagelist {
 }
 
 
-a.booknow, a.bigaction, input.bigaction {
-    @include bigaction();
-}
-
 .actiongroup {
     .actionbutton {
         margin-top: 8px;
@@ -705,7 +709,14 @@ a.booknow, a.bigaction, input.bigaction {
         display: inline;
         float: right;
     }
-    @include clearfix();
+    // clearfix hack - TODO - replace floats here with something better.
+    &:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
 }
 
 #bookingbar {
@@ -716,7 +727,7 @@ a.booknow, a.bigaction, input.bigaction {
     // We need to shift the whole bookingbar down to cover
     // the line created by border-bottom of `header`
     margin-bottom: calc(-1 * var(--menubarBorderThickness));
-    @include topnavlinks();
+    text-shadow: 0px 1px 3px #222;
     a {
         color: white;
     }
@@ -765,7 +776,14 @@ h2 > .copy_data_btn {
 }
 
 .payboxes {
-    @include clearfix();
+    // clearfix hack - TODO - replace floats here with something better.
+    &:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
 }
 
 .paybox {
@@ -799,9 +817,6 @@ table.prices td {
     padding: 5px;
 }
 
-#id_use_existing_data_modal {
-    @include fullWidthDialog(2em);
-}
 
 .placeAvailability {
     color: var(--textLighterColor);
@@ -828,7 +843,6 @@ table.bookinglist {
         text-align: center;
     }
     input[type=submit] {
-        @include compactButton();
         margin-bottom: 1px;
     }
 }

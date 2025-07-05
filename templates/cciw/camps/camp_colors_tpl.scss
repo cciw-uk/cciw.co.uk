@@ -5,11 +5,10 @@
 {% for name in names %}
 .with-camp-colors-{{ name.slug }} {
     background-color: {{ name.color }};
-    $fgcolor: {{ name.contrast_color }};
-    color: $fgcolor;
+    color: {{ name.contrast_color }};
     a:link, a:visited {
-        color: $fgcolor;
-        border-bottom-color: $fgcolor;
+        color: {{ name.contrast_color }};
+        border-bottom-color: {{ name.contrast_color }};
     }
 }
 {% endfor %}
