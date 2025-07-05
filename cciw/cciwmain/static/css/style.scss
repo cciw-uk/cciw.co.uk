@@ -5,6 +5,11 @@
 // which we've already started to use
 // And use CSS variables instead of Sass variables for most things
 
+// TODO #49 -
+// - Add CSS layers
+// - Put 'camp colors' in very high priority layer,
+//   to avoid with-camp-colors- hacks
+
 // Imports
 
 @import "mixins.scss";
@@ -30,6 +35,8 @@
     --footerBackgroundColor: #0b2333;
     --lineHeight: 26px;
     --fontSize: 17px;
+    --contentWidth: 850px;
+    --contentPadding: 16px;
 }
 
 @media screen and (max-width: 600px) {
@@ -38,9 +45,6 @@
         --fontSize: 14px;
     }
 }
-
-
-$contentWidth: 850px;
 
 
 // Fonts
@@ -56,7 +60,6 @@ $contentWidth: 850px;
 
 // Global, high level styles (no class or other selector)
 
-$lineHeight: 26px;
 
 body {
     color: var(--textColor);
@@ -183,9 +186,6 @@ body:not(.homepage) .headerinner {
     // viewport width, and therefore its height does too, so the height of the
     // header has to scale this way too.
 
-    @media screen and (max-width: $contentWidth) {
-        padding: 2vw 0;
-    }
     h1 {
         font-size: calc(min(2.5em, 5vw));
         margin: 0;
@@ -196,11 +196,6 @@ body:not(.homepage) .headerinner {
 }
 
 // menubar
-
-
-$menubarPaddingHeight: 3px;
-
-
 :root {
     --menubarLineHeight: var(--lineHeight);
     --menubarBorderColor: #6668;
@@ -320,10 +315,9 @@ $menubarPaddingHeight: 3px;
 
 // Main body
 
-$contentPadding: 16px;
 
 #contentinner {
-    padding: 10px $contentPadding 32px $contentPadding;
+    padding: 10px var(--contentPadding) 32px var(--contentPadding);
     min-height: 20em;
 
     > p:first-child, > form > p:first-child {
@@ -336,7 +330,7 @@ $contentPadding: 16px;
 }
 
 .content {
-    max-width: $contentWidth;
+    max-width: var(--contentWidth);
     margin: 0 auto;
 }
 
@@ -399,10 +393,11 @@ footer {
 // Content styles
 
 #contentinner h1 {
-    margin-left: -$contentPadding; // to make bg go to edge
-    margin-right: -$contentPadding;
-    padding-left: $contentPadding;
-    padding-right: $contentPadding;
+    // TODO #49 do we need want this? Looks a bit weird.
+    margin-left: calc(-1 * var(--contentPadding)); // to make bg go to edge
+    margin-right: calc(-1 * var(--contentPadding);
+    padding-left: var(--contentPadding);
+    padding-right: var(--contentPadding);
     background: linear-gradient(white 0%, white 52%, #007633 53%, #007633 58%, white 59%);
     text-shadow: 2px 2px 2px white, 2px -2px 2px white, -2px 2px 2px white, -2px -2px 2px white;
 }
@@ -550,7 +545,7 @@ div.sitephoto {
 div.formrow {
 
     margin: 0px 0px 8px 0px;
-    padding: 0px 6px 2px 6px;
+    padding: 0px 0px 2px 0px;
 
     .field {
         display: flex;
@@ -573,9 +568,10 @@ div.formrow {
         // These controls should never be wider than we've
         // got room to show them on the screen.
         box-sizing: border-box;
-        max-width: calc(100vw - #{$contentPadding} * 2);
+        max-width: calc(100vw - var(--contentPadding) * 2);
 
-        // But they should have a standard minimum width.
+        // But they should have a standard minimum width. Only for
+        // extremely narrow screens would this be more than max-width above.
         min-width: 170px;
     }
 
