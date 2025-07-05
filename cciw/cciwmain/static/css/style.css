@@ -4,44 +4,12 @@ This is the main CSS for the public site (i.e. not including admin and related s
 TODO - lots of sorting out needed here.
 We should probably following CUBE CSS principles https://cube.fyi/
 which we've already started to use
-And use CSS variables instead of Sass variables for most things
 
-TODO #49 -
-- Add CSS layers
-- Put 'camp colors' in very high priority layer,
-  to avoid with-camp-colors- hacks
-- Ensure .compactButton, .bigaction is in a utilities layer with high priority
 */
 
 
-/*
-Colours
- Primary Color:
- 007633 22884F		(37DA7E) BACB97
- Secondary Color A: A65900
-*/
 
-:root {
-    --textColor: black;
-    --textLighterColor: #404040;
-    --primaryColor: #007633;
-    --primaryColorLighter: #BACB97;
-    --secondaryColor: #A65900;
-    --pageTitleColor: var(--primaryColor);
-    --contentBackgroundColor: white;
-    --footerBackgroundColor: #0b2333;
-    --lineHeight: 26px;
-    --fontSize: 17px;
-    --contentWidth: 850px;
-    --contentPadding: 16px;
-}
-
-@media screen and (max-width: 600px) {
-    :root {
-        --lineHeight: 21px;
-        --fontSize: 14px;
-    }
-}
+@layer reset, defaults, patterns, components, utilities, campcolors, overrides;
 
 
 /* Fonts */
@@ -54,1045 +22,1052 @@ Colours
     font-display: swap;
 }
 
-
-/* Global, high level styles (no class or other selector) */
-
-
-body {
-    color: var(--textColor);
-    background-color: var(--footerBackgroundColor);
-    margin: 0;
-    padding: 0;
+@layer reset {
+    /* TODO, probably change box-sizing? */
 }
 
-body, input, button, select, option, textarea {
-    font-size: var(--fontSize);
-    line-height: var(--lineHeight);
-    font-family: arial, helvetica, sans;
-}
-
-a img, a {
-    border-width: 0px;
-}
-
-a:link {
-    color: var(--primaryColor);
-    text-decoration: underline;
-}
-
-a:visited {
-    color: #22884f;
-}
-
-
-pre {
-    margin-top: 0px;
-}
-
-
-h1, h2, h3, h4, h5, h6 {
-    margin-top: 0;
-    margin-bottom: 0.6em;
-}
-
-#content, header {
-    h1, h2, h3, h4, h5, h6 {
-        font-weight: normal;
-        font-family: 'a028_extraboldregular', Tahoma;
-    }
-}
-
-h1 {
-    font-size: 1.5em;
-    line-height: 1.5em;
-}
-
-h2 {
-    font-size: 1.3em;
-    margin-top: 0.5em; /* Needed for when h2 follows a form label */
-}
-
-h3 {
-    font-size: 1.2em;
-}
-
-h4 {
-    font-size: 1.1em;
-}
-
-h5, h6 {
-    font-size: 1em;
-}
-
-p {
-    margin-top: 2px;
-    margin-bottom: 1em;
-}
-
-button, input[type=submit] {
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    background-image: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 10%, #e8e8e8 90%, #d0d0d0 100%);
-    &:hover {
-        background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
-    }
-    &:active {
-        /* Press down appearance */
-        position:relative;
-        top:1px;
-    }
-    padding: 3px 8px;
-}
-
-
-/* Page layout */
-
-
-#skiptocontentdiv {
-    display: none;
-}
-
-
-/* Header */
-
-header {
-    background-color: #3462AA; /* hand-picked to match image */
-    background-image: url('/static/images/topbanner_1920x774.webp');
-    background-repeat: no-repeat;
-    background-position: center top -10vw;
-    background-size: 100% auto;
-    border-bottom: var(--menubarBorderThickness) solid var(--menubarBorderColor);
-}
-
-
-body:not(.homepage) .headerinner {
-    background-image: linear-gradient(#fff0, #eeed);
-}
-
-#headerlogo {
-    margin-left: 0px;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: 5;
-    &, a {
-        display: block;
-    }
-    img {
-        max-width: 100%;
-        height: 100%;
-    }
-    width: calc(min(200px, 15vw))
-}
-
-#pagetitle {
-    color: white;
-    padding: 20px 0px;
-
-    /* For small screens, the vertical padding and font-size of the title are */
-    /* defined in terms of viewport width, because the logo width scales with */
-    /* viewport width, and therefore its height does too, so the height of the */
-    /* header has to scale this way too. */
-
-    h1 {
-        font-size: calc(min(2.5em, 5vw));
-        margin: 0;
-        padding: 0.3em 0 0.3em 0;
-        text-align: center;
-        text-shadow: 0px 2px 5px black;
-    }
-}
-
-/* menubar */
-:root {
-    --menubarLineHeight: var(--lineHeight);
-    --menubarBorderColor: #6668;
-    --menubarUnselectedColor: #90909080;
-    --menubarBorderThickness: 1px;
-    --menubarPaddingHeight: 3px;
-}
-
-#menubar {
-
-    font-weight: bold;
-    width: 100%;
-    text-shadow: 0px 1px 3px #222;
+@layer defaults {
+    /* Global, high level styles (no class or other selector) */
 
     /*
-    Note some constraints:
+     Colours
+      Primary Color:
+      007633 22884F (37DA7E) BACB97
+      Secondary Color A: A65900
+     */
 
-    1) getting the right transparency effects, including making the empty
-    area to the left of the menu items look the same as the menu items
+    :root {
+        --textColor: black;
+        --textLighterColor: #404040;
+        --primaryColor: #007633;
+        --primaryColorLighter: #BACB97;
+        --secondaryColor: #A65900;
+        --pageTitleColor: var(--primaryColor);
+        --contentBackgroundColor: white;
+        --footerBackgroundColor: #0b2333;
+        --lineHeight: 26px;
+        --fontSize: 17px;
+        --contentWidth: 850px;
+        --contentPadding: 16px;
+    }
 
-    2) getting this area to stretch to full width
+    @media screen and (max-width: 600px) {
+        :root {
+            --lineHeight: 21px;
+            --fontSize: 14px;
+        }
+    }
 
-    3) getting the active menu item to be exactly the same as the page title
-    area, for the tab effect
-    */
 
-    ul {
+    body {
+        color: var(--textColor);
+        background-color: var(--footerBackgroundColor);
         margin: 0;
         padding: 0;
-        list-style-type: none;
+    }
 
-        display: flex;
-        flex-direction: row;
+    body, input, button, select, option, textarea {
+        font-size: var(--fontSize);
+        line-height: var(--lineHeight);
+        font-family: arial, helvetica, sans;
+    }
 
-        justify-content: center;
+    a img, a {
+        border-width: 0px;
+    }
 
-        li {
-            z-index: 0;
+    a:link {
+        color: var(--primaryColor);
+        text-decoration: underline;
+    }
 
-            a, .spacer {
-                background-color: var(--menubarUnselectedColor);
-                line-height: var(--menubarLineHeight);
-                display: block;
-            }
-            a {
-                padding: var(--menubarPaddingHeight) calc(min(20px, 1.25vw));
+    a:visited {
+        color: #22884f;
+    }
 
-                /* For really narrow screens: */
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .spacer {
-                padding: var(--menubarPaddingHeight) 0;
-            }
+    pre {
+        margin-top: 0px;
+    }
 
-            flex: 0 1 auto;
-            min-width: 0;
+    h1, h2, h3, h4, h5, h6 {
+        margin-top: 0;
+        margin-bottom: 0.6em;
+    }
 
-            &.spacerstart, &.spacerend {
-                padding: 0;
-                flex: 1 1 auto;
-            }
+    h1 {
+        font-size: 1.5em;
+        line-height: 1.5em;
+    }
 
-            .spacer {
-                width: 100%;
-                box-sizing: border-box;
-            }
+    h2 {
+        font-size: 1.3em;
+        margin-top: 0.5em; /* Needed for when h2 follows a form label */
+    }
 
-            a {
-                text-decoration: none;
-                color: white;
+    h3 {
+        font-size: 1.2em;
+    }
 
-                &:hover {
-                    background-color: color-mix(in hsl, var(--menubarUnselectedColor) 80%, white 20%);
+    h4 {
+        font-size: 1.1em;
+    }
+
+    h5, h6 {
+        font-size: 1em;
+    }
+
+    p {
+        margin-top: 2px;
+        margin-bottom: 1em;
+    }
+
+    button, input[type=submit] {
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        background-image: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 10%, #e8e8e8 90%, #d0d0d0 100%);
+        &:hover {
+            background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
+        }
+        &:active {
+            /* Press down appearance */
+            position:relative;
+            top:1px;
+        }
+        padding: 3px 8px;
+    }
+    @media print {
+        nav, footer {
+            display: none;
+        }
+    }
+}
+
+@layer components {
+
+    #content, header {
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: normal;
+            font-family: 'a028_extraboldregular', Tahoma;
+        }
+    }
+
+    #skiptocontentdiv {
+        display: none;
+    }
+
+    header {
+        background-color: #3462AA; /* hand-picked to match image */
+        background-image: url('/static/images/topbanner_1920x774.webp');
+        background-repeat: no-repeat;
+        background-position: center top -10vw;
+        background-size: 100% auto;
+        border-bottom: var(--menubarBorderThickness) solid var(--menubarBorderColor);
+    }
+
+    body:not(.homepage) .headerinner {
+        background-image: linear-gradient(#fff0, #eeed);
+    }
+
+    #headerlogo {
+        margin-left: 0px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 5;
+        &, a {
+            display: block;
+        }
+        img {
+            max-width: 100%;
+            height: 100%;
+        }
+        width: calc(min(200px, 15vw))
+    }
+
+    #pagetitle {
+        color: white;
+        padding: 20px 0px;
+
+        /* For small screens, the vertical padding and font-size of the title are */
+        /* defined in terms of viewport width, because the logo width scales with */
+        /* viewport width, and therefore its height does too, so the height of the */
+        /* header has to scale this way too. */
+
+        h1 {
+            font-size: calc(min(2.5em, 5vw));
+            margin: 0;
+            padding: 0.3em 0 0.3em 0;
+            text-align: center;
+            text-shadow: 0px 2px 5px black;
+        }
+    }
+
+    /* menubar */
+    :root {
+        --menubarLineHeight: var(--lineHeight);
+        --menubarBorderColor: #6668;
+        --menubarUnselectedColor: #90909080;
+        --menubarBorderThickness: 1px;
+        --menubarPaddingHeight: 3px;
+    }
+
+    #menubar {
+        font-weight: bold;
+        width: 100%;
+        text-shadow: 0px 1px 3px #222;
+
+        /*
+        Note some constraints:
+
+        1) getting the right transparency effects, including making the empty
+        area to the left of the menu items look the same as the menu items
+
+        2) getting this area to stretch to full width
+
+        3) getting the active menu item to be exactly the same as the page title
+        area, for the tab effect
+        */
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+
+            display: flex;
+            flex-direction: row;
+
+            justify-content: center;
+
+            li {
+                z-index: 0;
+
+                a, .spacer {
+                    background-color: var(--menubarUnselectedColor);
+                    line-height: var(--menubarLineHeight);
+                    display: block;
+                }
+                a {
+                    padding: var(--menubarPaddingHeight) calc(min(20px, 1.25vw));
+
+                    /* For really narrow screens: */
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .spacer {
+                    padding: var(--menubarPaddingHeight) 0;
                 }
 
-                &[aria-current="page"],
+                flex: 0 1 auto;
+                min-width: 0;
+
+                &.spacerstart, &.spacerend {
+                    padding: 0;
+                    flex: 1 1 auto;
+                }
+
+                .spacer {
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+
+                a {
+                    text-decoration: none;
+                    color: white;
+
+                    &:hover {
+                        background-color: color-mix(in hsl, var(--menubarUnselectedColor) 80%, white 20%);
+                    }
+
+                    &[aria-current="page"],
                 &[aria-current="page"]:hover,
                 &.currentSection,
                 &.currentSection:hover {
                     background-color: transparent;
                 }
-            }
-
-            a, .spacer {
-                border-bottom: var(--menubarBorderThickness) solid var(--menubarBorderColor);
-                &[aria-current="page"], &.currentSection {
-                    border-left: var(--menubarBorderThickness) solid var(--menubarBorderColor);
-                    border-right: var(--menubarBorderThickness) solid var(--menubarBorderColor);
-                    border-bottom-color: transparent;
                 }
+
+                a, .spacer {
+                    border-bottom: var(--menubarBorderThickness) solid var(--menubarBorderColor);
+                    &[aria-current="page"], &.currentSection {
+                        border-left: var(--menubarBorderThickness) solid var(--menubarBorderColor);
+                        border-right: var(--menubarBorderThickness) solid var(--menubarBorderColor);
+                        border-bottom-color: transparent;
+                    }
+                }
+
             }
+        }
 
+        /* Large screen - shift to right */
+        ul li.spacerend {
+            display: none;
         }
     }
 
-    /* Large screen - shift to right */
-    ul li.spacerend {
-        display: none;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    /* Menubar for mobile: */
-    /* Shift the logo down, and put menu in center */
-    body:not(.homepage) #headerlogo {
-        top: calc(var(--menubarLineHeight) + var(--menubarPaddingHeight) * 2 + 2px);
-    }
-    #menubar ul li {
-        &.spacerend, &.spacerstart {
-            display: inherit;
-            width: auto;
-            flex: 1 1 auto;
+    @media screen and (max-width: 600px) {
+        /* Menubar for mobile: */
+        /* Shift the logo down, and put menu in center */
+        body:not(.homepage) #headerlogo {
+            top: calc(var(--menubarLineHeight) + var(--menubarPaddingHeight) * 2 + 2px);
+        }
+        #menubar ul li {
+            &.spacerend, &.spacerstart {
+                display: inherit;
+                width: auto;
+                flex: 1 1 auto;
+            }
         }
     }
-}
 
+    /* Main body */
+    #contentinner {
+        padding: 10px var(--contentPadding) 32px var(--contentPadding);
+        min-height: 20em;
 
-/* Main body */
-
-
-#contentinner {
-    padding: 10px var(--contentPadding) 32px var(--contentPadding);
-    min-height: 20em;
-
-    > p:first-child, > form > p:first-child {
-        padding-top: 1em;
+        > p:first-child, > form > p:first-child {
+            padding-top: 1em;
+        }
     }
-}
 
-#content {
-    background-color: var(--contentBackgroundColor);
-}
+    #content {
+        background-color: var(--contentBackgroundColor);
+        h1 {
+            /* TODO #49 do we need want this? Looks a bit weird. */
+            margin-left: calc(-1 * var(--contentPadding)); /* to make bg go to edge */
+            margin-right: calc(-1 * var(--contentPadding));
+            padding-left: var(--contentPadding);
+            padding-right: var(--contentPadding);
+            background: linear-gradient(white 0%, white 52%, #007633 53%, #007633 58%, white 59%);
+            text-shadow: 2px 2px 2px white, 2px -2px 2px white, -2px 2px 2px white, -2px -2px 2px white;
+        }
 
-.content {
-    max-width: var(--contentWidth);
-    margin: 0 auto;
-}
+        h2 {
+            border-bottom: 2px solid var(--secondaryColor);
+        }
 
+        h2[class^=with-camp-colors-] {
+            border-bottom: 0px;
+            padding: 2px 6px;
+        }
+        span[class^=with-camp-colors-] {
+            padding: 2px 4px 3px;
+            border-radius: 4px;
+        }
 
+        section.grouped {
+            padding: 16px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px #888;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgb(0, 118, 51);
 
-/* Footer */
+            h1:first-child {
+                margin-top: -34px;
+                margin-left: 0px;
+                margin-right: 0px;
+                padding-left: 0px;
+                padding-right: 0px;
+                background: transparent;
+                /* Still want the text shadow */
+            }
+        }
 
-footer {
-    font-size: 90%;
-
-    background-color: var(--footerBackgroundColor);
-    text-align: left;
-    color: #e0e0e0;
-    min-height: 10em;
+    }
 
     .content {
-        padding: 1.5em 1em 0.5em 1em;
+        max-width: var(--contentWidth);
+        margin: 0 auto;
     }
 
-    img {
-        vertical-align: top;
-    }
+    footer {
+        font-size: 90%;
 
-
-    a:link, a:visited {
+        background-color: var(--footerBackgroundColor);
+        text-align: left;
         color: #e0e0e0;
-        text-decoration: none;
-    }
+        min-height: 10em;
 
-    a:hover {
-        color: white;
-        text-decoration: underline;
-    }
-
-    .websiteinfo {
-        background-color: color-mix(in hsl, var(--footerBackgroundColor) 95%, white 5%);
-        box-shadow: 0px 3px 2px color-mix(in hsl, var(--footerBackgroundColor) 70%, black 30%);
-        padding: 0 0 2em 0;
-    }
-
-    h2 {
-        border-bottom: 1px solid #aaa;
-    }
-
-    .linkgroupcontainer {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(calc(max(0.25vw, 12em)), 1fr));
-        gap: 1.5em;
-    }
-
-    .linkgroup {
-        ul, li {
-            list-style: none;
-            margin: 0px;
-            padding: 0px;
+        .content {
+            padding: 1.5em 1em 0.5em 1em;
         }
-    }
-}
 
-/* Content styles */
-
-#contentinner h1 {
-    /* TODO #49 do we need want this? Looks a bit weird. */
-    margin-left: calc(-1 * var(--contentPadding)); /* to make bg go to edge */
-    margin-right: calc(-1 * var(--contentPadding));
-    padding-left: var(--contentPadding);
-    padding-right: var(--contentPadding);
-    background: linear-gradient(white 0%, white 52%, #007633 53%, #007633 58%, white 59%);
-    text-shadow: 2px 2px 2px white, 2px -2px 2px white, -2px 2px 2px white, -2px -2px 2px white;
-}
-
-h2 {
-    border-bottom: 2px solid var(--secondaryColor);
-}
-
-h2[class^=with-camp-colors-] {
-    border-bottom: 0px;
-    padding: 2px 6px;
-}
-
-span[class^=with-camp-colors-] {
-    padding: 2px 4px 3px;
-    border-radius: 4px;
-}
-
-section.grouped {
-    padding: 16px;
-    border-radius: 5px;
-    box-shadow: 0px 2px 4px #888;
-    margin-top: 20px;
-    margin-bottom: 30px;
-    border: 1px solid rgb(0, 118, 51);
-
-    h1:first-child {
-        margin-top: -34px;
-    }
-}
+        img {
+            vertical-align: top;
+        }
 
 
-/* Counteract #contentinner h1 styles */
-/* TODO #49 use layers or something */
-
-#contentinner section.grouped h1:first-child {
-    margin-left: 0px;
-    margin-right: 0px;
-    padding-left: 0px;
-    padding-right: 0px;
-    background: transparent;
-    /* Still want the text shadow */
-}
-
-
-/* Tables */
-
-table.sideheaders,
-table.topheaders {
-    border-collapse: collapse;
-
-
-    > * > tr > th, > tbody > tr > td {
-        padding: 2px 5px;
-        vertical-align: top;
-        border: solid 1px #336633;
-    }
-
-    > * > tr > th {
-        background-color: var(--primaryColorLighter);
-        font-weight: bold;
-        a:link {
+        a:link, a:visited {
+            color: #e0e0e0;
             text-decoration: none;
         }
+
+        a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .websiteinfo {
+            background-color: color-mix(in hsl, var(--footerBackgroundColor) 95%, white 5%);
+            box-shadow: 0px 3px 2px color-mix(in hsl, var(--footerBackgroundColor) 70%, black 30%);
+            padding: 0 0 2em 0;
+        }
+
+        h2 {
+            border-bottom: 1px solid #aaa;
+        }
+
+        .linkgroupcontainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(calc(max(0.25vw, 12em)), 1fr));
+            gap: 1.5em;
+        }
+
+        .linkgroup {
+            ul, li {
+                list-style: none;
+                margin: 0px;
+                padding: 0px;
+            }
+        }
     }
 
-    > tbody > tr > td:not([class^=with-camp-colors-]) {
-        background-color: var(--contentBackgroundColor);
+
+    /* Tables */
+
+    table.sideheaders,
+    table.topheaders {
+        border-collapse: collapse;
+
+
+        > * > tr > th, > tbody > tr > td {
+            padding: 2px 5px;
+            vertical-align: top;
+            border: solid 1px #336633;
+        }
+
+        > * > tr > th {
+            background-color: var(--primaryColorLighter);
+            font-weight: bold;
+            a:link {
+                text-decoration: none;
+            }
+        }
+
+        > tbody > tr > td {
+            background-color: var(--contentBackgroundColor);
+        }
+        box-shadow: 0px 2px 4px #888;
+        margin-bottom: 1.5em;
     }
-    box-shadow: 0px 2px 4px #888;
-    margin-bottom: 1.5em;
-}
 
-table.sideheaders,
-table.topheaders {
-    width: 100%;
-    > tbody > tr > td {
-        overflow: hidden;
+    table.sideheaders,
+    table.topheaders {
+        width: 100%;
+        > tbody > tr > td {
+            overflow: hidden;
+        }
     }
-}
 
-table.sideheaders > * > tr > th {
-    text-align: left;
-}
-
-table.topheaders > thead > tr > th {
-    white-space: nowrap;
-}
-
-
-table > tbody > tr.spacer > td {
-    border-left-width: 0px;
-    border-right-width: 0px;
-}
-
-div.userError,
-div.successMessage {
-    border-radius: 7px;
-}
-
-div.userError {
-    border: 1px solid #d00000;
-}
-
-table.topheaders > tbody > tr.selected > td {
-    background-color: #f8fff8;
-}
-
-table.actiongrid {
-    border-collapse: collapse;
-    > tbody > tr {
-        border-top: 1px solid #336633;
-        border-bottom: 1px solid #336633;
+    table.sideheaders > * > tr > th {
+        text-align: left;
     }
-    > tbody > tr > td {
-        padding: 6px;
-        vertical-align: middle;
+
+    table.topheaders > thead > tr > th {
+        white-space: nowrap;
     }
-}
 
 
-/* Lists */
+    table > tbody > tr.spacer > td {
+        border-left-width: 0px;
+        border-right-width: 0px;
+    }
 
-ul.leaderlist {
-    margin: 0px;
-    padding: 0px;
-    list-style: none;
+    div.userError,
+    div.successMessage {
+        border-radius: 7px;
+    }
 
-    li {
-        margin: 0 0 1em 0;
+    div.userError {
+        border: 1px solid #d00000;
+    }
+
+    table.topheaders > tbody > tr.selected > td {
+        background-color: #f8fff8;
+    }
+
+    table.actiongrid {
+        border-collapse: collapse;
+        > tbody > tr {
+            border-top: 1px solid #336633;
+            border-bottom: 1px solid #336633;
+        }
+        > tbody > tr > td {
+            padding: 6px;
+            vertical-align: middle;
+        }
+    }
+
+
+    /* Lists */
+
+    ul.leaderlist {
+        margin: 0px;
         padding: 0px;
-    }
+        list-style: none;
 
-}
-
-/* Photos */
-
-div.sitephoto {
-    text-align: center;
-}
-
-/* Forms */
-
-
-div.formrow {
-
-    margin: 0px 0px 8px 0px;
-    padding: 0px 0px 2px 0px;
-
-    .field {
-        display: flex;
-        flex-wrap: wrap;
-
-        > label {
-            display: block;
-            width: 16em;
+        li {
+            margin: 0 0 1em 0;
+            padding: 0px;
         }
 
     }
 
-    .emptywarning {
-        color: blue;
-        font-weight: bold;
-        font-style: italic;
+    /* Photos */
+
+    div.sitephoto {
+        text-align: center;
     }
 
-    textarea, select, input:not([type=checkbox]):not([type=radio]) {
-        /* These controls should never be wider than we've
+    /* Forms */
+
+
+    div.formrow {
+
+        margin: 0px 0px 8px 0px;
+        padding: 0px 0px 2px 0px;
+
+        .field {
+            display: flex;
+            flex-wrap: wrap;
+
+            > label {
+                display: block;
+                width: 16em;
+            }
+
+        }
+
+        .emptywarning {
+            color: blue;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        textarea, select, input:not([type=checkbox]):not([type=radio]) {
+            /* These controls should never be wider than we've
            got room to show them on the screen. */
-        box-sizing: border-box;
-        max-width: calc(100vw - var(--contentPadding) * 2);
+            box-sizing: border-box;
+            max-width: calc(100vw - var(--contentPadding) * 2);
 
-        /* But they should have a standard minimum width. Only for
+            /* But they should have a standard minimum width. Only for
            extremely narrow screens would this be more than max-width above. */
-        min-width: 170px;
+            min-width: 170px;
+        }
+
+        .helptext {
+            font-size: 90%;
+            color: var(--textLighterColor);
+        }
+
+        .fieldErrorMessages {
+            color: #d00000;
+            ul, li {
+                padding-left: 0px;
+                list-style-type: none;
+            }
+        }
     }
 
-    .helptext {
+    div.userError {
+        padding: 5px 9px;
+        text-align: left;
+        margin-bottom: 1em;
+        margin-top: 0.5em;
+    }
+
+    ul.errorlist {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: 0px;
+        margin-top: 5px;
+    }
+
+    label.required {
+        font-weight: bold;
+    }
+
+    input.placeholder {
+        color: #808080;
+    }
+
+    .successMessage {
+        border: 1px solid var(--primaryColor);
+        background-color: var(--rimaryColorLighter);
+        padding: 5px 9px;
+        text-align: left;
+        margin-bottom: 1em;
+        margin-top: 0.5em;
+
+    }
+
+    img.captcha {
+        vertical-align: top;
+    }
+
+
+    /* Account details */
+    .mailchimp-notice {
         font-size: 90%;
         color: var(--textLighterColor);
     }
 
-    .fieldErrorMessages {
-        color: #d00000;
-        ul, li {
-            padding-left: 0px;
-            list-style-type: none;
-        }
+
+    /* Breadcrumbs */
+
+    div.breadcrumb {
+        border-bottom: 1px solid var(--primaryColor);
+        margin-bottom: 5px;
     }
-}
 
-div.userError {
-    padding: 5px 9px;
-    text-align: left;
-    margin-bottom: 1em;
-    margin-top: 0.5em;
-}
-
-ul.errorlist {
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin-bottom: 0px;
-    margin-top: 5px;
-}
-
-label.required {
-    font-weight: bold;
-}
-
-input.placeholder {
-    color: #808080;
-}
-
-.successMessage {
-    border: 1px solid var(--primaryColor);
-    background-color: var(--rimaryColorLighter);
-    padding: 5px 9px;
-    text-align: left;
-    margin-bottom: 1em;
-    margin-top: 0.5em;
-
-}
-
-img.captcha {
-    vertical-align: top;
-}
-
-
-/* Account details */
-.mailchimp-notice {
-    font-size: 90%;
-    color: var(--textLighterColor);
-}
-
-
-/* Breadcrumbs */
-
-div.breadcrumb {
-    border-bottom: 1px solid var(--primaryColor);
-    margin-bottom: 5px;
-}
-
-div.bottombreadcrumb {
-    border-top: 1px solid var(--primaryColor);
-    margin-top: 1em;
-}
-
-
-.editChunkLink {
-    font-size: 80%;
-    text-align: right;
-}
-
-
-
-/* Messages */
-ul.messagelist {
-    padding: 0 0 5px 0;
-    margin: 0;
-
-    li {
-        display: block;
-        padding: 4px 5px 4px 25px;
-        margin: 0 0 3px 0;
-        border-bottom: 1px solid #ddd;
-        color: #666;
-        background: #ffc url(/static/admin/img/icon-yes.svg) 5px .3em no-repeat;
-
-        &.warning{
-            background-image: url(/static/admin/img/icon-alert.svg);
-        }
-
-        &.error{
-            background-image: url(/static/admin/img/icon-no.svg);
-        }
-        background-position-y: center;
+    div.bottombreadcrumb {
+        border-top: 1px solid var(--primaryColor);
+        margin-top: 1em;
     }
-}
-
-/* Booking */
-
-.bignotice {
-    text-align: center;
-    font-size: 120%;
-    line-height: 150%;
-    border-radius: 6px;
-    background-color: var(--secondaryColor);
-    color: white;
-}
 
 
-.actiongroup {
-    .actionbutton {
-        margin-top: 8px;
+    .editChunkLink {
+        font-size: 80%;
         text-align: right;
     }
-}
 
-.actionsplit {
-    .actionbutton {
-        display: inline;
-        float: right;
-    }
-    /* clearfix hack - TODO - replace floats here with something better. */
-    &:after {
-        content: ".";
-        display: block;
-        height: 0;
-        clear: both;
-        visibility: hidden;
-    }
-}
 
-#bookingbar {
-    color: white;
-    text-align: center;
-    box-shadow: inset 0 -3px 5px -3px #222;
-    padding: 0 4px;
-    /* We need to shift the whole bookingbar down to cover
-       the line created by border-bottom of `header` */
-    margin-bottom: calc(-1 * var(--menubarBorderThickness));
-    text-shadow: 0px 1px 3px #222;
-    a {
-        color: white;
-    }
 
-    ul {
+    /* Messages */
+    ul.messagelist {
+        padding: 0 0 5px 0;
         margin: 0;
-        padding: 0;
-        list-style-type: none;
 
         li {
-            display: inline-block;
+            display: block;
+            padding: 4px 5px 4px 25px;
+            margin: 0 0 3px 0;
+            border-bottom: 1px solid #ddd;
+            color: #666;
+            background: #ffc url(/static/admin/img/icon-yes.svg) 5px .3em no-repeat;
 
-            a, span {
-                display: inline-block;
-                text-decoration: none;
-                padding: 3px 10px;
-                color: white;
-                margin: 0px;
-                font-weight: bold;
-
-                &:hover {
-                    background-color: #e0e0e0;
-                }
+            &.warning{
+                background-image: url(/static/admin/img/icon-alert.svg);
             }
 
-            a[aria-current="step"],
+            &.error{
+                background-image: url(/static/admin/img/icon-no.svg);
+            }
+            background-position-y: center;
+        }
+    }
+
+    /* Booking */
+
+    .actiongroup {
+        .actionbutton {
+            margin-top: 8px;
+            text-align: right;
+        }
+    }
+
+    .actionsplit {
+        .actionbutton {
+            display: inline;
+            float: right;
+        }
+        /* clearfix hack - TODO - replace floats here with something better. */
+        &:after {
+            content: ".";
+            display: block;
+            height: 0;
+            clear: both;
+            visibility: hidden;
+        }
+    }
+
+    #bookingbar {
+        color: white;
+        text-align: center;
+        box-shadow: inset 0 -3px 5px -3px #222;
+        padding: 0 4px;
+        /* We need to shift the whole bookingbar down to cover
+       the line created by border-bottom of `header` */
+        margin-bottom: calc(-1 * var(--menubarBorderThickness));
+        text-shadow: 0px 1px 3px #222;
+        a {
+            color: white;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+
+            li {
+                display: inline-block;
+
+                a, span {
+                    display: inline-block;
+                    text-decoration: none;
+                    padding: 3px 10px;
+                    color: white;
+                    margin: 0px;
+                    font-weight: bold;
+
+                    &:hover {
+                        background-color: #e0e0e0;
+                    }
+                }
+
+                a[aria-current="step"],
             span[aria-current="step"],
             a[aria-current="step"]:hover {
                 color: black;
                 background:white;
                 text-shadow: none;
             }
+            }
         }
     }
-}
 
 
-/* Add/edit place */
+    /* Add/edit place */
 
-h2 > .copy_data_btn {
-    padding: 2px 5px;
-    border-radius: 3px;
-    line-height: 1em;
-    position: relative;
-    top: -2px;
-}
-
-.payboxes {
-    /* clearfix hack - TODO - replace floats here with something better. */
-    &:after {
-        content: ".";
-        display: block;
-        height: 0;
-        clear: both;
-        visibility: hidden;
-    }
-}
-
-.paybox {
-    float: left;
-    margin-right: 20px;
-    border: 1px solid #888;
-    padding: 15px 20px;
-    border-radius: 5px;
-    box-shadow: 0px 2px 4px #888;
-    margin-bottom: 10px;
-
-    &:last-child {
-        margin-right: 0px;
+    h2 > .copy_data_btn {
+        padding: 2px 5px;
+        border-radius: 3px;
+        line-height: 1em;
+        position: relative;
+        top: -2px;
     }
 
-    input[type=number] {
-        width: 6em;
-    }
-
-    p {
-        min-height: 2.5em;
-    }
-}
-
-
-span.toc {
-    font-size: 80%;
-}
-
-table.prices td {
-    padding: 5px;
-}
-
-
-.placeAvailability {
-    color: var(--textLighterColor);
-}
-
-
-/* list bookings */
-
-table.bookinglist {
-    td.total, td.discounts {
-        text-align: right;
-        font-weight: bold;
-    }
-
-    tr.sectionbottom td, td.bookinglistaction {
-        border-bottom-width: 2px;
-    }
-
-    td.price {
-        text-align: right;
-    }
-
-    td.bookinglistaction {
-        text-align: center;
-    }
-    input[type=submit] {
-        margin-bottom: 1px;
-    }
-}
-
-.booking-ok-icon,
-.booking-warning-icon,
-.booking-error-icon {
-    margin-right: 0.5em;
-}
-
-/* Smaller screens */
-
-@media screen and (max-width: 600px) {
-    img {
-        max-width: 100%;
-        height: auto;
-    }
-}
-
-@media screen and (max-width: 480px) {
-
-    table.responsive {
-        /* To use this class, you must add `data-label` attributes
-           to every `<td>` and ensure it contains all the information
-           in the `thead` section, which will be hidden. */
-        box-shadow: none;
-        margin-bottom: 2px;
-
-        > thead {
-            display: none;
-        }
-        > tbody > tr {
+    .payboxes {
+        /* clearfix hack - TODO - replace floats here with something better. */
+        &:after {
+            content: ".";
             display: block;
-            margin-top: 0.8em;
-            margin-bottom: 0.5em;
-            box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+            height: 0;
+            clear: both;
+            visibility: hidden;
         }
-        > tbody > tr > td {
-            display: block;
-            border-bottom-width: 1px;
-            border-top-width: 0px;
+    }
+
+    .paybox {
+        float: left;
+        margin-right: 20px;
+        border: 1px solid #888;
+        padding: 15px 20px;
+        border-radius: 5px;
+        box-shadow: 0px 2px 4px #888;
+        margin-bottom: 10px;
+
+        &:last-child {
+            margin-right: 0px;
+        }
+
+        input[type=number] {
+            width: 6em;
+        }
+
+        p {
+            min-height: 2.5em;
+        }
+    }
+
+
+    span.toc {
+        font-size: 80%;
+    }
+
+    table.prices td {
+        padding: 5px;
+    }
+
+
+    .placeAvailability {
+        color: var(--textLighterColor);
+    }
+
+
+    /* list bookings */
+
+    table.bookinglist {
+        td.total, td.discounts {
             text-align: right;
-            &:first-child {
-                border-top-width: 1px;
-            }
-            &:before {
-                content: attr(data-label);
-                float: left;
-                text-transform: uppercase;
-                font-weight: bold;
-            }
-            > * {
-                /* reset for nested tables */
-                text-align: initial;
-            }
+            font-weight: bold;
         }
-        > tbody > tr > th {
-            display: block;
-            &.full-width {
-                width: 100%;
-                padding: 0px;
-            }
-        }
-    }
 
-    .actiongroup {
-        .actionbutton {
-            margin-top: 2px;
+        tr.sectionbottom td, td.bookinglistaction {
+            border-bottom-width: 2px;
         }
-    }
-}
 
-/* homepage */
-
-.homepage {
-    .headerinner {
-        background-color: transparent;
-    }
-    header {
-        background-color: #3462AA; /* hand-picked to match image */
-        background-image: url('/static/images/topbanner_1920x774.webp');
-        background-repeat: no-repeat;
-        background-position: center top;
-        background-size: 100% auto;
-        /* If changing this, change #page-title padding-top as well */
-        height: calc(100vw * 774 / 1920);  /* fit whole of topbanner image, ideally */
-        max-height: 75vh; /* But don't make it take too much space vertically, we should see sone text */
-    }
-    #pagetitle {
-        /* Center within header */
-        padding-top: calc(min(
-           75vh / 2 - 1em, /* header max-height */
-           100vw * 774 / 1920 / 2 - 1em /* header height, halved */
-        ));
-    }
-    /* Shift menubar down to below photo
-       and center it. */
-    header {
-        position: relative; /* establish bounding box for #menubar */
-    }
-    #menubar {
-        position: absolute;
-        bottom: 0px;
-        li.spacerstart, li.spacerend {
-            display: block;
-            flex: 1 1 auto;
+        td.price {
+            text-align: right;
         }
-    }
-    .lead {
-        color: white;
-        font-size: 120%;
-        background-color: #065a1b;
-        .content {
-            padding: 2em;
-            box-sizing: border-box;
+
+        td.bookinglistaction {
             text-align: center;
         }
-    }
-}
-
-
-/*  Data retention / literate YAML */
-pre.code {
-    font-size: 13px;
-    line-height: 16px;
-    font-family: monospace;
-}
-
-pre.code.yaml {
-    border: 4px solid #8aa;
-    border-width: 0 4px 0 4px;
-    padding: 8px 8px;
-    background-color: #f8f8f8;
-    overflow-x: scroll;
-}
-
-pre.code.yaml {
-    .punctuation.indicator {
-        font-weight: bold;
-    }
-    .name {
-        color: #9f009d;
-    }
-    .literal.scalar.plain {
-        color: #006264;
-    }
-    .comment {
-        color: #00098b;
-    }
-}
-
-
-@media print {
-    nav, footer {
-        display: none;
-    }
-}
-
-/* -- Utilities -- */
-
-.columns-space-between {
-    display: flex;
-    justify-content: space-between;
-}
-
-
-
-/* Buttons */
-.compactButton {
-    padding: 1px 5px;
-    border-radius: 3px;
-}
-
-
-
-.bigaction {
-    -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
-    -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
-    box-shadow:inset 0px 1px 0px 0px #729e48;
-    background-color: var(--primaryColor);
-    background-image: none;
-    -moz-border-radius:6px;
-    -webkit-border-radius:6px;
-    border-radius:6px;
-    border:1px solid #005611;
-    display:inline-block;
-    color:#ffffff;
-    font-size: 120%;
-    font-weight:bold;
-    padding:6px 24px;
-    text-decoration:none;
-    text-shadow:1px 1px 0px #528009;
-    margin-left: 5px;
-    cursor: pointer;
-
-    &:hover {
-        background-color: var(--primaryColorLighter);
-        background-image: none;
-        border-color:#f0fff0;
-    }
-    &:active {
-        position:relative;
-        top:1px;
-    }
-
-    &[disabled] {
-        cursor: not-allowed;
-        background-color: #aaa;
-        border-color: #aaa;
-        box-shadow: none;
-        &:active {
-            top: 0px;
+        input[type=submit] {
+            margin-bottom: 1px;
         }
     }
+
+    .booking-ok-icon,
+    .booking-warning-icon,
+    .booking-error-icon {
+        margin-right: 0.5em;
+    }
+
+    /* Smaller screens */
+
+    @media screen and (max-width: 600px) {
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+
+        table.responsive {
+            /* To use this class, you must add `data-label` attributes
+           to every `<td>` and ensure it contains all the information
+           in the `thead` section, which will be hidden. */
+            box-shadow: none;
+            margin-bottom: 2px;
+
+            > thead {
+                display: none;
+            }
+            > tbody > tr {
+                display: block;
+                margin-top: 0.8em;
+                margin-bottom: 0.5em;
+                box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+            }
+            > tbody > tr > td {
+                display: block;
+                border-bottom-width: 1px;
+                border-top-width: 0px;
+                text-align: right;
+                &:first-child {
+                    border-top-width: 1px;
+                }
+                &:before {
+                    content: attr(data-label);
+                    float: left;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                }
+                > * {
+                    /* reset for nested tables */
+                    text-align: initial;
+                }
+            }
+            > tbody > tr > th {
+                display: block;
+                &.full-width {
+                    width: 100%;
+                    padding: 0px;
+                }
+            }
+        }
+
+        .actiongroup {
+            .actionbutton {
+                margin-top: 2px;
+            }
+        }
+    }
+
+    /* homepage */
+
+    .homepage {
+        .headerinner {
+            background-color: transparent;
+        }
+        header {
+            background-color: #3462AA; /* hand-picked to match image */
+            background-image: url('/static/images/topbanner_1920x774.webp');
+            background-repeat: no-repeat;
+            background-position: center top;
+            background-size: 100% auto;
+            /* If changing this, change #page-title padding-top as well */
+            height: calc(100vw * 774 / 1920);  /* fit whole of topbanner image, ideally */
+            max-height: 75vh; /* But don't make it take too much space vertically, we should see sone text */
+        }
+        #pagetitle {
+            /* Center within header */
+            padding-top: calc(min(
+           75vh / 2 - 1em, /* header max-height */
+           100vw * 774 / 1920 / 2 - 1em /* header height, halved */
+            ));
+        }
+        /* Shift menubar down to below photo
+       and center it. */
+        header {
+            position: relative; /* establish bounding box for #menubar */
+        }
+        #menubar {
+            position: absolute;
+            bottom: 0px;
+            li.spacerstart, li.spacerend {
+                display: block;
+                flex: 1 1 auto;
+            }
+        }
+        .lead {
+            color: white;
+            font-size: 120%;
+            background-color: #065a1b;
+            .content {
+                padding: 2em;
+                box-sizing: border-box;
+                text-align: center;
+            }
+        }
+    }
+
+
+    /*  Data retention / literate YAML */
+    pre.code {
+        font-size: 13px;
+        line-height: 16px;
+        font-family: monospace;
+    }
+
+    pre.code.yaml {
+        border: 4px solid #8aa;
+        border-width: 0 4px 0 4px;
+        padding: 8px 8px;
+        background-color: #f8f8f8;
+        overflow-x: scroll;
+    }
+
+    pre.code.yaml {
+        .punctuation.indicator {
+            font-weight: bold;
+        }
+        .name {
+            color: #9f009d;
+        }
+        .literal.scalar.plain {
+            color: #006264;
+        }
+        .comment {
+            color: #00098b;
+        }
+    }
+
 }
 
 
-.fullWidthDialog {
-    /* Override some builtins that limit us: */
-    max-height: 100vh;
-    max-width: 100vw;
+@layer utilities {
 
-    /* Positioning */
-    box-sizing: border-box;
-    width: 100vw;
-    height: calc(100vh - 2em);
-    top: 2em;
-    left: 0px;
-    position: fixed;
-    margin: 0;
-
-    /* Styling */
-    border: 0;
-    border-top: 2px solid #888;
-    padding: 20px;
-
-    /* Fade in: */
-    display: flex;  /* for some reason, display: block disables the transition. */
-    flex-direction: column;
-    opacity: 0;
-    transition: opacity 0.15s;
-    pointer-events: none; /* keep main page accessible after closing dialog */
-    &[open] {
-        opacity: 1;
-        pointer-events: inherit;
+    .columns-space-between {
+        display: flex;
+        justify-content: space-between;
     }
 
-    &::backdrop {
-        background-color: #0008;
+    /* Buttons */
+    .compactButton {
+        padding: 1px 5px;
+        border-radius: 3px;
     }
+
+    .bigaction {
+        -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
+        -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
+        box-shadow:inset 0px 1px 0px 0px #729e48;
+        background-color: var(--primaryColor);
+        background-image: none;
+        -moz-border-radius:6px;
+        -webkit-border-radius:6px;
+        border-radius:6px;
+        border:1px solid #005611;
+        display:inline-block;
+        color:#ffffff;
+        font-size: 120%;
+        font-weight:bold;
+        padding:6px 24px;
+        text-decoration:none;
+        text-shadow:1px 1px 0px #528009;
+        margin-left: 5px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--primaryColorLighter);
+            background-image: none;
+            border-color:#f0fff0;
+        }
+        &:active {
+            position:relative;
+            top:1px;
+        }
+
+        &[disabled] {
+            cursor: not-allowed;
+            background-color: #aaa;
+            border-color: #aaa;
+            box-shadow: none;
+            &:active {
+                top: 0px;
+            }
+        }
+    }
+
+    .bignotice {
+        text-align: center;
+        font-size: 120%;
+        line-height: 150%;
+        border-radius: 6px;
+        background-color: var(--secondaryColor);
+        color: white;
+    }
+
+
+
+    .fullWidthDialog {
+        /* Override some builtins that limit us: */
+        max-height: 100vh;
+        max-width: 100vw;
+
+        /* Positioning */
+        box-sizing: border-box;
+        width: 100vw;
+        height: calc(100vh - 2em);
+        top: 2em;
+        left: 0px;
+        position: fixed;
+        margin: 0;
+
+        /* Styling */
+        border: 0;
+        border-top: 2px solid #888;
+        padding: 20px;
+
+        /* Fade in: */
+        display: flex;  /* for some reason, display: block disables the transition. */
+        flex-direction: column;
+        opacity: 0;
+        transition: opacity 0.15s;
+        pointer-events: none; /* keep main page accessible after closing dialog */
+        &[open] {
+            opacity: 1;
+            pointer-events: inherit;
+        }
+
+        &::backdrop {
+            background-color: #0008;
+        }
+    }
+
 }
