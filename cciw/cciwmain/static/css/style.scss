@@ -28,10 +28,18 @@
     --pageTitleColor: var(--primaryColor);
     --contentBackgroundColor: white;
     --footerBackgroundColor: #0b2333;
+    --lineHeight: 26px;
+    --fontSize: 17px;
+}
+
+@media screen and (max-width: 600px) {
+    :root {
+        --lineHeight: 21px;
+        --fontSize: 14px;
+    }
 }
 
 
-$smallScreenWidth: 600px;
 $contentWidth: 850px;
 
 
@@ -58,14 +66,8 @@ body {
 }
 
 body, input, button, select, option, textarea {
-    font-size: 17px;
-    line-height: $lineHeight;
-
-    @media screen and (max-width: $smallScreenWidth) {
-        font-size: 14px;
-        line-height: 21px;
-    }
-
+    font-size: var(--fontSize);
+    line-height: var(--lineHeight);
     font-family: arial, helvetica, sans;
 }
 
@@ -827,10 +829,6 @@ table.bookinglist {
 
     td.bookinglistaction {
         text-align: center;
-
-        @media screen and (max-width: $smallScreenWidth) {
-            padding: 1px;
-        }
     }
     input[type=submit] {
         @include compactButton();
@@ -846,7 +844,7 @@ table.bookinglist {
 
 // Smaller screens
 
-@media screen and (max-width: $smallScreenWidth) {
+@media screen and (max-width: 600px) {
     img {
         max-width: 100%;
         height: auto;
