@@ -48,10 +48,7 @@
     border:1px solid #005611;
     display:inline-block;
     color:#ffffff;
-    font-size: 19px;
-    @media screen and (max-width: $smallScreenWidth) {
-        font-size: 15px;
-    }
+    font-size: 120%;
     font-weight:bold;
     padding:6px 24px;
     text-decoration:none;

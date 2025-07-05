@@ -33,7 +33,6 @@
 
 $mobileMenuWidth: 600px;
 $smallScreenWidth: 600px;
-$responsiveTablesScreenWidth: 480px;
 $contentWidth: 850px;
 
 
@@ -187,18 +186,11 @@ body:not(.homepage) .headerinner {
         padding: 2vw 0;
     }
     h1 {
-        font-size: 2.5em;
+        font-size: calc(min(2.5em, 5vw));
         margin: 0;
         padding: 0.3em 0 0.3em 0;
-        @media screen and (max-width: $contentWidth) {
-            padding: 0;
-            font-size: 5vw;
-        }
         text-align: center;
         text-shadow: 0px 2px 5px black;
-        @media screen and (max-width: $mobileMenuWidth) {
-            font-size: 5vw;
-        }
     }
 }
 
@@ -355,10 +347,7 @@ $contentPadding: 16px;
 // Footer
 
 footer {
-    font-size: 85%;
-    @media screen and (max-width: $smallScreenWidth) {
-        font-size: inherit;
-    }
+    font-size: 90%;
 
     background-color: var(--footerBackgroundColor);
     text-align: left;
@@ -869,7 +858,7 @@ table.bookinglist {
     }
 }
 
-@media screen and (max-width: $responsiveTablesScreenWidth) {
+@media screen and (max-width: 480px) {
 
     table.responsive {
         // To use this class, you must add `data-label` attributes
