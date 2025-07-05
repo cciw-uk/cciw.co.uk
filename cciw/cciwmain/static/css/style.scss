@@ -419,43 +419,13 @@ footer {
         border-bottom: 1px solid #aaa;
     }
 
-    $linkgroupPadding: 20px;
-
     .linkgroupcontainer {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-
-        // Compensate for padding at left and right edges:
-        margin-left: (-$linkgroupPadding);
-        margin-right: (-$linkgroupPadding);
-
-        @media screen and (max-width: $noColumnsScreenWidth) {
-            // No columns
-            display: block;
-            margin-left: 0px;
-            margin-right: 0px;
-        }
-
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(calc(max(0.25vw, 12em)), 1fr));
+        gap: 1.5em;
     }
 
     .linkgroup {
-        margin-top: 1em;
-        width: 25%;
-        box-sizing: border-box;
-        padding: 0px $linkgroupPadding;
-
-        @media screen and (max-width: $smallMenubarFontScreenWidth) {
-            width: 50%;
-        }
-
-        @media screen and (max-width: $noColumnsScreenWidth) {
-            // No columns
-            display: block;
-            width: 100%;
-            padding: 0px;
-        }
-
         ul, li {
             list-style: none;
             margin: 0px;
