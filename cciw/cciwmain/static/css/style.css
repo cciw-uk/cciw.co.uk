@@ -8,7 +8,6 @@ which we've already started to use
 */
 
 
-
 @layer reset, defaults, patterns, components, utilities, campcolors, overrides;
 
 
@@ -181,7 +180,7 @@ which we've already started to use
             max-width: 100%;
             height: 100%;
         }
-        width: calc(min(200px, 15vw))
+        width: min(200px, 15vw);
     }
 
     #pagetitle {
@@ -194,7 +193,7 @@ which we've already started to use
         /* header has to scale this way too. */
 
         h1 {
-            font-size: calc(min(2.5em, 5vw));
+            font-size: min(2.5em, 5vw);
             margin: 0;
             padding: 0.3em 0 0.3em 0;
             text-align: center;
@@ -247,7 +246,7 @@ which we've already started to use
                     display: block;
                 }
                 a {
-                    padding: var(--menubarPaddingHeight) calc(min(20px, 1.25vw));
+                    padding: var(--menubarPaddingHeight) min(20px, 1.25vw);
 
                     /* For really narrow screens: */
                     white-space: nowrap;
@@ -420,7 +419,7 @@ which we've already started to use
 
         .linkgroupcontainer {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(calc(max(0.25vw, 12em)), 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(max(0.25vw, 12em), 1fr));
             gap: 1.5em;
         }
 
@@ -906,10 +905,10 @@ which we've already started to use
         }
         #pagetitle {
             /* Center within header */
-            padding-top: calc(min(
+            padding-top: min(
            75vh / 2 - 1em, /* header max-height */
            100vw * 774 / 1920 / 2 - 1em /* header height, halved */
-            ));
+            );
         }
         /* Shift menubar down to below photo
        and center it. */
@@ -1043,8 +1042,8 @@ which we've already started to use
         /* Positioning */
         box-sizing: border-box;
         width: 100vw;
-        height: calc(100vh - 2em);
         top: 2em;
+        height: calc(100vh - 2em);
         left: 0px;
         position: fixed;
         margin: 0;
