@@ -1,28 +1,28 @@
-// This is the main CSS for the public site (i.e. not including admin and related staff pages)
+/*
+This is the main CSS for the public site (i.e. not including admin and related staff pages)
 
-// TODO - lots of sorting out needed here.
-// We should probably following CUBE CSS principles https://cube.fyi/
-// which we've already started to use
-// And use CSS variables instead of Sass variables for most things
+TODO - lots of sorting out needed here.
+We should probably following CUBE CSS principles https://cube.fyi/
+which we've already started to use
+And use CSS variables instead of Sass variables for most things
 
-// TODO #49 -
-// - Add CSS layers
-// - Put 'camp colors' in very high priority layer,
-//   to avoid with-camp-colors- hacks
-// - Ensure .compactButton, .bigaction is in a utilities layer with high priority
-
-// Imports
+TODO #49 -
+- Add CSS layers
+- Put 'camp colors' in very high priority layer,
+  to avoid with-camp-colors- hacks
+- Ensure .compactButton, .bigaction is in a utilities layer with high priority
+*/
 
 @import "camp_colors.css";
 @import "utilities.css";
 
 
-
-// Colours
-//  Primary Color:
-//  007633 22884F		(37DA7E) BACB97
-//
-// Secondary Color A: A65900
+/*
+Colours
+ Primary Color:
+ 007633 22884F		(37DA7E) BACB97
+ Secondary Color A: A65900
+*/
 
 :root {
     --textColor: black;
@@ -47,7 +47,7 @@
 }
 
 
-// Fonts
+/* Fonts */
 @font-face {
     font-family: 'a028_extraboldregular';
     src: url('/static/fonts/a028-ext-webfont.woff2') format('woff2'),
@@ -58,7 +58,7 @@
 }
 
 
-// Global, high level styles (no class or other selector)
+/* Global, high level styles (no class or other selector) */
 
 
 body {
@@ -140,7 +140,7 @@ button, input[type=submit] {
         background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
     }
     &:active {
-        // Press down appearance
+        /* Press down appearance */
         position:relative;
         top:1px;
     }
@@ -148,7 +148,7 @@ button, input[type=submit] {
 }
 
 
-// Page layout
+/* Page layout */
 
 
 #skiptocontentdiv {
@@ -156,10 +156,10 @@ button, input[type=submit] {
 }
 
 
-// Header
+/* Header */
 
 header {
-    background-color: #3462AA; // hand-picked to match image
+    background-color: #3462AA; /* hand-picked to match image */
     background-image: url('/static/images/topbanner_1920x774.webp');
     background-repeat: no-repeat;
     background-position: center top -10vw;
@@ -192,10 +192,10 @@ body:not(.homepage) .headerinner {
     color: white;
     padding: 20px 0px;
 
-    // For small screens, the vertical padding and font-size of the title are
-    // defined in terms of viewport width, because the logo width scales with
-    // viewport width, and therefore its height does too, so the height of the
-    // header has to scale this way too.
+    /* For small screens, the vertical padding and font-size of the title are */
+    /* defined in terms of viewport width, because the logo width scales with */
+    /* viewport width, and therefore its height does too, so the height of the */
+    /* header has to scale this way too. */
 
     h1 {
         font-size: calc(min(2.5em, 5vw));
@@ -206,7 +206,7 @@ body:not(.homepage) .headerinner {
     }
 }
 
-// menubar
+/* menubar */
 :root {
     --menubarLineHeight: var(--lineHeight);
     --menubarBorderColor: #6668;
@@ -221,15 +221,17 @@ body:not(.homepage) .headerinner {
     width: 100%;
     text-shadow: 0px 1px 3px #222;
 
-    // Note some constraints:
-    //
-    // 1) getting the right transparency effects, including making the empty
-    // area to the left of the menu items look the same as the menu items
-    //
-    // 2) getting this area to stretch to full width
-    //
-    // 3) getting the active menu item to be exactly the same as the page title
-    // area, for the tab effect
+    /*
+    Note some constraints:
+
+    1) getting the right transparency effects, including making the empty
+    area to the left of the menu items look the same as the menu items
+
+    2) getting this area to stretch to full width
+
+    3) getting the active menu item to be exactly the same as the page title
+    area, for the tab effect
+    */
 
     ul {
         margin: 0;
@@ -252,7 +254,7 @@ body:not(.homepage) .headerinner {
             a {
                 padding: var(--menubarPaddingHeight) calc(min(20px, 1.25vw));
 
-                // For really narrow screens:
+                /* For really narrow screens: */
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -302,15 +304,15 @@ body:not(.homepage) .headerinner {
         }
     }
 
-    // Large screen - shift to right
+    /* Large screen - shift to right */
     ul li.spacerend {
         display: none;
     }
 }
 
 @media screen and (max-width: 600px) {
-    // Menubar for mobile:
-    // Shift the logo down, and put menu in center
+    /* Menubar for mobile: */
+    /* Shift the logo down, and put menu in center */
     body:not(.homepage) #headerlogo {
         top: calc(var(--menubarLineHeight) + var(--menubarPaddingHeight) * 2 + 2px);
     }
@@ -324,7 +326,7 @@ body:not(.homepage) .headerinner {
 }
 
 
-// Main body
+/* Main body */
 
 
 #contentinner {
@@ -347,7 +349,7 @@ body:not(.homepage) .headerinner {
 
 
 
-// Footer
+/* Footer */
 
 footer {
     font-size: 90%;
@@ -401,12 +403,12 @@ footer {
     }
 }
 
-// Content styles
+/* Content styles */
 
 #contentinner h1 {
-    // TODO #49 do we need want this? Looks a bit weird.
-    margin-left: calc(-1 * var(--contentPadding)); // to make bg go to edge
-    margin-right: calc(-1 * var(--contentPadding);
+    /* TODO #49 do we need want this? Looks a bit weird. */
+    margin-left: calc(-1 * var(--contentPadding)); /* to make bg go to edge */
+    margin-right: calc(-1 * var(--contentPadding));
     padding-left: var(--contentPadding);
     padding-right: var(--contentPadding);
     background: linear-gradient(white 0%, white 52%, #007633 53%, #007633 58%, white 59%);
@@ -440,18 +442,21 @@ section.grouped {
     }
 }
 
-// Counteract #contentinner h1 styles
+
+/* Counteract #contentinner h1 styles */
+/* TODO #49 use layers or something */
+
 #contentinner section.grouped h1:first-child {
     margin-left: 0px;
     margin-right: 0px;
     padding-left: 0px;
     padding-right: 0px;
     background: transparent;
-    // Still want the text shadow
+    /* Still want the text shadow */
 }
 
 
-// Tables
+/* Tables */
 
 table.sideheaders,
 table.topheaders {
@@ -527,7 +532,7 @@ table.actiongrid {
 }
 
 
-// Lists
+/* Lists */
 
 ul.leaderlist {
     margin: 0px;
@@ -540,14 +545,14 @@ ul.leaderlist {
     }
 
 }
-// Photos
 
+/* Photos */
 
 div.sitephoto {
     text-align: center;
 }
 
-// Forms
+/* Forms */
 
 
 div.formrow {
@@ -573,13 +578,13 @@ div.formrow {
     }
 
     textarea, select, input:not([type=checkbox]):not([type=radio]) {
-        // These controls should never be wider than we've
-        // got room to show them on the screen.
+        /* These controls should never be wider than we've
+           got room to show them on the screen. */
         box-sizing: border-box;
         max-width: calc(100vw - var(--contentPadding) * 2);
 
-        // But they should have a standard minimum width. Only for
-        // extremely narrow screens would this be more than max-width above.
+        /* But they should have a standard minimum width. Only for
+           extremely narrow screens would this be more than max-width above. */
         min-width: 170px;
     }
 
@@ -634,14 +639,14 @@ img.captcha {
 }
 
 
-// Account details
+/* Account details */
 .mailchimp-notice {
     font-size: 90%;
     color: var(--textLighterColor);
 }
 
 
-// Breadcrumbs
+/* Breadcrumbs */
 
 div.breadcrumb {
     border-bottom: 1px solid var(--primaryColor);
@@ -709,7 +714,7 @@ ul.messagelist {
         display: inline;
         float: right;
     }
-    // clearfix hack - TODO - replace floats here with something better.
+    /* clearfix hack - TODO - replace floats here with something better. */
     &:after {
         content: ".";
         display: block;
@@ -724,8 +729,8 @@ ul.messagelist {
     text-align: center;
     box-shadow: inset 0 -3px 5px -3px #222;
     padding: 0 4px;
-    // We need to shift the whole bookingbar down to cover
-    // the line created by border-bottom of `header`
+    /* We need to shift the whole bookingbar down to cover
+       the line created by border-bottom of `header` */
     margin-bottom: calc(-1 * var(--menubarBorderThickness));
     text-shadow: 0px 1px 3px #222;
     a {
@@ -765,7 +770,7 @@ ul.messagelist {
 }
 
 
-// Add/edit place
+/* Add/edit place */
 
 h2 > .copy_data_btn {
     padding: 2px 5px;
@@ -776,7 +781,7 @@ h2 > .copy_data_btn {
 }
 
 .payboxes {
-    // clearfix hack - TODO - replace floats here with something better.
+    /* clearfix hack - TODO - replace floats here with something better. */
     &:after {
         content: ".";
         display: block;
@@ -853,7 +858,7 @@ table.bookinglist {
     margin-right: 0.5em;
 }
 
-// Smaller screens
+/* Smaller screens */
 
 @media screen and (max-width: 600px) {
     img {
@@ -865,9 +870,9 @@ table.bookinglist {
 @media screen and (max-width: 480px) {
 
     table.responsive {
-        // To use this class, you must add `data-label` attributes
-        // to every `<td>` and ensure it contains all the information
-        // in the `thead` section, which will be hidden.
+        /* To use this class, you must add `data-label` attributes
+           to every `<td>` and ensure it contains all the information
+           in the `thead` section, which will be hidden. */
         box-shadow: none;
         margin-bottom: 2px;
 
@@ -895,7 +900,7 @@ table.bookinglist {
                 font-weight: bold;
             }
             > * {
-                // reset for nested tables
+                /* reset for nested tables */
                 text-align: initial;
             }
         }
@@ -915,33 +920,33 @@ table.bookinglist {
     }
 }
 
-// homepage
+/* homepage */
 
 .homepage {
     .headerinner {
         background-color: transparent;
     }
     header {
-        background-color: #3462AA; // hand-picked to match image
+        background-color: #3462AA; /* hand-picked to match image */
         background-image: url('/static/images/topbanner_1920x774.webp');
         background-repeat: no-repeat;
         background-position: center top;
         background-size: 100% auto;
-        // If changing this, change #page-title padding-top as well
-        height: calc(100vw * 774 / 1920);  // fit whole of topbanner image, ideally
-        max-height: 75vh; // But don't make it take too much space vertically, we should see sone text
+        /* If changing this, change #page-title padding-top as well */
+        height: calc(100vw * 774 / 1920);  /* fit whole of topbanner image, ideally */
+        max-height: 75vh; /* But don't make it take too much space vertically, we should see sone text */
     }
     #pagetitle {
-        // Center within header
+        /* Center within header */
         padding-top: calc(min(
            75vh / 2 - 1em, /* header max-height */
            100vw * 774 / 1920 / 2 - 1em /* header height, halved */
         ));
     }
-    // Shift menubar down to below photo
-    // and center it.
+    /* Shift menubar down to below photo
+       and center it. */
     header {
-        position: relative; // establish bounding box for #menubar
+        position: relative; /* establish bounding box for #menubar */
     }
     #menubar {
         position: absolute;
@@ -964,7 +969,7 @@ table.bookinglist {
 }
 
 
-// Data retention / literate YAML
+/*  Data retention / literate YAML */
 pre.code {
     font-size: 13px;
     line-height: 16px;

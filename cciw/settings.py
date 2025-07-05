@@ -575,7 +575,7 @@ DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
 ROLES_CONFIG_FILE = basepath / "config" / "static_roles.yaml"
 DATA_RETENTION_CONFIG_FILE = basepath / "config" / "data_retention.yaml"
 
-# Referenced from style.scss
+# Referenced from style.css
 COLORS_CSS_DIR = "cciw/cciwmain/static/"
 COLORS_CSS_FILE = "css/camp_colors.css"
 

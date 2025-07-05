@@ -300,11 +300,9 @@ class Camp(models.Model):
 
 
 def generate_colors_css(update_existing=False):
-    # We could do this as a dynamic view, but we'd lose several benefits:
+    # We could do this as a dynamic view, but we'd lose benefits:
     #  - django-compressor wouldn't be able to find it and bundle it with
-    #    other scss files
-    #  - therefore wouldn't be able to use it for mixins that are imported
-    #    by styles.scss
+    #    other css files
     camp_names = CampName.objects.all()
     colors_css = render_to_string("cciw/camps/camp_colors_tpl.css", {"names": camp_names}).encode("utf-8")
     paths = [
