@@ -299,20 +299,20 @@ class Camp(models.Model):
         return self.open_for_bookings(date.today())
 
 
-def generate_colors_scss(update_existing=False):
+def generate_colors_css(update_existing=False):
     # We could do this as a dynamic view, but we'd lose several benefits:
     #  - django-compressor wouldn't be able to find it and bundle it with
     #    other scss files
     #  - therefore wouldn't be able to use it for mixins that are imported
     #    by styles.scss
     camp_names = CampName.objects.all()
-    colors_scss = render_to_string("cciw/camps/camp_colors_tpl.scss", {"names": camp_names}).encode("utf-8")
+    colors_css = render_to_string("cciw/camps/camp_colors_tpl.css", {"names": camp_names}).encode("utf-8")
     paths = [
-        os.path.join(settings.PROJECT_ROOT, settings.COLORS_SCSS_DIR, settings.COLORS_SCSS_FILE),  # dev
-        os.path.join(settings.STATIC_ROOT, settings.COLORS_SCSS_FILE),  # production
+        os.path.join(settings.PROJECT_ROOT, settings.COLORS_CSS_DIR, settings.COLORS_CSS_FILE),  # dev
+        os.path.join(settings.STATIC_ROOT, settings.COLORS_CSS_FILE),  # production
     ]
     for p in paths:
         if os.path.exists(os.path.dirname(p)):
             if update_existing or not os.path.exists(p):
                 with open(p, "wb") as f:
-                    f.write(colors_scss)
+                    f.write(colors_css)

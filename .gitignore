@@ -6,7 +6,7 @@ syntax:glob
 config/secrets.json
 config/letsencrypt
 TODO.org
-cciw/cciwmain/static/css/camp_colors.scss
+cciw/cciwmain/static/css/camp_colors.css
 .hypothesis
 settings_local.py
 .env

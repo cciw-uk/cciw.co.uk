@@ -576,8 +576,8 @@ ROLES_CONFIG_FILE = basepath / "config" / "static_roles.yaml"
 DATA_RETENTION_CONFIG_FILE = basepath / "config" / "data_retention.yaml"
 
 # Referenced from style.scss
-COLORS_SCSS_DIR = "cciw/cciwmain/static/"
-COLORS_SCSS_FILE = "css/camp_colors.scss"
+COLORS_CSS_DIR = "cciw/cciwmain/static/"
+COLORS_CSS_FILE = "css/camp_colors.css"
 
 
 # == Bookings ==

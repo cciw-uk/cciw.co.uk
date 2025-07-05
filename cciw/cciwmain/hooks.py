@@ -2,14 +2,14 @@ from django.conf import settings
 from django.core.signals import request_started
 from django.db.models.signals import post_save
 
-from cciw.cciwmain.models import Camp, CampName, generate_colors_scss
+from cciw.cciwmain.models import Camp, CampName, generate_colors_css
 
 
-def generate_colors_scss_w(sender, **kwargs):
-    return generate_colors_scss(update_existing=True)
+def generate_colors_css_w(sender, **kwargs):
+    return generate_colors_css(update_existing=True)
 
 
-post_save.connect(generate_colors_scss_w, CampName)
+post_save.connect(generate_colors_css_w, CampName)
 
 
 _FIRST_REQUEST_HANDLED = False
@@ -25,7 +25,7 @@ def server_startup(sender, **kwargs):
     if not settings.TESTS_RUNNING:
         # Make sure that the file exists, or we will get errors
         # when attempting to access the site
-        generate_colors_scss(update_existing=False)
+        generate_colors_css(update_existing=False)
 
     _FIRST_REQUEST_HANDLED = True
     request_started.disconnect(server_startup)
