@@ -518,8 +518,6 @@ def install_requirements_with(run_command: Callable):
 
 def build_static(c: Connection, target: Version):
     assert target.STATIC_ROOT.strip() != "" and target.STATIC_ROOT.strip() != "/"
-    # django-compressor doesn't always find changes if we don't do this:
-    target.project_run(c, "find . -name '*.scss' | xargs touch", echo=True)
     target.project_run(c, "./manage.py collectstatic -v 0 --noinput", echo=True)
 
     # This is needed for certbot/letsencrypt:
