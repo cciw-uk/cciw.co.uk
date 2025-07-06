@@ -141,8 +141,18 @@ which we've already started to use
     }
 }
 
-@layer components {
+@layer patterns {
+    .text-content {
+        /* Applies margins/paddings for main text content so
+           it isn't too wide and doesn't touch screen edge */
+        max-width: var(--contentWidth);
+        margin: 0 auto;
+        padding-left: var(--contentPadding);
+        padding-right: var(--contentPadding);
+    }
+}
 
+@layer components {
     #content, header {
         h1, h2, h3, h4, h5, h6 {
             font-weight: normal;
@@ -321,7 +331,8 @@ which we've already started to use
 
     /* Main body */
     #contentinner {
-        padding: 10px var(--contentPadding) 32px var(--contentPadding);
+        padding-top: 10px;
+        padding-bottom: 32px;
         min-height: 20em;
 
         > p:first-child, > form > p:first-child {
@@ -375,27 +386,16 @@ which we've already started to use
 
     }
 
-    .content {
-        max-width: var(--contentWidth);
-        margin: 0 auto;
-    }
-
     footer {
         font-size: 90%;
-
         background-color: var(--footerBackgroundColor);
         text-align: left;
         color: #e0e0e0;
         min-height: 10em;
 
-        .content {
-            padding: 1.5em 1em 0.5em 1em;
-        }
-
         img {
             vertical-align: top;
         }
-
 
         a:link, a:visited {
             color: #e0e0e0;
@@ -410,7 +410,12 @@ which we've already started to use
         .websiteinfo {
             background-color: color-mix(in hsl, var(--footerBackgroundColor) 95%, white 5%);
             box-shadow: 0px 3px 2px color-mix(in hsl, var(--footerBackgroundColor) 70%, black 30%);
-            padding: 0 0 2em 0;
+            padding-top: 1.5em;
+            padding-bottom: 2em;
+        }
+
+        .companyinfo {
+            padding-top: 1.5em;
         }
 
         h2 {
@@ -927,7 +932,7 @@ which we've already started to use
             color: white;
             font-size: 120%;
             background-color: #065a1b;
-            .content {
+            > div {
                 padding: 2em;
                 box-sizing: border-box;
                 text-align: center;
