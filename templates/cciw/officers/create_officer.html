@@ -13,10 +13,8 @@
 
   <h2>Enter details for officer</h2>
   <form action="" method="post">{% csrf_token %}
-    <div>
-      <table>
-        {{ form.as_table }}
-      </table>
+    <div class="tabular-form">
+      {{ form.as_div }}
     </div>
 
     <p><input type="submit" name="add" value="Add officer" /></p>

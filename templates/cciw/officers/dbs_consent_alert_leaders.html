@@ -12,7 +12,9 @@
     hx-target="#dialog-content-main"
     hx-vals='{"use_block": "content"}'
   >
-    {{ messageform.as_p }}
+    <div class="stacked-form">
+      {{ messageform.as_div }}
+    </div>
     <p>
       <input type="submit" name="send" value="Send" />
       <input type="submit" name="cancel" value="Cancel" formnovalidate />

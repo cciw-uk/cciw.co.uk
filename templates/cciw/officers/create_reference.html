@@ -48,7 +48,9 @@
       {% endif %}
 
       <form id="id_create_reference" method="post" action="">{% csrf_token %}
-        {{ form.as_p }}
+        <div class="stacked-form">
+          {{ form.as_div }}
+        </div>
         <div><input type="submit" name="save" value="Submit reference" /></div>
       </form>
     {% endif %}

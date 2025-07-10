@@ -8,9 +8,9 @@
     hx-target="#dialog-content-main"
     hx-vals='{"use_block": "content"}'
   >
-    <table>
-      {{ form }}
-    </table>
+    <div class="tabular-form">
+      {{ form.as_div }}
+    </div>
     <p>
       <input type="submit" name="save" value="Save" />
       <input type="submit" name="cancel" value="Cancel" formnovalidate />

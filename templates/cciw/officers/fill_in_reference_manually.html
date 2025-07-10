@@ -24,9 +24,9 @@
     hx-vals='{"use_block": "content"}'
   >
     {% csrf_token %}
-    <table>
-      {{ form }}
-    </table>
+    <div class="stacked-form">
+      {{ form.as_div }}
+    </div>
     <div>
       <input type="submit" name="save" value="Save" />
       <input type="submit" name="cancel" value="Cancel" formnovalidate />
