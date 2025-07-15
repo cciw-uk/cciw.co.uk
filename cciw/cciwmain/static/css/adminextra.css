@@ -145,10 +145,17 @@ div.stacked-form {
         display: flex;
         flex-direction: column;
         margin-block-end: 1em;
+        & > input, & > select {
+            align-self: flex-start;
+        }
     }
     & .helptext {
         order: 3;
     }
+}
+
+.limit-text-width-60em {
+    max-width: 60em;
 }
 
 /* Manage references */
