@@ -749,7 +749,7 @@ REFEREE_MAPPED_FIELD_GROUPS = [
 REFERENCE_FIELD_MAP: dict[str, Fixer[officers.Reference, object]] = {
     "referee_name": lambda f, reference, v: reference.referee.name,
     "how_long_known": keep,
-    "capacity_known": keep,
+    "capacity_known": similar_length_text,
     "known_offences": const(False),
     "known_offences_details": make_empty,
     "capability_children": similar_length_text,
