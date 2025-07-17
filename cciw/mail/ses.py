@@ -25,7 +25,7 @@ def get_config_boto_session():
 
 
 # S3
-def download_ses_message_from_s3(message_id):
+def download_ses_message_from_s3(message_id: str) -> bytes:
     AWS_INCOMING_MAIL = settings.AWS_INCOMING_MAIL
     session = boto3.Session(
         aws_access_key_id=AWS_INCOMING_MAIL["ACCESS_KEY_ID"],

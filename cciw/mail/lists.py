@@ -128,7 +128,7 @@ email_extract_re = re.compile(
 )
 
 
-def extract_email_addresses(email_line):
+def extract_email_addresses(email_line: str) -> list[str]:
     return email_extract_re.findall(email_line)
 
 
@@ -473,7 +473,7 @@ def handle_mail_from_s3_async(message_id):
     os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", message_id)
 
 
-def handle_mail_from_s3(message_id):
+def handle_mail_from_s3(message_id: str):
     # There is the possibility of this getting called multiple times with the
     # same message_id, perhaps due to our endpoint not returning quickly enough
     # to SNS, triggering a timeout and re-attempt. So, we dedupe using a
@@ -503,7 +503,7 @@ def handle_mail_from_s3(message_id):
     # calls with the same message_id will see the file already exists and abort.
 
 
-def handle_mail(data):
+def handle_mail(data: bytes):
     """
     Forwards an email to the correct list of people.
     data is RFC822 formatted bytes
@@ -515,7 +515,7 @@ def handle_mail(data):
         return
 
     if is_valid_email(to):
-        addresses = [to]
+        addresses = {to}
     else:
         addresses = {a.lower() for a in extract_email_addresses(to)}
 
@@ -541,7 +541,7 @@ def handle_mail(data):
         )
         return
 
-    for address in addresses:
+    for address in sorted(list(addresses)):
         try:
             email_list = find_list(address, from_email)
             forward_email_to_list(mail, email_list)

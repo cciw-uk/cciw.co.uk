@@ -8,6 +8,7 @@ import json
 import re
 import unicodedata
 from datetime import date
+from typing import TypeGuard
 
 from django.conf import settings
 from django.core.validators import ValidationError, validate_email
@@ -37,7 +38,7 @@ def python_to_json(obj):
     return json_encoder.encode(obj)
 
 
-def is_valid_email(email):
+def is_valid_email(email: str | None) -> TypeGuard[str]:
     try:
         validate_email(email)
     except ValidationError:
