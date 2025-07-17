@@ -13,7 +13,7 @@ import logging
 import os
 import re
 import tempfile
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 
 from django.conf import settings
@@ -103,7 +103,7 @@ def find_list(address, from_addr) -> EmailList:
     raise NoSuchList()
 
 
-def get_all_lists() -> Iterator[EmailList]:
+def get_all_lists() -> Iterable[EmailList]:
     current_camps = Camp.objects.all().filter(year__gte=common.get_thisyear() - 1)
     for generator in GENERATORS:
         yield from generator(current_camps)
@@ -143,12 +143,12 @@ class MailAccessDenied(ValueError):
 # Definitions of EmailLists
 
 
-def camp_officers_list_generator(current_camps: list[Camp]):
+def camp_officers_list_generator(current_camps: Sequence[Camp]) -> Iterable[EmailList]:
     for camp in current_camps:
         yield make_camp_officers_list(camp)
 
 
-def make_camp_officers_list(camp) -> EmailList:
+def make_camp_officers_list(camp: Camp) -> EmailList:
     def get_members() -> list[User]:
         return camp_officer_list(camp)
 
@@ -163,7 +163,7 @@ def make_camp_officers_list(camp) -> EmailList:
     )
 
 
-def camp_slackers_list_generator(current_camps):
+def camp_slackers_list_generator(current_camps: Sequence[Camp]) -> Iterable[EmailList]:
     for camp in current_camps:
         yield make_camp_slackers_list(camp)
 
@@ -183,7 +183,7 @@ def make_camp_slackers_list(camp):
     )
 
 
-def camp_leaders_list_generator(current_camps):
+def camp_leaders_list_generator(current_camps: Sequence[Camp]) -> Iterable[EmailList]:
     for camp in current_camps:
         yield make_camp_leaders_list(camp)
 
@@ -203,7 +203,7 @@ def make_camp_leaders_list(camp):
     )
 
 
-def camp_leaders_for_year_list_generator(current_camps: list[Camp]) -> Iterator[EmailList]:
+def camp_leaders_for_year_list_generator(current_camps: Sequence[Camp]) -> Iterable[EmailList]:
     get_year = lambda camp: camp.year
     for year, camps in itertools.groupby(sorted(current_camps, key=get_year), key=get_year):
         camps2 = list(camps)
@@ -228,7 +228,7 @@ def make_camp_leaders_for_year_list(year, camps) -> EmailList:
     )
 
 
-def roles_list_generator(current_camps):
+def roles_list_generator(current_camps: Sequence[Camp]) -> Iterable[EmailList]:
     for role in Role.objects.with_address():
         local_address, domain = role.email.rsplit("@", 1)
         if domain != settings.INCOMING_MAIL_DOMAIN:
@@ -250,7 +250,9 @@ def roles_list_generator(current_camps):
         )
 
 
-GENERATORS = [
+type Generator = Callable[[Sequence[Camp]], Iterable[EmailList]]
+
+GENERATORS: list[Generator] = [
     camp_officers_list_generator,
     camp_slackers_list_generator,
     camp_leaders_list_generator,
