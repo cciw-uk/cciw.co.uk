@@ -383,9 +383,11 @@ def forward_email_to_list(mail, email_list: EmailList):
     # we reduce the possibility of having sent some of the emails
     # but not others.
 
-    messages_to_send = []
+    messages_to_send: list[tuple[str, str, bytes]] = []
     for user in email_list.get_members():
         addr = formatted_email(user)
+        if addr is None:
+            continue
         _set_mail_header(mail, "To", addr)
         # Need new message ID, or some mail servers will only send one
         _set_mail_header(mail, "Message-ID", make_msgid())
@@ -410,9 +412,9 @@ def forward_email_to_list(mail, email_list: EmailList):
                 email_list.address,
                 to_addr,
             )
-            send_mime_message(to_addr, from_address, mail_as_bytes)
+            send_mime_message([to_addr], from_address, mail_as_bytes)
         except Exception as e:
-            errors.append((addr, e))
+            errors.append((to_addr, e))
 
     if len(errors) == len(messages_to_send):
         # Probably a temporary network error, but possibly something more

@@ -30,7 +30,7 @@ class RawBytes:
         return None
 
 
-def send_mime_message(to_address, from_address, mime_message):
-    logger.info("send_mime_message to=%s message=%s...", to_address, mime_message[0:50])
-    email = RawEmailMessage(to=[to_address], from_email=from_address, mime_data=mime_message)
+def send_mime_message(to_addresses: list[str], from_address: str, mime_message):
+    logger.info("send_mime_message to=%s message=%s...", to_addresses, mime_message[0:50])
+    email = RawEmailMessage(to=to_addresses, from_email=from_address, mime_data=mime_message)
     email.send()
