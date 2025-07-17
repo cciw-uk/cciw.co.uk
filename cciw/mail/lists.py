@@ -376,19 +376,31 @@ def forward_email_to_list(mail, email_list: EmailList):
     ]
     mail._headers = [(name, val) for name, val in mail._headers if name.lower() in good_headers]
 
-    # Send individual emails:
+    # Send individual or group emails:
 
     # First, do as much work as possible before doing anything
     # with side effects. That way if an error occurs early,
     # we reduce the possibility of having sent some of the emails
     # but not others.
 
-    messages_to_send: list[tuple[str, str, bytes]] = []
-    for user in email_list.get_members():
-        addr = formatted_email(user)
-        if addr is None:
+    user_groups_for_sending: list[list[User]]
+
+    if email_list.list_reply:
+        # Because some email clients don't have 'Reply to List'
+        # or people don't know how to use it, we make each user
+        # an explicit recipient on the same email.
+        user_groups_for_sending = [list(email_list.get_members())]
+    else:
+        # Give each recipient their own email.
+        user_groups_for_sending = [[user] for user in email_list.get_members()]
+
+    messages_to_send: list[tuple[list[str], str, bytes]] = []
+    for group in user_groups_for_sending:
+        to_addresses = [addr for user in group if (addr := formatted_email(user)) is not None]
+        if not to_addresses:
             continue
-        _set_mail_header(mail, "To", addr)
+        _set_mail_header(mail, "To", ",".join(to_addresses[0]))
+
         # Need new message ID, or some mail servers will only send one
         _set_mail_header(mail, "Message-ID", make_msgid())
         try:
@@ -397,24 +409,24 @@ def forward_email_to_list(mail, email_list: EmailList):
             # Can happen for bad mail, usually spammers
             continue
         from_address = mail["From"]
-        messages_to_send.append((addr, from_address, mail_as_bytes))
+        messages_to_send.append((to_addresses, from_address, mail_as_bytes))
 
     if len(messages_to_send) == 0:
         return
 
     errors = []
-    for to_addr, from_address, mail_as_bytes in messages_to_send:
+    for to_addresses, from_address, mail_as_bytes in messages_to_send:
         try:
             logger.info(
                 "Forwarding msg %s from %s to email list %s address %s",
                 orig_msg_id,
                 orig_from_addr,
                 email_list.address,
-                to_addr,
+                to_addresses,
             )
-            send_mime_message([to_addr], from_address, mail_as_bytes)
+            send_mime_message(to_addresses, from_address, mail_as_bytes)
         except Exception as e:
-            errors.append((to_addr, e))
+            errors.append((to_addresses, e))
 
     if len(errors) == len(messages_to_send):
         # Probably a temporary network error, but possibly something more

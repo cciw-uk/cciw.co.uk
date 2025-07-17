@@ -160,6 +160,9 @@ class TestMailingLists(RolesSetupMixin, TestBase):
         assert all(b"Subject: Test" in m for m in sent_messages_bytes)
         assert all(b"X-Original-To: committee@mailtest.cciw.co.uk" in m for m in sent_messages_bytes)
 
+        # With current implementation, we send just one email
+        assert len(sent_messages) == 1
+
     def test_handle_public_role_list(self):
         role = self._setup_role_for_email(
             email="myrole@mailtest.cciw.co.uk",
@@ -294,7 +297,7 @@ class TestMailingLists(RolesSetupMixin, TestBase):
         but not all.
         """
         role = self._setup_role_for_email(
-            allow_emails_from_public=False,
+            allow_emails_from_public=True,  # not a 'reply all' list
             email="committee@mailtest.cciw.co.uk",
             recipients=[
                 ("aperson1", "a.person.1@example.com"),
@@ -305,9 +308,10 @@ class TestMailingLists(RolesSetupMixin, TestBase):
 
         with mock.patch("cciw.mail.lists.send_mime_message") as m_s:
 
-            def sendmail(to_address, from_address, mail_bytes):
-                if to_address.endswith("@faildomain.com"):
-                    raise Exception(f"We don't like {to_address}!")
+            def sendmail(to_addresses, from_address, mail_bytes):
+                for to_address in to_addresses:
+                    if to_address.endswith("@faildomain.com"):
+                        raise Exception(f"We don't like {to_address}!")
                 # Otherwise succeed silently
 
             m_s.side_effect = sendmail
