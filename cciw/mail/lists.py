@@ -399,7 +399,7 @@ def forward_email_to_list(mail, email_list: EmailList):
         to_addresses = [addr for user in group if (addr := formatted_email(user)) is not None]
         if not to_addresses:
             continue
-        _set_mail_header(mail, "To", ",".join(to_addresses[0]))
+        _set_mail_header(mail, "To", ",".join(to_addresses))
 
         # Need new message ID, or some mail servers will only send one
         _set_mail_header(mail, "Message-ID", make_msgid())
