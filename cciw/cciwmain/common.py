@@ -146,7 +146,6 @@ def standard_processor(request):
             return links_cache
 
     context["menulinks"] = get_links
-    context["PRODUCTION"] = settings.LIVEBOX
 
     return context
 

@@ -23,7 +23,6 @@ DEFAULT_USER = PROJECT_USER
 PROJECT_PYTHON_MODULE = "cciw"
 
 PROJECT_NAME = "cciw"
-DOMAINS = ["www.cciw.co.uk"]
 
 PROJECT_LOCALE = "en_GB.UTF-8"
 
@@ -139,14 +138,23 @@ TEMPLATES = [
 ]
 
 
-TEMPLATE_CONTEXT = {
-    "DOMAINS_REGEX": "|".join(re.escape(d) for d in DOMAINS),
-    "DOMAINS_NGINX": " ".join(DOMAINS),
-    "LOCALE": PROJECT_LOCALE,
-    "PROJECT_PYTHON_MODULE": PROJECT_PYTHON_MODULE,
-    "PROJECT_USER": PROJECT_USER,
-    "PROJECT_NAME": PROJECT_NAME,
-}
+IS_STAGING = False  # Can be changed by ``staging`` task
+
+
+def get_domain():
+    # This is similar to code in settings.py
+    return "staging.cciw.co.uk" if IS_STAGING else "www.cciw.co.uk"
+
+
+def get_template_context():
+    return {
+        "DOMAIN_REGEX": re.escape(get_domain()),
+        "DOMAIN": get_domain(),
+        "LOCALE": PROJECT_LOCALE,
+        "PROJECT_PYTHON_MODULE": PROJECT_PYTHON_MODULE,
+        "PROJECT_USER": PROJECT_USER,
+        "PROJECT_NAME": PROJECT_NAME,
+    }
 
 
 def get_system_templates() -> list[Template]:
@@ -164,6 +172,15 @@ root_task = managed_connection_task("root", DEFAULT_HOST)
 
 
 # -- System level provisioning
+
+
+@task()
+def staging(c):
+    """
+    Set config tweaks appropriate for staging environment
+    """
+    global IS_STAGING
+    IS_STAGING = True
 
 
 @root_task()
@@ -325,7 +342,7 @@ def deploy_system(c):
     """
     target = Version.current()
     for template in get_system_templates():
-        context_data = TEMPLATE_CONTEXT | target.__dict__
+        context_data = get_template_context() | target.__dict__
         upload_template_and_reload(c, template, context_data)
 
 
@@ -334,6 +351,8 @@ def deploy(c, skip_checks=False, test_host=False):
     """
     Deploy project.
     """
+    if IS_STAGING:
+        test_host = True
     if not test_host:
         check_branch(c)
     check_sentry_auth(c)
@@ -358,8 +377,10 @@ def deploy(c, skip_checks=False, test_host=False):
 
     # The next group should be done promptly, but less urgency is needed
     copy_protected_downloads(c, target)
-    setup_email_routes(c, target)
+    if not test_host:
+        setup_email_routes(c, target)
 
+    # Deployment to the machine is now complete.
     # Post deploy tasks:
     if not test_host:
         tag_deploy(c)
@@ -530,7 +551,7 @@ def build_static(c: Connection, target: Version):
 def upload_project_templates(c: Connection, target: Version):
     target = Version.current()
     for template in get_project_templates():
-        context_data = TEMPLATE_CONTEXT | target.__dict__
+        context_data = get_template_context() | target.__dict__
         upload_template_and_reload(c, template, context_data)
 
 
@@ -723,8 +744,8 @@ def install_or_renew_ssl_certificate(c):
     version = Version.current()
     certbot_static_path = version.STATIC_ROOT + "/root"
     files.require_directory(c, certbot_static_path)
-    c.run(f"letsencrypt certonly --webroot -w {certbot_static_path} -d {DOMAINS[0]}")
-    c.run("service nginx reload")
+    c.run(f"letsencrypt certonly --webroot -w {certbot_static_path} -d {get_domain()}", echo=True)
+    c.run("service nginx reload", echo=True)
 
 
 @root_task()

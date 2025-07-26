@@ -25,16 +25,22 @@ BASE_PATH = basepath
 # to check deployment settings, so need to switch on that.
 CHECK_DEPLOY = "manage.py check --deploy" in " ".join(sys.argv)
 if CHECK_DEPLOY:
-    LIVEBOX = True
+    PRODUCTION = True
     DEVBOX = False
+    STAGING = False
 else:
-    LIVEBOX = hostname.startswith("cciw")
-    DEVBOX = not LIVEBOX
+    STAGING = "staging" in hostname
+    PRODUCTION = hostname.startswith("cciw") and not STAGING
+    DEVBOX = not (PRODUCTION or STAGING)
 
-TESTS_RUNNING = not LIVEBOX and "pytest" in sys.modules
+S_PREFIX = "STAGING" if STAGING else ("PRODUCTION" if PRODUCTION else "DEV")
 
+DEPLOYED = (PRODUCTION or STAGING) and not CHECK_DEPLOY
+S_PREFIX = "STAGING" if STAGING else ("PRODUCTION" if PRODUCTION else "DEV")
 
-if LIVEBOX and not CHECK_DEPLOY:
+TESTS_RUNNING = DEVBOX and "pytest" in sys.modules
+
+if DEPLOYED:
     LOG_PATH = HOME_PATH / "logs"  # See fabfile
 else:
     LOG_PATH = parentpath / "logs"
@@ -47,14 +53,7 @@ BOGOFILTER_DIR = HOME_PATH / ".bogofilter-cciw"
 if not BOGOFILTER_DIR.exists():
     BOGOFILTER_DIR.mkdir(parents=True)
 
-if LIVEBOX:
-    SECRET_KEY = SECRETS["PRODUCTION_SECRET_KEY"]
-else:
-    # We don't want any SECRET_KEY in a file in a VCS, and we also want the
-    # SECRET_KEY to be to be the same as for production so that we can use
-    # downloaded session database if needed.
-    SECRET_KEY = SECRETS["PRODUCTION_SECRET_KEY"]
-
+SECRET_KEY = SECRETS[f"{S_PREFIX}_SECRET_KEY"]
 
 # == MISC ==
 
@@ -87,7 +86,8 @@ INTERNAL_IPS = ("127.0.0.1",)
 LANGUAGE_CODE = "en-gb"
 
 SITE_ID = 1
-PRODUCTION_DOMAIN = "www.cciw.co.uk"
+
+PRODUCTION_DOMAIN = "staging.cciw.co.uk" if STAGING else "www.cciw.co.uk"
 
 ROOT_URLCONF = "cciw.urls"
 
@@ -100,7 +100,7 @@ CACHES = (
             "KEY_PREFIX": "cciw.co.uk",
         }
     }
-    if LIVEBOX
+    if DEPLOYED
     else {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -203,7 +203,8 @@ URLCONFCHECKS_SILENCED_VIEWS = {
 }
 
 if not CHECK_DEPLOY:
-    # It's annoying to have to fix data retention immediately
+    # It's annoying to have to fix data retention immediately,
+    # so only check it before deploy.
     SILENCED_SYSTEM_CHECKS.extend(
         [
             "dataretention.E002",
@@ -239,7 +240,7 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
 
-if LIVEBOX:
+if DEPLOYED or CHECK_DEPLOY:
     # Can't use in development because we use HTTP locally
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
@@ -373,11 +374,11 @@ PASSWORD_RESET_TIMEOUT = 7 * 24 * 3600
 
 # == DATABASE ==
 
-if LIVEBOX and not CHECK_DEPLOY:
-    DB_NAME = SECRETS["PRODUCTION_DB_NAME"]
-    DB_USER = SECRETS["PRODUCTION_DB_USER"]
-    DB_PASSWORD = SECRETS["PRODUCTION_DB_PASSWORD"]
-    DB_PORT = SECRETS["PRODUCTION_DB_PORT"]
+if DEPLOYED:
+    DB_NAME = SECRETS[f"{S_PREFIX}_DB_NAME"]
+    DB_USER = SECRETS[f"{S_PREFIX}_DB_USER"]
+    DB_PASSWORD = SECRETS[f"{S_PREFIX}_DB_PASSWORD"]
+    DB_PORT = SECRETS[f"{S_PREFIX}_DB_PORT"]
 else:
     DB_NAME = "cciw_dev"
     DB_USER = "cciw_dev"
@@ -451,7 +452,7 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL
 ADMINS = [("webmaster", email) for email in EMAIL_RECIPIENTS["WEBMASTER"]]
 
 
-if LIVEBOX:
+if PRODUCTION:
     # We currently send using SMTP (amazon SES)
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = SECRETS["SMTP_HOST"]
@@ -460,6 +461,7 @@ if LIVEBOX:
     EMAIL_HOST_PASSWORD = SECRETS["SMTP_PASSWORD"]
     EMAIL_USE_TLS = SECRETS["SMTP_USE_TLS"]
 else:
+    # TODO STAGING - something better than this?
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # django-mailer - used for some things where we need a queue. It is not used as
@@ -472,7 +474,7 @@ MAILER_USE_FILE_LOCK = False
 
 EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
 
-if LIVEBOX:
+if PRODUCTION:
     INCOMING_MAIL_DOMAIN = "cciw.co.uk"
 else:
     # This separate domain makes development testing of AWS mail handling
@@ -480,15 +482,15 @@ else:
     INCOMING_MAIL_DOMAIN = "mailtest.cciw.co.uk"
 
 
-RECREATE_ROUTES_AUTOMATICALLY = LIVEBOX
+RECREATE_ROUTES_AUTOMATICALLY = PRODUCTION
 
 # == AWS ==
-if LIVEBOX:
+if PRODUCTION:
     AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]
     AWS_CONFIG_USER = SECRETS["AWS"]["CONFIG"]
 else:
     # Protect ourselves from accidentally using production AWS details in
-    # development. When working on the SES integration code in development this
+    # development or staging. When working on the SES integration code in development this
     # can be changed to same as above.
     AWS_INCOMING_MAIL = {}
     AWS_CONFIG_USER = {}
@@ -544,7 +546,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 
 COMPRESS_FILTERS = {
     "css": ["compressor.filters.css_default.CssAbsoluteFilter", "compressor.filters.cssmin.rCSSMinFilter"],
-    "js": ["compressor.filters.jsmin.rJSMinFilter"] if LIVEBOX else [],
+    "js": ["compressor.filters.jsmin.rJSMinFilter"] if DEPLOYED else [],
 }
 COMPRESS_PRECOMPILERS = []
 COMPRESS_ENABLED = True
@@ -609,27 +611,17 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
 WIKI_CHECK_SLUG_URL_AVAILABLE = False  # it checks it incorrectly for our situation
 
 # Mailchimp
-if LIVEBOX:
-    MAILCHIMP_API_KEY = SECRETS["PRODUCTION_MAILCHIMP_API_KEY"]
-    MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS["PRODUCTION_MAILCHIMP_NEWSLETTER_LIST_ID"]
-    MAILCHIMP_URL_BASE = SECRETS["PRODUCTION_MAILCHIMP_URL_BASE"]
-else:
-    MAILCHIMP_API_KEY = SECRETS["DEV_MAILCHIMP_API_KEY"]
-    MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS["DEV_MAILCHIMP_NEWSLETTER_LIST_ID"]
-    MAILCHIMP_URL_BASE = SECRETS["DEV_MAILCHIMP_URL_BASE"]
+MAILCHIMP_API_KEY = SECRETS[f"{S_PREFIX}_MAILCHIMP_API_KEY"]
+MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS[f"{S_PREFIX}_MAILCHIMP_NEWSLETTER_LIST_ID"]
+MAILCHIMP_URL_BASE = SECRETS[f"{S_PREFIX}_MAILCHIMP_URL_BASE"]
 
 # PayPal
-if LIVEBOX:
-    PAYPAL_TEST = False
-    PAYPAL_RECEIVER_EMAIL = SECRETS["PRODUCTION_PAYPAL_RECEIVER_EMAIL"]
-else:
-    PAYPAL_TEST = True
-    PAYPAL_RECEIVER_EMAIL = SECRETS["DEV_PAYPAL_RECEIVER_EMAIL"]
-
+PAYPAL_TEST = not PRODUCTION
+PAYPAL_RECEIVER_EMAIL = SECRETS[f"{S_PREFIX}_PAYPAL_RECEIVER_EMAIL"]
 PAYPAL_BUY_BUTTON_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
 # Sentry
-if LIVEBOX and not CHECK_DEPLOY:
+if DEPLOYED:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -637,7 +629,7 @@ if LIVEBOX and not CHECK_DEPLOY:
     release = "cciw@" + version
 
     sentry_sdk.init(
-        dsn=SECRETS["PRODUCTION_SENTRY_CONFIG"]["dsn"],
+        dsn=SECRETS[f"{S_PREFIX}_SENTRY_CONFIG"]["dsn"],
         integrations=[DjangoIntegration()],
         release=release,
         traces_sample_rate=0.05,
