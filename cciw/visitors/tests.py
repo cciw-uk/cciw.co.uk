@@ -1,5 +1,8 @@
+from django.test import RequestFactory
+
 from cciw.cciwmain.tests.factories import create_camp
 from cciw.utils.tests.webtest import WebTestBase
+from cciw.visitors.forms import get_remote_addr
 from cciw.visitors.models import VisitorLog
 from cciw.visitors.views import make_visitor_log_url
 
@@ -30,3 +33,11 @@ class VisitorsLogPage(WebTestBase):
         assert VisitorLog.objects.count() == 2
 
         assert [log.camp == camp for log in VisitorLog.objects.all()]
+
+
+def test_get_remote_addr():
+    request = RequestFactory().get("/", REMOTE_ADDR="45.1.2.3")
+    assert get_remote_addr(request) == "45.1.2.3"
+
+    request2 = RequestFactory(headers={"x-forwarded-for": "34.0.0.1"}).get("/")
+    assert get_remote_addr(request2) == "34.0.0.1"

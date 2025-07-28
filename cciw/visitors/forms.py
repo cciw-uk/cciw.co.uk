@@ -23,7 +23,15 @@ class VisitorLogForm(ModelForm):
 
     def save(self, request: HttpRequest) -> VisitorLog:
         log = super().save(commit=False)
-        log.remote_addr = request.META["REMOTE_ADDR"]
+        log.remote_addr = get_remote_addr(request)
         log.logged_by = user if (user := request.user).is_authenticated else None
         log.save()
         return log
+
+
+def get_remote_addr(request: HttpRequest) -> str:
+    if (x_forwarded_for := request.headers.get("X-Forwarded-For", "")) and x_forwarded_for != "127.0.0.1":
+        return x_forwarded_for
+
+    # Fallback that is used in tests:
+    return request.META.get("REMOTE_ADDR", "")
