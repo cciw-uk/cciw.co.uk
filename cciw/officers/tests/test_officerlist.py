@@ -220,6 +220,7 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
 
         # Action:
         self.click(self.remove_button_selector(officer))
+        self.wait_for_ajax()
 
         # Assert
         self.assertTextPresent(officer.full_name, within=".chooseofficers")

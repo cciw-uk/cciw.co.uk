@@ -90,6 +90,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
     def start_request_reference(self, referee_email: str = Auto) -> tuple[Camp, User, User, Referee]:
         camp, leader, officer, referee = self.start_manage_reference_page(referee_email=referee_email)
         self.click(f"#id-manage-reference-{referee.id} [name=request-reference]")
+        self.wait_until_loaded(css_selector="#id_message")
         return camp, leader, officer, referee
 
     def test_with_email(self):
@@ -174,6 +175,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
             self.officer_login(leader)
             self.get_url("cciw-officers-manage_references", camp_id=camp2.url_id)
             self.click(f"#id-manage-reference-{referee.id} [name=request-updated-reference]")
+            self.wait_until_loaded("#id_message")
             self.assertTextPresent("Referee1 Name has done a reference for Joe in the past.")
 
     def test_update_with_no_exact_match(self):
@@ -252,6 +254,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         self.get_url("cciw-officers-manage_references", camp_id=camp.url_id)
 
         self.click(f"#id-manage-reference-{referee.id} [name=nag-by-officer]")
+        self.wait_until_loaded(css_selector="#id_message")
         self.assertTextPresent("to nag their referee")
         self.click("[name=send]")
         self.wait_until_dialog_closed()
