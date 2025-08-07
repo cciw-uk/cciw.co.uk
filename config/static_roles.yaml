@@ -109,6 +109,9 @@ Roles:
       - cciwmain.Person/change
       # Need to be able to view/manage application forms
       - officers.Application/change
+      - officers.Qualification/add
+      - officers.Qualification/change
+      - officers.Qualification/delete
       - officers.QualificationType/add
       - officers.QualificationType/change
       - officers.QualificationType/delete

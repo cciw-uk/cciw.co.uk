@@ -145,18 +145,24 @@ class QualificationInline(admin.TabularInline):
     model = Qualification
 
     def has_add_permission(self, request, obj=None):
+        if request.user.can_manage_application_forms:
+            return True
         if request.user.is_potential_camp_officer:
             return True
         else:
             return super().has_add_permission(request, obj=obj)
 
     def has_change_permission(self, request, obj=None):
+        if request.user.can_manage_application_forms:
+            return True
         if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
             return True
         else:
             return super().has_change_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
+        if request.user.can_manage_application_forms:
+            return True
         if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
             return True
         else:
