@@ -116,6 +116,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
 
         # Should refuse to send if we press send
         self.click("[name=send]")
+        self.wait_for_ajax()
         self.assertTextPresent("No email address")
         assert len(mail.outbox) == 0
 
@@ -239,6 +240,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
             scroll=False,
         )
         self.click("#id_request_reference_manual [name=save]", scroll=False)
+        self.wait_for_ajax()
         msgs = [e for e in mail.outbox if "Reference form for" in e.subject]
         assert len(msgs) >= 0
         referee.refresh_from_db()
