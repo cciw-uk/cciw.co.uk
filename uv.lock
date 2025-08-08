@@ -277,7 +277,6 @@ dependencies = [
     { name = "pydantic", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pygments", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pymemcache", marker = "platform_python_implementation != 'PyPy'" },
-    { name = "pytest-sugar", marker = "platform_python_implementation != 'PyPy'" },
     { name = "python-dateutil", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pytz", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pyyaml", marker = "platform_python_implementation != 'PyPy'" },
@@ -308,6 +307,7 @@ dev = [
     { name = "pytest", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pytest-cov", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pytest-django", marker = "platform_python_implementation != 'PyPy'" },
+    { name = "pytest-sugar", marker = "platform_python_implementation != 'PyPy'" },
     { name = "pytest-xdist", extra = ["psutil"], marker = "platform_python_implementation != 'PyPy'" },
     { name = "ruff", marker = "platform_python_implementation != 'PyPy'" },
     { name = "selenium", marker = "platform_python_implementation != 'PyPy'" },
@@ -357,7 +357,6 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2" },
     { name = "pygments", specifier = ">=2.14.0" },
     { name = "pymemcache", specifier = ">=3.5.2" },
-    { name = "pytest-sugar", specifier = ">=1.0.0" },
     { name = "python-dateutil", specifier = ">=2.8.2" },
     { name = "pytz", specifier = ">=2022.2.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
@@ -375,7 +374,7 @@ dev = [
     { name = "django-debug-toolbar", specifier = ">=4.1.0" },
     { name = "django-extensions", specifier = ">=3.2.3" },
     { name = "django-find-view", specifier = ">=0.1.0" },
-    { name = "django-functest", specifier = "==1.5.4" },
+    { name = "django-functest", specifier = "==1.6.2" },
     { name = "faker", specifier = ">=33.0.0" },
     { name = "hypothesis", specifier = ">=6.54.6" },
     { name = "ipdb", specifier = ">=0.13.13" },
@@ -388,6 +387,7 @@ dev = [
     { name = "pytest", specifier = ">=7.1.3" },
     { name = "pytest-cov", specifier = ">=3.0.0" },
     { name = "pytest-django", specifier = ">=4.5.2" },
+    { name = "pytest-sugar", specifier = ">=1.0.0" },
     { name = "pytest-xdist", extras = ["psutil"], specifier = ">=2.1.0" },
     { name = "ruff", specifier = ">=0.7.2" },
     { name = "selenium", specifier = "==4.4.3" },
@@ -735,7 +735,7 @@ wheels = [
 
 [[package]]
 name = "django-functest"
-version = "1.5.4"
+version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", marker = "platform_python_implementation != 'PyPy'" },
@@ -745,9 +745,9 @@ dependencies = [
     { name = "selenium", marker = "platform_python_implementation != 'PyPy'" },
     { name = "webtest", marker = "platform_python_implementation != 'PyPy'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/fc/bddfb891c3e10e552d03646ac381f42b11cfc17a9341f6b08e67bcd5c69c/django-functest-1.5.4.tar.gz", hash = "sha256:d899de371ed0cd33ec7033514c408d6a6c028488f7c1752df4f502593b6022de", size = 75596, upload-time = "2023-04-19T16:03:50.817Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/0d/0b240210c4fd70511b209e881b9873cb265ea2ad27502ad8746a5bc16708/django_functest-1.6.2.tar.gz", hash = "sha256:c0e7f74722500b77def45dcba21a4ec9b8e8697c17775b47ab7b0d89b43db71f", size = 78575, upload-time = "2025-08-08T08:42:10.823Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e6/71/e5791508d0534fd7f282c1efd78175c2ad0ae385bfad9d2a18babd6a1310/django_functest-1.5.4-py3-none-any.whl", hash = "sha256:7ac25d507484a345c308d7036f6c1c10f4daaab094b8dc31fa41b2722ecae5a6", size = 39507, upload-time = "2023-04-19T16:03:47.636Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/31/86a4ad9619df380c4975b9f732ad2245486fb693898c36c6f7aec27672f0/django_functest-1.6.2-py3-none-any.whl", hash = "sha256:2f437ea8d46ecde4bef0a8c0336b600d74292734512ecbad452dc687e8094159", size = 25409, upload-time = "2025-08-08T08:42:09.308Z" },
 ]
 
 [[package]]

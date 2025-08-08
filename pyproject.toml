@@ -49,7 +49,6 @@ dependencies = [
     "wiki>=0.12",
     "gunicorn>=23.0.0",
     "fabutils-cciw>=0.1.1",
-    "pytest-sugar>=1.0.0",
 ]
 
 
@@ -92,7 +91,7 @@ dev-dependencies = [
     "django-debug-toolbar>=4.1.0",
     "django-extensions>=3.2.3",
     "django-find-view>=0.1.0",
-    "django-functest==1.5.4",
+    "django-functest==1.6.2",
     "faker>=33.0.0",
     "hypothesis>=6.54.6",
     "ipdb>=0.13.13",
@@ -114,5 +113,6 @@ dev-dependencies = [
     "vcrpy>=4.2.1",
     "visidata>=3.1.1",
     "werkzeug>=3.1.1",
+    "pytest-sugar>=1.0.0",
 ]
 environments = ["platform_python_implementation != 'PyPy'"]
