@@ -149,6 +149,9 @@ Roles:
   Safeguarding co-ordinators:
     # No admin permisssions needed
     Permissions: []
+  Newsletter admins:
+    # No admin permisssions needed
+    Permissions: []
   Wiki users:
     # No admin permisssions needed
     Permissions: []
