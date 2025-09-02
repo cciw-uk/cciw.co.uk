@@ -2002,7 +2002,7 @@ class PaymentSource(models.Model):
         return cls.objects.create(**{attr_name_for_model: source_instance})
 
 
-def credit_account(amount: Decimal, to_account: BookingAccount, from_obj: PaymentModel):
+def credit_account(amount: Decimal, to_account: BookingAccount, from_obj: PaymentModel | None):
     Payment.objects.create(
         amount=amount, account=to_account, source_instance=from_obj, processed_at=None, created_at=timezone.now()
     )
