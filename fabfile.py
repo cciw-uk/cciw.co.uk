@@ -642,7 +642,12 @@ def restart_all(c):
 
 @root_task()
 def stop_all(c):
-    stop_webserver(c)
+    supervisorctl(c, "stop all")
+
+
+@root_task()
+def start_all(c):
+    supervisorctl(c, "start all")
 
 
 @root_task()

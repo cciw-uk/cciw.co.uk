@@ -53,3 +53,18 @@ Deploy
 Each time you need to deploy new code, you’ll need to do::
 
   fab --hosts staging.cciw.co.uk staging deploy --skip-checks
+
+
+To load a database to staging:
+
+- First prepare the database locally.
+  - Ensure you use ``anonymise_db`` if starting from a live db.
+  - Make any changes you need, remember to set user passwords if desired.
+  - Dump the db using ``fab local-dump-db ../db_dumps/my_db.pgdump``
+
+
+- Upload using::
+
+    fab --hosts staging.cciw.co.uk staging stop-all
+    fab --hosts staging.cciw.co.uk staging migrate-upload-db  ../db_dumps/my_db.pgdump
+    fab --hosts staging.cciw.co.uk staging start-all
