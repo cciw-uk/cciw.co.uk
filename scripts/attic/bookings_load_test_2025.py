@@ -54,8 +54,21 @@ class BookPlaceTaskSet(SequentialTaskSet):
 
     @task
     def bookings_login(self):
-        self.page.go(_booking_login_url(self.user.data.email))
-        assert "Please enter your name and address" in self.page.last_response.text
+        data: FakeUserData = self.user.data
+        self.page.go(_booking_login_url(data.email))
+        assert self.page.last_response is not None
+        message = f"Logged in as {data.email}!"
+        assert message in self.page.last_response.text
+
+        # TODO:
+        # - fill in account details and save.
+        #   - this might be conditional if the account for the email address already exists
+
+        # - fill in camp place details - long form - copy from tests
+        # - choose 'book now'
+
+        # - when done, log out, so that we can start the process again
+        #   without errors
 
 
 def _booking_login_url(email: str) -> str:
