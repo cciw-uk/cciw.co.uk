@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core import mail
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.template import loader
+from django.urls import reverse
 from django.utils import timezone
 
 from cciw.cciwmain import common
@@ -70,14 +71,22 @@ class EmailVerifyTokenGenerator:
         return base64.urlsafe_b64decode(token.encode("utf-8")).decode("utf-8")
 
 
+def build_url(*, view_name: str) -> str:
+    url = reverse(view_name)
+    domain = common.get_current_domain()
+    return f"https://{domain}{url}"
+
+
+def build_url_with_booking_token(*, view_name: str, email: str) -> str:
+    url = build_url(view_name=view_name)
+    token = EmailVerifyTokenGenerator().token_for_email(email)
+    return f"{url}?bt={token}"
+
+
 def send_verify_email(request, booking_account_email, target_view_name=None):
     if target_view_name is None:
         target_view_name = "cciw-bookings-verify_and_continue"
-    c = {
-        "domain": common.get_current_domain(),
-        "token": EmailVerifyTokenGenerator().token_for_email(booking_account_email),
-        "target_view_name": target_view_name,
-    }
+    c = {"verify_url": build_url_with_booking_token(view_name=target_view_name, email=booking_account_email)}
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "[CCIW] Booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
@@ -158,11 +167,11 @@ def send_booking_expiry_mail(account, bookings, expired):
         return
 
     c = {
-        "domain": common.get_current_domain(),
+        "book_and_pay_url": build_url_with_booking_token(view_name="cciw-bookings-list_bookings", email=account.email),
+        "pay_url": build_url_with_booking_token(view_name="cciw-bookings-pay", email=account.email),
         "account": account,
         "bookings": bookings,
         "expired": expired,
-        "token": EmailVerifyTokenGenerator().token_for_email(account.email),
     }
     body = loader.render_to_string("cciw/bookings/place_expired_mail.txt", c)
     if expired:
@@ -178,8 +187,7 @@ def send_booking_approved_mail(booking):
         return False
 
     c = {
-        "domain": common.get_current_domain(),
-        "token": EmailVerifyTokenGenerator().token_for_email(account.email),
+        "book_and_pay_url": build_url_with_booking_token(view_name="cciw-bookings-list_bookings", email=account.email),
         "account": account,
         "booking": booking,
     }
@@ -227,9 +235,9 @@ def send_payment_reminder_emails():
         account.save()
 
         c = {
-            "domain": common.get_current_domain(),
+            "pay_url": build_url_with_booking_token(view_name="cciw-bookings-pay", email=account.email),
+            "start_url": build_url(view_name="cciw-bookings-start"),
             "account": account,
-            "token": EmailVerifyTokenGenerator().token_for_email(account.email),
         }
         body = loader.render_to_string("cciw/bookings/payments_due_email.txt", c)
         mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])

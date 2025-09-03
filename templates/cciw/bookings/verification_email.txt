@@ -1,6 +1,6 @@
 {% autoescape off %}
 You're receiving this email because you entered your email address
-to use the online booking system at {{ domain }}.
+to use the online booking system at CCiW.
 
 (If you did not enter your email on our site to log in, you can
 safely ignore this message).
@@ -8,7 +8,7 @@ safely ignore this message).
 Please go to the following page to confirm that your email address
 is valid and to continue the booking process.
 
-https://{{ domain }}{% url target_view_name %}?bt={{ token }}
+{{ verify_url }}
 
 You must do this within a few days or the link above will expire.
 
