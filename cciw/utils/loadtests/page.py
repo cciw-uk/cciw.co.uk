@@ -248,6 +248,10 @@ class PageResponse:
         return soup
 
     @cached_property
+    def text(self) -> str:
+        return self.html.text
+
+    @cached_property
     def forms(self) -> dict[str | int, Form]:
         """
         Returns a dictionary containing all the forms in the pages as

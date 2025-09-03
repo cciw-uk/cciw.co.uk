@@ -1,5 +1,6 @@
 import base64
 import binascii
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -30,8 +31,8 @@ class EmailVerifyTokenGenerator:
     mechanism.
     """
 
-    def __init__(self):
-        self.signer = TimestampSigner(salt="cciw.bookings.EmailVerifyTokenGenerator")
+    def __init__(self, key: str | None = None):
+        self.signer = TimestampSigner(salt="cciw.bookings.EmailVerifyTokenGenerator", key=key)
 
     def token_for_email(self, email):
         """
@@ -71,15 +72,21 @@ class EmailVerifyTokenGenerator:
         return base64.urlsafe_b64decode(token.encode("utf-8")).decode("utf-8")
 
 
-def build_url(*, view_name: str) -> str:
+def build_url(*, view_name: str, domain: str | None = None) -> str:
     url = reverse(view_name)
-    domain = common.get_current_domain()
+    domain = domain or common.get_current_domain()
     return f"https://{domain}{url}"
 
 
-def build_url_with_booking_token(*, view_name: str, email: str) -> str:
-    url = build_url(view_name=view_name)
-    token = EmailVerifyTokenGenerator().token_for_email(email)
+def build_url_with_booking_token(
+    *,
+    view_name: str,
+    email: str,
+    token_generator: Callable[[], EmailVerifyTokenGenerator] = EmailVerifyTokenGenerator,
+    domain: str | None = None,
+) -> str:
+    url = build_url(view_name=view_name, domain=domain)
+    token = token_generator().token_for_email(email)
     return f"{url}?bt={token}"
 
 
