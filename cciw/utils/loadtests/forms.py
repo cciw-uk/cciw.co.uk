@@ -449,35 +449,38 @@ class Form:
                 if attr in attrs:
                     del attrs[attr]
 
-            assert name is not None
-            if tag == "input":
-                if tag_type == "radio":
-                    field = fields.get(name)
-                    if not field:
-                        field = field_cls(self, tag, name, pos, **attrs)
-                        fields.setdefault(name, []).append(field)
-                        field_order.append((name, field))
-                    else:
-                        field = field[0]
-                        assert isinstance(field, self.FieldClass.classes["radio"])
-                    field.options.append((attrs.get("value"), "checked" in attrs, None))
-                    field.optionPositions.append(pos)
-                    if "checked" in attrs:
-                        field.selectedIndex = len(field.options) - 1
-                    continue
-                elif tag_type == "file":
-                    if "value" in attrs:
-                        del attrs["value"]
+            if name is None:
+                # Probably a button that uses javascript, ignore.
+                pass
+            else:
+                if tag == "input":
+                    if tag_type == "radio":
+                        field = fields.get(name)
+                        if not field:
+                            field = field_cls(self, tag, name, pos, **attrs)
+                            fields.setdefault(name, []).append(field)
+                            field_order.append((name, field))
+                        else:
+                            field = field[0]
+                            assert isinstance(field, self.FieldClass.classes["radio"])
+                        field.options.append((attrs.get("value"), "checked" in attrs, None))
+                        field.optionPositions.append(pos)
+                        if "checked" in attrs:
+                            field.selectedIndex = len(field.options) - 1
+                        continue
+                    elif tag_type == "file":
+                        if "value" in attrs:
+                            del attrs["value"]
 
-            field = field_cls(self, tag, name, pos, **attrs)
-            fields.setdefault(name, []).append(field)
-            field_order.append((name, field))
+                field = field_cls(self, tag, name, pos, **attrs)
+                fields.setdefault(name, []).append(field)
+                field_order.append((name, field))
 
-            if tag == "select":
-                for option in node("option"):
-                    field.options.append(
-                        (option.attrs.get("value", option.text), "selected" in option.attrs, option.text.strip())
-                    )
+                if tag == "select":
+                    for option in node("option"):
+                        field.options.append(
+                            (option.attrs.get("value", option.text), "selected" in option.attrs, option.text.strip())
+                        )
 
         self.field_order = field_order
         self.fields = fields
