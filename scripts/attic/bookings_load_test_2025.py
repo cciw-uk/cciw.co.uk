@@ -218,6 +218,35 @@ class BookPlaceTaskSet(SequentialTaskSet):
         if not self.page.last_url.endswith("/booking/add-camper-details/"):
             self.page.go("/booking/add-camper-details/")
         place_details, camper = self.get_booking_details()
+
+        # While the user fills in details, for each field we'll get a validation request
+        # sent by htmx:
+        for css_selector, value in place_details.items():
+            if isinstance(value, bool):
+                continue  # checkboxes excluded
+            import furl
+
+            if not css_selector.startswith("#id_"):
+                continue
+
+            field_name = css_selector.replace("#id_", "")
+
+            # Not all of these will be exactly what a browser sends, but we should get enough.
+            validation_url = str(
+                furl.furl(
+                    url="/booking/add-camper-details/",
+                    query_params={field_name: value, "_validate_field": field_name},
+                )
+            )
+            assert f"&_validate_field={field_name}" in validation_url
+            headers = {
+                "HX-Request": "true",
+                "HX-Trigger": "div_id_last_name",
+                "HX-Target": "div_id_last_name",
+                "HX-Current-URL": "https://staging.cciw.co.uk/booking/add-camper-details/",
+            }
+            self.client.get(validation_url, headers=headers)
+
         # It takes a while to fill in details:
         for i in range(0, random.randint(1, 4)):
             self.wait()
