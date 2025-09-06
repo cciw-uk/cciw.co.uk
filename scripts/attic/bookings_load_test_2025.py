@@ -168,10 +168,23 @@ class BookPlaceTaskSet(SequentialTaskSet):
         self.wait()
         self.do_add_new_booking()
 
-        if random.randrange(0, 100) < 70:
+        # In 2025: stats:
+        #  - Total 328 accounts attempted to book
+        #  - 207 created single booking
+        #  - 83 created 2 bookings
+        #  - 38 created 3 or more
+
+        #  So about (328 - 207)/328 =  37% created more than one:
+        if random.randrange(0, 100) <= 37:
             # Second child
             self.wait()
             self.do_add_new_booking()
+
+            # Of these, 38 / (83 + 38) = 35% created more than two:
+            if random.randrange(0, 100) <= 35:
+                # Third child
+                self.wait()
+                self.do_add_new_booking()
 
         if not self.page.last_url.endswith("/booking/checkout/"):
             self.page.go("/booking/checkout/")
