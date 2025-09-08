@@ -5,6 +5,8 @@
 #   locust --config scripts/attic/bookings_load_test_2025.conf
 from __future__ import annotations
 
+import subprocess
+
 import django
 
 django.setup()
@@ -135,10 +137,6 @@ class BookPlaceTaskSet(SequentialTaskSet):
     # -- START TASKS --
 
     @task
-    def start_page(self):
-        self.client.get("/")
-
-    @task
     def bookings_index(self):
         self.client.get("/booking/")
 
@@ -215,12 +213,16 @@ class BookPlaceTaskSet(SequentialTaskSet):
 
     def do_add_new_booking(self) -> None:
         assert self.page.last_url is not None
+        assert self.page.last_response is not None
         if not self.page.last_url.endswith("/booking/add-camper-details/"):
             self.page.go("/booking/add-camper-details/")
         place_details, camper = self.get_booking_details()
 
-        # While the user fills in details, for each field we'll get a validation request
-        # sent by htmx:
+        # While the user fills in details, for each field we'll get a validation
+        # request sent by htmx. These will happen at the same time as everything
+        # else, so we use an external process to launch in parallel without
+        # waiting for it to finish, - if we use self.client then we'll get
+        # serial behaviour.
         for css_selector, value in place_details.items():
             if isinstance(value, bool):
                 continue  # checkboxes excluded
@@ -234,18 +236,31 @@ class BookPlaceTaskSet(SequentialTaskSet):
             # Not all of these will be exactly what a browser sends, but we should get enough.
             validation_url = str(
                 furl.furl(
-                    url="/booking/add-camper-details/",
+                    url="https://staging.cciw.co.uk/booking/add-camper-details/",
                     query_params={field_name: value, "_validate_field": field_name},
                 )
             )
             assert f"&_validate_field={field_name}" in validation_url
-            headers = {
+            htmx_headers = {
                 "HX-Request": "true",
                 "HX-Trigger": "div_id_last_name",
                 "HX-Target": "div_id_last_name",
                 "HX-Current-URL": "https://staging.cciw.co.uk/booking/add-camper-details/",
             }
-            self.client.get(validation_url, headers=headers)
+            # The following with the help of browser tools
+            last_headers = self.page.last_response.response.request.headers
+            headers = dict(last_headers) | htmx_headers
+            curl_headers = [h for key, value in headers.items() for h in ["-H", f"{key}: {value}"]]
+            cmd = (
+                [
+                    "curl",
+                    "--compressed",
+                    "--insecure",
+                ]
+                + curl_headers
+                + [validation_url]
+            )
+            subprocess.Popen(cmd)
 
         # It takes a while to fill in details:
         for i in range(0, random.randint(1, 4)):
