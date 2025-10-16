@@ -170,8 +170,8 @@ def booking_problems_json(request):
         if not is_booking_open(instance.camp.year):
             retval["problems"] = [f"Prices have not been set for the year {instance.camp.year}"]
         else:
-            problems, warnings = instance.get_booking_problems(booking_sec=True)
-            retval["problems"] = problems + warnings
+            errors, warnings = instance.get_booking_problems(booking_sec=True)
+            retval["problems"] = errors + warnings
     else:
         retval["valid"] = False
         retval["errors"] = form.errors

@@ -69,7 +69,7 @@
     {% else %}
       <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">This place cannot be booked:
       <ul>
-        {% for p in booking.booking_problems %}
+        {% for p in booking.booking_errors %}
           <li>{{ p }}</li>
         {% endfor %}
       </ul>
