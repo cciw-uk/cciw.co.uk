@@ -1,8 +1,10 @@
+from __future__ import annotations
 import base64
 import binascii
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 import mailer as queued_mail
 from django.conf import settings
@@ -18,6 +20,10 @@ from cciw.officers.email import admin_emails_for_camp
 
 class VerifyFailed:
     pass
+
+
+if TYPE_CHECKING:
+    from .models import BookingAccount
 
 
 @dataclass
@@ -169,7 +175,7 @@ def send_places_confirmed_email(bookings):
                 queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
 
 
-def send_booking_expiry_mail(account, bookings, expired):
+def send_booking_expiry_mail(account: BookingAccount, bookings, expired):
     if not account.email:
         return
 
