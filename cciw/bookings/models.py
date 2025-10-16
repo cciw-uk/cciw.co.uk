@@ -91,13 +91,13 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v != PriceType.SOUTH_WALES_TRANSPORT]
 
 
-class BookingState(models.IntegerChoices):
-    INFO_COMPLETE = 0, "Information complete"
-    APPROVED = 1, "Manually approved"
-    BOOKED = 2, "Booked"
-    CANCELLED_DEPOSIT_KEPT = 3, "Cancelled - deposit kept"
-    CANCELLED_HALF_REFUND = 4, "Cancelled - half refund (pre 2015 only)"
-    CANCELLED_FULL_REFUND = 5, "Cancelled - full refund"
+class BookingState(models.TextChoices):
+    INFO_COMPLETE = "info_complete", "Information complete"
+    APPROVED = "approved", "Manually approved"
+    BOOKED = "booked", "Booked"
+    CANCELLED_DEPOSIT_KEPT = "cancelled_deposit_kept", "Cancelled - deposit kept"
+    CANCELLED_HALF_REFUND = "cancelled_half_refund", "Cancelled - half refund (pre 2015 only)"
+    CANCELLED_FULL_REFUND = "cancelled_full_refund", "Cancelled - full refund"
 
 
 class ManualPaymentType(models.IntegerChoices):
@@ -886,7 +886,7 @@ class Booking(models.Model):
     shelved = models.BooleanField(default=False, help_text="Used by user to put on 'shelf'")
 
     # State - internal
-    state = models.IntegerField(
+    state = models.CharField(
         choices=BookingState,
         help_text=mark_safe(
             "<ul>"
