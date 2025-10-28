@@ -36,3 +36,14 @@ user=%(PROJECT_USER)s
 autostart=true
 autorestart=true
 redirect_stderr=true
+
+[program:%(PROJECT_NAME)s_django_q]
+environment=HOME="/home/%(PROJECT_USER)s"
+command=%(VENV_ROOT)s/bin/python %(SRC_ROOT)s/manage.py qcluster
+stdout_logfile = /home/%(PROJECT_USER)s/logs/%(PROJECT_NAME)s_django_q.stdout
+directory=/home/%(PROJECT_USER)s
+user=%(PROJECT_USER)s
+autostart=true
+autorestart=true
+redirect_stderr=true
+priority=995

@@ -635,9 +635,23 @@ def restart_webserver(c):
 
 
 @root_task()
+def stop_task_queue(c: Connection):
+    supervisorctl(c, f"stop {PROJECT_NAME}_django_q")
+
+
+@root_task()
+def restart_task_queue(c: Connection):
+    """
+    Restarts the task queue workers
+    """
+    supervisorctl(c, f"restart {PROJECT_NAME}_django_q")
+
+
+@root_task()
 def restart_all(c):
     supervisorctl(c, "reread")  # for first time, to ensure it can see webserver conf
     restart_webserver(c)
+    restart_task_queue(c)
 
 
 @root_task()
