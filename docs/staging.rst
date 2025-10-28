@@ -23,7 +23,7 @@ We sometimes use a staging server and domain for testing large changes. To creat
       fab --hosts staging.cciw.co.uk staging provision
       fab --hosts staging.cciw.co.uk staging upload-letsencrypt-conf
       fab --hosts staging.cciw.co.uk staging create-project
-      fab --hosts staging.cciw.co.uk staging deploy --skip-checks
+      fab --hosts staging.cciw.co.uk staging deploy --skip-tests
       fab --hosts staging.cciw.co.uk staging install-or-renew-ssl-certificate
 
 
@@ -52,7 +52,7 @@ Deploy
 
 Each time you need to deploy new code, you’ll need to do::
 
-  fab --hosts staging.cciw.co.uk staging deploy --skip-checks
+  fab --hosts staging.cciw.co.uk staging deploy --skip-tests
 
 
 To load a database to staging:

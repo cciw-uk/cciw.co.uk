@@ -347,7 +347,7 @@ def deploy_system(c):
 
 
 @task()
-def deploy(c, skip_checks=False, test_host=False):
+def deploy(c, skip_tests=False, test_host=False):
     """
     Deploy project.
     """
@@ -357,8 +357,8 @@ def deploy(c, skip_checks=False, test_host=False):
         check_branch(c)
     check_sentry_auth(c)
     deploy_checks(c)
-    if not skip_checks:
-        code_quality_checks(c)
+    if not skip_tests:
+        run_tests(c)
     if not test_host:
         push_to_central_vcs(c)
     target = create_target(c)
@@ -410,9 +410,9 @@ def deploy_checks(c):
 
 
 @task()
-def code_quality_checks(c):
+def run_tests(c):
     """
-    Run code quality checks, including tests.
+    Run tests and other code quality checks
     """
     c.local("pre-commit run ruff --all-files", echo=True)
     c.local("pytest", echo=True, pty=True)
