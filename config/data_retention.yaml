@@ -697,6 +697,17 @@
     # Outgoing emails
     - name: mailer.DontSendEntry
       columns: all
+    # Task queue:
+    - name: django_q.Task
+      columns: all
+    - name: django_q.Success
+      columns: all
+    - name: django_q.Failure
+      columns: all
+    - name: django_q.Schedule
+      columns: all
+    - name: django_q.OrmQ
+      columns: all
     # Other
     - name: captcha.CaptchaStore
       columns: all
