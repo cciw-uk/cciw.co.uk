@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.signals import request_started
 from django.db.models.signals import post_save
+from django_q.tasks import async_task
 
 from cciw.cciwmain.models import Camp, CampName, generate_colors_css
 
@@ -40,7 +41,7 @@ def recreate_ses_routes_for_camp_creation(sender, created=None, **kwargs):
     if created:
         from cciw.mail.setup import setup_ses_routes
 
-        setup_ses_routes()
+        async_task(setup_ses_routes)
 
 
 post_save.connect(recreate_ses_routes_for_camp_creation, sender=Camp)
