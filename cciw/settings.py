@@ -168,6 +168,7 @@ INSTALLED_APPS = (
         "django_urlconfchecks",
         "spurl",
         "widget_tweaks",
+        "django_q",
         # Where we need to override something added:
         "cciw.overrides",
     ]
@@ -644,6 +645,16 @@ if not os.path.exists(CAPTCHA_FONT_PATH):
 CAPTCHA_FONT_SIZE = 45
 CAPTCHA_LETTER_ROTATION = (-30, 30)
 
+# django-q2
+Q_CLUSTER = {
+    "name": "DjangORM",
+    "workers": 1,
+    "timeout": 90,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}
 
 if TESTS_RUNNING:
     DATABASES["default"]["CONN_MAX_AGE"] = 0  # fix some deadlocks with DB flushing
