@@ -7,7 +7,7 @@ from cciw.cciwmain.models import Camp, CampName, generate_colors_css
 
 
 def generate_colors_css_w(sender, **kwargs):
-    return generate_colors_css(update_existing=True)
+    async_task(generate_colors_css, update_existing=True)
 
 
 post_save.connect(generate_colors_css_w, CampName)
