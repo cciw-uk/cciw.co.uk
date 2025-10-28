@@ -311,6 +311,14 @@ LOGGING = {
             "maxBytes": 1000000,
             "backupCount": 5,
         },
+        "task_queue_debug": {
+            "level": "DEBUG",
+            "class": "concurrent_log_handler.ConcurrentRotatingFileHandler",
+            "formatter": "verbose",
+            "filename": LOG_PATH / "task_queue_debug.log",
+            "maxBytes": 1024 * 1024,
+            "backupCount": 10,
+        },
         "mailer_runmailer": {
             "level": "DEBUG",
             "class": "concurrent_log_handler.ConcurrentRotatingFileHandler",
@@ -350,6 +358,11 @@ LOGGING = {
         "mailer.engine": {
             "handlers": ["mailer_runmailer"],
             "level": "DEBUG",
+        },
+        "task_queue_debug": {
+            "level": "DEBUG",
+            "handlers": ["task_queue_debug"],
+            "propagate": True,
         },
     },
     "root": {

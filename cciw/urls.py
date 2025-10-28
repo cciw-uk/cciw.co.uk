@@ -5,9 +5,9 @@ from decorator_include import decorator_include
 from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponse
-from django.template.response import TemplateResponse
 from django.urls import include, path, register_converter
 
+import cciw.cciwmain.views.debug
 import cciw.officers.views
 from cciw.bookings.decorators import check_booking_decorator
 
@@ -23,8 +23,10 @@ register_converter(converters.OptInt, "optint")
 
 
 urlpatterns = [
-    path("health-check/", lambda request: HttpResponse("OK")),
-    path("debug/", lambda request: TemplateResponse(request, "cciw/debug.html", {})),
+    path("health-check/", lambda request: HttpResponse(b"OK")),
+    # Debug:
+    path("debug/", cciw.cciwmain.views.debug.debug),
+    path("task-queue-debug/", cciw.cciwmain.views.debug.task_queue_debug, name="task_queue_debug"),
     # Plug in the password reset views (before 'admin')
     path("admin/password_reset/", cciw.officers.views.cciw_password_reset, name="admin_password_reset"),
     path(
