@@ -13,18 +13,18 @@ repos:
     rev: '1.0.1'
     hooks:
       - id: flynt
-        language_version: python3.12
+        language_version: python3.13
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.10.0
     hooks:
       - id: black
-        language_version: python3.12
+        language_version: python3.13
   - repo: https://github.com/rtts/djhtml
     rev: 3.0.7
     hooks:
       - id: djhtml
         entry: djhtml -t 2
-        language_version: python3.12
+        language_version: python3.13
   - repo: https://github.com/adamchainz/django-upgrade
     rev: '1.24.0'
     hooks:
