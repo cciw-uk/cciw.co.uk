@@ -523,6 +523,7 @@ def create_venv(c, target):
         return
 
     c.run("pipx install uv")
+    c.run("pipx upgrade uv")
     c.run("pipx ensurepath")
     c.run(f"uv python install {PYTHON_BIN}", echo=True)
     c.run(f"uv venv --seed --python={PYTHON_BIN} {venv_root}", echo=True)
