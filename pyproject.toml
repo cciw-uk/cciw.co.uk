@@ -21,7 +21,7 @@ dependencies = [
     "django-spurl>=0.6.8",
     "django-urlconfchecks>=0.11.0",
     "django-widget-tweaks>=1.4.12",
-    "django>=5.2",
+    "django==5.2.7",
     "docutils>=0.19",
     "fabric>3",
     "frozendict>=2.3.4",
