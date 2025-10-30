@@ -57,7 +57,7 @@ dependencies = [
 [tool.black]
 line-length = 120
 # required-version = '22.1.0' # see https://github.com/psf/black/issues/2493
-target-version = ['py312']
+target-version = ['py313']
 
 
 [tool.isort]
@@ -78,7 +78,7 @@ exclude = ['submodules']
 
 [tool.ruff]
 line-length = 120
-target-version = 'py312'
+target-version = 'py313'
 
 [tool.ruff.lint]
 extend-select = [
