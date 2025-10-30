@@ -129,7 +129,7 @@ def booking_summary_stats_download(request, start_year: int, end_year: int):
 @booking_secretary_required
 @json_response
 def place_availability_json(request):
-    retval = {"status": "success"}
+    retval: dict[str, object] = {"status": "success"}
     camp_id = int(request.GET["camp_id"])
     camp: Camp = Camp.objects.get(id=camp_id)
     places = camp.get_places_left()
@@ -161,7 +161,7 @@ def booking_problems_json(request):
     else:
         form = BookingAdminForm(data)
 
-    retval = {"status": "success"}
+    retval: dict[str, object] = {"status": "success"}
     if form.is_valid():
         retval["valid"] = True
         instance: Booking = form.save(commit=False)
