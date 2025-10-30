@@ -4,6 +4,7 @@ Accounts and places for campers coming in camps
 
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from functools import lru_cache
@@ -85,8 +86,11 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 ]
 
 
-type BookingError = str
-type BookingWarning = str
+@dataclass(frozen=True, kw_only=True)
+class BookingProblem:
+    blocker: bool
+    description: str
+
 
 # Prices required to open bookings.
 # From 2015 onwards, we don't have South Wales transport. But we might
@@ -1053,30 +1057,24 @@ class Booking(models.Model):
                 retval.append(("Early bird discount if booked now", discount_amount))
         return retval
 
-    def get_booking_problems(
-        self, booking_sec=False, agreement_fetcher=None
-    ) -> tuple[list[BookingError], list[BookingWarning]]:
+    def get_booking_problems(self, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
         """
-        Returns a two tuple (errors, warnings).
+        Returns a list of errors and warnings as BookingProblem objects
 
-        'errors' is a list of reasons why booking cannot be done. If this is
-        empty, then it can be booked.
-
-        'warnings' is a list of possible problems that don't stop booking.
+        If any of these has `blocker == True`, the place cannot be booked by the user.
 
         If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
         if self.state == BookingState.APPROVED and not booking_sec:
-            return ([], [])
+            return []
 
-        return (
-            self.get_booking_errors(booking_sec=booking_sec, agreement_fetcher=agreement_fetcher),
-            self.get_booking_warnings(booking_sec=booking_sec),
-        )
+        return self.get_booking_errors(
+            booking_sec=booking_sec, agreement_fetcher=agreement_fetcher
+        ) + self.get_booking_warnings(booking_sec=booking_sec)
 
-    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> list[BookingError]:
-        errors: list[BookingError] = []
+    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
+        errors: list[str] = []
         camp: Camp = self.camp
 
         # Custom price - not auto bookable
@@ -1196,7 +1194,7 @@ class Booking(models.Model):
         # want to display message about there being no places for boys etc.
         places_available = True
 
-        def no_places_available_message(msg: str) -> BookingError:
+        def no_places_available_message(msg: str) -> str:
             # Add a common message to each different "no places available" message
             return format_html(
                 """{0}
@@ -1285,11 +1283,11 @@ class Booking(models.Model):
         for agreement in missing_agreements:
             errors.append(f'You need to confirm your agreement in section "{agreement.name}"')
 
-        return errors
+        return [BookingProblem(blocker=True, description=error) for error in errors]
 
-    def get_booking_warnings(self, booking_sec=False) -> list[BookingWarning]:
+    def get_booking_warnings(self, booking_sec=False) -> list[BookingProblem]:
         camp: Camp = self.camp
-        warnings: list[BookingWarning] = []
+        warnings: list[str] = []
 
         if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=camp).exclude(
             id=self.id
@@ -1335,7 +1333,7 @@ class Booking(models.Model):
 
                 warnings.append(warning)
 
-        return warnings
+        return [BookingProblem(blocker=False, description=warning) for warning in warnings]
 
     def confirm(self):
         self.booking_expires_at = None
@@ -1647,17 +1645,17 @@ class SupportingInformation(models.Model):
 
 
 @transaction.atomic
-def book_basket_now(bookings):
+def book_basket_now(bookings: BookingQuerySet):
     """
     Book a basket of bookings, returning True if successful,
     False otherwise.
     """
-    bookings = list(bookings)
+    bookings: list[Booking] = list(bookings)
 
     now = timezone.now()
     fetcher = AgreementFetcher()
     for b in bookings:
-        if len(b.get_booking_problems(agreement_fetcher=fetcher)[0]) > 0:
+        if any(p.blocker for p in b.get_booking_problems(agreement_fetcher=fetcher)):
             return False
 
     years = {b.camp.year for b in bookings}

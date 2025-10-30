@@ -492,7 +492,9 @@ def _list_bookings(request):
     for booking_list in basket_bookings, shelf_bookings:
         for b in booking_list:
             # decorate object with some attributes to make it easier in template
-            b.booking_errors, b.booking_warnings = b.get_booking_problems(agreement_fetcher=agreement_fetcher)
+            problems = b.get_booking_problems(agreement_fetcher=agreement_fetcher)
+            b.booking_errors = [p.description for p in problems if p.blocker]
+            b.booking_warnings = [p.description for p in problems if not p.blocker]
             b.bookable = len(b.booking_errors) == 0
             b.manually_approved = b.state == BookingState.APPROVED
 
