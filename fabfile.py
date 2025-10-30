@@ -5,6 +5,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from datetime import datetime
 from functools import partial
+from pathlib import Path
 from shlex import quote
 
 from fabric.connection import Connection
@@ -27,7 +28,9 @@ PROJECT_NAME = "cciw"
 PROJECT_LOCALE = "en_GB.UTF-8"
 
 
-PYTHON_BIN = "python3.13"  # See also packages below
+FULL_PYTHON_VERISON = Path(".python-version").read_text()
+
+PYTHON_BIN = "python3.13"  # See also packages below, and .python-version file
 PYTHON_PREFIX = ""  # e.g. /usr/local.  Use "" for automatic
 PYTHON_FULL_PATH = f"{PYTHON_PREFIX}/bin/{PYTHON_BIN}" if PYTHON_PREFIX else PYTHON_BIN
 
@@ -525,8 +528,8 @@ def create_venv(c, target):
     c.run("pipx install uv")
     c.run("pipx upgrade uv")
     c.run("pipx ensurepath")
-    c.run(f"uv python install {PYTHON_BIN}", echo=True)
-    c.run(f"uv venv --seed --python={PYTHON_BIN} {venv_root}", echo=True)
+    c.run(f"uv python install {FULL_PYTHON_VERISON}", echo=True)
+    c.run(f"uv venv --seed --python={FULL_PYTHON_VERISON} {venv_root}", echo=True)
     c.run(f"echo {target.SRC_ROOT} > {target.VENV_ROOT}/lib/{PYTHON_BIN}/site-packages/projectsource.pth", echo=True)
 
 
