@@ -28,7 +28,7 @@ PROJECT_NAME = "cciw"
 PROJECT_LOCALE = "en_GB.UTF-8"
 
 
-FULL_PYTHON_VERISON = Path(".python-version").read_text()
+FULL_PYTHON_VERISON = Path(".python-version").read_text().strip()
 
 PYTHON_BIN = "python3.13"  # See also packages below, and .python-version file
 PYTHON_PREFIX = ""  # e.g. /usr/local.  Use "" for automatic
