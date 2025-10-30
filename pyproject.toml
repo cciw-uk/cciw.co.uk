@@ -87,8 +87,8 @@ extend-select = [
 ]
 ignore = ["E501","E731"]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "beautifulsoup4>=4.11.1",
     "django-debug-toolbar>=4.1.0",
     "django-extensions>=3.2.3",
@@ -118,4 +118,6 @@ dev-dependencies = [
     "pytest-sugar>=1.0.0",
     "locust>=2.39.1",
 ]
+
+[tool.uv]
 environments = ["platform_python_implementation != 'PyPy'"]
