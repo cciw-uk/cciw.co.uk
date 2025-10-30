@@ -4,6 +4,7 @@ Accounts and places for campers coming in camps
 
 import re
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -87,10 +88,56 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 
 
 @dataclass(frozen=True, kw_only=True)
-class BookingProblem:
-    blocker: bool
+class Blocker:
     description: str
 
+    @property
+    def blocker(self) -> bool:
+        return True
+
+    @property
+    def fixable(self) -> bool:
+        return False
+
+
+class FixableErrorType(models.TextChoices):
+    CUSTOM_PRICE = "custom_price", "Custom price"
+    SERIOUS_ILLNESS = "serious_illness", "Serious illness"
+    TOO_YOUNG = "too_young", "Too young"
+    TOO_OLD = "too_old", "Too old"
+
+
+FET = FixableErrorType
+
+
+@dataclass(frozen=True, kw_only=True)
+class FixableError:
+    """
+    Represents booking problems that can be fixed by approval (via booking secretary)
+    """
+
+    description: str
+    type: FixableErrorType
+
+    @property
+    def blocker(self) -> bool:
+        return True
+
+    @property
+    def fixable(self) -> bool:
+        return True
+
+
+@dataclass(frozen=True, kw_only=True)
+class Warning:
+    description: str
+
+    @property
+    def blocker(self) -> bool:
+        return False
+
+
+type BookingProblem = Blocker | FixableError | Warning
 
 # Prices required to open bookings.
 # From 2015 onwards, we don't have South Wales transport. But we might
@@ -1069,17 +1116,28 @@ class Booking(models.Model):
         if self.state == BookingState.APPROVED and not booking_sec:
             return []
 
-        return self.get_booking_errors(
-            booking_sec=booking_sec, agreement_fetcher=agreement_fetcher
-        ) + self.get_booking_warnings(booking_sec=booking_sec)
+        return list(self.get_booking_errors(booking_sec=booking_sec, agreement_fetcher=agreement_fetcher)) + list(
+            self.get_booking_warnings(booking_sec=booking_sec)
+        )
 
-    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
-        errors: list[str] = []
+    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> Sequence[BookingProblem]:
+        errors: list[FixableError | Blocker] = []
         camp: Camp = self.camp
+
+        def fixable(t: FET, description: str):
+            return FixableError(type=t, description=description)
+
+        def blocker(description: str) -> Blocker:
+            return Blocker(description=description)
 
         # Custom price - not auto bookable
         if self.price_type == PriceType.CUSTOM:
-            errors.append("A custom discount needs to be arranged by the booking secretary")
+            errors.append(
+                fixable(
+                    FET.CUSTOM_PRICE,
+                    "A custom discount needs to be arranged by the booking secretary",
+                )
+            )
 
         relevant_bookings = self.account.bookings.for_year(camp.year).in_basket_or_booked()
         relevant_bookings_excluding_self = relevant_bookings.exclude(
@@ -1147,9 +1205,11 @@ class Booking(models.Model):
         if self.price_type == PriceType.SECOND_CHILD:
             if not (relevant_bookings_excluding_self.filter(price_type=PriceType.FULL)).exists():
                 errors.append(
-                    "You cannot use a 2nd child discount unless you have "
-                    "another child at full price. Please edit the place details "
-                    "and choose an appropriate price type."
+                    blocker(
+                        "You cannot use a 2nd child discount unless you have "
+                        "another child at full price. Please edit the place details "
+                        "and choose an appropriate price type."
+                    )
                 )
 
         if self.price_type == PriceType.THIRD_CHILD:
@@ -1158,32 +1218,42 @@ class Booking(models.Model):
             ) | relevant_bookings_excluding_self.filter(price_type=PriceType.SECOND_CHILD)
             if qs.count() < 2:
                 errors.append(
-                    "You cannot use a 3rd child discount unless you have "
-                    "two other children without this discount. Please edit the "
-                    "place details and choose an appropriate price type."
+                    blocker(
+                        "You cannot use a 3rd child discount unless you have "
+                        "two other children without this discount. Please edit the "
+                        "place details and choose an appropriate price type."
+                    )
                 )
 
         if self.price_type in [PriceType.SECOND_CHILD, PriceType.THIRD_CHILD]:
             qs = relevant_bookings_limited_to_self
             qs = qs.filter(price_type=PriceType.SECOND_CHILD) | qs.filter(price_type=PriceType.THIRD_CHILD)
             if qs.count() > 1:
-                errors.append("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
+                errors.append(
+                    blocker("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
+                )
 
         # serious illness
         if self.serious_illness:
-            errors.append("Must be approved by leader due to serious illness/condition")
+            errors.append(fixable(FET.SERIOUS_ILLNESS, "Must be approved by leader due to serious illness/condition"))
 
         # Check age.
         camper_age = self.age_on_camp()
         age_base = self.age_base_date().strftime("%e %B %Y")
         if self.is_too_young():
             errors.append(
-                f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}"
+                fixable(
+                    FET.TOO_YOUNG,
+                    f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
+                )
             )
 
         if self.is_too_old():
             errors.append(
-                f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}"
+                fixable(
+                    FET.TOO_OLD,
+                    f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
+                )
             )
 
         # Check place availability
@@ -1206,7 +1276,7 @@ class Booking(models.Model):
 
         # Simple - no places left
         if places_left.total <= 0:
-            errors.append(no_places_available_message("There are no places left on this camp."))
+            errors.append(blocker(no_places_available_message("There are no places left on this camp.")))
             places_available = False
 
         SEXES = [
@@ -1218,7 +1288,7 @@ class Booking(models.Model):
             for sex_const, sex_label, places_left_for_sex in SEXES:
                 if self.sex == sex_const and places_left_for_sex <= 0:
                     errors.append(
-                        no_places_available_message(f"There are no places left for {sex_label} on this camp.")
+                        blocker(no_places_available_message(f"There are no places left for {sex_label} on this camp."))
                     )
                     places_available = False
                     break
@@ -1232,8 +1302,10 @@ class Booking(models.Model):
 
             if places_left.total < places_to_be_booked:
                 errors.append(
-                    no_places_available_message(
-                        "There are not enough places left on this camp for the campers in this set of bookings."
+                    blocker(
+                        no_places_available_message(
+                            "There are not enough places left on this camp for the campers in this set of bookings."
+                        )
                     )
                 )
                 places_available = False
@@ -1244,9 +1316,11 @@ class Booking(models.Model):
                         places_to_be_booked_for_sex = len([b for b in same_camp_bookings if b.sex == sex_const])
                         if places_left_for_sex < places_to_be_booked_for_sex:
                             errors.append(
-                                no_places_available_message(
-                                    f"There are not enough places for {sex_label} left on this camp "
-                                    "for the campers in this set of bookings."
+                                blocker(
+                                    no_places_available_message(
+                                        f"There are not enough places for {sex_label} left on this camp "
+                                        "for the campers in this set of bookings."
+                                    )
                                 )
                             )
                             places_available = False
@@ -1254,21 +1328,23 @@ class Booking(models.Model):
 
         if self.south_wales_transport and not camp.south_wales_transport_available:
             errors.append(
-                "Transport from South Wales is not available for this camp, or all places have been taken already."
+                blocker(
+                    "Transport from South Wales is not available for this camp, or all places have been taken already."
+                )
             )
 
         if booking_sec and self.price_type != PriceType.CUSTOM:
             expected_amount = self.expected_amount_due()
             if self.amount_due != expected_amount:
-                errors.append(f"The 'amount due' is not the expected value of £{expected_amount}.")
+                errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
 
         if booking_sec and not self.created_online:
             if self.early_bird_discount:
-                errors.append("The early bird discount is only allowed for bookings created online.")
+                errors.append(blocker("The early bird discount is only allowed for bookings created online."))
 
         # Don't want warnings for booking sec when a booked place is edited
         # after the cutoff date, so we allow self.booked_at to be used here:
-        on_date = self.booked_at if self.is_booked and self.booked_at is not None else date.today()
+        on_date: date = self.booked_at if self.is_booked and self.booked_at is not None else date.today()
 
         if not camp.open_for_bookings(on_date):
             if on_date >= camp.end_date:
@@ -1277,13 +1353,13 @@ class Booking(models.Model):
                 msg = "This camp is closed for bookings because it has already started."
             else:
                 msg = "This camp is closed for bookings."
-            errors.append(msg)
+            errors.append(blocker(msg))
 
         missing_agreements = self.get_missing_agreements(agreement_fetcher=agreement_fetcher)
         for agreement in missing_agreements:
-            errors.append(f'You need to confirm your agreement in section "{agreement.name}"')
+            errors.append(blocker(f'You need to confirm your agreement in section "{agreement.name}"'))
 
-        return [BookingProblem(blocker=True, description=error) for error in errors]
+        return errors
 
     def get_booking_warnings(self, booking_sec=False) -> list[BookingProblem]:
         camp: Camp = self.camp
@@ -1333,7 +1409,7 @@ class Booking(models.Model):
 
                 warnings.append(warning)
 
-        return [BookingProblem(blocker=False, description=warning) for warning in warnings]
+        return [Warning(description=warning) for warning in warnings]
 
     def confirm(self):
         self.booking_expires_at = None
