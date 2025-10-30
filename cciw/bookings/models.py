@@ -85,6 +85,9 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 ]
 
 
+type BookingError = str
+type BookingWarning = str
+
 # Prices required to open bookings.
 # From 2015 onwards, we don't have South Wales transport. But we might
 # want to keep info about prices etc. for a few years.
@@ -1050,7 +1053,9 @@ class Booking(models.Model):
                 retval.append(("Early bird discount if booked now", discount_amount))
         return retval
 
-    def get_booking_problems(self, booking_sec=False, agreement_fetcher=None) -> tuple[list[str], list[str]]:
+    def get_booking_problems(
+        self, booking_sec=False, agreement_fetcher=None
+    ) -> tuple[list[BookingError], list[BookingWarning]]:
         """
         Returns a two tuple (errors, warnings).
 
@@ -1070,8 +1075,8 @@ class Booking(models.Model):
             self.get_booking_warnings(booking_sec=booking_sec),
         )
 
-    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> list[str]:
-        errors = []
+    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> list[BookingError]:
+        errors: list[BookingError] = []
         camp: Camp = self.camp
 
         # Custom price - not auto bookable
@@ -1191,7 +1196,7 @@ class Booking(models.Model):
         # want to display message about there being no places for boys etc.
         places_available = True
 
-        def no_places_available_message(msg):
+        def no_places_available_message(msg: str) -> BookingError:
             # Add a common message to each different "no places available" message
             return format_html(
                 """{0}
@@ -1230,7 +1235,7 @@ class Booking(models.Model):
             if places_left.total < places_to_be_booked:
                 errors.append(
                     no_places_available_message(
-                        "There are not enough places left on this camp " "for the campers in this set of bookings."
+                        "There are not enough places left on this camp for the campers in this set of bookings."
                     )
                 )
                 places_available = False
@@ -1282,9 +1287,9 @@ class Booking(models.Model):
 
         return errors
 
-    def get_booking_warnings(self, booking_sec=False) -> list[str]:
+    def get_booking_warnings(self, booking_sec=False) -> list[BookingWarning]:
         camp: Camp = self.camp
-        warnings = []
+        warnings: list[BookingWarning] = []
 
         if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=camp).exclude(
             id=self.id
