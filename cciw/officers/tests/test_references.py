@@ -216,6 +216,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
             self.get_url("cciw-officers-manage_references", camp_id=camp_2.url_id)
             self.fill({f"#id-manage-reference-{referee.id} [name=prev_ref_id]": prev_refs[0].id})
             self.click(f"#id-manage-reference-{referee.id} [name=request-updated-reference-custom]")
+            self.wait_for_ajax()
             self.assertTextAbsent(f"Referee1 Name has done a reference for {officer.first_name} in the past.")
             for frag in [
                 "Referee1 Name <email_for_ref1@example.com>",
