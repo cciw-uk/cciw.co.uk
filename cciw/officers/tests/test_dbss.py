@@ -180,7 +180,7 @@ class ManageDbsPageSL(SeleniumBase):
         self.dbs_officer = factories.create_dbs_officer()
 
     def assertElementText(self, css_selector, text):
-        assert self.get_element_inner_text(css_selector).strip().replace("\u00A0", " ") == text
+        assert self.get_element_inner_text(css_selector).strip().replace("\u00a0", " ") == text
 
     def test_view_no_application_forms(self):
         self.officer_login(self.dbs_officer)

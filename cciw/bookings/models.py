@@ -1399,7 +1399,7 @@ class Booking(models.Model):
                 warning = "You have multiple places at '2nd child discount'. "
                 if len(names) == 2:
                     warning += (
-                        f"If {pretty_names} are from the same family, one is eligible " f"for the 3rd child discount."
+                        f"If {pretty_names} are from the same family, one is eligible for the 3rd child discount."
                     )
                 else:
                     warning += (

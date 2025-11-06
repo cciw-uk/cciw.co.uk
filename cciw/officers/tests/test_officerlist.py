@@ -162,7 +162,7 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
         # Action:
         self.fill(
             {
-                f"#id_chooseofficer_{ officer.id }": True,
+                f"#id_chooseofficer_{officer.id}": True,
                 "#id_chooseofficer-role": str(self.camp_role1.id),
             }
         )
@@ -193,7 +193,7 @@ class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
         self.assertTextPresent("No officers added yet")
 
         # Action:
-        self.fill({f"#id_chooseofficer_{ officer.id }": True})
+        self.fill({f"#id_chooseofficer_{officer.id}": True})
         self.click("input[name=add_previous_role]")
 
         # UI check:

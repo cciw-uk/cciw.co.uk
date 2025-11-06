@@ -84,16 +84,13 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
     # Email to the officer
     user_email = formatted_email(application.officer)
     user_msg = (
-        (
-            f"""{application.officer.first_name},
+        f"""{application.officer.first_name},
 
 For your records, here is a copy of the application you have submitted
 to CCiW. It is also attached to this email as an RTF file.
 
 """
-        )
-        + application_text
-    )
+    ) + application_text
 
     if user_email is not None:
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL, [user_email], attachments=[rtf_attachment])

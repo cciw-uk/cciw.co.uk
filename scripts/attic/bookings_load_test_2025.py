@@ -36,7 +36,7 @@ class FakePersonData:
     @cached_property
     def email(self) -> str:
         return (
-            f"{self.full_name.replace(' ','.')}{abs(hash(self.full_name + self.address_post_code)) % 1000}@example.com"
+            f"{self.full_name.replace(' ', '.')}{abs(hash(self.full_name + self.address_post_code)) % 1000}@example.com"
         )
 
     @cached_property

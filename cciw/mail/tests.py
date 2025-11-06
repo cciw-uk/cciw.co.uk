@@ -516,7 +516,7 @@ def make_message(
         # This exists to check mail is handled properly in cases like this:
         # To: someone@example.com, mylist@cciw.co.uk
         other_to_emails = [
-            "Someone <someone@example.com>" '"Someone Else" <someone_else@example.com>',
+            'Someone <someone@example.com>"Someone Else" <someone_else@example.com>',
         ]
     else:
         other_to_emails = []
@@ -533,7 +533,7 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Subject: {encode_email_header(subject)}
 From: {encode_email_header(from_email)}
-To: {encode_email_header(', '.join(all_to_emails))}
+To: {encode_email_header(", ".join(all_to_emails))}
 Date: Sun, 28 Feb 2016 22:32:03 -0000
 Message-ID: <56CCDE2E.9030103@example.com>
 {extra_headers}
@@ -578,9 +578,7 @@ Content-Transfer-Encoding: quoted-printable
 
 <html>Spam!</html>
 ------=_NextPart_000_0008_TS7XG54W.442UQQSC--
-""".replace(
-    b"\n", b"\r\n"
-)
+""".replace(b"\n", b"\r\n")
 
 
 def make_plain_text_request(path, body, headers):

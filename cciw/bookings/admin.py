@@ -600,7 +600,7 @@ class BookingAdmin(admin.ModelAdmin):
             if email_sent:
                 messages.info(
                     request,
-                    f"An email has been sent to {obj.account.email} telling " f"them the place has been approved.",
+                    f"An email has been sent to {obj.account.email} telling them the place has been approved.",
                 )
         if old_state != obj.state and obj.state == BookingState.BOOKED:
             email_sent = send_booking_confirmed_mail(obj)

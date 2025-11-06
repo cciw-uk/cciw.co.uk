@@ -54,12 +54,6 @@ dependencies = [
 ]
 
 
-[tool.black]
-line-length = 120
-# required-version = '22.1.0' # see https://github.com/psf/black/issues/2493
-target-version = ['py313']
-
-
 [tool.isort]
 line_length = 120
 profile = "black"
@@ -117,7 +111,6 @@ dev = [
     "werkzeug>=3.1.1",
     "pytest-sugar>=1.0.0",
     "locust>=2.39.1",
-    "black>=25.9.0",
 ]
 
 [tool.uv]

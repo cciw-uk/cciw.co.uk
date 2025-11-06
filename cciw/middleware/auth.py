@@ -20,9 +20,7 @@ def private_wiki(get_response):
                     )
                 )
             if not (request.user.is_superuser or request.user.is_wiki_user):
-                return HttpResponseForbidden(
-                    "<h1>Forbidden</h1>" "<p>You do not have permission to access the wiki.</p>"
-                )
+                return HttpResponseForbidden("<h1>Forbidden</h1><p>You do not have permission to access the wiki.</p>")
 
         return get_response(request)
 

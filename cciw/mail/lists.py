@@ -446,7 +446,7 @@ with an email titled "{subject}".
 
 There were problems with the following addresses:
 
-{'\n'.join(address_messages)}
+{"\n".join(address_messages)}
 """
         send_mail(
             f"[CCIW] Error with email to list {email_list.address}",

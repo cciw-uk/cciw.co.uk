@@ -103,7 +103,7 @@ def load_data_retention_policy(available_erasure_methods: Mapping[str, ErasureMe
             )
         )
         if yaml_group:
-            raise ValueError(f'Unexpected keys in group entry: {", ".join(yaml_group.keys())}')
+            raise ValueError(f"Unexpected keys in group entry: {', '.join(yaml_group.keys())}")
 
     return Policy(source=str(filename), groups=groups)
 

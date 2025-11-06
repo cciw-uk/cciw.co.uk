@@ -21,6 +21,7 @@ PROJECT_ROOT = basepath
 HOME_PATH = Path(os.environ["HOME"]).resolve()
 BASE_PATH = basepath
 
+
 # We use `check --deploy` only from local development machine,
 # to check deployment settings, so need to switch on that.
 CHECK_DEPLOY = "manage.py check --deploy" in " ".join(sys.argv)
@@ -96,7 +97,7 @@ CACHES = (
         "default": {
             # See also supervisor.conf.template
             "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
-            "LOCATION": f'unix:{HOME_PATH / "cciw_memcached.sock"}',
+            "LOCATION": f"unix:{HOME_PATH / 'cciw_memcached.sock'}",
             "KEY_PREFIX": "cciw.co.uk",
         }
     }
@@ -274,7 +275,7 @@ LOGGING = {
             "()": "django.utils.log.ServerFormatter",
             "format": "[%(server_time)s] %(message)s",
         },
-        "verbose": {"format": "%(levelname)s %(asctime)s %(name)s " "%(process)d %(thread)d %(message)s"},
+        "verbose": {"format": "%(levelname)s %(asctime)s %(name)s %(process)d %(thread)d %(message)s"},
     },
     "handlers": {
         "django.server": {
@@ -559,7 +560,10 @@ STATICFILES_FINDERS = [
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 
 COMPRESS_FILTERS = {
-    "css": ["compressor.filters.css_default.CssAbsoluteFilter", "compressor.filters.cssmin.rCSSMinFilter"],
+    "css": [
+        "compressor.filters.css_default.CssAbsoluteFilter",
+        "compressor.filters.cssmin.rCSSMinFilter",
+    ],
     "js": ["compressor.filters.jsmin.rJSMinFilter"] if DEPLOYED else [],
 }
 COMPRESS_PRECOMPILERS = []
@@ -683,7 +687,11 @@ if TESTS_RUNNING:
     MIDDLEWARE = [
         m
         for m in MIDDLEWARE
-        if m not in ["debug_toolbar.middleware.DebugToolbarMiddleware", "cciw.middleware.debug.debug_middleware"]
+        if m
+        not in [
+            "debug_toolbar.middleware.DebugToolbarMiddleware",
+            "cciw.middleware.debug.debug_middleware",
+        ]
     ]
 
     INSTALLED_APPS = [x for x in INSTALLED_APPS if x not in ["debug_toolbar"]]

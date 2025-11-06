@@ -171,7 +171,7 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(
         "superuser status",
         default=False,
-        help_text="Designates that this user has all permissions without " "explicitly assigning them.",
+        help_text="Designates that this user has all permissions without explicitly assigning them.",
     )
 
     contact_phone_number = models.CharField(

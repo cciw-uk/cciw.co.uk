@@ -500,9 +500,9 @@ class Form:
         Use ``.set()`` if there is any ambiguity and you must provide an index.
         """
         fields = self.fields.get(name)
-        assert (
-            fields is not None
-        ), f"No field by the name {name!r} found (fields: {', '.join(map(repr, self.fields.keys()))})"
+        assert fields is not None, (
+            f"No field by the name {name!r} found (fields: {', '.join(map(repr, self.fields.keys()))})"
+        )
         all_checkboxes = all(isinstance(f, Checkbox) for f in fields)
         if all_checkboxes and isinstance(value, list):
             values = {stringify(v) for v in value}

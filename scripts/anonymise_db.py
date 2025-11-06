@@ -267,7 +267,7 @@ def phone_number(f, i, v):
 def email_from_name(field_name):
     def func(f, instance, v):
         name = getattr(instance, field_name)
-        return f"{name.replace(' ','.')}{abs(hash(v)) % 1000}@example.com"
+        return f"{name.replace(' ', '.')}{abs(hash(v)) % 1000}@example.com"
 
     return func
 
@@ -275,7 +275,7 @@ def email_from_name(field_name):
 def email_from_name_unique(field_name):
     def func(f, instance, v):
         name = getattr(instance, field_name)
-        return f"{name.replace(' ','.')}{abs(hash(v)) % 1000}{abs(hash(instance.id)) % 100}@example.com"
+        return f"{name.replace(' ', '.')}{abs(hash(v)) % 1000}{abs(hash(instance.id)) % 100}@example.com"
 
     return func
 

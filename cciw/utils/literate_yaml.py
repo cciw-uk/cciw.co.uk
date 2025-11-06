@@ -68,7 +68,7 @@ def parse_literate_yaml(yaml_source: str) -> list[RstBlock | YamlBlock]:
     return list(_merge_blocks(_extract_blocks(yaml_source)))
 
 
-def _merge_blocks(blocks: Iterable[RstBlock | YamlBlock]) -> Generator[RstBlock | YamlBlock, None, None]:
+def _merge_blocks(blocks: Iterable[RstBlock | YamlBlock]) -> Generator[RstBlock | YamlBlock]:
     growing_block = None
 
     def yield_growing():
@@ -85,7 +85,7 @@ def _merge_blocks(blocks: Iterable[RstBlock | YamlBlock]) -> Generator[RstBlock 
     yield from yield_growing()
 
 
-def _extract_blocks(yaml_doc: str) -> Generator[RstBlock | YamlBlock, None, None]:
+def _extract_blocks(yaml_doc: str) -> Generator[RstBlock | YamlBlock]:
     for line in yaml_doc.split("\n"):
         if line.startswith("# "):
             yield RstBlock(line[2:])

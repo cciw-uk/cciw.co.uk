@@ -88,9 +88,9 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     setup_auth = False
 
     def assertCode(self, status_code):
-        assert (
-            self.last_response.status_code == status_code
-        ), f"Expected {status_code}, got {self.last_response.status_code}"
+        assert self.last_response.status_code == status_code, (
+            f"Expected {status_code}, got {self.last_response.status_code}"
+        )
 
     def auto_follow(self):
         if str(self.last_response.status_code).startswith("3"):

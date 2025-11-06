@@ -193,7 +193,7 @@ def plot_booking_creation_times(
                 fontsize=8,
             )
 
-        plt.title(f'Booking Times on Busiest Day ({busiest_day.strftime("%Y-%m-%d")}) - First 12 Hours')
+        plt.title(f"Booking Times on Busiest Day ({busiest_day.strftime('%Y-%m-%d')}) - First 12 Hours")
         plt.xlabel("Time")
         plt.ylabel("Bookings")
         plt.grid(True, linestyle="--", alpha=0.7)
@@ -206,7 +206,7 @@ def plot_booking_creation_times(
         plt.hist(booking_times, bins=24, alpha=0.7, color="purple")
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
         plt.gca().xaxis.set_major_locator(mdates.HourLocator())
-        plt.title(f'Booking Frequency on {busiest_day.strftime("%Y-%m-%d")} (First 12 Hours)')
+        plt.title(f"Booking Frequency on {busiest_day.strftime('%Y-%m-%d')} (First 12 Hours)")
         plt.xlabel("Time")
         plt.ylabel("Number of Bookings")
         plt.grid(True, linestyle="--", alpha=0.7)

@@ -1,7 +1,7 @@
 # Utilities needed by factories
 import itertools
 from collections.abc import Callable, Generator
-from typing import Any, TypeVar
+from typing import Any
 
 
 class _Auto:
@@ -16,10 +16,8 @@ class _Auto:
 
 Auto: Any = _Auto()
 
-T = TypeVar("T")
 
-
-def sequence(func: Callable[[int], T]) -> Generator[T, None, None]:
+def sequence[T](func: Callable[[int], T]) -> Generator[T]:
     """
     Generates a sequence of values from a sequence of integers starting at zero,
     passed through the callable, which must take an integer argument.

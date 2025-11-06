@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
 
 class PlainPasswordHasher(BasePasswordHasher):
     "Plain password hashing algorithm for tests (DO NOT USE in production)."
+
     algorithm = "plain"
 
     def salt(self):
