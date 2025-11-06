@@ -1160,25 +1160,10 @@ class Booking(models.Model):
         errors: list[FixableError | Blocker] = []
         camp: Camp = self.camp
 
-        def fixable(t: FET, description: str):
-            return FixableError(type=t, description=description)
-
         def blocker(description: str) -> Blocker:
             return Blocker(description=description)
 
-        # TODO NEXT
-        # - pull out 'fixable' problems as separate method.
-        # - rework Booking.approval_reasons()
-        # - write tests
-
-        # Custom price - not auto bookable
-        if self.price_type == PriceType.CUSTOM:
-            errors.append(
-                fixable(
-                    FET.CUSTOM_PRICE,
-                    "A custom discount needs to be arranged by the booking secretary",
-                )
-            )
+        errors.extend(self.approval_reasons())
 
         relevant_bookings = self.account.bookings.for_year(camp.year).in_basket_or_booked()
         relevant_bookings_excluding_self = relevant_bookings.exclude(
@@ -1273,29 +1258,6 @@ class Booking(models.Model):
                 errors.append(
                     blocker("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
                 )
-
-        # serious illness
-        if self.serious_illness:
-            errors.append(fixable(FET.SERIOUS_ILLNESS, "Must be approved by leader due to serious illness/condition"))
-
-        # Check age.
-        camper_age = self.age_on_camp()
-        age_base = self.age_base_date().strftime("%e %B %Y")
-        if self.is_too_young():
-            errors.append(
-                fixable(
-                    FET.TOO_YOUNG,
-                    f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
-                )
-            )
-
-        if self.is_too_old():
-            errors.append(
-                fixable(
-                    FET.TOO_OLD,
-                    f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
-                )
-            )
 
         # Check place availability
         places_left = camp.get_places_left()
