@@ -31,7 +31,7 @@ from cciw.documents.fields import DocumentField
 from cciw.documents.models import Document, DocumentManager, DocumentQuerySet
 from cciw.utils.models import AfterFetchQuerySetMixin
 
-from .email import send_booking_expiry_mail, send_places_confirmed_email
+from ..email import send_booking_expiry_mail, send_places_confirmed_email
 
 # = Business rules =
 #
@@ -1149,6 +1149,15 @@ class Booking(models.Model):
         If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
+        # TODO NEXT - rework this so that we don't have a single `APPROVED` state,
+        # but each fixable problem can be manually approved.
+        #
+        # - saving a Booking could create a `BookingApproval`
+        #   - migration - create past records?
+        # - loading should include them in bulk
+        # - on the booking page we should status
+        # - booking secretary should
+
         if self.state == BookingState.APPROVED and not booking_sec:
             return []
 
@@ -2186,4 +2195,4 @@ def places_confirmed_handler(*, bookings):
     send_places_confirmed_email(bookings)
 
 
-from . import hooks  # NOQA isort:skip
+from .. import hooks  # NOQA isort:skip
