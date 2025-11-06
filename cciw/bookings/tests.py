@@ -23,11 +23,13 @@ from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (
+    FET,
     AccountTransferPayment,
     AgreementFetcher,
     Booking,
     BookingAccount,
     BookingState,
+    FixableError,
     ManualPayment,
     ManualPaymentType,
     Payment,
@@ -2679,17 +2681,30 @@ class TestExportPaymentData(TestBase):
 
 class TestBookingModel(TestBase):
     def test_need_approving(self):
-        factories.create_booking()
+        booking = factories.create_booking()
         assert len(Booking.objects.need_approving()) == 0
 
-        Booking.objects.update(serious_illness=True)
-        assert len(Booking.objects.need_approving()) == 1
+        Booking.objects.update(serious_illness=True, birth_date=date(1980, 1, 1), price_type=PriceType.CUSTOM)
 
-        Booking.objects.update(serious_illness=False)
-        Booking.objects.update(birth_date=date(1980, 1, 1))
         assert len(Booking.objects.need_approving()) == 1
-
-        assert Booking.objects.get().approval_reasons() == ["Too old"]
+        booking = Booking.objects.get()
+        camper_age = booking.age_on_camp()
+        camp = booking.camp
+        assert Booking.objects.get().approval_reasons() == [
+            FixableError(
+                description="Must be approved by leader due to serious illness/condition",
+                type=FET.SERIOUS_ILLNESS,
+            ),
+            FixableError(
+                description="A custom discount needs to be arranged by the booking secretary",
+                type=FET.CUSTOM_PRICE,
+            ),
+            FixableError(
+                type=FET.TOO_OLD,
+                description=f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on 31 August {camp.year}",
+            ),
+        ]
+        assert booking.short_approval_reasons == "Serious illness, Custom price, Too old"
 
 
 class TestPaymentModels(TestBase):

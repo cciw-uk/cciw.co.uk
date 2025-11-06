@@ -120,6 +120,10 @@ class FixableError:
     type: FixableErrorType
 
     @property
+    def short_description(self) -> str:
+        return self.type.label
+
+    @property
     def blocker(self) -> bool:
         return True
 
@@ -754,6 +758,8 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     def need_approving(self):
         # See also Booking.approval_reasons()
+        # TODO - this probably should query a related model.
+
         qs = self.filter(state=BookingState.INFO_COMPLETE).select_related("camp")
         qs_custom_price = qs.filter(price_type=PriceType.CUSTOM)
         qs_serious_illness = qs.filter(serious_illness=True)
@@ -1080,21 +1086,51 @@ class Booking(models.Model):
     def is_too_old(self):
         return self.age_on_camp() > self.camp.maximum_age
 
-    def approval_reasons(self):
+    def approval_reasons(self) -> list[FixableError]:
         """
-        Gets a list of human-readable reasons why the booking needs manual approval.
+        Gets a list of reasons why the booking needs manual approval.
         """
         # See also BookingManager.need_approving()
-        reasons = []
+        reasons: list[FixableError] = []
         if self.serious_illness:
-            reasons.append("Serious illness")
+            reasons.append(
+                FixableError(
+                    type=FET.SERIOUS_ILLNESS,
+                    description="Must be approved by leader due to serious illness/condition",
+                )
+            )
         if self.is_custom_discount():
-            reasons.append("Custom discount")
-        if self.is_too_young():
-            reasons.append("Too young")
-        if self.is_too_old():
-            reasons.append("Too old")
+            reasons.append(
+                FixableError(
+                    type=FET.CUSTOM_PRICE,
+                    description="A custom discount needs to be arranged by the booking secretary",
+                )
+            )
+
+        if self.is_too_young() or self.is_too_old():
+            camper_age = self.age_on_camp()
+            age_base = self.age_base_date().strftime("%e %B %Y")
+            camp: Camp = self.camp
+
+            if self.is_too_young():
+                reasons.append(
+                    FixableError(
+                        type=FET.TOO_YOUNG,
+                        description=f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
+                    )
+                )
+            elif self.is_too_old():
+                reasons.append(
+                    FixableError(
+                        type=FET.TOO_OLD,
+                        description=f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
+                    )
+                )
         return reasons
+
+    @property
+    def short_approval_reasons(self) -> str:
+        return ", ".join(r.short_description for r in self.approval_reasons())
 
     def get_available_discounts(self, now):
         retval = []
@@ -1129,6 +1165,11 @@ class Booking(models.Model):
 
         def blocker(description: str) -> Blocker:
             return Blocker(description=description)
+
+        # TODO NEXT
+        # - pull out 'fixable' problems as separate method.
+        # - rework Booking.approval_reasons()
+        # - write tests
 
         # Custom price - not auto bookable
         if self.price_type == PriceType.CUSTOM:
