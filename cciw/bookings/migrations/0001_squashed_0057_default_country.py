@@ -10,6 +10,7 @@ import django_countries.fields
 from django.db import migrations, models
 
 import cciw.bookings.models
+import cciw.bookings.models.mixins
 import cciw.documents.fields
 
 
@@ -456,7 +457,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "write-off debt record",
                 "verbose_name_plural": "write-off debt records",
             },
-            bases=(cciw.bookings.models.NoEditMixin, models.Model),
+            bases=(cciw.bookings.models.mixins.NoEditMixin, models.Model),
         ),
         migrations.AddField(
             model_name="paymentsource",

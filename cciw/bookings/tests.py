@@ -23,13 +23,13 @@ from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (
-    FET,
     AccountTransferPayment,
     AgreementFetcher,
     Booking,
     BookingAccount,
     BookingState,
     FixableError,
+    FixableErrorType,
     ManualPayment,
     ManualPaymentType,
     Payment,
@@ -55,6 +55,8 @@ from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 from . import factories
+
+FET = FixableErrorType
 
 
 class IpnMock:
@@ -336,7 +338,7 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         assert camp.open_for_bookings(today)
         assert not camp.open_for_bookings(today + timedelta(days=1))
 
-    @mock.patch("cciw.bookings.models.early_bird_is_available", return_value=False)
+    @mock.patch("cciw.bookings.models.bookings.early_bird_is_available", return_value=False)
     def test_book_with_money_in_account(self, m, use_prefetch_related_for_get_account=True):
         booking = factories.create_booking(camp=camps_factories.create_camp(future=True))
 
@@ -2571,7 +2573,7 @@ class TestEarlyBird(TestBase):
     def test_book_basket_applies_discount(self):
         booking = factories.create_booking()
         year = booking.camp.year
-        with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
+        with mock.patch("cciw.bookings.models.utils.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the future
             mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
             book_basket_now([booking])
@@ -2583,7 +2585,7 @@ class TestEarlyBird(TestBase):
 
     def test_book_basket_doesnt_apply_discount(self):
         booking = factories.create_booking()
-        with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
+        with mock.patch("cciw.bookings.models.utils.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the past
             mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
             book_basket_now([booking])
@@ -2605,7 +2607,7 @@ class TestEarlyBird(TestBase):
         booking = factories.create_booking()
         mail.outbox = []
         account = booking.account
-        with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
+        with mock.patch("cciw.bookings.models.utils.get_early_bird_cutoff_date") as mock_f:
             mock_f.return_value = timezone.now() - timedelta(days=10)
             book_basket_now([booking])
             account.receive_payment(booking.amount_due)
