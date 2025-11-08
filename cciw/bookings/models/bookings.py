@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -14,6 +17,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_countries.fields import CountryField
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.utils.models import AfterFetchQuerySetMixin
 
@@ -21,9 +25,12 @@ from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
 from .constants import DEFAULT_COUNTRY
 from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceChecker, PriceType
-from .problems import Blocker, BookingProblem, FixableError, FixableErrorType, Warning
+from .problems import Blocker, BookingApproval, BookingProblem, FixableError, FixableErrorType, Warning
 from .states import BookingState
 from .utils import early_bird_is_available
+
+if TYPE_CHECKING:
+    from .problems import BookingApproval
 
 FET = FixableErrorType
 
@@ -88,29 +95,16 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
             ]
         )
 
-    def need_approving(self):
-        # See also Booking.approval_reasons()
-        # TODO - this probably should query a related model.
+    def with_approvals(self) -> QuerySet[Booking]:
+        return self.prefetch_related("approvals")
 
+    def need_approving(self):
+        """
+        Returns Bookings that need approving
+        """
         qs = self.filter(state=BookingState.INFO_COMPLETE).select_related("camp")
-        qs_custom_price = qs.filter(price_type=PriceType.CUSTOM)
-        qs_serious_illness = qs.filter(serious_illness=True)
-        # For -08-31 date:
-        # See also PreserveAgeOnCamp.build_update_dict()
-        # See also Booking.age_on_camp()
-        qs_too_young = qs.extra(
-            where=[
-                """ "bookings_booking"."birth_date" > """
-                """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
-            ]
-        )
-        qs_too_old = qs.extra(
-            where=[
-                """ "bookings_booking"."birth_date" <= """
-                """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
-            ]
-        )
-        qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
+        approvals_booking_ids_qs = BookingApproval.objects.need_approving().values_list("booking_id", flat=True)
+        qs = qs.filter(id__in=approvals_booking_ids_qs)
         return qs
 
     def future(self):
@@ -327,6 +321,8 @@ class Booking(models.Model):
         if custom_agreements is not None:
             self.custom_agreements_checked = [agreement.id for agreement in custom_agreements]
         self.save()
+        # TODO - call this from admin as well
+        self.update_approvals()
 
     def is_payable(self, *, confirmed_only: bool) -> bool:
         # See also BookingQuerySet.payable()
@@ -409,7 +405,6 @@ class Booking(models.Model):
     def age_base_date(self):
         # Age is calculated based on school years, i.e. age on 31st August
         # See also PreserveAgeOnCamp.build_update_dict()
-        # See also BookingManager.need_approving()
         return date(self.camp.year, 8, 31)
 
     def is_too_young(self):
@@ -418,22 +413,20 @@ class Booking(models.Model):
     def is_too_old(self):
         return self.age_on_camp() > self.camp.maximum_age
 
-    def approval_reasons(self) -> list[FixableError]:
-        """
-        Gets a list of reasons why the booking needs manual approval.
-        """
-        # See also BookingManager.need_approving()
-        reasons: list[FixableError] = []
+    def calculate_approvals_needed(self) -> list[BookingApproval]:
+        from .problems import BookingApproval
+
+        approvals_needed: list[BookingApproval] = []
         if self.serious_illness:
-            reasons.append(
-                FixableError(
+            approvals_needed.append(
+                BookingApproval(
                     type=FET.SERIOUS_ILLNESS,
                     description="Must be approved by leader due to serious illness/condition",
                 )
             )
         if self.is_custom_discount():
-            reasons.append(
-                FixableError(
+            approvals_needed.append(
+                BookingApproval(
                     type=FET.CUSTOM_PRICE,
                     description="A custom discount needs to be arranged by the booking secretary",
                 )
@@ -445,24 +438,72 @@ class Booking(models.Model):
             camp: Camp = self.camp
 
             if self.is_too_young():
-                reasons.append(
-                    FixableError(
+                approvals_needed.append(
+                    BookingApproval(
                         type=FET.TOO_YOUNG,
                         description=f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
                     )
                 )
             elif self.is_too_old():
-                reasons.append(
-                    FixableError(
+                approvals_needed.append(
+                    BookingApproval(
                         type=FET.TOO_OLD,
                         description=f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
                     )
                 )
-        return reasons
+        return approvals_needed
+
+    def update_approvals(self) -> None:
+        """
+        Updates the related BookingApproval objects
+        """
+        currently_valid = self.calculate_approvals_needed()
+        existing: dict[FET, BookingApproval] = {app.type: app for app in self.approvals.all()}
+
+        to_create: list[BookingApproval] = []
+        to_update: list[BookingApproval] = []
+
+        # For each currently valid one, we need to ensure the recordexists, and
+        # is current.
+        for app in currently_valid:
+            if (existing_app := existing.pop(app.type, None)) is not None:
+                if not existing_app.is_current:
+                    existing_app.is_current = True
+                    to_update.append(existing_app)
+            else:
+                to_create.append(app)
+
+        # Remaining ones are not current and should be updated.
+        for existing_app in existing.values():
+            existing_app.is_current = False
+            to_update.append(existing_app)
+
+        if to_update:
+            BookingApproval.objects.bulk_update(to_update, ["is_current"])
+        if to_create:
+            for obj in to_create:
+                obj.booking = self
+            BookingApproval.objects.bulk_create(to_create)
+
+    @cached_property
+    def _cached_approvals(self) -> list[BookingApproval]:
+        approvals = list(self.approvals.all())
+        approvals.sort(key=lambda app: app.type)
+        return approvals
+
+    def approval_reasons(self) -> list[FixableError]:
+        current_approvals = [app for app in self._cached_approvals if app.is_current]
+        # TODO - FixableError should link to the BookingApproval,
+        # so that we can know if it has been fixed or not
+        return [FixableError(type=FixableErrorType(app.type), description=app.description) for app in current_approvals]
 
     @property
     def short_approval_reasons(self) -> str:
         return ", ".join(r.short_description for r in self.approval_reasons())
+
+    def approve_booking_for_problem(self, type: FixableErrorType, user: User) -> None:
+        self.approvals.filter(type=type).update(approved_at=timezone.now(), approved_by=user)
+        # TODO clear cache?
 
     def get_available_discounts(self, now):
         retval = []

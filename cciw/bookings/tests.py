@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import json
 from datetime import date, datetime, timedelta
@@ -2682,31 +2684,55 @@ class TestExportPaymentData(TestBase):
 
 
 class TestBookingModel(TestBase):
-    def test_need_approving(self):
+    def test_approval_reasons_and_need_approving(self):
         booking = factories.create_booking()
         assert len(Booking.objects.need_approving()) == 0
 
-        Booking.objects.update(serious_illness=True, birth_date=date(1980, 1, 1), price_type=PriceType.CUSTOM)
+        booking.serious_illness = True
+        booking.birth_date = date(1980, 1, 1)
+        booking.price_type = PriceType.CUSTOM
+        booking.save()
+        booking.update_approvals()
 
         assert len(Booking.objects.need_approving()) == 1
         booking = Booking.objects.get()
         camper_age = booking.age_on_camp()
         camp = booking.camp
-        assert Booking.objects.get().approval_reasons() == [
-            FixableError(
-                description="Must be approved by leader due to serious illness/condition",
-                type=FET.SERIOUS_ILLNESS,
-            ),
+        assert booking.approval_reasons() == [
             FixableError(
                 description="A custom discount needs to be arranged by the booking secretary",
                 type=FET.CUSTOM_PRICE,
+            ),
+            FixableError(
+                description="Must be approved by leader due to serious illness/condition",
+                type=FET.SERIOUS_ILLNESS,
             ),
             FixableError(
                 type=FET.TOO_OLD,
                 description=f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on 31 August {camp.year}",
             ),
         ]
-        assert booking.short_approval_reasons == "Serious illness, Custom price, Too old"
+        assert booking.short_approval_reasons == "Custom price, Serious illness, Too old"
+
+        # Check that update_approvals adds and removes correctly.
+        booking.serious_illness = False
+        booking.birth_date = date(camp.year - 2, 1, 1)
+        booking.price_type = PriceType.FULL
+        booking.save()
+        booking.update_approvals()
+
+        booking = Booking.objects.get()
+        types = [app.type for app in booking.approval_reasons()]
+        assert types == [FET.TOO_YOUNG]
+
+        # Check that `need_approving` responds to approvals being done.
+        assert len(Booking.objects.need_approving()) == 1
+
+        booking.approve_booking_for_problem(type=FET.TOO_YOUNG, user=officers_factories.get_any_officer())
+
+        assert len(Booking.objects.need_approving()) == 0
+
+        # Check that approval_reasons updates? TODO
 
 
 class TestPaymentModels(TestBase):

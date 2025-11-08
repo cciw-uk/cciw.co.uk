@@ -416,7 +416,6 @@ class PreserveAgeOnCamp(ErasureMethod):
             # Birthdates after YYYY-08-31 get counted as next school year,
             # so we anonymise those to YYYY-12-01, everything else to YYYY-01-01
             # See also Booking.age_base_date
-            # See also BookingManager.need_approving
             RawSQL(
                 """
             make_date(

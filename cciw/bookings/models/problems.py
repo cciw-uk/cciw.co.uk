@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
 from django.db import models
+from django.utils import timezone
+
+from cciw.accounts.models import User
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -55,6 +58,32 @@ class Warning:
     @property
     def blocker(self) -> bool:
         return False
+
+
+class BookingApprovalQuerySet(models.QuerySet):
+    def need_approving(self):
+        return self.filter(is_current=True, approved_at__isnull=True)
+
+
+BookingApprovalManager = models.Manager.from_queryset(BookingApprovalQuerySet)
+
+
+class BookingApproval(models.Model):
+    booking = models.ForeignKey("bookings.Booking", on_delete=models.CASCADE, related_name="approvals")
+    type = models.CharField(choices=FixableErrorType)
+    is_current = models.BooleanField(default=True)  # soft-delete flag to avoid deleting approvals.
+    description = models.CharField()
+    created_at = models.DateTimeField(default=timezone.now)
+    approved_at = models.DateTimeField(null=True)
+    approved_by = models.ForeignKey(User, null=True, on_delete=models.PROTECT, related_name="booking_approvals")
+
+    objects = BookingApprovalManager()
+
+    def is_approved(self) -> bool:
+        return self.approved_at is not None
+
+    def __str__(self):
+        return f"{self.get_type_display()} for {self.booking.name}"
 
 
 type BookingProblem = Blocker | FixableError | Warning
