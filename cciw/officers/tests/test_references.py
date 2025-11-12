@@ -127,6 +127,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         camp, leader, officer, referee = self.start_request_reference()
         self.fill_by_name({"message": "I removed the link! Haha"})
         self.click("[name=send]")
+        self.wait_for_ajax()
         url = make_ref_form_url(referee.id, None)
         self.assertTextPresent(url)
         self.assertTextPresent("You removed the link")
