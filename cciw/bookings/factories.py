@@ -114,6 +114,7 @@ def create_booking(
     if amount_due is Auto:
         booking.auto_set_amount_due()
         booking.save()
+    booking.update_approvals()
     return booking
 
 

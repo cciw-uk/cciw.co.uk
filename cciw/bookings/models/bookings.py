@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
@@ -25,14 +26,14 @@ from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
 from .constants import DEFAULT_COUNTRY
 from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceChecker, PriceType
-from .problems import Blocker, BookingApproval, BookingProblem, FixableError, FixableErrorType, Warning
+from .problems import ApprovalNeeded, ApprovalNeededType, Blocker, BookingApproval, BookingProblem, Warning
 from .states import BookingState
 from .utils import early_bird_is_available
 
 if TYPE_CHECKING:
     from .problems import BookingApproval
 
-FET = FixableErrorType
+ANT = ApprovalNeededType
 
 
 class Sex(models.TextChoices):
@@ -321,7 +322,6 @@ class Booking(models.Model):
         if custom_agreements is not None:
             self.custom_agreements_checked = [agreement.id for agreement in custom_agreements]
         self.save()
-        # TODO - call this from admin as well
         self.update_approvals()
 
     def is_payable(self, *, confirmed_only: bool) -> bool:
@@ -413,23 +413,18 @@ class Booking(models.Model):
     def is_too_old(self):
         return self.age_on_camp() > self.camp.maximum_age
 
-    def calculate_approvals_needed(self) -> list[BookingApproval]:
-        from .problems import BookingApproval
+    def calculate_approvals_needed(self) -> list[ApprovalNeeded]:
+        def approval_needed(type: ANT, description: str):
+            return ApprovalNeeded(type=type, description=description, booking=self)
 
-        approvals_needed: list[BookingApproval] = []
+        approvals_needed: list[ApprovalNeeded] = []
         if self.serious_illness:
             approvals_needed.append(
-                BookingApproval(
-                    type=FET.SERIOUS_ILLNESS,
-                    description="Must be approved by leader due to serious illness/condition",
-                )
+                approval_needed(ANT.SERIOUS_ILLNESS, "Must be approved by leader due to serious illness/condition")
             )
         if self.is_custom_discount():
             approvals_needed.append(
-                BookingApproval(
-                    type=FET.CUSTOM_PRICE,
-                    description="A custom discount needs to be arranged by the booking secretary",
-                )
+                approval_needed(ANT.CUSTOM_PRICE, "A custom discount needs to be arranged by the booking secretary")
             )
 
         if self.is_too_young() or self.is_too_old():
@@ -439,16 +434,16 @@ class Booking(models.Model):
 
             if self.is_too_young():
                 approvals_needed.append(
-                    BookingApproval(
-                        type=FET.TOO_YOUNG,
-                        description=f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
+                    approval_needed(
+                        ANT.TOO_YOUNG,
+                        f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
                     )
                 )
             elif self.is_too_old():
                 approvals_needed.append(
-                    BookingApproval(
-                        type=FET.TOO_OLD,
-                        description=f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
+                    approval_needed(
+                        ANT.TOO_OLD,
+                        f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
                     )
                 )
         return approvals_needed
@@ -457,21 +452,21 @@ class Booking(models.Model):
         """
         Updates the related BookingApproval objects
         """
-        currently_valid = self.calculate_approvals_needed()
-        existing: dict[FET, BookingApproval] = {app.type: app for app in self.approvals.all()}
+        currently_needed = self.calculate_approvals_needed()
+        existing: dict[ANT, BookingApproval] = {app.type: app for app in self.approvals.all()}
 
         to_create: list[BookingApproval] = []
         to_update: list[BookingApproval] = []
 
-        # For each currently valid one, we need to ensure the recordexists, and
+        # For each currently needed one, we need to ensure the record exists, and
         # is current.
-        for app in currently_valid:
-            if (existing_app := existing.pop(app.type, None)) is not None:
+        for app_needed in currently_needed:
+            if (existing_app := existing.pop(app_needed.type, None)) is not None:
                 if not existing_app.is_current:
                     existing_app.is_current = True
                     to_update.append(existing_app)
             else:
-                to_create.append(app)
+                to_create.append(app_needed.to_booking_approval())
 
         # Remaining ones are not current and should be updated.
         for existing_app in existing.values():
@@ -481,29 +476,37 @@ class Booking(models.Model):
         if to_update:
             BookingApproval.objects.bulk_update(to_update, ["is_current"])
         if to_create:
-            for obj in to_create:
-                obj.booking = self
             BookingApproval.objects.bulk_create(to_create)
+        self._clear_approvals_cache()
 
     @cached_property
     def _cached_approvals(self) -> list[BookingApproval]:
+        # This should be pre-populated using with_approvals()
         approvals = list(self.approvals.all())
         approvals.sort(key=lambda app: app.type)
         return approvals
 
-    def approval_reasons(self) -> list[FixableError]:
-        current_approvals = [app for app in self._cached_approvals if app.is_current]
-        # TODO - FixableError should link to the BookingApproval,
-        # so that we can know if it has been fixed or not
-        return [FixableError(type=FixableErrorType(app.type), description=app.description) for app in current_approvals]
+    @property
+    def saved_current_approvals(self) -> list[BookingApproval]:
+        return [app for app in self._cached_approvals if app.is_current]
 
     @property
-    def short_approval_reasons(self) -> str:
-        return ", ".join(r.short_description for r in self.approval_reasons())
+    def saved_approvals_unapproved(self) -> list[BookingApproval]:
+        return [app for app in self.saved_current_approvals if not app.is_approved]
 
-    def approve_booking_for_problem(self, type: FixableErrorType, user: User) -> None:
+    @property
+    def saved_approvals_needed_summary(self) -> str:
+        return ", ".join(r.short_description for r in self.saved_approvals_unapproved)
+
+    def approve_booking_for_problem(self, type: ApprovalNeededType, user: User) -> None:
         self.approvals.filter(type=type).update(approved_at=timezone.now(), approved_by=user)
-        # TODO clear cache?
+        self._clear_approvals_cache()
+
+    def _clear_approvals_cache(self):
+        with contextlib.suppress(AttributeError):
+            del self._cached_approvals
+        with contextlib.suppress(AttributeError):
+            self._prefetched_objects_cache.pop("approvals", None)
 
     def get_available_discounts(self, now):
         retval = []
@@ -522,15 +525,18 @@ class Booking(models.Model):
         If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
-        # TODO NEXT - rework this so that we don't have a single `APPROVED` state,
+        # TODO #56 NEXT - rework this so that we don't have a single `APPROVED` state,
         # but each fixable problem can be manually approved.
         #
         # - saving a Booking could create a `BookingApproval`
         #   - migration - create past records?
         # - loading should include them in bulk
         # - on the booking page we should status
-        # - booking secretary should
 
+        # TODO #56 - instead of this, we need to be able to take into account
+        # saved approvals if this Booking has been saved to DB.
+        # If it hasn't been saved, we shouldn't do database work, because
+        # this code is used sometimes when it hasn't been saved.
         if self.state == BookingState.APPROVED and not booking_sec:
             return []
 
@@ -539,13 +545,13 @@ class Booking(models.Model):
         )
 
     def get_booking_errors(self, booking_sec=False, agreement_fetcher=None) -> Sequence[BookingProblem]:
-        errors: list[FixableError | Blocker] = []
+        errors: list[ApprovalNeeded | Blocker] = []
         camp: Camp = self.camp
 
         def blocker(description: str) -> Blocker:
             return Blocker(description=description)
 
-        errors.extend(self.approval_reasons())
+        errors.extend(self.calculate_approvals_needed())
 
         relevant_bookings = self.account.bookings.for_year(camp.year).in_basket_or_booked()
         relevant_bookings_excluding_self = relevant_bookings.exclude(

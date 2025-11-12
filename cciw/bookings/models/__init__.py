@@ -31,7 +31,7 @@ from .payments import (
     parse_paypal_custom_field,
 )
 from .prices import Price, PriceChecker, PriceType
-from .problems import FixableError, FixableErrorType
+from .problems import ApprovalNeeded, ApprovalNeededType
 from .reports import booking_report_by_camp, outstanding_bookings_with_fees
 from .states import BookingState
 from .supporting_information import SupportingInformation, SupportingInformationDocument, SupportingInformationType
@@ -86,8 +86,8 @@ __all__ = [
     "KEEP_FINANCIAL_RECORDS_FOR",
     "book_basket_now",
     "expire_bookings",
-    "FixableErrorType",
-    "FixableError",
+    "ApprovalNeededType",
+    "ApprovalNeeded",
 ]
 
 

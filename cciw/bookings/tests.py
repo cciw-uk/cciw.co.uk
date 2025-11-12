@@ -27,11 +27,10 @@ from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (
     AccountTransferPayment,
     AgreementFetcher,
+    ApprovalNeededType,
     Booking,
     BookingAccount,
     BookingState,
-    FixableError,
-    FixableErrorType,
     ManualPayment,
     ManualPaymentType,
     Payment,
@@ -58,7 +57,7 @@ from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 from . import factories
 
-FET = FixableErrorType
+ANT = ApprovalNeededType
 
 
 class IpnMock:
@@ -2684,7 +2683,7 @@ class TestExportPaymentData(TestBase):
 
 
 class TestBookingModel(TestBase):
-    def test_approval_reasons_and_need_approving(self):
+    def test_saved_approvals_unapproved_and_need_approving(self):
         booking = factories.create_booking()
         assert len(Booking.objects.need_approving()) == 0
 
@@ -2695,24 +2694,20 @@ class TestBookingModel(TestBase):
         booking.update_approvals()
 
         assert len(Booking.objects.need_approving()) == 1
-        booking = Booking.objects.get()
+        booking: Booking = Booking.objects.get()
         camper_age = booking.age_on_camp()
         camp = booking.camp
-        assert booking.approval_reasons() == [
-            FixableError(
-                description="A custom discount needs to be arranged by the booking secretary",
-                type=FET.CUSTOM_PRICE,
-            ),
-            FixableError(
-                description="Must be approved by leader due to serious illness/condition",
-                type=FET.SERIOUS_ILLNESS,
-            ),
-            FixableError(
-                type=FET.TOO_OLD,
-                description=f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on 31 August {camp.year}",
+        actual_approvals = [(app.description, app.type) for app in booking.saved_approvals_unapproved]
+        expected_approvals = [
+            ("A custom discount needs to be arranged by the booking secretary", ANT.CUSTOM_PRICE),
+            ("Must be approved by leader due to serious illness/condition", ANT.SERIOUS_ILLNESS),
+            (
+                f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on 31 August {camp.year}",
+                ANT.TOO_OLD,
             ),
         ]
-        assert booking.short_approval_reasons == "Custom price, Serious illness, Too old"
+        assert actual_approvals == expected_approvals
+        assert booking.saved_approvals_needed_summary == "Custom price, Serious illness, Too old"
 
         # Check that update_approvals adds and removes correctly.
         booking.serious_illness = False
@@ -2722,17 +2717,19 @@ class TestBookingModel(TestBase):
         booking.update_approvals()
 
         booking = Booking.objects.get()
-        types = [app.type for app in booking.approval_reasons()]
-        assert types == [FET.TOO_YOUNG]
+        types = [app.type for app in booking.saved_approvals_unapproved]
+        assert types == [ANT.TOO_YOUNG]
 
         # Check that `need_approving` responds to approvals being done.
         assert len(Booking.objects.need_approving()) == 1
 
-        booking.approve_booking_for_problem(type=FET.TOO_YOUNG, user=officers_factories.get_any_officer())
+        booking.approve_booking_for_problem(type=ANT.TOO_YOUNG, user=officers_factories.get_any_officer())
 
         assert len(Booking.objects.need_approving()) == 0
 
-        # Check that approval_reasons updates? TODO
+        # Check that approve_booking_for_problem actually worked
+        booking = Booking.objects.get()
+        assert booking.saved_approvals_unapproved == []
 
 
 class TestPaymentModels(TestBase):

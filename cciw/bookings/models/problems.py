@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.utils import timezone
 
 from cciw.accounts.models import User
+
+if TYPE_CHECKING:
+    from .bookings import Booking
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -19,24 +25,25 @@ class Blocker:
         return False
 
 
-class FixableErrorType(models.TextChoices):
+class ApprovalNeededType(models.TextChoices):
     CUSTOM_PRICE = "custom_price", "Custom price"
     SERIOUS_ILLNESS = "serious_illness", "Serious illness"
     TOO_YOUNG = "too_young", "Too young"
     TOO_OLD = "too_old", "Too old"
 
 
-FET = FixableErrorType
+ANT = ApprovalNeededType
 
 
 @dataclass(frozen=True, kw_only=True)
-class FixableError:
+class ApprovalNeeded:
     """
     Represents booking problems that can be fixed by approval (via booking secretary)
     """
 
     description: str
-    type: FixableErrorType
+    type: ApprovalNeededType
+    booking: Booking
 
     @property
     def short_description(self) -> str:
@@ -49,6 +56,9 @@ class FixableError:
     @property
     def fixable(self) -> bool:
         return True
+
+    def to_booking_approval(self) -> BookingApproval:
+        return BookingApproval(description=self.description, type=self.type, booking=self.booking)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -70,7 +80,7 @@ BookingApprovalManager = models.Manager.from_queryset(BookingApprovalQuerySet)
 
 class BookingApproval(models.Model):
     booking = models.ForeignKey("bookings.Booking", on_delete=models.CASCADE, related_name="approvals")
-    type = models.CharField(choices=FixableErrorType)
+    type = models.CharField(choices=ApprovalNeededType)
     is_current = models.BooleanField(default=True)  # soft-delete flag to avoid deleting approvals.
     description = models.CharField()
     created_at = models.DateTimeField(default=timezone.now)
@@ -79,11 +89,16 @@ class BookingApproval(models.Model):
 
     objects = BookingApprovalManager()
 
+    @property
     def is_approved(self) -> bool:
         return self.approved_at is not None
 
     def __str__(self):
         return f"{self.get_type_display()} for {self.booking.name}"
 
+    @property
+    def short_description(self) -> str:
+        return self.get_type_display()
 
-type BookingProblem = Blocker | FixableError | Warning
+
+type BookingProblem = Blocker | ApprovalNeeded | Warning

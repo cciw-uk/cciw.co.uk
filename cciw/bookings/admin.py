@@ -610,6 +610,7 @@ class BookingAdmin(admin.ModelAdmin):
                     f"A confirmation email has been sent to {obj.account.email} "
                     f"telling them the place has been booked.",
                 )
+        obj.update_approvals()
         return retval
 
 
