@@ -92,6 +92,9 @@ class BookingApproval(models.Model):
 
     objects = BookingApprovalManager()
 
+    class Meta:
+        unique_together = [("booking", "type")]
+
     @property
     def is_approved(self) -> bool:
         return self.approved_at is not None
