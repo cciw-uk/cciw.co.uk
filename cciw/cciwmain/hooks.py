@@ -26,7 +26,7 @@ def server_startup(sender, **kwargs):
     if not settings.TESTS_RUNNING:
         # Make sure that the file exists, or we will get errors
         # when attempting to access the site
-        generate_colors_css(update_existing=False)
+        generate_colors_css(update_existing=True)
 
     _FIRST_REQUEST_HANDLED = True
     request_started.disconnect(server_startup)
