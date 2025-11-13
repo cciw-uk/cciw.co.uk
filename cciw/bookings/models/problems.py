@@ -35,6 +35,12 @@ class ApprovalNeededType(models.TextChoices):
 ANT = ApprovalNeededType
 
 
+class ApprovalStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    APPROVED = "approved", "Approved"
+    DENIED = "denied", "Denied"
+
+
 @dataclass(frozen=True, kw_only=True)
 class ApprovalNeeded:
     """
@@ -72,7 +78,7 @@ class Warning:
 
 class BookingApprovalQuerySet(models.QuerySet):
     def need_approving(self):
-        return self.current().filter(approved_at__isnull=True)
+        return self.current().filter(status=ApprovalStatus.PENDING)
 
     def current(self):
         return self.filter(is_current=True)
@@ -85,10 +91,11 @@ class BookingApproval(models.Model):
     booking = models.ForeignKey("bookings.Booking", on_delete=models.CASCADE, related_name="approvals")
     type = models.CharField(choices=ApprovalNeededType)
     is_current = models.BooleanField(default=True)  # soft-delete flag to avoid deleting approvals.
+    status = models.CharField(choices=ApprovalStatus, default=ApprovalStatus.PENDING)
     description = models.CharField()
     created_at = models.DateTimeField(default=timezone.now)
-    approved_at = models.DateTimeField(null=True)
-    approved_by = models.ForeignKey(User, null=True, on_delete=models.PROTECT, related_name="booking_approvals")
+    checked_at = models.DateTimeField(null=True)
+    checked_by = models.ForeignKey(User, null=True, on_delete=models.PROTECT, related_name="booking_approvals")
 
     objects = BookingApprovalManager()
 
@@ -97,10 +104,10 @@ class BookingApproval(models.Model):
 
     @property
     def is_approved(self) -> bool:
-        return self.approved_at is not None
+        return self.status == ApprovalStatus.APPROVED
 
     def __str__(self):
-        return f"{self.get_type_display()} for {self.booking.name}"
+        return f"{self.get_type_display()}:{self.get_status_display()} for {self.booking.name}"
 
     @property
     def short_description(self) -> str:

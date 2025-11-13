@@ -43,7 +43,7 @@ from cciw.bookings.models import (
     build_paypal_custom_field,
     expire_bookings,
 )
-from cciw.bookings.models.problems import BookingApproval
+from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -1107,14 +1107,14 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         self.officer_login(secretary := officers_factories.create_booking_secretary())
 
         self.get_url("admin:bookings_booking_change", booking.id)
-        self.fill_by_name({"approvals-0-approve": True})
+        self.fill_by_name({"approvals-0-status": ApprovalStatus.APPROVED})
         self.submit("[name=_save]")
 
         booking = Booking.objects.get()
         approval: BookingApproval = booking.approvals.get()
         assert approval.is_approved
-        assert approval.approved_by == secretary
-        assert approval.approved_at is not None
+        assert approval.checked_by == secretary
+        assert approval.checked_at is not None
 
         # TODO #56 - how should notifications work with multiple approvals?
         # self.assertTextPresent("An email has been sent")
@@ -1123,14 +1123,12 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
 
         # Unapprove:
         self.get_url("admin:bookings_booking_change", booking.id)
-        self.fill_by_name({"approvals-0-approve": False})
+        self.fill_by_name({"approvals-0-status": ApprovalStatus.DENIED})
         self.submit("[name=_save]")
 
         booking = Booking.objects.get()
         approval: BookingApproval = booking.approvals.get()
         assert not approval.is_approved
-        assert approval.approved_by is None
-        assert approval.approved_at is None
 
     def test_create(self):
         self.add_prices()

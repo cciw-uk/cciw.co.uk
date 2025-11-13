@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models.problems import BookingApproval
+from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
 from cciw.cciwmain import common
 from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
 from cciw.middleware.threadlocals import get_current_user
@@ -433,32 +433,20 @@ class SupportingInformationInline(DocumentRelatedModelAdminMixin, admin.StackedI
 
 
 class ApprovalsInlineForm(forms.ModelForm):
-    approve = forms.BooleanField(required=False)
-
-    def __init__(self, *args, initial=None, instance=None, **kwargs):
-        # This is only used to edit, not add.
-        if isinstance(instance, BookingApproval):
-            if initial is None:
-                initial = {}
-            initial["approve"] = instance.is_approved
-        super().__init__(*args, initial=initial, instance=instance, **kwargs)
-
     def save(self, commit=True):
-        approved = self.cleaned_data.get("approve", False)
-        if approved:
-            if self.instance.approved_at is None:
-                self.instance.approved_at = timezone.now()
-            if self.instance.approved_by is None:
-                self.instance.approved_by = get_current_user()
-        else:
-            self.instance.approved_at = None
-            self.instance.approved_by = None
+        status = ApprovalStatus(self.cleaned_data["status"])
+        if status != ApprovalStatus.PENDING:
+            old_status = BookingApproval.objects.filter(id=self.instance.id).values_list("status", flat=True)[0]
+            is_changed = status != old_status
+            if is_changed:
+                self.instance.checked_at = timezone.now()
+                self.instance.checked_by = get_current_user()
 
         return super().save(commit)
 
     class Meta:
         model = BookingApproval
-        fields = ["type", "description", "approved_at", "approved_by", "approve"]
+        fields = ["type", "description", "checked_at", "checked_by", "status"]
 
 
 class ApprovalsInline(admin.TabularInline):
@@ -466,7 +454,7 @@ class ApprovalsInline(admin.TabularInline):
     extra = 0
     form = ApprovalsInlineForm
     fields = ApprovalsInlineForm._meta.fields
-    readonly_fields = ["type", "description", "approved_at", "approved_by"]
+    readonly_fields = ["type", "description", "checked_at", "checked_by"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).current()

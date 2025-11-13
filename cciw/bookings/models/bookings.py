@@ -26,7 +26,15 @@ from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
 from .constants import DEFAULT_COUNTRY
 from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceChecker, PriceType
-from .problems import ApprovalNeeded, ApprovalNeededType, Blocker, BookingApproval, BookingProblem, Warning
+from .problems import (
+    ApprovalNeeded,
+    ApprovalNeededType,
+    ApprovalStatus,
+    Blocker,
+    BookingApproval,
+    BookingProblem,
+    Warning,
+)
 from .states import BookingState
 from .utils import early_bird_is_available
 
@@ -499,7 +507,10 @@ class Booking(models.Model):
         return ", ".join(r.short_description for r in self.saved_approvals_unapproved)
 
     def approve_booking_for_problem(self, type: ApprovalNeededType, user: User) -> None:
-        self.approvals.filter(type=type).update(approved_at=timezone.now(), approved_by=user)
+        # TODO #56 maybe we don't need this method
+        self.approvals.filter(type=type).update(
+            status=ApprovalStatus.APPROVED, checked_at=timezone.now(), checked_by=user
+        )
         self._clear_approvals_cache()
 
     def _clear_approvals_cache(self):
