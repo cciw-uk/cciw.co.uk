@@ -57,6 +57,8 @@ Roles:
       - bookings.BookingAccount/add
       - bookings.BookingAccount/change
       - bookings.BookingAccount/delete
+      # Approvals for special booking conditions
+      - bookings.BookingApproval/change
       # - "Supporting information" is used for bookings
       #   that requires extra evidence of suitablility of camper
       #   or regarding requests for discounts.

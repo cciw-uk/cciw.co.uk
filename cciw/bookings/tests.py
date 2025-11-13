@@ -43,6 +43,7 @@ from cciw.bookings.models import (
     build_paypal_custom_field,
     expire_bookings,
 )
+from cciw.bookings.models.problems import BookingApproval
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -1099,17 +1100,37 @@ def fix_autocomplete_fields(field_names):
 
 
 class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]), CreateBookingWebMixin, FuncBaseMixin):
-    def test_approve(self):
+    def test_approve_and_unapprove(self):
         self.booking_login()
-        booking = self.create_booking(price_type=PriceType.CUSTOM)
+        booking = self.create_booking(serious_illness=True)
 
-        self.officer_login(officers_factories.create_booking_secretary())
+        self.officer_login(secretary := officers_factories.create_booking_secretary())
+
         self.get_url("admin:bookings_booking_change", booking.id)
-        self.fill_by_name({"state": BookingState.APPROVED})
+        self.fill_by_name({"approvals-0-approve": True})
         self.submit("[name=_save]")
-        self.assertTextPresent("An email has been sent")
-        mails = send_queued_mail()
-        assert len(mails) == 1
+
+        booking = Booking.objects.get()
+        approval: BookingApproval = booking.approvals.get()
+        assert approval.is_approved
+        assert approval.approved_by == secretary
+        assert approval.approved_at is not None
+
+        # TODO #56 - how should notifications work with multiple approvals?
+        # self.assertTextPresent("An email has been sent")
+        # mails = send_queued_mail()
+        # assert len(mails) == 1
+
+        # Unapprove:
+        self.get_url("admin:bookings_booking_change", booking.id)
+        self.fill_by_name({"approvals-0-approve": False})
+        self.submit("[name=_save]")
+
+        booking = Booking.objects.get()
+        approval: BookingApproval = booking.approvals.get()
+        assert not approval.is_approved
+        assert approval.approved_by is None
+        assert approval.approved_at is None
 
     def test_create(self):
         self.add_prices()
