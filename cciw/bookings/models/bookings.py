@@ -34,6 +34,8 @@ from .problems import (
     BookingApproval,
     BookingProblem,
     Warning,
+    calculate_approvals_needed,
+    incorporate_approvals_granted,
 )
 from .states import BookingState
 from .utils import early_bird_is_available
@@ -381,6 +383,15 @@ class Booking(models.Model):
         else:
             self.amount_due = amount
 
+    @property
+    def amount_due_confirmed(self) -> None | Decimal:
+        # Where booking.price_type == PriceType.CUSTOM, and state is not approved,
+        # amount_due is zero, but this is meaningless.
+        # So we have this attribute that only returns a value if the amount is approved.
+        if self.price_type == PriceType.CUSTOM and not self.custom_price_is_approved:
+            return None
+        return self.amount_due
+
     def amount_now_due(self, today: date, *, allow_deposits, price_checker: PriceChecker) -> Decimal:
         # Amount due at this point of time. If allow_deposits=True, we take into
         # account the fact that only a deposit might be due. Otherwise we ignore
@@ -421,46 +432,11 @@ class Booking(models.Model):
     def is_too_old(self):
         return self.age_on_camp() > self.camp.maximum_age
 
-    def calculate_approvals_needed(self) -> list[ApprovalNeeded]:
-        def approval_needed(type: ANT, description: str):
-            return ApprovalNeeded(type=type, description=description, booking=self)
-
-        approvals_needed: list[ApprovalNeeded] = []
-        if self.serious_illness:
-            approvals_needed.append(
-                approval_needed(ANT.SERIOUS_ILLNESS, "Must be approved by leader due to serious illness/condition")
-            )
-        if self.is_custom_discount():
-            approvals_needed.append(
-                approval_needed(ANT.CUSTOM_PRICE, "A custom discount needs to be arranged by the booking secretary")
-            )
-
-        if self.is_too_young() or self.is_too_old():
-            camper_age = self.age_on_camp()
-            age_base = self.age_base_date().strftime("%e %B %Y")
-            camp: Camp = self.camp
-
-            if self.is_too_young():
-                approvals_needed.append(
-                    approval_needed(
-                        ANT.TOO_YOUNG,
-                        f"Camper will be {camper_age} which is below the minimum age ({camp.minimum_age}) on {age_base}",
-                    )
-                )
-            elif self.is_too_old():
-                approvals_needed.append(
-                    approval_needed(
-                        ANT.TOO_OLD,
-                        f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on {age_base}",
-                    )
-                )
-        return approvals_needed
-
     def update_approvals(self) -> None:
         """
         Updates the related BookingApproval objects
         """
-        currently_needed = self.calculate_approvals_needed()
+        currently_needed = calculate_approvals_needed(self)
         existing: dict[ANT, BookingApproval] = {app.type: app for app in self.approvals.all()}
 
         to_create: list[BookingApproval] = []
@@ -498,6 +474,10 @@ class Booking(models.Model):
     def saved_current_approvals(self) -> list[BookingApproval]:
         return [app for app in self._cached_approvals if app.is_current]
 
+    @cached_property
+    def saved_current_approvals_dict(self) -> dict[ANT, BookingApproval]:
+        return {ANT(app.type): app for app in self.saved_current_approvals}
+
     @property
     def saved_approvals_unapproved(self) -> list[BookingApproval]:
         return [app for app in self.saved_current_approvals if not app.is_approved]
@@ -505,6 +485,13 @@ class Booking(models.Model):
     @property
     def saved_approvals_needed_summary(self) -> str:
         return ", ".join(r.short_description for r in self.saved_approvals_unapproved)
+
+    @property
+    def custom_price_is_approved(self) -> bool:
+        try:
+            return self.saved_current_approvals_dict[ANT.CUSTOM_PRICE].is_approved
+        except KeyError:
+            return False
 
     def approve_booking_for_problem(self, type: ApprovalNeededType, user: User) -> None:
         # TODO #56 maybe we don't need this method
@@ -548,6 +535,9 @@ class Booking(models.Model):
         # saved approvals if this Booking has been saved to DB.
         # If it hasn't been saved, we shouldn't do database work, because
         # this code is used sometimes when it hasn't been saved.
+
+        # TODO #56 - user booking page should show individual status of approvals
+        # MAYBE - we should have explicit 'approved/denied/pending', and 'updated_at'
         if self.state == BookingState.APPROVED and not booking_sec:
             return []
 
@@ -562,7 +552,10 @@ class Booking(models.Model):
         def blocker(description: str) -> Blocker:
             return Blocker(description=description)
 
-        errors.extend(self.calculate_approvals_needed())
+        approvals_needed = calculate_approvals_needed(self)
+        if self.id is not None:
+            incorporate_approvals_granted(self, approvals_needed)
+        errors.extend(approvals_needed)
 
         relevant_bookings = self.account.bookings.for_year(camp.year).in_basket_or_booked()
         relevant_bookings_excluding_self = relevant_bookings.exclude(

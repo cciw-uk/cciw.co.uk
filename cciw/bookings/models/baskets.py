@@ -9,7 +9,7 @@ from .states import BookingState
 
 
 @transaction.atomic
-def book_basket_now(bookings_qs: BookingQuerySet):
+def book_basket_now(bookings_qs: BookingQuerySet | list[Booking]):
     """
     Book a basket of bookings, returning True if successful,
     False otherwise.

@@ -8,7 +8,7 @@
     {{ booking.camp.start_date|date:"j M Y" }}
   </td>
   <td class="price">
-    {% if booking.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ booking.amount_due_normalised }}{% endif %}
+    {% if booking.amount_due_confirmed|default_if_none:"None" == "None" %}TBA{% else %}£{{ booking.amount_due_confirmed }}{% endif %}
   </td>
   <td rowspan="2" class="bookinglistaction">
     <input
@@ -61,28 +61,40 @@
     >
   </td>
 </tr>
-<tr class="sectionbottom">
+<tr class="problemssection">
   <td colspan="3">
-    {% if booking.bookable %}
-      <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">This place can be booked
-      {% if booking.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
-    {% else %}
-      <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">This place cannot be booked:
-      <ul>
-        {% for p in booking.booking_errors %}
-          <li>{{ p }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    {% if booking.booking_warnings %}
-      <div>
-        <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">Warning:
-        <ul>
-          {% for w in booking.booking_warnings %}
-            <li>{{ w }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
+    <table class="innerborders">
+      {% for problem in booking.problems %}
+        <tr>
+          <td>
+            {% if problem.blocker %}
+              <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
+            {% elif problem.warning %}
+              <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">
+            {% else %}
+              {# for approvals that have been granted #}
+              <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
+            {% endif %}
+          </td>
+          <td>{{ problem.description }}</td>
+          <td><i>{{ problem.status_display }}</i></td>
+        </tr>
+      {% endfor %}
+      <tr>
+        {% if booking.bookable %}
+          <td>
+            <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
+          </td>
+          <td colspan="2">
+            This place can be booked
+          </td>
+        {% else %}
+          <td>
+            <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
+          </td>
+          <td colspan="2">This place cannot be booked</td>
+        {% endif %}
+      </tr>
+    </table>
   </td>
 </tr>

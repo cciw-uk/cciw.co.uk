@@ -33,7 +33,6 @@ from cciw.bookings.models import (
     AgreementFetcher,
     Booking,
     BookingAccount,
-    BookingState,
     CustomAgreement,
     Price,
     PriceChecker,
@@ -450,11 +449,11 @@ def list_bookings(request):
 def _list_bookings(request):
     year = common.get_thisyear()
     now = timezone.now()
-    bookings = request.booking_account.bookings.for_year(year).order_by("id").with_prefetch_camp_info()
+    bookings = request.booking_account.bookings.for_year(year).order_by("id").with_prefetch_camp_info().with_approvals()
     # NB - use lists here, not querysets, so that both state_token and book_now
     # functionality apply against same set of bookings.
-    basket_bookings = list(bookings.in_basket())
-    shelf_bookings = list(bookings.on_shelf())
+    basket_bookings: list[Booking] = list(bookings.in_basket())
+    shelf_bookings: list[Booking] = list(bookings.on_shelf())
 
     if request.method == "POST":
         if "add_another" in request.POST:
@@ -490,21 +489,13 @@ def _list_bookings(request):
     all_unbookable = True
     agreement_fetcher = AgreementFetcher()
     for booking_list in basket_bookings, shelf_bookings:
+        b: Booking
         for b in booking_list:
             # decorate object with some attributes to make it easier in template
             problems = b.get_booking_problems(agreement_fetcher=agreement_fetcher)
-            b.booking_errors = [p.description for p in problems if p.blocker]
-            b.booking_warnings = [p.description for p in problems if not p.blocker]
-            b.bookable = len(b.booking_errors) == 0
-            b.manually_approved = b.state == BookingState.APPROVED
-
-            # Where booking.price_type == PriceType.CUSTOM, and state is not approved,
-            # amount_due is zero, but this is meaningless.
-            # So we have a new attr, amount_due_normalised
-            if b.price_type == PriceType.CUSTOM and b.state != BookingState.APPROVED:
-                b.amount_due_normalised = None
-            else:
-                b.amount_due_normalised = b.amount_due
+            any_blocker = any(p.blocker for p in problems)
+            b.bookable = not any_blocker
+            b.problems = problems
 
             # For basket bookings only:
             if not b.shelved:
@@ -513,10 +504,10 @@ def _list_bookings(request):
                 else:
                     all_bookable = False
 
-                if b.amount_due_normalised is None or total is None:
+                if b.amount_due_confirmed is None or total is None:
                     total = None
                 else:
-                    total = total + b.amount_due_normalised
+                    total = total + b.amount_due_confirmed
 
     discounts = defaultdict(lambda: Decimal("0.00"))
     for b in basket_bookings:

@@ -1544,7 +1544,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking(name="Frédéric Bloggs")  # bookable
         booking2 = self.create_booking(name="Another Child", price_type=PriceType.CUSTOM)
-        Booking.objects.filter(id=booking2.id).update(state=BookingState.APPROVED, amount_due=Decimal("0.01"))
+        booking2.approve_booking_for_problem(type=ANT.CUSTOM_PRICE, user=officers_factories.create_booking_secretary())
+        Booking.objects.filter(id=booking2.id).update(amount_due=Decimal("0.01"))
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")

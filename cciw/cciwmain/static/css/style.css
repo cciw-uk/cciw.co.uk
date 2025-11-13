@@ -448,7 +448,7 @@ which we've already started to use
         > * > tr > th, > tbody > tr > td {
             padding: 2px 5px;
             vertical-align: top;
-            border: solid 1px #336633;
+            border: solid 1px var(--primaryColor);
         }
 
         > * > tr > th {
@@ -482,6 +482,30 @@ which we've already started to use
         white-space: nowrap;
     }
 
+    table.innerborders {
+        width: 100%;
+        border-collapse: collapse;
+        > tbody > tr > td {
+            padding: 2px 5px;
+            border: solid 1px var(--primaryColor);
+
+            &:first-child {
+                border-left: 0px;
+            }
+            &:last-child {
+                border-right: 0px;
+            }
+        }
+        > tbody > tr {
+            &:first-child > td {
+                border-top: 0px;
+            }
+            &:last-child > td {
+                border-bottom: 0px;
+            }
+        }
+
+    }
 
     table > tbody > tr.spacer > td {
         border-left-width: 0px;
@@ -808,7 +832,11 @@ which we've already started to use
             font-weight: bold;
         }
 
-        tr.sectionbottom td, td.bookinglistaction {
+        tr.problemssection > td {
+            margin: 0;
+            padding: 0;
+        }
+        tr.problemssection > td, td.bookinglistaction {
             border-bottom-width: 2px;
         }
 
