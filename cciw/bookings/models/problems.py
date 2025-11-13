@@ -72,7 +72,10 @@ class Warning:
 
 class BookingApprovalQuerySet(models.QuerySet):
     def need_approving(self):
-        return self.filter(is_current=True, approved_at__isnull=True)
+        return self.current().filter(approved_at__isnull=True)
+
+    def current(self):
+        return self.filter(is_current=True)
 
 
 BookingApprovalManager = models.Manager.from_queryset(BookingApprovalQuerySet)

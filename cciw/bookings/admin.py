@@ -4,11 +4,14 @@ from django.db.models import ManyToOneRel, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
+from cciw.bookings.models.problems import BookingApproval
 from cciw.cciwmain import common
 from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
+from cciw.middleware.threadlocals import get_current_user
 from cciw.utils.admin import RerouteResponseAdminMixin
 
 from .models import (
@@ -429,6 +432,46 @@ class SupportingInformationInline(DocumentRelatedModelAdminMixin, admin.StackedI
         )
 
 
+class ApprovalsInlineForm(forms.ModelForm):
+    approve = forms.BooleanField(required=False)
+
+    def __init__(self, *args, initial=None, instance=None, **kwargs):
+        # This is only used to edit, not add.
+        if isinstance(instance, BookingApproval):
+            if initial is None:
+                initial = {}
+            initial["approve"] = instance.is_approved
+        super().__init__(*args, initial=initial, instance=instance, **kwargs)
+
+    def save(self, commit=True):
+        approved = self.cleaned_data.get("approve", False)
+        if approved:
+            if self.instance.approved_at is None:
+                self.instance.approved_at = timezone.now()
+            if self.instance.approved_by is None:
+                self.instance.approved_by = get_current_user()
+        else:
+            self.instance.approved_at = None
+            self.instance.approved_by = None
+
+        return super().save(commit)
+
+    class Meta:
+        model = BookingApproval
+        fields = ["type", "description", "approved_at", "approved_by", "approve"]
+
+
+class ApprovalsInline(admin.TabularInline):
+    model = BookingApproval
+    extra = 0
+    form = ApprovalsInlineForm
+    fields = ApprovalsInlineForm._meta.fields
+    readonly_fields = ["type", "description", "approved_at", "approved_by"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).current()
+
+
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     def camp(booking):
@@ -462,7 +505,7 @@ class BookingAdmin(admin.ModelAdmin):
 
     form = BookingAdminForm
 
-    inlines = [SupportingInformationInline]
+    inlines = [ApprovalsInline, SupportingInformationInline]
 
     fieldsets = (
         (
