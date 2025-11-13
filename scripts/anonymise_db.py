@@ -473,7 +473,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "medical_card_number": same_length_number,
     "last_tetanus_injection_date": make_date_same_year,
     "allergies": make_empty,
-    "regular_medication_required": keep,
+    "regular_medication_required": similar_length_text,
     "illnesses": similar_length_text,
     "can_swim_25m": keep,
     "learning_difficulties": similar_length_text,
