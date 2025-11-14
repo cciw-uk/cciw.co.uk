@@ -608,40 +608,58 @@ class BookingAdmin(admin.ModelAdmin):
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).select_related("camp__camp_name")
 
-    def save_model(self, request, obj: Booking, form, change):
-        if obj.id is not None:
-            old_state = Booking.objects.get(id=obj.id).state
+    def save_model(self, request, obj, form, change):
+        booking: Booking = obj
+        if booking.id is not None:
+            old_state = Booking.objects.get(id=booking.id).state
         else:
             old_state = None
-        if obj.state in [BookingState.CANCELLED_FULL_REFUND, BookingState.CANCELLED_DEPOSIT_KEPT]:
-            obj.auto_set_amount_due()
-        retval = super().save_model(request, obj, form, change)
+        if booking.state in [BookingState.CANCELLED_FULL_REFUND, BookingState.CANCELLED_DEPOSIT_KEPT]:
+            booking.auto_set_amount_due()
+        retval = super().save_model(request, booking, form, change)
 
         # NB: do this handling here, not in BookingAdminForm.save(),
         # because we want to make sure it is only done when the model is actually
         # saved.
         manual_amount = form.cleaned_data.get("manual_payment_amount", None)
         if manual_amount:
-            obj.account.manual_payments.create(
+            booking.account.manual_payments.create(
                 amount=manual_amount, payment_type=int(form.cleaned_data["manual_payment_payment_type"])
             )
 
-        if old_state == BookingState.INFO_COMPLETE and obj.state == BookingState.APPROVED:
-            email_sent = send_booking_approved_mail(obj)
+        if old_state != booking.state and booking.state == BookingState.BOOKED:
+            email_sent = send_booking_confirmed_mail(booking)
             if email_sent:
                 messages.info(
                     request,
-                    f"An email has been sent to {obj.account.email} telling them the place has been approved.",
-                )
-        if old_state != obj.state and obj.state == BookingState.BOOKED:
-            email_sent = send_booking_confirmed_mail(obj)
-            if email_sent:
-                messages.info(
-                    request,
-                    f"A confirmation email has been sent to {obj.account.email} "
+                    f"A confirmation email has been sent to {booking.account.email} "
                     f"telling them the place has been booked.",
                 )
-        obj.update_approvals()
+        booking.update_approvals()
+        return retval
+
+    def save_related(self, request, form, formsets, change):
+        booking: Booking = form.instance
+        if booking.id is not None:
+            # Don't rely on cached values on Booking object, so query BookingApproval directly
+            approvals_were_needed = BookingApproval.objects.filter(booking_id=booking.id).need_approving().exists()
+        else:
+            approvals_were_needed = False
+
+        retval = super().save_related(request, form, formsets, change)
+
+        everything_is_now_approved = all(
+            app.is_approved for app in BookingApproval.objects.filter(booking_id=booking.id).current()
+        )
+
+        if approvals_were_needed and everything_is_now_approved:
+            email_sent = send_booking_approved_mail(booking)
+            if email_sent:
+                messages.info(
+                    request,
+                    f"An email has been sent to {booking.account.email} telling them the place has been approved.",
+                )
+
         return retval
 
 

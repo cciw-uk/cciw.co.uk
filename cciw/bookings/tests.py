@@ -1116,10 +1116,11 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         assert approval.checked_by == secretary
         assert approval.checked_at is not None
 
-        # TODO #56 - how should notifications work with multiple approvals?
-        # self.assertTextPresent("An email has been sent")
-        # mails = send_queued_mail()
-        # assert len(mails) == 1
+        self.assertTextPresent(
+            f"An email has been sent to {booking.account.email} telling them the place has been approved"
+        )
+        mails = send_queued_mail()
+        assert len(mails) == 1
 
         # Unapprove:
         self.get_url("admin:bookings_booking_change", booking.id)
