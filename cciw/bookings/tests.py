@@ -1027,7 +1027,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking()
         b = account.bookings.get()
 
-        for state in [BookingState.APPROVED, BookingState.BOOKED]:
+        for state in [BookingState.BOOKED]:
             b.state = state
             b.save()
 
@@ -2206,7 +2206,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
 
         data = self._initial_place_details()
         data["account"] = str(acc1.id)
-        data["state"] = BookingState.APPROVED
+        data["state"] = BookingState.INFO_COMPLETE
         data["amount_due"] = "100.00"
         data["price_type"] = PriceType.CUSTOM
         j = self._booking_problems_json(data)

@@ -66,8 +66,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self._ready_to_book(shelved=True)
 
     def _ready_to_book(self, *, shelved):
-        qs = self.filter(shelved=shelved)
-        return qs.filter(state=BookingState.INFO_COMPLETE) | qs.filter(state=BookingState.APPROVED)
+        return self.filter(shelved=shelved, state=BookingState.INFO_COMPLETE)
 
     def booked(self):
         return self.filter(state=BookingState.BOOKED)
@@ -523,24 +522,6 @@ class Booking(models.Model):
         If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
-        # TODO #56 NEXT - rework this so that we don't have a single `APPROVED` state,
-        # but each fixable problem can be manually approved.
-        #
-        # - saving a Booking could create a `BookingApproval`
-        #   - migration - create past records?
-        # - loading should include them in bulk
-        # - on the booking page we should status
-
-        # TODO #56 - instead of this, we need to be able to take into account
-        # saved approvals if this Booking has been saved to DB.
-        # If it hasn't been saved, we shouldn't do database work, because
-        # this code is used sometimes when it hasn't been saved.
-
-        # TODO #56 - user booking page should show individual status of approvals
-        # MAYBE - we should have explicit 'approved/denied/pending', and 'updated_at'
-        if self.state == BookingState.APPROVED and not booking_sec:
-            return []
-
         return list(self.get_booking_errors(booking_sec=booking_sec, agreement_fetcher=agreement_fetcher)) + list(
             self.get_booking_warnings(booking_sec=booking_sec)
         )
