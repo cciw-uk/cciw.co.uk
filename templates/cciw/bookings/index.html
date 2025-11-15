@@ -19,11 +19,13 @@
 
   <h2>Prices {{ thisyear }}</h2>
 
-  {% if booking_open %}
+  {% if prices_set %}
 
-    <div style="float: right;">
-      <a class="bigaction booknow" href="{% url 'cciw-bookings-start' %}">Book online now!</a>
-    </div>
+    {% if booking_open %}
+      <div style="float: right;">
+        <a class="bigaction booknow" href="{% url 'cciw-bookings-start' %}">Book online now!</a>
+      </div>
+    {% endif %}
 
     {% if price_early_bird_discount > 0 and early_bird_available %}
       <p><b>Early bird discount of £{{ price_early_bird_discount }}

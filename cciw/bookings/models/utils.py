@@ -8,6 +8,8 @@ from django.utils import timezone
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
+from .prices import are_prices_set_for_year
+
 
 def any_bookings_possible(year: int):
     camps = Camp.objects.filter(year=year)
@@ -18,11 +20,7 @@ def is_booking_open(year: int):
     """
     When passed a given year, returns True if booking is open.
     """
-    from .prices import REQUIRED_PRICE_TYPES, Price
-
-    return (
-        Price.objects.required_for_booking().filter(year=year).count() == len(REQUIRED_PRICE_TYPES)
-    ) and Camp.objects.filter(year=year).exists()
+    return are_prices_set_for_year(year)
 
 
 def is_booking_open_thisyear():

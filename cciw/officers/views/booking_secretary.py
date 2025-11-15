@@ -7,7 +7,8 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 
-from cciw.bookings.models import Booking, Price, is_booking_open
+from cciw.bookings.models import Booking, Price
+from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.stats import get_booking_summary_stats
 from cciw.bookings.utils import (
     addresses_for_mailing_list,
@@ -167,7 +168,7 @@ def booking_problems_json(request):
         instance: Booking = form.save(commit=False)
         # We will get errors later on if prices don't exist for the year chosen, so
         # we check that first.
-        if not is_booking_open(instance.camp.year):
+        if not are_prices_set_for_year(instance.camp.year):
             retval["problems"] = [f"Prices have not been set for the year {instance.camp.year}"]
         else:
             problems = instance.get_booking_problems(booking_sec=True)

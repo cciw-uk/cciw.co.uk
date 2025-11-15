@@ -45,6 +45,7 @@ from cciw.bookings.models import (
     is_booking_open,
     is_booking_open_thisyear,
 )
+from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, htmx_form_validate
 from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
@@ -81,15 +82,16 @@ def index(request):
     if os.path.isfile(f"{settings.MEDIA_ROOT}/{bookingform_relpath}"):
         context["bookingform"] = bookingform_relpath
     booking_open = is_booking_open(year)
+    prices_set = are_prices_set_for_year(year)
 
-    def getp(v):
+    def getp(v: PriceType) -> Decimal | None:
         # Helper for getting price from incomplete list
         try:
             return [p for p in prices if p.price_type == v][0].price
         except IndexError:
             return None
 
-    if booking_open:
+    if prices_set:
         prices = Price.objects.for_year(year)
         now = timezone.now()
         early_bird_available = early_bird_is_available(year, now)
@@ -104,7 +106,7 @@ def index(request):
 
     prices = list(prices.required_for_booking())
 
-    price_list = [
+    price_list: list[tuple[str, Decimal | None]] = [
         ("Full price", getp(PriceType.FULL)),
         ("2nd camper from the same family", getp(PriceType.SECOND_CHILD)),
         ("Subsequent children from the same family", getp(PriceType.THIRD_CHILD)),
@@ -112,15 +114,17 @@ def index(request):
     if any(p is None for _, p in price_list):
         price_list = []
     # Add discounts:
-    price_list = [
-        (caption, p, p - early_bird_discount if early_bird_discount is not None else 0) for caption, p in price_list
+    price_list_with_discounts: list[tuple[str, Decimal | None, Decimal]] = [
+        (caption, p, p - early_bird_discount if (p is not None and early_bird_discount is not None) else Decimal(0))
+        for caption, p in price_list
     ]
 
     context.update(
         {
-            "price_list": price_list,
+            "price_list": price_list_with_discounts,
             "price_deposit": getp(PriceType.DEPOSIT),
             "price_early_bird_discount": early_bird_discount,
+            "prices_set": prices_set,
             "booking_open": booking_open,
             "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
             "full_payment_due_time": settings.BOOKING_FULL_PAYMENT_DUE_DISPLAY,

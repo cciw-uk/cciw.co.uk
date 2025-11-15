@@ -317,9 +317,9 @@ class BookingAdminForm(forms.ModelForm):
         ]
 
 
-def make_change_state_action(state, display_name):
+def make_change_state_action(state: BookingState, display_name):
     def change_state(modeladmin, request, queryset):
-        bookings = list(queryset)
+        bookings: list[Booking] = list(queryset)
         count = 0
         for booking in bookings:
             if booking.state != state:
