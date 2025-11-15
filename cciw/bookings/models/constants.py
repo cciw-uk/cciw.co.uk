@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from django.db import models
+
 DEFAULT_COUNTRY = "GB"
 
 KEEP_FINANCIAL_RECORDS_FOR = timedelta(days=3 * 365 + 1)
@@ -18,3 +20,8 @@ KEEP_FINANCIAL_RECORDS_FOR = timedelta(days=3 * 365 + 1)
 # defined in data_retention.yaml are not applied (since they define automatic
 # erasure, not manual ones), which is why they must also be present in
 # `not_in_use()` methods.
+
+
+class Sex(models.TextChoices):
+    MALE = "m", "Male"
+    FEMALE = "f", "Female"

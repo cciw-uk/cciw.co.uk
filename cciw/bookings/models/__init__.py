@@ -13,9 +13,8 @@ from .bookings import (
     BOOKING_PLACE_CONTACT_ADDRESS_DETAILS,
     BOOKING_PLACE_GP_DETAILS,
     Booking,
-    Sex,
 )
-from .constants import KEEP_FINANCIAL_RECORDS_FOR
+from .constants import KEEP_FINANCIAL_RECORDS_FOR, Sex
 from .expiry import expire_bookings
 from .payments import (
     AccountTransferPayment,
