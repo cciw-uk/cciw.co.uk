@@ -9,6 +9,7 @@ from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
+from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain import common
 from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
 from cciw.middleware.threadlocals import get_current_user
@@ -721,6 +722,11 @@ class AccountTransferPaymentAdmin(admin.ModelAdmin):
 class CustomAgreementAdmin(admin.ModelAdmin):
     list_display = ["name", "year", "active", "sort_order"]
     fieldsets = [(None, {"fields": ["name", "year", "text_html", "active", "sort_order"]})]
+
+
+@admin.register(YearConfig)
+class YearConfigAdmin(admin.ModelAdmin):
+    list_display = ["year", "bookings_open_for_entry_on", "bookings_open_for_booking_at"]
 
 
 admin.site.register(SupportingInformationType)

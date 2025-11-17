@@ -43,7 +43,9 @@ from cciw.bookings.models import (
     build_paypal_custom_field,
     expire_bookings,
 )
+from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
+from cciw.bookings.models.yearconfig import YearConfig, is_booking_open
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -151,6 +153,23 @@ class CreateBookingWebMixin(BookingLogInMixin):
             start_date=start_date + timedelta(days=7),
         )
 
+    def open_bookings(self) -> None:
+        self.add_prices()
+        self.create_year_config(open=True)
+
+    def ensure_bookings_open(self, *, year: int | None = None):
+        year = year or self.camp.year
+        if not are_prices_set_for_year(year):
+            self.add_prices()
+        if not YearConfig.objects.filter(year=year).exists():
+            self.create_year_config()
+        assert is_booking_open(year)
+
+    def create_year_config(self, *, open: bool = True, year: int | None = None) -> YearConfig:
+        time = "past" if open else "future"
+        year: int = year or self.camp.year
+        return factories.create_year_config(year=year, open_for_booking_at=time, open_for_entry_on=time)
+
     def add_prices(self, deposit=Auto, early_bird_discount=Auto):
         if hasattr(self, "price_full"):
             return
@@ -179,12 +198,16 @@ class CreateBookingWebMixin(BookingLogInMixin):
         """
         Creates a booking, normally using views.
         """
+        if camp is Auto:
+            camp = self.camp
         if shortcut is Auto:
             # To speed up full browser test, we create booking using the shortcut
             shortcut = self.is_full_browser_test
 
-        # DWIM - we always want prices to existing if we call 'create_booking()'
-        self.add_prices()
+        # DWIM - we always want prices to exist and bookings to be open if we
+        # call 'create_booking()':
+        self.ensure_bookings_open(year=camp.year)
+
         data = self.get_place_details(
             camp=camp,
             first_name=first_name,
@@ -304,7 +327,7 @@ class BookingBaseMixin(AtomicChecksMixin):
     NO_PLACES_LEFT = "There are no places left on this camp"
     NO_PLACES_LEFT_FOR_BOYS = "There are no places left for boys"
     NO_PLACES_LEFT_FOR_GIRLS = "There are no places left for girls"
-    PRICES_NOT_SET = "prices have not been set"
+    BOOKING_IS_NOT_OPEN = "Booking is not yet open"
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
     BOOKINGS_WILL_EXPIRE = "you have 24 hours to complete payment online"
     THANK_YOU_FOR_PAYMENT = "Thank you for your payment"
@@ -780,41 +803,42 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
         self.assertUrlsEqual(reverse(self.urlname))
 
-    def test_show_error_if_no_prices(self):
+    def test_show_error_if_not_open(self):
         self.booking_login()
         self.get_url(self.urlname)
-        self.assertTextPresent(self.PRICES_NOT_SET)
+        self.assertTextPresent(self.BOOKING_IS_NOT_OPEN)
 
-    def test_post_not_allowed_if_no_prices(self):
+    def test_post_not_allowed_if_not_open(self):
         self.booking_login()
         self.get_url(self.urlname)
         assert not self.is_element_present(self.SAVE_BTN)
 
-        self.add_prices()
+        self.open_bookings()
         self.get_url(self.urlname)
         data = self.get_place_details()
         self.fill_by_name(data)
         # Now remove prices, just to be awkward:
         Price.objects.all().delete()
         self.submit()
-        self.assertTextPresent(self.PRICES_NOT_SET)
+        self.assertTextPresent(self.BOOKING_IS_NOT_OPEN)
 
-    def test_allowed_if_prices_set(self):
+    def test_allowed_if_prices_set_and_year_config_open(self):
         self.booking_login()
         self.add_prices()
+        self.create_year_config(open=True)
         self.get_url(self.urlname)
-        self.assertTextAbsent(self.PRICES_NOT_SET)
+        self.assertTextAbsent(self.BOOKING_IS_NOT_OPEN)
 
     def test_incomplete(self):
         self.booking_login()
-        self.add_prices()
+        self.open_bookings()
         self.get_url(self.urlname)
         self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("This field is required")
 
     def test_complete(self):
         account = self.booking_login()
-        self.add_prices()
+        self.open_bookings()
         self.get_url(self.urlname)
         assert account.bookings.count() == 0
         data = self.get_place_details()
@@ -839,7 +863,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             text_html=(agreement_text := "Do you agree to give us all your money?"),
         )
         account = self.booking_login()
-        self.add_prices()
+        self.open_bookings()
         self.get_url(self.urlname)
         self.assertTextPresent(agreement_name)
         self.assertTextPresent(agreement_text)
@@ -1132,7 +1156,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         assert not approval.is_approved
 
     def test_create(self):
-        self.add_prices()
+        self.open_bookings()
         self.officer_login(officers_factories.create_booking_secretary())
         account = BookingAccount.objects.create(
             email=self.booker_email,
@@ -1846,7 +1870,7 @@ class TestListBookingsSL(ListBookingsBase, SeleniumBase):
 class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_balance_empty(self):
         self.booking_login()
-        self.add_prices()
+        self.open_bookings()
         self.get_url("cciw-bookings-pay")
         self.assertTextPresent("£0.00")
 
@@ -2194,7 +2218,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
         return data
 
     def test_booking_problems(self):
-        self.add_prices()
+        self.open_bookings()
         acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
         officer = officers_factories.create_booking_secretary()
         self.client.force_login(officer)
@@ -2216,7 +2240,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
     def test_booking_problems_price_check(self):
         # Test that the price is checked.
         # This is a check that is only run for booking secretary
-        self.add_prices()
+        self.open_bookings()
         acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
         officer = officers_factories.create_booking_secretary()
         self.client.force_login(officer)
@@ -2234,7 +2258,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
     def test_booking_problems_deposit_check(self):
         # Test that the price is checked.
         # This is a check that is only run for booking secretary
-        self.add_prices()
+        self.open_bookings()
         acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
         officer = officers_factories.create_booking_secretary()
         self.client.force_login(officer)
@@ -2257,7 +2281,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
         assert any(p.startswith("The 'amount due' is not the expected value of £0.00") for p in j["problems"])
 
     def test_booking_problems_early_bird_check(self):
-        self.add_prices()
+        self.open_bookings()
         acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
         officer = officers_factories.create_booking_secretary()
         self.client.force_login(officer)
@@ -2960,3 +2984,24 @@ def test_tolerate_truncated_trailing_equals(email):
         return s.rstrip("=")
 
         assert v.email_from_token(remove_equals(v.token_for_email(email))) == email
+
+
+@pytest.mark.django_db
+def test_booking_open():
+    # Initially:
+    year = datetime.today().year  # doesn't really matter
+    assert not is_booking_open(year)
+
+    factories.create_prices(year=year)
+    assert not is_booking_open(year)
+
+    config = factories.create_year_config(year=year, open_for_booking_at="future", open_for_entry_on="future")
+    assert not is_booking_open(year)
+    config.delete()
+
+    config = factories.create_year_config(year=year, open_for_booking_at="past", open_for_entry_on="past")
+    assert is_booking_open(year)
+
+    # Deleting prices closes booking
+    Price.objects.all().delete()
+    assert not is_booking_open(year)

@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 from decimal import Decimal
+from typing import Literal
 
 from django.conf import settings
 from django.utils import timezone
@@ -21,6 +22,7 @@ from cciw.bookings.models import (
     WriteOffDebt,
     build_paypal_custom_field,
 )
+from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.utils.tests.factories import Auto, sequence
@@ -290,3 +292,26 @@ def create_supporting_information(
     )
 
     return supporting_information
+
+
+def create_year_config(
+    *,
+    year: int,
+    open_for_entry_on: date | Literal["past", "future"] = "future",
+    open_for_booking_at: datetime | Literal["past", "future"] = "future",
+) -> YearConfig:
+    if open_for_entry_on == "past":
+        open_for_entry_on = datetime.today() - timedelta(days=1)
+    elif open_for_entry_on == "future":
+        open_for_entry_on = datetime.today() + timedelta(days=1)
+
+    if open_for_booking_at == "past":
+        open_for_booking_at = timezone.now() - timedelta(days=1)
+    elif open_for_booking_at == "future":
+        open_for_booking_at = timezone.now() + timedelta(days=1)
+
+    return YearConfig.objects.create(
+        year=year,
+        bookings_open_for_booking_at=open_for_booking_at,
+        bookings_open_for_entry_on=open_for_entry_on,
+    )

@@ -1,5 +1,7 @@
+from collections.abc import Iterable
 from datetime import datetime
 
+from django.db import models
 from django.utils import timezone
 
 from cciw.cciwmain import common
@@ -8,8 +10,25 @@ from cciw.cciwmain.models import Camp
 from .prices import are_prices_set_for_year
 
 
+class YearConfig(models.Model):
+    year = models.PositiveSmallIntegerField(unique=True)
+    bookings_open_for_entry_on = models.DateField(
+        verbose_name="open for data entry", help_text="The date that people can start to fill in booking details"
+    )
+    bookings_open_for_booking_at = models.DateTimeField(
+        verbose_name="open for booking", help_text="The date that we allow people to press 'Book'"
+    )
+
+    def __str__(self) -> str:
+        return f"Config for {self.year}"
+
+
+def get_year_config(year: int) -> YearConfig | None:
+    return YearConfig.objects.filter(year=year).first()
+
+
 def any_bookings_possible(year: int) -> bool:
-    camps = Camp.objects.filter(year=year)
+    camps: Iterable[Camp] = Camp.objects.filter(year=year)
     return any(c.get_places_left().total > 0 and c.is_open_for_bookings for c in camps)
 
 
@@ -17,7 +36,17 @@ def is_booking_open(year: int) -> bool:
     """
     When passed a given year, returns True if booking is open.
     """
-    return are_prices_set_for_year(year)
+    if not are_prices_set_for_year(year):
+        return False
+
+    year_config = get_year_config(year)
+    if year_config is None:
+        return False
+
+    if timezone.now() < year_config.bookings_open_for_booking_at:
+        return False
+
+    return True
 
 
 def is_booking_open_thisyear() -> bool:

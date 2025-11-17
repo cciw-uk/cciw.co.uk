@@ -50,6 +50,10 @@ Roles:
       - officers.QualificationType/view
   Booking secretaries:
     Permissions:
+      # Need to be able to set dates for opening booking
+      - bookings.YearConfig/add
+      - bookings.YearConfig/change
+      - bookings.YearConfig/delete
       # Need to be able to add and change bookings and their accounts
       - bookings.Booking/add
       - bookings.Booking/change

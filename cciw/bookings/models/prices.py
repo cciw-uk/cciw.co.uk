@@ -3,8 +3,6 @@ from decimal import Decimal
 
 from django.db import models
 
-from cciw.cciwmain.models import Camp
-
 
 # Price types that can be selected in a booking or appear in Prices table.
 class PriceType(models.IntegerChoices):
@@ -105,6 +103,4 @@ class PriceChecker:
 
 
 def are_prices_set_for_year(year: int) -> bool:
-    return (
-        Price.objects.required_for_booking().filter(year=year).count() == len(REQUIRED_PRICE_TYPES)
-    ) and Camp.objects.filter(year=year).exists()
+    return Price.objects.required_for_booking().filter(year=year).count() == len(REQUIRED_PRICE_TYPES)
