@@ -1,6 +1,3 @@
-# TODO We may want to move these utilities into a `dates` module. We probably
-# want a `BookingConfig` model that gives dates for booking opening, and these
-# may become method on that.
 from datetime import datetime
 
 from django.utils import timezone

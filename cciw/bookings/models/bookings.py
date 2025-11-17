@@ -32,7 +32,7 @@ from .problems import (
     get_booking_problems,
 )
 from .states import BookingState
-from .utils import early_bird_is_available
+from .yearconfig import early_bird_is_available
 
 if TYPE_CHECKING:
     from .problems import BookingApproval

@@ -34,7 +34,7 @@ from .problems import ApprovalNeeded, ApprovalNeededType
 from .reports import booking_report_by_camp, outstanding_bookings_with_fees
 from .states import BookingState
 from .supporting_information import SupportingInformation, SupportingInformationDocument, SupportingInformationType
-from .utils import (
+from .yearconfig import (
     any_bookings_possible,
     early_bird_is_available,
     get_early_bird_cutoff_date,

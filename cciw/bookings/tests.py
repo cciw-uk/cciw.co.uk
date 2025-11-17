@@ -2595,7 +2595,7 @@ class TestEarlyBird(TestBase):
     def test_book_basket_applies_discount(self):
         booking = factories.create_booking()
         year = booking.camp.year
-        with mock.patch("cciw.bookings.models.utils.get_early_bird_cutoff_date") as mock_f:
+        with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the future
             mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
             book_basket_now([booking])
@@ -2607,7 +2607,7 @@ class TestEarlyBird(TestBase):
 
     def test_book_basket_doesnt_apply_discount(self):
         booking = factories.create_booking()
-        with mock.patch("cciw.bookings.models.utils.get_early_bird_cutoff_date") as mock_f:
+        with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the past
             mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
             book_basket_now([booking])
@@ -2629,7 +2629,7 @@ class TestEarlyBird(TestBase):
         booking = factories.create_booking()
         mail.outbox = []
         account = booking.account
-        with mock.patch("cciw.bookings.models.utils.get_early_bird_cutoff_date") as mock_f:
+        with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
             mock_f.return_value = timezone.now() - timedelta(days=10)
             book_basket_now([booking])
             account.receive_payment(booking.amount_due)
