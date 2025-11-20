@@ -8,8 +8,15 @@
   {% if basket_bookings %}
 
     {% if all_bookable %}
-      <p>The places below are ready to be booked — but not booked yet!
-        Please continue by choosing from the options below.</p>
+      {% if booking_open_data.is_open_for_booking %}
+        <p>The places below are ready to be booked — but not booked yet!
+          Please continue by choosing from the options below.</p>
+      {% else %}
+        <p>The places below are ready to be booked. However,
+          you will need to return on <b>{{ booking_open_data.opens_for_booking_at|date:"j F" }}</b>,
+          when bookings will formally open, to complete the process.
+        </p>
+      {% endif %}
     {% endif %}
 
     <table class="topheaders bookinglist">
@@ -59,7 +66,7 @@
           <input type="submit" name="add_another" value="Add another place" class="bigaction">
           <input type="submit" name="book_now" value="Book now" id="id_book_now_btn"
                  class="bigaction"
-                 {% if not all_bookable %} disabled{% endif %}>
+                 {% if not all_bookable or not booking_open_data.is_open_for_booking %} disabled{% endif %}>
         </div>
       </div>
 
@@ -81,6 +88,10 @@
 
           <p>You can also use the 'save for later' button on the place(s) that cannot be booked,
             and book the other place(s).</p>
+        {% endif %}
+        {% if not booking_open_data.is_open_for_booking %}
+          <p>Bookings will not formally open until <b>{{ booking_open_data.opens_for_booking_at|date:"j F" }}</b>,
+            you will need to return after that date to actually book this place.</p>
         {% endif %}
       {% endif %}
     </form>

@@ -45,7 +45,7 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
-from cciw.bookings.models.yearconfig import YearConfig, is_booking_open
+from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -153,22 +153,31 @@ class CreateBookingWebMixin(BookingLogInMixin):
             start_date=start_date + timedelta(days=7),
         )
 
-    def open_bookings(self) -> None:
+    def open_bookings(self, *, for_data_entry_only: bool = False) -> None:
         self.add_prices()
-        self.create_year_config(open=True)
+        if for_data_entry_only:
+            self.create_year_config(open_for_booking=False, open_for_data_entry=True)
+        else:
+            self.create_year_config(open_for_booking=True)
 
     def ensure_bookings_open(self, *, year: int | None = None):
         year = year or self.camp.year
+        assert isinstance(year, int)
         if not are_prices_set_for_year(year):
             self.add_prices()
         if not YearConfig.objects.filter(year=year).exists():
             self.create_year_config()
-        assert is_booking_open(year)
+        assert get_booking_open_data(year).is_open_for_booking
 
-    def create_year_config(self, *, open: bool = True, year: int | None = None) -> YearConfig:
-        time = "past" if open else "future"
+    def create_year_config(
+        self, *, open_for_data_entry: bool = True, open_for_booking: bool = True, year: int | None = None
+    ) -> YearConfig:
+        time_for_booking = "past" if open_for_booking else "future"
+        date_for_data_entry = "past" if open_for_data_entry else "future"
         year: int = year or self.camp.year
-        return factories.create_year_config(year=year, open_for_booking_at=time, open_for_entry_on=time)
+        return factories.create_year_config(
+            year=year, open_for_booking_at=time_for_booking, open_for_entry_on=date_for_data_entry
+        )
 
     def add_prices(self, deposit=Auto, early_bird_discount=Auto):
         if hasattr(self, "price_full"):
@@ -813,7 +822,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
         assert not self.is_element_present(self.SAVE_BTN)
 
-        self.open_bookings()
+        self.open_bookings(for_data_entry_only=True)
         self.get_url(self.urlname)
         data = self.get_place_details()
         self.fill_by_name(data)
@@ -822,10 +831,10 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit()
         self.assertTextPresent(self.BOOKING_IS_NOT_OPEN)
 
-    def test_allowed_if_prices_set_and_year_config_open(self):
+    def test_allowed_if_prices_set_and_year_config_open_for_data_entry(self):
         self.booking_login()
         self.add_prices()
-        self.create_year_config(open=True)
+        self.create_year_config(open_for_data_entry=True)
         self.get_url(self.urlname)
         self.assertTextAbsent(self.BOOKING_IS_NOT_OPEN)
 
@@ -2990,18 +2999,28 @@ def test_tolerate_truncated_trailing_equals(email):
 def test_booking_open():
     # Initially:
     year = datetime.today().year  # doesn't really matter
-    assert not is_booking_open(year)
+    assert not get_booking_open_data(year).is_open_for_booking
+    assert not get_booking_open_data(year).is_open_for_entry
 
     factories.create_prices(year=year)
-    assert not is_booking_open(year)
+    assert not get_booking_open_data(year).is_open_for_booking
+    assert not get_booking_open_data(year).is_open_for_entry
 
     config = factories.create_year_config(year=year, open_for_booking_at="future", open_for_entry_on="future")
-    assert not is_booking_open(year)
+    assert not get_booking_open_data(year).is_open_for_booking
+    assert not get_booking_open_data(year).is_open_for_entry
     config.delete()
 
     config = factories.create_year_config(year=year, open_for_booking_at="past", open_for_entry_on="past")
-    assert is_booking_open(year)
+    assert get_booking_open_data(year).is_open_for_booking
+    assert get_booking_open_data(year).is_open_for_entry
+    config.delete()
+
+    config = factories.create_year_config(year=year, open_for_booking_at="future", open_for_entry_on="past")
+    assert not get_booking_open_data(year).is_open_for_booking
+    assert get_booking_open_data(year).is_open_for_entry
 
     # Deleting prices closes booking
     Price.objects.all().delete()
-    assert not is_booking_open(year)
+    assert not get_booking_open_data(year).is_open_for_booking
+    assert not get_booking_open_data(year).is_open_for_entry

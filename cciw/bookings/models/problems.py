@@ -105,6 +105,10 @@ class Warning:
         return False
 
     @property
+    def warning(self) -> bool:
+        return True
+
+    @property
     def status_display(self) -> str:
         return ""
 

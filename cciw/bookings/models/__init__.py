@@ -37,9 +37,9 @@ from .supporting_information import SupportingInformation, SupportingInformation
 from .yearconfig import (
     any_bookings_possible,
     early_bird_is_available,
+    get_booking_open_data,
+    get_booking_open_data_thisyear,
     get_early_bird_cutoff_date,
-    is_booking_open,
-    is_booking_open_thisyear,
     most_recent_booking_year,
 )
 
@@ -65,7 +65,7 @@ __all__ = [
     "WriteOffDebt",
     "booking_report_by_camp",
     "build_paypal_custom_field",
-    "is_booking_open",
+    "is_booking_open_for_booking",
     "most_recent_booking_year",
     "outstanding_bookings_with_fees",
     "parse_paypal_custom_field",
@@ -74,7 +74,6 @@ __all__ = [
     "any_bookings_possible",
     "early_bird_is_available",
     "get_early_bird_cutoff_date",
-    "is_booking_open_thisyear",
     "BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS",
     "BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS",
     "BOOKING_PLACE_CAMPER_ADDRESS_DETAILS",
@@ -87,6 +86,8 @@ __all__ = [
     "expire_bookings",
     "ApprovalNeededType",
     "ApprovalNeeded",
+    "get_booking_open_data",
+    "get_booking_open_data_thisyear",
 ]
 
 

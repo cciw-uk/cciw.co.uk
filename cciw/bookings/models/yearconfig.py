@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import date, datetime
 
 from django.db import models
 from django.utils import timezone
@@ -32,25 +35,51 @@ def any_bookings_possible(year: int) -> bool:
     return any(c.get_places_left().total > 0 and c.is_open_for_bookings for c in camps)
 
 
-def is_booking_open(year: int) -> bool:
-    """
-    When passed a given year, returns True if booking is open.
-    """
+@dataclass(frozen=True)
+class BookingOpenData:
+    is_open_for_booking: bool
+    is_open_for_entry: bool
+
+    opens_for_booking_at: datetime | None
+    opens_for_entry_on: date | None
+
+    @classmethod
+    def from_year_config(cls, config: YearConfig) -> BookingOpenData:
+        now = timezone.now()
+        today = now.date()
+        return cls(
+            opens_for_booking_at=config.bookings_open_for_booking_at,
+            opens_for_entry_on=config.bookings_open_for_entry_on,
+            is_open_for_booking=config.bookings_open_for_booking_at <= now,
+            is_open_for_entry=config.bookings_open_for_entry_on <= today,
+        )
+
+    @classmethod
+    def no_info(cls) -> BookingOpenData:
+        return cls(
+            opens_for_booking_at=None,
+            opens_for_entry_on=None,
+            is_open_for_booking=False,
+            is_open_for_entry=False,
+        )
+
+
+def get_booking_open_data(year: int) -> BookingOpenData:
     if not are_prices_set_for_year(year):
-        return False
+        # even collecting data is complicated if prices aren't set,
+        # because the form expects to find prices, so we disallow
+        # in this case, and we can't say when it will open because
+        # we don't know when prices which actually be entered.
+        return BookingOpenData.no_info()
 
     year_config = get_year_config(year)
     if year_config is None:
-        return False
-
-    if timezone.now() < year_config.bookings_open_for_booking_at:
-        return False
-
-    return True
+        return BookingOpenData.no_info()
+    return BookingOpenData.from_year_config(year_config)
 
 
-def is_booking_open_thisyear() -> bool:
-    return is_booking_open(common.get_thisyear())
+def get_booking_open_data_thisyear() -> BookingOpenData:
+    return get_booking_open_data(common.get_thisyear())
 
 
 def most_recent_booking_year() -> int | None:

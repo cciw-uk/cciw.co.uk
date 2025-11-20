@@ -5,7 +5,7 @@
         <td></td>
         <td></td>
         <td>
-          {% if booking_open and not early_bird_available %}
+          {% if prices_set and not early_bird_available %}
             <s>Early bird discount</s>
             <br>(too late, sorry!)
           {% else %}
@@ -21,7 +21,7 @@
         <td>£{{ price }}</td>
         {% if price_early_bird_discount > 0 %}
           <td>
-            {% if booking_open and not early_bird_available %}
+            {% if prices_set and not early_bird_available %}
               <s>£{{ discounted_price }}</s>
             {% else %}
               <b>£{{ discounted_price }}</b>

@@ -41,9 +41,9 @@ from cciw.bookings.models import (
     book_basket_now,
     build_paypal_custom_field,
     early_bird_is_available,
+    get_booking_open_data,
+    get_booking_open_data_thisyear,
     get_early_bird_cutoff_date,
-    is_booking_open,
-    is_booking_open_thisyear,
 )
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.cciwmain import common
@@ -81,7 +81,7 @@ def index(request):
     }
     if os.path.isfile(f"{settings.MEDIA_ROOT}/{bookingform_relpath}"):
         context["bookingform"] = bookingform_relpath
-    booking_open = is_booking_open(year)
+    booking_open = get_booking_open_data(year)
     prices_set = are_prices_set_for_year(year)
 
     def getp(v: PriceType) -> Decimal | None:
@@ -125,7 +125,7 @@ def index(request):
             "price_deposit": getp(PriceType.DEPOSIT),
             "price_early_bird_discount": early_bird_discount,
             "prices_set": prices_set,
-            "booking_open": booking_open,
+            "booking_open_data": booking_open,
             "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
             "full_payment_due_time": settings.BOOKING_FULL_PAYMENT_DUE_DISPLAY,
         }
@@ -168,7 +168,7 @@ def start(request):
         {
             "stage": BookingStage.LOGIN,
             "title": "Booking - log in",
-            "booking_open": is_booking_open_thisyear(),
+            "booking_open_data": get_booking_open_data_thisyear(),
             "form": form,
             "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
         },
@@ -283,8 +283,9 @@ def add_or_edit_place(
     year = common.get_thisyear()
     now = timezone.now()
     booking_account = request.booking_account
+    booking_open = get_booking_open_data_thisyear()
 
-    if request.method == "POST" and not is_booking_open_thisyear():
+    if request.method == "POST" and not booking_open.is_open_for_entry:
         # Redirect to same view, but GET
         return HttpResponseRedirect(request.get_full_path())
 
@@ -325,7 +326,7 @@ def add_or_edit_place(
 
     context.update(
         {
-            "booking_open": is_booking_open_thisyear(),
+            "booking_open_data": get_booking_open_data_thisyear(),
             "stage": BookingStage.PLACE,
             "form": form,
             "early_bird_available": early_bird_is_available(year, now),
@@ -538,6 +539,7 @@ def _list_bookings(request):
             "total": total,
             "grand_total": grand_total,
             "discounts_available": discounts.items(),
+            "booking_open_data": get_booking_open_data_thisyear(),
         },
     )
 

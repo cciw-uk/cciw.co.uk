@@ -11,7 +11,7 @@
   {% endif %}
 
 
-  {% if booking_open and not any_bookings_possible %}
+  {% if booking_open_data.is_open_for_entry and not any_bookings_possible %}
     <div class="bignotice">No more camp places are available for {{ thisyear }}, sorry!</div>
   {% endif %}
 
@@ -21,7 +21,7 @@
 
   {% if prices_set %}
 
-    {% if booking_open %}
+    {% if booking_open_data.is_open_for_entry %}
       <div style="float: right;">
         <a class="bigaction booknow" href="{% url 'cciw-bookings-start' %}">Book online now!</a>
       </div>
@@ -58,7 +58,7 @@
 
   {% endif %}
 
-  {% if booking_open or price_list %}
+  {% if booking_open_data.is_open_for_entry or price_list %}
     <p>For those in financial need, there are discounts available, which you can
       apply for as part of the booking process.</p>
 
@@ -77,9 +77,16 @@
   <p>You can <a href="{% url 'cciw-bookings-start' %}">book and pay online</a>,
     providing you have a debit card, credit card, or PayPal account.</p>
 
-  <p>If you book online, you can see how many places there are left in real time,
-    and your place will be confirmed immediately. This will also save CCiW volunteers
-    time, and save you money if you book before the early bird cutoff date.</p>
+  <p>Due to very high demand, we cannot guarantee a place to everyone.
+    {% if booking_open_data.opens_for_booking_at %}
+      Bookings will be open from {{ booking_open_data.opens_for_booking_at|date:"j F" }},
+      but booking on the first day will not guarantee a place - we operate a
+      priority system that aims to balance the needs of the camp while trying to
+      be fair to everyone.
+    {% endif %}
+
+    We're sorry that some people will inevitably be disappointed!
+  </p>
 
   <p>When you book online, if you book more than {{ full_payment_due_time }} before
     the camp start date, you can choose to pay either the full amount, or the

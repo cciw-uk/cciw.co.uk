@@ -34,7 +34,7 @@ def detail(request, year: int, slug: str):
     """
     Shows details of a specific camp.
     """
-    from cciw.bookings.models import is_booking_open
+    from cciw.bookings.models import get_booking_open_data
 
     camp = get_object_or_404(Camp.objects.all(), year=year, camp_name__slug=slug)
 
@@ -44,7 +44,7 @@ def detail(request, year: int, slug: str):
         {
             "camp": camp,
             "title": camp.nice_name + camp.bracketted_old_name,
-            "is_booking_open": is_booking_open(camp.year),
+            "booking_open_data": get_booking_open_data(camp.year),
             "today": date.today(),
             "breadcrumb": (
                 common.create_breadcrumb(

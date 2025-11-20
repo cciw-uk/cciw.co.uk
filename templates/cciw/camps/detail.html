@@ -66,31 +66,13 @@
         {% endif %}
       </td>
     </tr>
-    {% if camp.year == thisyear and is_booking_open %}
+    {% if camp.year == thisyear and is_booking_open_for_data_entry %}
       <tr>
-        <th scope="row">Places:</th>
+        <th scope="row">Booking:</th>
         <td>
           {% if camp.is_open_for_bookings %}
-            {% with total=camp.get_places_left.total %}
-              {% if total > 0 %}
-                {% if total < 5 %}
-                  <p>Very few places available!</p>
-                {% else %}
-                  <p>Places still available!</p>
-                {% endif %}
-
-                {% if camp.closes_for_bookings_on == today %}
-                  <p>This camp closes for bookings today - hurry!</p>
-                {% else %}
-                  <p>This camp will close for bookings on {{ camp.closes_for_bookings_on|date:"j F" }}.</p>
-                {% endif %}
-
-                <p><a class="booknow" href="{% url 'cciw-bookings-start' %}">Book online now!</a></p>
-                <a href="{% url 'cciw-bookings-index' %}">See other booking options and prices</a>
-              {% else %}
-                No more places available on this camp, sorry.
-              {% endif %}
-            {% endwith %}
+            <p><a class="booknow" href="{% url 'cciw-bookings-start' %}">Book online now!</a></p>
+            <a href="{% url 'cciw-bookings-index' %}">See other booking options and prices</a>
           {% else %}
             <p>This camp is now closed for bookings, sorry.</p>
           {% endif %}
