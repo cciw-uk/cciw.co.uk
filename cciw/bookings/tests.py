@@ -137,7 +137,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         if hasattr(self, "camp"):
             return
         # Need to create a Camp that we can choose i.e. is in the future.
-        # We also need it so that payments can be made when only the deposit is due
+        # We also need it so that the full amount is not due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE.days
         start_date = self.today + timedelta(delta_days)
         self.camp = camps_factories.create_camp(
@@ -179,7 +179,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             year=year, open_for_booking_on=time_for_booking, open_for_entry_on=date_for_data_entry
         )
 
-    def add_prices(self, deposit=Auto, early_bird_discount=Auto):
+    def add_prices(self, early_bird_discount=Auto):
         if hasattr(self, "price_full"):
             return
         year = self.camp.year
@@ -187,9 +187,8 @@ class CreateBookingWebMixin(BookingLogInMixin):
             self.price_full,
             self.price_2nd_child,
             self.price_3rd_child,
-            self.price_deposit,
             self.price_early_bird_discount,
-        ) = factories.create_prices(year=year, deposit=deposit, early_bird_discount=early_bird_discount)
+        ) = factories.create_prices(year=year, early_bird_discount=early_bird_discount)
 
     def create_booking(
         self,
@@ -373,14 +372,10 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         assert not camp.open_for_bookings(today + timedelta(days=1))
 
     @mock.patch("cciw.bookings.models.bookings.early_bird_is_available", return_value=False)
-    def test_book_with_money_in_account(self, m, use_prefetch_related_for_get_account=True):
+    def test_book_balance_due(self, m, use_prefetch_related_for_get_account=True):
         booking = factories.create_booking(camp=camps_factories.create_camp(future=True))
 
-        # Put some money in the account - just the deposit price will do.
-        account = booking.account
-        account.receive_payment(PriceChecker().get_deposit_price(booking.camp.year))
-        account.save()
-
+        account: BookingAccount = booking.account
         # Book
         book_basket_now([booking])
 
@@ -390,8 +385,7 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         assert booking.booking_expires_at is None
 
         # balance should be zero
-        price_checker = PriceChecker()
-        price_checker._fetch_prices(booking.camp.year)  # Force evaluation to check for zero queries later.
+        today = date.today()
 
         for use_prefetch_related_for_get_account in [True, False]:
             if use_prefetch_related_for_get_account:
@@ -401,19 +395,11 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
             else:
                 account = BookingAccount.objects.get(id=account.id)
             with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
-                assert account.get_balance(
-                    confirmed_only=False,
-                    allow_deposits=True,
-                    price_checker=price_checker,
-                ) == Decimal("0.00")
-                assert account.get_balance(
-                    confirmed_only=True,
-                    allow_deposits=True,
-                    price_checker=price_checker,
-                ) == Decimal("0.00")
+                assert account.get_balance(confirmed_only=False, today=today) == Decimal("0.00")
+                assert account.get_balance(confirmed_only=True, today=today) == Decimal("0.00")
 
-        # But for full amount, they still owe 80 (full price minus deposit)
-        assert account.get_balance_full() == Decimal("80.00")
+        # But for full amount, they still owe 100 (full price)
+        assert account.get_balance_full() == Decimal("100.00")
 
         # Test some model methods:
         assert len(account.bookings.payable(confirmed_only=False)) == 1
@@ -459,10 +445,9 @@ class TestBookingIndex(BookingBaseMixin, WebTestBase):
 
     def test_show_with_prices(self):
         camp = camps_factories.create_camp()
-        factories.create_prices(year=camp.year, full_price=100, deposit=20)
+        factories.create_prices(year=camp.year, full_price=100)
         self.get_url("cciw-bookings-index")
         self.assertTextPresent("£100")
-        self.assertTextPresent("£20")
 
 
 class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
@@ -648,7 +633,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse("cciw-bookings-pay"))
-        self.assertTextPresent(booking.account.get_balance_due_now(price_checker=PriceChecker()))
+        self.assertTextPresent(booking.account.get_balance_due_now())
 
     def test_payment_reminder_email_link_expired(self):
         self._create_booking()
@@ -1611,42 +1596,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit("[name=book_now]")
         booking.refresh_from_db()
         assert booking.state == BookingState.BOOKED
-        assert not booking.is_confirmed
-        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
-        self.assertTextPresent(self.BOOKINGS_WILL_EXPIRE)
-
-    def test_book_with_zero_deposit(self):
-        """
-        Test that when deposit is zero, we confirm the place
-        immediately and don't ask for payment.
-        """
-        self.add_prices(deposit=0)
-        account = self.booking_login()
-        booking = self.create_booking()
-        self.get_url(self.urlname)
-        self.submit("[name=book_now]")
-        booking.refresh_from_db()
-        assert booking.state == BookingState.BOOKED
-        assert booking.is_confirmed
-        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
-        self.assertTextAbsent(self.BOOKINGS_WILL_EXPIRE)
-        self.assertTextPresent("no deposit to pay")
-        self.assertTextPresent("do not pay yet")
-
-        # We should immediately send email confirming place in this case:
-        mails = send_queued_mail()
-        assert len(mails) == 1
-        (mail,) = mails
-        assert mail.subject == "[CCIW] Booking - place confirmed"
-        assert mail.to == [account.email]
-        assert self.THANK_YOU_FOR_PAYMENT not in mail.body  # They didn't actually pay
+        # TODO #52 - should be on queue
 
     def test_book_with_other_bookings(self):
         """
         Test that when we have other bookings which are not "booked",
         distribute_balance doesn't fail.
         """
-        self.add_prices(deposit=0)  # Zero deposit to allow confirmation without payment
+        self.add_prices()
         self.booking_login()
 
         def make_booking(state):
@@ -1892,11 +1849,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         self.get_url("cciw-bookings-pay")
 
-        # 2 deposits
-        expected_price = 2 * self.price_deposit
-        self.assertTextPresent(f"£{expected_price}")
-
-        # Move forward to after the time when just deposits are allowed:
+        # Move forward to after the time when full amount is required:
         Camp.objects.update(start_date=date.today() + timedelta(10))
 
         self.get_url("cciw-bookings-pay")
@@ -1983,7 +1936,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         assert leader_emails[0].subject.startswith("[CCIW] Late booking:")
 
     def test_insufficient_receive_payment(self):
-        # Need to move into region where deposits are not allowed.
+        # Need to move into region where full payments are required
         Camp.objects.update(start_date=date.today() + timedelta(days=20))
         booking1 = factories.create_booking(name="Peter Bloggs")
         account = booking1.account
@@ -2274,13 +2227,6 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
 
         data = self._initial_place_details()
         data["account"] = str(acc1.id)
-        data["state"] = BookingState.CANCELLED_DEPOSIT_KEPT
-        data["amount_due"] = "0.00"
-        data["price_type"] = PriceType.FULL
-        j = self._booking_problems_json(data)
-        assert any(
-            p.startswith(f"The 'amount due' is not the expected value of £{self.price_deposit}") for p in j["problems"]
-        )
 
         # Check 'full refund' cancellation.
         data["state"] = BookingState.CANCELLED_FULL_REFUND
@@ -2308,10 +2254,9 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
 
     def test_show(self):
         # Book a place and pay
-        account = self.booking_login()
+        self.booking_login()
         booking1 = self.create_booking(name="Frédéric Bloggs")
         book_basket_now([booking1])
-        account.receive_payment(self.price_deposit)
 
         # Book another
         booking2 = self.create_booking(name="Another Child")
@@ -2322,7 +2267,7 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
 
         # 4th place, cancelled
         booking4 = self.create_booking(name="4th Child")
-        booking4.state = BookingState.CANCELLED_DEPOSIT_KEPT
+        booking4.state = BookingState.CANCELLED_FULL_REFUND
         booking4.auto_set_amount_due()
         booking4.save()
 
@@ -2336,14 +2281,12 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
 
         # Booked place
         self.assertTextPresent("Another Child")
-        self.assertTextPresent("will expire soon")
 
         # Basket/Shelf
         self.assertTextPresent("Basket / shelf")
 
-        # Deposit for cancellation
+        # Cancellation
         self.assertTextPresent("Cancelled places")
-        self.assertTextPresent("£20")
 
     def test_bookings_with_missing_agreements(self):
         account = self.booking_login()
@@ -2577,13 +2520,14 @@ class TestCancel(TestBase):
 
     def test_amount_due(self):
         booking = factories.create_booking()
-        booking.state = BookingState.CANCELLED_DEPOSIT_KEPT
-        assert booking.expected_amount_due() == PriceChecker().get_deposit_price(booking.camp.year)
+        booking.state = BookingState.CANCELLED_FULL_REFUND
+        assert booking.expected_amount_due() == Decimal(0)
 
     def test_account_amount_due(self):
         booking = factories.create_booking()
         account = booking.account
-        booking.state = BookingState.CANCELLED_DEPOSIT_KEPT
+        booking.state = BookingState.CANCELLED_HALF_REFUND
+        assert booking.expected_amount_due() > Decimal(0)
         booking.auto_set_amount_due()
         booking.save()
 

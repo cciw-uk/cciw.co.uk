@@ -11,7 +11,6 @@ from paypal.standard.ipn.models import PayPalIPN
 
 from ..email import send_places_confirmed_email
 from .constants import DEFAULT_COUNTRY
-from .prices import PriceChecker
 from .states import BookingState
 
 if TYPE_CHECKING:
@@ -92,17 +91,14 @@ class BookingAccountManagerBase(models.Manager):
         # To limit the size of queries, we do a SQL query for people who might
         # owe money.
         potentials = self.get_queryset().non_zero_final_balance()
-        # 'balance due now' can be less than 'final balance', because we accept
-        # deposit as sufficient in some cases.
+        # 'balance due now' can be less than 'final balance', because we
+        # allow bookings without payment before a certain date
         retval = []
-        price_checker = PriceChecker()
         account: BookingAccount
+        today = date.today()
+
         for account in potentials:
-            confirmed_balance_due = account.get_balance(
-                confirmed_only=True,
-                allow_deposits=True,
-                price_checker=price_checker,
-            )
+            confirmed_balance_due = account.get_balance(confirmed_only=True, today=today)
             if confirmed_balance_due > 0:
                 account.confirmed_balance_due = confirmed_balance_due
                 retval.append(account)
@@ -196,19 +192,14 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, *, confirmed_only: bool, allow_deposits: bool, price_checker: PriceChecker):
+    def get_balance(self, *, today: date | None, confirmed_only: bool):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
         (no expiration date) are included as 'received goods'.
-        If allow_deposits=True, then bookings that only require deposits
-        at this point in time will only count for the deposit amount.
-
-        price_checker is used to look up deposit prices when needed,
-        and it is a non-optional argument to encourage the most efficient
-        usage patterns, even though it isn't needed for every path.
+        If today is None, then the final balance is returned,
+        not the amount currently due.
         """
-        today = date.today()
         # Use of _prefetched_objects_cache is necessary to support the
         # booking_secretary_reports view efficiently
         if hasattr(self, "_prefetched_objects_cache") and "bookings" in self._prefetched_objects_cache:
@@ -223,17 +214,16 @@ class BookingAccount(models.Model):
         total = Decimal("0.00")
         booking: Booking
         for booking in payable_bookings:
-            total += booking.amount_now_due(today, allow_deposits=allow_deposits, price_checker=price_checker)
+            total += booking.get_amount_due(today=today)
 
         return total - self.total_received
 
-    def get_balance_full(self, *, price_checker: PriceChecker | None = None):
-        return self.get_balance(
-            confirmed_only=False, allow_deposits=False, price_checker=price_checker or PriceChecker()
-        )
+    def get_balance_full(self):
+        return self.get_balance(confirmed_only=False, today=None)
 
-    def get_balance_due_now(self, *, price_checker: PriceChecker):
-        return self.get_balance(confirmed_only=False, allow_deposits=True, price_checker=price_checker)
+    def get_balance_due_now(self):
+        today = date.today()
+        return self.get_balance(confirmed_only=False, today=today)
 
     def admin_balance(self):
         return self.get_balance_full()
@@ -283,8 +273,6 @@ class BookingAccount(models.Model):
         # user selects a discount for which they were not eligible, and pays. This is then
         # discovered, and the 'amount due' for that place is altered by an admin.
         #
-        # Also, users have the option to pay only the deposit for a booking.
-        #
         # So, we need a method to distribute any incoming payment so that we stop the
         # booked place from expiring. It is better to be too generous than too stingy in
         # stopping places from expiring, because:
@@ -329,22 +317,21 @@ class BookingAccount(models.Model):
 
         # Bookings we might want to confirm.
         # Order by booking_expires_at ascending i.e. earliest first.
-        candidate_bookings = sorted(
+        candidate_bookings: list[Booking] = sorted(
             (b for b in all_payable_bookings if b.is_booked and not b.is_confirmed), key=lambda b: b.booking_expires_at
         )
-        price_checker = PriceChecker(expected_years=[b.camp.year for b in all_payable_bookings])
         confirmed_bookings = []
         # In order to distribute funds, need to take into account the total
         # amount in the account that is not required by already confirmed places
-        existing_balance = self.get_balance(confirmed_only=True, allow_deposits=True, price_checker=price_checker)
+        today = date.today()
+        existing_balance = self.get_balance(confirmed_only=True, today=today)
         # The 'pot' is the amount we have as excess and can use to mark places
         # as confirmed.
         pot = -existing_balance
-        today = date.today()
         for booking in candidate_bookings:
             if pot < 0:
                 break
-            amount = booking.amount_now_due(today, allow_deposits=True, price_checker=price_checker)
+            amount = booking.get_amount_due(today=today)
             if amount <= pot:
                 booking.confirm()
                 confirmed_bookings.append(booking)

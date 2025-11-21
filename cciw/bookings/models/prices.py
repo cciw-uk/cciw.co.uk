@@ -10,7 +10,9 @@ class PriceType(models.IntegerChoices):
     SECOND_CHILD = 1, "2nd child discount"
     THIRD_CHILD = 2, "3rd child discount"
     CUSTOM = 3, "Custom discount"
+    # South Wales transport not used from 2015 onwards, kept for historical data
     SOUTH_WALES_TRANSPORT = 4, "South wales transport surcharge (pre 2015)"
+    # Deposit not used from 2025 onwards, kept for historical data.
     DEPOSIT = 5, "Deposit"
     EARLY_BIRD_DISCOUNT = 6, "Early bird discount"
 
@@ -26,9 +28,7 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 
 
 # Prices required to open bookings.
-# From 2015 onwards, we don't have South Wales transport. But we might
-# want to keep info about prices etc. for a few years.
-REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v != PriceType.SOUTH_WALES_TRANSPORT]
+REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT)]
 
 
 class PriceQuerySet(models.QuerySet):
@@ -51,13 +51,6 @@ class Price(models.Model):
 
     def __str__(self):
         return f"{self.get_price_type_display()} {self.year} - {self.price}"
-
-    @classmethod
-    def get_deposit_prices(cls, years=None):
-        q = Price.objects.filter(price_type=PriceType.DEPOSIT)
-        if years is not None:
-            q = q.filter(year__in=set(years))
-        return {p.year: p.price for p in q}
 
 
 class PriceChecker:
@@ -85,9 +78,6 @@ class PriceChecker:
     def get_price(self, year: int, price_type: PriceType) -> Decimal:
         self._fetch_prices(year)
         return self._prices[year][price_type]
-
-    def get_deposit_price(self, year: int) -> Decimal:
-        return self.get_price(year, PriceType.DEPOSIT)
 
     def get_full_price(self, year: int) -> Decimal:
         return self.get_price(year, PriceType.FULL)

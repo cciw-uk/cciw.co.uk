@@ -34,16 +34,7 @@
 
     {% include "cciw/bookings/price_table.html" %}
 
-    {% if price_early_bird_discount == 0 and price_deposit == 0 %}
-      <p>This year, no deposit is required for booking.
-        We also unfortunately cannot offer a discount for early bookings.
-      </p>
-    {% endif %}
-
-    {% if price_deposit %}
-      <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full
-        amount is due {{ full_payment_due_time }} before the start of the camp.</p>
-    {% endif %}
+    <p>Payment is due {{ full_payment_due_time }} before the start of the camp.</p>
 
   {% else %}
     <p><strong>Prices for {{ thisyear }} have not been finalised yet.</strong></p>
@@ -105,9 +96,7 @@
 
   </p>
 
-  <p>When you book online, if you book more than {{ full_payment_due_time }} before
-    the camp start date, you can choose to pay either the full amount, or the
-    just deposit, just like paper bookings. {{ full_payment_due_time }} before camp starts you
+  <p>When you book online, {{ full_payment_due_time }} before camp starts you
     will be asked to pay the full amount.</p>
 
   <h3>Officers and leaders</h3>
@@ -129,8 +118,7 @@
       booking form for {{ thisyear }}</a> </p>
 
     <p>Completed booking forms should be sent to the booking secretary (address
-      below), with the deposit {% if price_deposit %}of £{{ price_deposit }}{% endif %} (cheques
-      made payable to “Christian Camps in Wales”).</p>
+      below, cheques made payable to “Christian Camps in Wales”).</p>
 
   {% else %}
 

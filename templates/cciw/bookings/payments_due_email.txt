@@ -2,11 +2,6 @@
 
 You have payments due for CCiW.
 
-This usually happens when you have only paid the deposit for a place
-on camp, and the full amount is now due. Alternatively, you may have
-failed to pay a deposit, or might have payments from last year that
-are still due.
-
 The amount you need to pay is: £{{ account.confirmed_balance_due }}
 
 Please click on the link below, or copy and paste it into a web browser,

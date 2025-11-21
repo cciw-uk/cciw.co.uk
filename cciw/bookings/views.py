@@ -35,7 +35,6 @@ from cciw.bookings.models import (
     BookingAccount,
     CustomAgreement,
     Price,
-    PriceChecker,
     PriceType,
     any_bookings_possible,
     book_basket_now,
@@ -122,7 +121,6 @@ def index(request):
     context.update(
         {
             "price_list": price_list_with_discounts,
-            "price_deposit": getp(PriceType.DEPOSIT),
             "price_early_bird_discount": early_bird_discount,
             "prices_set": prices_set,
             "booking_open_data": booking_open,
@@ -611,16 +609,8 @@ def mk_paypal_form(
 def pay(request, *, installment: bool = False):
     acc: BookingAccount = request.booking_account
     this_year = common.get_thisyear()
-    price_checker = PriceChecker(expected_years=[b.camp.year for b in acc.bookings.all()] + [this_year])
-    balance_due_now = acc.get_balance_due_now(price_checker=price_checker)
-    balance_full = acc.get_balance_full(price_checker=price_checker)
-
-    try:
-        price_deposit = price_checker.get_deposit_price(this_year)
-    except LookupError:
-        # This view should be accessible even if prices for the current year are not
-        # defined, because people with debts from previous years may need to pay.
-        price_deposit = None
+    balance_due_now = acc.get_balance_due_now()
+    balance_full = acc.get_balance_full()
 
     domain = get_current_domain()
     protocol = "https" if request.is_secure() else "http"
@@ -639,7 +629,6 @@ def pay(request, *, installment: bool = False):
             "balance_due_now": balance_due_now,
             "balance_full": balance_full,
             "account_id": acc.id,
-            "price_deposit": price_deposit,
             "pending_payment_total": acc.get_pending_payment_total(),
             "paypal_form": mk_paypal_form(acc, balance_due_now, protocol, domain),
             "paypal_form_full": mk_paypal_form(acc, balance_full, protocol, domain),
@@ -700,7 +689,6 @@ def account_overview(request):
     account: BookingAccount = request.booking_account
     year = common.get_thisyear()
     bookings = account.bookings.for_year(year)
-    price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
     agreement_fetcher = AgreementFetcher()
 
     if request.method == "POST":
@@ -721,8 +709,8 @@ def account_overview(request):
             .with_prefetch_missing_agreements(agreement_fetcher),
             "cancelled_places": bookings.cancelled().with_prefetch_camp_info(),
             "basket_or_shelf": (bookings.in_basket() | bookings.on_shelf()).with_prefetch_camp_info(),
-            "balance_due_now": account.get_balance_due_now(price_checker=price_checker),
-            "balance_full": account.get_balance_full(price_checker=price_checker),
+            "balance_due_now": account.get_balance_due_now(),
+            "balance_full": account.get_balance_full(),
             "pending_payment_total": account.get_pending_payment_total(),
         },
     )

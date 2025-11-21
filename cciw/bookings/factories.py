@@ -220,11 +220,7 @@ def create_custom_agreement(*, year, name, text_html="Text"):
     )
 
 
-def create_prices(*, year, deposit=Auto, early_bird_discount=Auto, full_price=Auto):
-    if deposit is Auto:
-        deposit = Decimal(20)
-    else:
-        deposit = Decimal(deposit)
+def create_prices(*, year: int, early_bird_discount=Auto, full_price=Auto):
     if early_bird_discount is Auto:
         early_bird_discount = Decimal(10)
     else:
@@ -240,13 +236,10 @@ def create_prices(*, year, deposit=Auto, early_bird_discount=Auto, full_price=Au
     price_3rd_child = Price.objects.get_or_create(year=year, price_type=PriceType.THIRD_CHILD, price=Decimal("50"))[
         0
     ].price
-    price_deposit = Price.objects.get_or_create(year=year, price_type=PriceType.DEPOSIT, defaults={"price": deposit})[
-        0
-    ].price
     price_early_bird_discount = Price.objects.get_or_create(
         year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT, defaults={"price": early_bird_discount}
     )[0].price
-    return price_full, price_2nd_child, price_3rd_child, price_deposit, price_early_bird_discount
+    return price_full, price_2nd_child, price_3rd_child, price_early_bird_discount
 
 
 def create_supporting_information_type(*, name="Test"):

@@ -22,7 +22,7 @@ from cciw.utils.models import AfterFetchQuerySetMixin
 from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
 from .constants import DEFAULT_COUNTRY, Sex
-from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceChecker, PriceType
+from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceType
 from .problems import (
     ApprovalNeededType,
     ApprovalStatus,
@@ -340,7 +340,11 @@ class Booking(models.Model):
         if self.price_type == PriceType.CUSTOM:
             return None
         if self.state == BookingState.CANCELLED_DEPOSIT_KEPT:
-            return Price.objects.get(year=self.camp.year, price_type=PriceType.DEPOSIT).price
+            try:
+                return Price.objects.get(year=self.camp.year, price_type=PriceType.DEPOSIT).price
+            except Price.DoesNotExist:
+                # No deposit, assume same as CANCELLED_FULL_REFUND
+                return Decimal("0.00")
         elif self.state == BookingState.CANCELLED_FULL_REFUND:
             return Decimal("0.00")
         else:
@@ -380,14 +384,17 @@ class Booking(models.Model):
             return None
         return self.amount_due
 
-    def amount_now_due(self, today: date, *, allow_deposits, price_checker: PriceChecker) -> Decimal:
-        # Amount due at this point of time. If allow_deposits=True, we take into
-        # account the fact that only a deposit might be due. Otherwise we ignore
-        # deposits (which means that the current date is also ignored)
-        cutoff = today + settings.BOOKING_FULL_PAYMENT_DUE
-        if allow_deposits and self.camp.start_date > cutoff:
-            deposit_price = price_checker.get_deposit_price(self.camp.year)
-            return min(deposit_price, self.amount_due)
+    def get_amount_due(self, *, today: date | None) -> Decimal:
+        """
+        Get the amount due,
+        if `today` is None, return the final amount due,
+        otherwise the amount due right now.
+        """
+        if today is not None:
+            if today < self.camp.start_date - settings.BOOKING_FULL_PAYMENT_DUE:
+                return Decimal(0)
+            else:
+                return self.amount_due
         return self.amount_due
 
     def can_have_early_bird_discount(self, booked_at=None):

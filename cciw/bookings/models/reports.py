@@ -1,11 +1,11 @@
 from collections import defaultdict
+from datetime import date
 
 from django.db.models import Prefetch
 
 from cciw.cciwmain.models import Camp
 
 from .bookings import Booking, Sex
-from .prices import PriceChecker
 
 
 def booking_report_by_camp(year: int) -> list[Camp]:
@@ -40,11 +40,12 @@ def outstanding_bookings_with_fees(year: int) -> list[Booking]:
     # 1) people who have overpaid. This must be calculated with respect to the total amount due
     #    on the account.
     # 2) people who have underpaid:
-    #    a) with respect to the total amount due
+    #    a) with respect to the total amount now due
     #    b) with respect to the total amount due at this point in time,
     #       allowing for the fact that up to a certain point,
     #       only the deposit is actually required.
     #
+    # TODO - can probably tidy this up now that deposits are remove.
     # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
 
     bookings = bookings.order_by("account__name", "account__id", "first_name", "last_name")
@@ -54,17 +55,14 @@ def outstanding_bookings_with_fees(year: int) -> list[Booking]:
     for b in bookings:
         counts[b.account_id] += 1
 
-    price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
+    today = date.today()
+
     outstanding = []
     for b in bookings:
         b.count_for_account = counts[b.account_id]
         if not hasattr(b.account, "calculated_balance"):
-            b.account.calculated_balance = b.account.get_balance(
-                confirmed_only=True, allow_deposits=False, price_checker=price_checker
-            )
-            b.account.calculated_balance_due = b.account.get_balance(
-                confirmed_only=True, allow_deposits=True, price_checker=price_checker
-            )
+            b.account.calculated_balance = b.account.get_balance(confirmed_only=True, today=None)
+            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True, today=today)
 
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)
