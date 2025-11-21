@@ -298,20 +298,23 @@ def create_year_config(
     *,
     year: int,
     open_for_entry_on: date | Literal["past", "future"] = "future",
-    open_for_booking_at: datetime | Literal["past", "future"] = "future",
+    open_for_booking_on: date | Literal["past", "future"] = "future",
 ) -> YearConfig:
     if open_for_entry_on == "past":
         open_for_entry_on = datetime.today() - timedelta(days=1)
     elif open_for_entry_on == "future":
         open_for_entry_on = datetime.today() + timedelta(days=1)
 
-    if open_for_booking_at == "past":
-        open_for_booking_at = timezone.now() - timedelta(days=1)
-    elif open_for_booking_at == "future":
-        open_for_booking_at = timezone.now() + timedelta(days=1)
+    if open_for_booking_on == "past":
+        open_for_booking_on = timezone.now() - timedelta(days=1)
+    elif open_for_booking_on == "future":
+        open_for_booking_on = timezone.now() + timedelta(days=1)
+
+    bookings_close_for_initial_period = open_for_booking_on + timedelta(days=30)
 
     return YearConfig.objects.create(
         year=year,
-        bookings_open_for_booking_at=open_for_booking_at,
+        bookings_open_for_booking_on=open_for_booking_on,
         bookings_open_for_entry_on=open_for_entry_on,
+        bookings_close_for_initial_period=bookings_close_for_initial_period,
     )

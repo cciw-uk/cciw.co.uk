@@ -176,7 +176,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         date_for_data_entry = "past" if open_for_data_entry else "future"
         year: int = year or self.camp.year
         return factories.create_year_config(
-            year=year, open_for_booking_at=time_for_booking, open_for_entry_on=date_for_data_entry
+            year=year, open_for_booking_on=time_for_booking, open_for_entry_on=date_for_data_entry
         )
 
     def add_prices(self, deposit=Auto, early_bird_discount=Auto):
@@ -3006,17 +3006,17 @@ def test_booking_open():
     assert not get_booking_open_data(year).is_open_for_booking
     assert not get_booking_open_data(year).is_open_for_entry
 
-    config = factories.create_year_config(year=year, open_for_booking_at="future", open_for_entry_on="future")
+    config = factories.create_year_config(year=year, open_for_booking_on="future", open_for_entry_on="future")
     assert not get_booking_open_data(year).is_open_for_booking
     assert not get_booking_open_data(year).is_open_for_entry
     config.delete()
 
-    config = factories.create_year_config(year=year, open_for_booking_at="past", open_for_entry_on="past")
+    config = factories.create_year_config(year=year, open_for_booking_on="past", open_for_entry_on="past")
     assert get_booking_open_data(year).is_open_for_booking
     assert get_booking_open_data(year).is_open_for_entry
     config.delete()
 
-    config = factories.create_year_config(year=year, open_for_booking_at="future", open_for_entry_on="past")
+    config = factories.create_year_config(year=year, open_for_booking_on="future", open_for_entry_on="past")
     assert not get_booking_open_data(year).is_open_for_booking
     assert get_booking_open_data(year).is_open_for_entry
 

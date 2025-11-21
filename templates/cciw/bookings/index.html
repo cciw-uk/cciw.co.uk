@@ -78,8 +78,8 @@
     providing you have a debit card, credit card, or PayPal account.</p>
 
   <p>Due to very high demand, we cannot guarantee a place to everyone.
-    {% if booking_open_data.opens_for_booking_at %}
-      Bookings will be open from {{ booking_open_data.opens_for_booking_at|date:"j F" }},
+    {% if booking_open_data.opens_for_booking_on %}
+      Bookings will be open from {{ booking_open_data.opens_for_booking_on|date:"j F" }},
       but booking on the first day will not guarantee a place - we operate a
       priority system that aims to balance the needs of the camp while trying to
       be fair to everyone.

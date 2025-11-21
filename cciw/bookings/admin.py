@@ -726,7 +726,12 @@ class CustomAgreementAdmin(admin.ModelAdmin):
 
 @admin.register(YearConfig)
 class YearConfigAdmin(admin.ModelAdmin):
-    list_display = ["year", "bookings_open_for_entry_on", "bookings_open_for_booking_at"]
+    list_display = [
+        "year",
+        "bookings_open_for_entry_on",
+        "bookings_open_for_booking_on",
+        "bookings_close_for_initial_period",
+    ]
 
 
 admin.site.register(SupportingInformationType)

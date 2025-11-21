@@ -9,8 +9,8 @@
     {% if booking_open_data.opens_for_entry_on %}
       <p>Booking is not yet open for {{ thisyear }}. You will be able to start
         entering your booking information on <b>{{ booking_open_data.opens_for_entry_on|date:"j F" }}</b>.
-        {% if booking_open_data.opens_for_booking_at %}
-          Bookings will formally open on <b>{{ booking_open_data.opens_for_booking_at|date:"j F" }}</b>.
+        {% if booking_open_data.opens_for_booking_on %}
+          Bookings will formally open on <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>.
         {% endif %}
       </p>
 
@@ -22,7 +22,9 @@
   {% else %}
     {% if not booking_open_data.is_open_for_booking %}
       <p>Booking is not yet formally open: you may enter details now (and are encouraged to do so),
-        but you will need to return after <b>{{ booking_open_data.opens_for_booking_at|date:"j F" }}</b>
+        but you will need to return between
+        <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>
+        and <b>{{ booking_open_data.closes_for_initial_period|date:"j F" }}</b>
         to complete the process.
       </p>
     {% endif %}

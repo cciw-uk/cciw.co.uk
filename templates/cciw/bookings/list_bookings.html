@@ -13,7 +13,7 @@
           Please continue by choosing from the options below.</p>
       {% else %}
         <p>The places below are ready to be booked. However,
-          you will need to return on <b>{{ booking_open_data.opens_for_booking_at|date:"j F" }}</b>,
+          you will need to return on <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>,
           when bookings will formally open, to complete the process.
         </p>
       {% endif %}
@@ -90,8 +90,11 @@
             and book the other place(s).</p>
         {% endif %}
         {% if not booking_open_data.is_open_for_booking %}
-          <p>Bookings will not formally open until <b>{{ booking_open_data.opens_for_booking_at|date:"j F" }}</b>,
-            you will need to return after that date to actually book this place.</p>
+          <p>Bookings are not formally open yet,
+            you will need to return between
+            <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>
+            and <b>{{ booking_open_data.closes_for_initial_period|date:"j F" }}</b>
+            to actually book this place.</p>
         {% endif %}
       {% endif %}
     </form>

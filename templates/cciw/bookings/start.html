@@ -12,14 +12,14 @@
 
     {% if booking_open_data.opens_for_entry_on %}
       <p>You will be able to start entering booking information on {{ booking_open_data.opens_for_entry_on|date:"j F" }},
-        and will need to complete after {{ booking_open_data.opens_for_booking_at|date:"j F" }}.</p>
+        and will need to complete after {{ booking_open_data.opens_for_booking_on|date:"j F" }}.</p>
     {% endif %}
 
 
   {% else %} {#  Booking is open for data entry #}
     {% if not booking_open_data.is_open_for_booking %}
       <p>You can start entering your booking information now, and are encouraged to do so,
-        but <b>you won't be able to complete the process until {{ booking_open_data.opens_for_booking_at|date:"j F" }}.</b>
+        but <b>you won't be able to complete the process until {{ booking_open_data.opens_for_booking_on|date:"j F" }}.</b>
       </p>
     {% endif %}
   {% endif %}
