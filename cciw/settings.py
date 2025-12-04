@@ -145,23 +145,24 @@ INSTALLED_APPS = (
         "django.contrib.sites",
         "django.contrib.staticfiles",
         "django.forms",
-        # Ours
     ]
+    # Ours
     + FIRST_PARTY_APPS
     + [
         # 3rd party
         "django.contrib.messages",
         "paypal.standard.ipn",
         "django.contrib.humanize",
-        "mptt",
-        "sekizai",
-        "sorl.thumbnail",
-        "wiki",
-        "wiki.plugins.attachments",
-        "wiki.plugins.notifications",
-        "wiki.plugins.images",
-        "wiki.plugins.macros",
-        "django_nyt",
+        # wiki disabled for now, until it removes the pin against Django 6.0
+        # "mptt",
+        # "sekizai",
+        # "sorl.thumbnail",
+        # "wiki",
+        # "wiki.plugins.attachments",
+        # "wiki.plugins.notifications",
+        # "wiki.plugins.images",
+        # "wiki.plugins.macros",
+        # "django_nyt",
         "compressor",
         "django_countries",
         "mailer",
@@ -436,7 +437,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [  # backwards compat for django-wiki
     "django.template.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
     "cciw.cciwmain.common.standard_processor",
-    "sekizai.context_processors.sekizai",
+    # "sekizai.context_processors.sekizai", wiki
 ] + ([] if not DEBUG else ["django.template.context_processors.debug"])
 
 TEMPLATES = [

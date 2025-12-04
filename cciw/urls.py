@@ -46,8 +46,9 @@ urlpatterns = [
     # Our normal views
     path("booking/", decorator_include([check_booking_decorator], "cciw.bookings.urls")),
     path("officers/", include("cciw.officers.urls")),
-    path("notifications/", include("django_nyt.urls")),
-    path("wiki/", include("wiki.urls")),
+    # Disabling wiki until they support Django 6.0 or drop their upper bounds
+    # path("notifications/", include("django_nyt.urls")),
+    # path("wiki/", include("wiki.urls")),
     path("paypal/ipn/", include("paypal.standard.ipn.urls")),
     path("mail/", include("cciw.mail.urls")),
     path("contact/", include("cciw.contact_us.urls")),

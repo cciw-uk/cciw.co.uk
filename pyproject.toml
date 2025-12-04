@@ -46,7 +46,6 @@ dependencies = [
     "sentry-sdk>=1.14.0",
     "sorl-thumbnail>=12.10.0",
     "weasyprint>=61.2",
-    "wiki>=0.12",
     "gunicorn>=23.0.0",
     "fabutils-cciw>=0.1.1",
     "django-q2>=1.8.0",

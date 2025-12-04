@@ -666,45 +666,6 @@
       columns: all
     - name: sites.Site
       columns: all
-    # Wiki related tables
-    - name: thumbnail.KVStore
-      columns: all
-    - name: wiki.Article
-      columns: all
-    - name: wiki.ArticleForObject
-      columns: all
-    - name: wiki.ArticleRevision
-      columns: all
-    - name: wiki.ArticlePlugin
-      columns: all
-    - name: wiki.ReusablePlugin
-      columns: all
-    - name: wiki.SimplePlugin
-      columns: all
-    - name: wiki.RevisionPlugin
-      columns: all
-    - name: wiki.RevisionPluginRevision
-      columns: all
-    - name: wiki.URLPath
-      columns: all
-    - name: wiki_attachments.Attachment
-      columns: all
-    - name: wiki_attachments.AttachmentRevision
-      columns: all
-    - name: wiki_notifications.ArticleSubscription
-      columns: all
-    - name: wiki_images.Image
-      columns: all
-    - name: wiki_images.ImageRevision
-      columns: all
-    - name: django_nyt.NotificationType
-      columns: all
-    - name: django_nyt.Settings
-      columns: all
-    - name: django_nyt.Subscription
-      columns: all
-    - name: django_nyt.Notification
-      columns: all
     # Outgoing emails
     - name: mailer.DontSendEntry
       columns: all
