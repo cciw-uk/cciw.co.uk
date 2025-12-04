@@ -5,7 +5,6 @@ import binascii
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
 
 import mailer as queued_mail
 from django.conf import settings
@@ -21,10 +20,6 @@ from cciw.officers.email import admin_emails_for_camp
 
 class VerifyFailed:
     pass
-
-
-if TYPE_CHECKING:
-    from .models import BookingAccount
 
 
 @dataclass
@@ -174,25 +169,6 @@ def send_places_confirmed_email(bookings):
             emails = admin_emails_for_camp(booking.camp)
             if emails:
                 queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
-
-
-def send_booking_expiry_mail(account: BookingAccount, bookings, expired):
-    if not account.email:
-        return
-
-    c = {
-        "book_and_pay_url": build_url_with_booking_token(view_name="cciw-bookings-list_bookings", email=account.email),
-        "pay_url": build_url_with_booking_token(view_name="cciw-bookings-pay", email=account.email),
-        "account": account,
-        "bookings": bookings,
-        "expired": expired,
-    }
-    body = loader.render_to_string("cciw/bookings/place_expired_mail.txt", c)
-    if expired:
-        subject = "[CCIW] Booking expired"
-    else:
-        subject = "[CCIW] Booking expiry warning"
-    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
 def send_booking_approved_mail(booking):

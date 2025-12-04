@@ -460,7 +460,6 @@
       - shelved
       - state
       - created_at
-      - booking_expires_at
       - created_online
 
     - name: bookings.BookingApproval

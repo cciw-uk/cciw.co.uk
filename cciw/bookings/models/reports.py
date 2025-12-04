@@ -16,11 +16,10 @@ def booking_report_by_camp(year: int) -> list[Camp]:
       confirmed_bookings_girls
     """
     camps = Camp.objects.filter(year=year).prefetch_related(
-        Prefetch("bookings", queryset=Booking.objects.booked(), to_attr="booked_places")
+        Prefetch("bookings", queryset=Booking.objects.booked(), to_attr="confirmed_bookings")
     )
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
-        c.confirmed_bookings = [b for b in c.booked_places if b.is_confirmed]
         c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == Sex.MALE]
         c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == Sex.FEMALE]
     return camps
@@ -34,7 +33,7 @@ def outstanding_bookings_with_fees(year: int) -> list[Booking]:
     bookings = Booking.objects.for_year(year)
     # We need to include 'full refund' cancelled bookings in case they overpaid,
     # as well as all 'payable' bookings.
-    bookings = bookings.payable(confirmed_only=True) | bookings.cancelled()
+    bookings = bookings.payable() | bookings.cancelled()
 
     # 3 concerns:
     # 1) people who have overpaid. This must be calculated with respect to the total amount due
@@ -61,8 +60,8 @@ def outstanding_bookings_with_fees(year: int) -> list[Booking]:
     for b in bookings:
         b.count_for_account = counts[b.account_id]
         if not hasattr(b.account, "calculated_balance"):
-            b.account.calculated_balance = b.account.get_balance(confirmed_only=True, today=None)
-            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True, today=today)
+            b.account.calculated_balance = b.account.get_balance(today=None)
+            b.account.calculated_balance_due = b.account.get_balance(today=today)
 
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)

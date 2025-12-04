@@ -111,13 +111,14 @@ class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
             booking.name,
         )
 
-    fields = [name, "camp", "amount_due", "state", "is_confirmed"]
+    fields = [name, "camp", "amount_due", "state"]
     readonly_fields = fields
 
     def get_queryset(self, *args, **kwargs):
         return (
             super()
             .get_queryset(*args, **kwargs)
+            .booked()
             .select_related(
                 "camp",
                 "camp__camp_name",
@@ -266,20 +267,6 @@ class YearFilter(admin.SimpleListFilter):
         if val is None:
             return queryset
         return queryset.for_year(val)
-
-
-class ConfirmedFilter(admin.SimpleListFilter):
-    title = "confirmed"
-    parameter_name = "confirmed"
-
-    def lookups(self, request, model_admin):
-        return [(True, "Confirmed only")]
-
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.confirmed()
-        else:
-            return queryset
 
 
 class CustomAgreementFilter(admin.SimpleListFilter):
@@ -468,14 +455,8 @@ class BookingAdmin(admin.ModelAdmin):
 
     camp.admin_order_field = Concat("camp__year", Value("-"), "camp__camp_name__name")
 
-    def confirmed(obj):
-        return obj.is_confirmed
-
-    confirmed.boolean = True
-
-    list_display = ["first_name", "last_name", "sex", "account", camp, "state", confirmed, "created_at"]
+    list_display = ["first_name", "last_name", "sex", "account", camp, "state", "created_at"]
     del camp
-    del confirmed
     search_fields = ["first_name", "last_name"]
     ordering = ["-created_at"]
     list_filter = [
@@ -486,7 +467,6 @@ class BookingAdmin(admin.ModelAdmin):
         "serious_illness",
         "state",
         "created_online",
-        ConfirmedFilter,
         CustomAgreementFilter,
     ]
     readonly_fields = ["booked_at", "created_online"]
@@ -600,7 +580,7 @@ class BookingAdmin(admin.ModelAdmin):
                 ]
             },
         ),
-        ("Internal", {"fields": ["state", "booking_expires_at", "created_at", "shelved", "created_online"]}),
+        ("Internal", {"fields": ["state", "created_at", "shelved", "created_online"]}),
         ("Add a payment for account (optional)", {"fields": ["manual_payment_amount", "manual_payment_payment_type"]}),
     )
 

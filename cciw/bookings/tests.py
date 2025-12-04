@@ -22,7 +22,6 @@ from hypothesis import strategies as st
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
 from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
-from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (
     AccountTransferPayment,
@@ -41,7 +40,6 @@ from cciw.bookings.models import (
     RefundPayment,
     book_basket_now,
     build_paypal_custom_field,
-    expire_bookings,
 )
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
@@ -382,7 +380,6 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         # Place should be booked AND should not expire
         booking.refresh_from_db()
         assert booking.state == BookingState.BOOKED
-        assert booking.booking_expires_at is None
 
         # balance should be zero
         today = date.today()
@@ -395,14 +392,14 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
             else:
                 account = BookingAccount.objects.get(id=account.id)
             with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
-                assert account.get_balance(confirmed_only=False, today=today) == Decimal("0.00")
-                assert account.get_balance(confirmed_only=True, today=today) == Decimal("0.00")
+                assert account.get_balance(today=today) == Decimal("0.00")
+                assert account.get_balance(today=today) == Decimal("0.00")
 
         # But for full amount, they still owe 100 (full price)
         assert account.get_balance_full() == Decimal("100.00")
 
         # Test some model methods:
-        assert len(account.bookings.payable(confirmed_only=False)) == 1
+        assert len(account.bookings.payable()) == 1
 
     def test_booking_missing_agreements(self):
         camp = camps_factories.create_camp(future=True)
@@ -617,7 +614,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
     def _create_booking(self):
         booking = factories.create_booking()
         book_basket_now([booking])
-        booking = Booking.objects.get(id=booking.id)
+        booking: Booking = Booking.objects.get(id=booking.id)
         booking.confirm()
         assert len(BookingAccount.objects.payments_due()) == 1
         return booking
@@ -1598,32 +1595,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         assert booking.state == BookingState.BOOKED
         # TODO #52 - should be on queue
 
-    def test_book_with_other_bookings(self):
-        """
-        Test that when we have other bookings which are not "booked",
-        distribute_balance doesn't fail.
-        """
-        self.add_prices()
-        self.booking_login()
-
-        def make_booking(state):
-            booking = self.create_booking(shortcut=True)
-            booking.state = state
-            booking.save()
-            return booking
-
-        make_booking(BookingState.CANCELLED_FULL_REFUND)
-        make_booking(BookingState.CANCELLED_HALF_REFUND)
-        make_booking(BookingState.INFO_COMPLETE)
-
-        booking = self.create_booking(shortcut=True)
-        self.get_url(self.urlname)
-        self.submit("[name=book_now]")
-        booking.refresh_from_db()
-        assert booking.state == BookingState.BOOKED
-        assert booking.is_confirmed
-        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
-
     def test_book_unbookable(self):
         """
         Test that an unbookable place can't be booked
@@ -1905,7 +1876,6 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         account = booking.account
         book_basket_now([booking])
         booking.refresh_from_db()
-        assert booking.booking_expires_at is not None
 
         mail.outbox = []
         ManualPayment.objects.create(
@@ -1921,49 +1891,20 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # Check we updated the bookings
         booking.refresh_from_db()
-        assert booking.booking_expires_at is None
 
         # Check for emails sent
         # 1 to account
-        mails = send_queued_mail()
-        account_mails = [m for m in mails if m.to == [account.email]]
-        assert len(account_mails) == 1
 
-        # This is a late booking, therefore there is also:
-        # 1 to camp leaders altogether
-        leader_emails = [m for m in mails if sorted(m.to) == sorted([leader_1_user.email, leader_2_user.email])]
-        assert len(leader_emails) == 1
-        assert leader_emails[0].subject.startswith("[CCIW] Late booking:")
+        # TODO #52
+        # mails = send_queued_mail()
+        # account_mails = [m for m in mails if m.to == [account.email]]
+        # assert len(account_mails) == 1
 
-    def test_insufficient_receive_payment(self):
-        # Need to move into region where full payments are required
-        Camp.objects.update(start_date=date.today() + timedelta(days=20))
-        booking1 = factories.create_booking(name="Peter Bloggs")
-        account = booking1.account
-        booking2 = factories.create_booking(price_type=PriceType.SECOND_CHILD, name="Mary Bloggs", account=account)
-        book_basket_now([booking1, booking2])
-        booking1.refresh_from_db()
-        assert booking1.booking_expires_at is not None
-
-        assert booking1.amount_due > booking2.amount_due
-        # Pay an amount between the two:
-        p = (booking1.amount_due + booking2.amount_due) / 2
-        account.receive_payment(p)
-
-        # Check we updated the account
-        assert account.total_received == p
-
-        # Check we updated the one we had enough funds for
-        booking2.refresh_from_db()
-        assert booking2.booking_expires_at is None
-        # but not the one which was too much.
-        booking1.refresh_from_db()
-        assert booking1.booking_expires_at is not None
-
-        # We can rectify it with a payment of the rest
-        account.receive_payment((booking1.amount_due + booking2.amount_due) - p)
-        booking1.refresh_from_db()
-        assert booking1.booking_expires_at is None
+        # # This is a late booking, therefore there is also:
+        # # 1 to camp leaders altogether
+        # leader_emails = [m for m in mails if sorted(m.to) == sorted([leader_1_user.email, leader_2_user.email])]
+        # assert len(leader_emails) == 1
+        # assert leader_emails[0].subject.startswith("[CCIW] Late booking:")
 
     def test_email_for_bad_payment_1(self):
         ipn_1 = IpnMock()
@@ -2037,6 +1978,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         account.refresh_from_db()
         assert account.total_received == Decimal(0)
 
+    @pytest.mark.xfail  # TODO #52
     def test_email_for_good_payment(self):
         booking = factories.create_booking(state=BookingState.INFO_COMPLETE)
         account = booking.account
@@ -2052,6 +1994,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         assert mails[0].to == [account.email]
         assert self.THANK_YOU_FOR_PAYMENT in mails[0].body
 
+    @pytest.mark.xfail  # TODO #52
     def test_only_one_email_for_multiple_places(self):
         booking1 = factories.create_booking(name="Princess Pearl")
         account = booking1.account
@@ -2096,7 +2039,6 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # Sanity check initial condition:
         mail.outbox = []
         booking.refresh_from_db()
-        assert booking.booking_expires_at is not None
 
         # Send payment that doesn't complete immediately
         ipn_1 = factories.create_ipn(
@@ -2125,14 +2067,6 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # But pending payments are considered abandoned after 3 months.
         three_months_later = three_days_later + timedelta(days=30 * 3)
         assert account.get_pending_payment_total(now=three_months_later) == Decimal("0.00")
-
-        # Booking should not expire if they have pending payments against them.
-        # This is the easiest way to handle this, we have no idea when the
-        # payment will complete.
-        mail.outbox = []
-        expire_bookings(now=three_days_later)
-        booking.refresh_from_db()
-        assert booking.booking_expires_at is not None
 
         # Once confirmed payment comes in, we consider that there are no pending payments.
 
@@ -2368,85 +2302,6 @@ class TestLogOutSL(LogOutBase, SeleniumBase):
     pass
 
 
-class TestExpireBookingsCommand(TestBase):
-    def test_just_created(self):
-        """
-        Test no mail if just created
-        """
-        booking = factories.create_booking()
-        book_basket_now([booking])
-
-        mail.outbox = []
-
-        ExpireBookingsCommand().handle()
-        assert len(mail.outbox) == 0
-
-    def test_warning(self):
-        """
-        Test that we get a warning email after 12 hours
-        """
-        booking = factories.create_booking()
-        book_basket_now([booking])
-        booking.refresh_from_db()
-        booking.booking_expires_at = booking.booking_expires_at - timedelta(0.49)
-        booking.save()
-
-        mail.outbox = []
-        ExpireBookingsCommand().handle()
-        assert len(mail.outbox) == 1
-        assert "warning" in mail.outbox[0].subject
-
-        booking.refresh_from_db()
-        assert booking.booking_expires_at is not None
-        assert booking.state == BookingState.BOOKED
-
-    def test_expires(self):
-        """
-        Test that we get an expiry email after 24 hours
-        """
-        booking = factories.create_booking()
-        book_basket_now([booking])
-        booking.refresh_from_db()
-        booking.booking_expires_at = booking.booking_expires_at - timedelta(1.01)
-        booking.save()
-
-        mail.outbox = []
-        ExpireBookingsCommand().handle()
-        # NB - should get one, not two (shouldn't get warning)
-        assert len(mail.outbox) == 1
-        assert "expired" in mail.outbox[0].subject
-        assert "have expired" in mail.outbox[0].body
-
-        booking.refresh_from_db()
-        assert booking.booking_expires_at is None
-        assert booking.state == BookingState.INFO_COMPLETE
-
-    def test_grouping(self):
-        """
-        Test the emails are grouped as we expect
-        """
-        booking1 = factories.create_booking(name="Child One")
-        account = booking1.account
-        booking2 = factories.create_booking(name="Child Two", account=account)
-
-        book_basket_now([booking1, booking2])
-        account.bookings.update(booking_expires_at=timezone.now() - timedelta(1))
-
-        mail.outbox = []
-        ExpireBookingsCommand().handle()
-
-        # Should get one, not two, because they will be grouped.
-        assert len(mail.outbox) == 1
-        assert "expired" in mail.outbox[0].subject
-        assert "have expired" in mail.outbox[0].body
-        assert "Child One" in mail.outbox[0].body
-        assert "Child Two" in mail.outbox[0].body
-
-        for b in account.bookings.all():
-            assert b.booking_expires_at is None
-            assert b.state == BookingState.INFO_COMPLETE
-
-
 class TestManualPayment(TestBase):
     def test_create(self):
         account = BookingAccount.objects.create(email="foo@foo.com")
@@ -2591,29 +2446,6 @@ class TestEarlyBird(TestBase):
         booking.refresh_from_db()
         assert not booking.early_bird_discount
         assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
-
-    def test_expire(self):
-        booking = self.test_book_basket_applies_discount()
-        booking.expire()
-
-        assert not booking.early_bird_discount
-        # For the sake of 'list bookings' view, we need to display the
-        # un-discounted price.
-        assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
-        assert booking.booked_at is None
-
-    def test_non_early_bird_booking_warning(self):
-        booking = factories.create_booking()
-        mail.outbox = []
-        account = booking.account
-        with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
-            mock_f.return_value = timezone.now() - timedelta(days=10)
-            book_basket_now([booking])
-            account.receive_payment(booking.amount_due)
-        mails = [m for m in send_queued_mail() if m.to == [account.email]]
-        assert len(mails) == 1
-        assert "If you had booked earlier" in mails[0].body
-        assert "£10" in mails[0].body
 
 
 class TestExportPlaces(TestBase):

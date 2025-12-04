@@ -98,7 +98,7 @@ class BookingAccountManagerBase(models.Manager):
         today = date.today()
 
         for account in potentials:
-            confirmed_balance_due = account.get_balance(confirmed_only=True, today=today)
+            confirmed_balance_due = account.get_balance(today=today)
             if confirmed_balance_due > 0:
                 account.confirmed_balance_due = confirmed_balance_due
                 retval.append(account)
@@ -192,11 +192,9 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, *, today: date | None, confirmed_only: bool):
+    def get_balance(self, *, today: date | None):
         """
         Gets the balance to pay on the account.
-        If confirmed_only=True, then only bookings that are confirmed
-        (no expiration date) are included as 'received goods'.
         If today is None, then the final balance is returned,
         not the amount currently due.
         """
@@ -204,12 +202,10 @@ class BookingAccount(models.Model):
         # booking_secretary_reports view efficiently
         if hasattr(self, "_prefetched_objects_cache") and "bookings" in self._prefetched_objects_cache:
             payable_bookings = [
-                booking
-                for booking in self._prefetched_objects_cache["bookings"]
-                if booking.is_payable(confirmed_only=confirmed_only)
+                booking for booking in self._prefetched_objects_cache["bookings"] if booking.is_payable()
             ]
         else:
-            payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only))
+            payable_bookings = list(self.bookings.payable())
 
         total = Decimal("0.00")
         booking: Booking
@@ -219,11 +215,11 @@ class BookingAccount(models.Model):
         return total - self.total_received
 
     def get_balance_full(self):
-        return self.get_balance(confirmed_only=False, today=None)
+        return self.get_balance(today=None)
 
     def get_balance_due_now(self):
         today = date.today()
-        return self.get_balance(confirmed_only=False, today=today)
+        return self.get_balance(today=today)
 
     def admin_balance(self):
         return self.get_balance_full()
@@ -241,57 +237,9 @@ class BookingAccount(models.Model):
 
         # = Receiving payments =
         #
-        # This system needs to be robust, and cope with all kinds of user error, and
-        # things not matching up. The essential philosophy of this code is to assume the
-        # worst, most complicated scenario, and this will then easily handle the more
-        # simple case where everything matches up as a special case.
-        #
-        # For online bookings, when the user clicks 'book place', the places are
-        # marked as 'booked', but with a 'booking_expires_at' field set to a
-        # non-NULL timestamp, so that the bookings will expire if the user does
-        # not complete payment.
-        #
-        # If the user does complete payment, the booking_expires_at field must be cleared,
-        # so that the place becomes 'confirmed'.
-        #
         # When an online payment is received, django-paypal creates a record
         # and a signal handler indirectly calls this method which must update
         # the 'total_received' field.
-        #
-        # At the same time we also need to set the 'Booking.booking_expires_at'
-        # field of relevant Booking objects to null, so that the places are
-        # securely booked.
-        #
-        # There are a number of scenarios where the amount paid doesn't cover
-        # the total amount due:
-        #
-        # 1) user fiddles with the form client side and alters the amount
-        # 2) user starts paying for one place, then books another place in a different
-        # tab/window
-        #
-        # It is also possible for a place to be partially paid for, yet booked e.g. if a
-        # user selects a discount for which they were not eligible, and pays. This is then
-        # discovered, and the 'amount due' for that place is altered by an admin.
-        #
-        # So, we need a method to distribute any incoming payment so that we stop the
-        # booked place from expiring. It is better to be too generous than too stingy in
-        # stopping places from expiring, because:
-        #
-        # * on camp we can generally cope with one too many campers
-        # * we don't want people slipping off the camp lists by accident
-        # * we can always check whether people still have money outstanding by just checking
-        #   the total amount paid against the total amount due.
-        #
-        # Therefore, we ignore the partially paid case, and for distributing payment treat
-        # any place which is 'booked' with no 'booking_expires_at' as fully paid.
-        #
-        # When a payment is received, we don't know which place it is for, and
-        # in general it could be for any combination of the places that need
-        # payment. There could also be money in the account that is still
-        # 'unclaimed'. So, for simplicity we simply go through all places which
-        # are 'booked' and have a 'booking_expires_at' date, starting with the
-        # earliest 'booking_expires_at', on the assumption that we will get payment
-        # for that one first.
         #
         # The manual booking process, which uses the admin to record cheque
         # payments, uses exactly the same process, although it is a different
@@ -303,42 +251,6 @@ class BookingAccount(models.Model):
         # Need new data from DB:
         acc = BookingAccount.objects.get(id=self.id)
         self.total_received = acc.total_received
-
-        self.distribute_balance()
-
-    def distribute_balance(self):
-        """
-        Distribute any money in the account to mark unconfirmed places as
-        confirmed.
-        """
-        # To satisfy PriceChecker performance requirements it's easier
-        # to get all bookings up front:
-        all_payable_bookings = list(self.bookings.payable(confirmed_only=False).select_related("camp"))
-
-        # Bookings we might want to confirm.
-        # Order by booking_expires_at ascending i.e. earliest first.
-        candidate_bookings: list[Booking] = sorted(
-            (b for b in all_payable_bookings if b.is_booked and not b.is_confirmed), key=lambda b: b.booking_expires_at
-        )
-        confirmed_bookings = []
-        # In order to distribute funds, need to take into account the total
-        # amount in the account that is not required by already confirmed places
-        today = date.today()
-        existing_balance = self.get_balance(confirmed_only=True, today=today)
-        # The 'pot' is the amount we have as excess and can use to mark places
-        # as confirmed.
-        pot = -existing_balance
-        for booking in candidate_bookings:
-            if pot < 0:
-                break
-            amount = booking.get_amount_due(today=today)
-            if amount <= pot:
-                booking.confirm()
-                confirmed_bookings.append(booking)
-                pot -= amount
-
-        if confirmed_bookings:
-            places_confirmed_handler(bookings=confirmed_bookings)
 
     def get_pending_payment_total(self, now=None):
         from .payments import build_paypal_custom_field

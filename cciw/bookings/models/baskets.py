@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.db import transaction
 from django.utils import timezone
 
@@ -26,6 +24,7 @@ def book_basket_now(bookings_qs: BookingQuerySet | list[Booking]):
     if len(years) != 1:
         raise AssertionError(f"Expected 1 year in basket, found {years}")
 
+    # TODO #52 - we don't need this, use a queue object
     # Serialize access to this function, to stop more places than available
     # being booked:
     year_bookings = Booking.objects.for_year(list(years)[0]).select_for_update()
@@ -39,18 +38,9 @@ def book_basket_now(bookings_qs: BookingQuerySet | list[Booking]):
         # rather than in the Booking model.
         b.early_bird_discount = b.can_have_early_bird_discount()
         b.auto_set_amount_due()
-        b.state = BookingState.BOOKED
-        b.booking_expires_at = now + timedelta(1)  # 24 hours
-        b.save()
 
-    # In some cases we may have enough money to pay for places from money in
-    # account. Since a payment will not be needed or received, we need to
-    # make sure these don't expire.
-    seen_accounts = set()
-    for b in bookings:
-        if b.account_id in seen_accounts:
-            continue
-        b.account.distribute_balance()
-        seen_accounts.add(b.account_id)
+        # TODO #52 - add to queue instead
+        b.state = BookingState.BOOKED
+        b.save()
 
     return True

@@ -24,7 +24,7 @@ def get_booking_progress_stats(start_year=None, end_year=None, camps=None, overl
         last_year = end_year
 
     for item in items:
-        qs = Booking.objects.confirmed()
+        qs = Booking.objects.booked()
         rows = query_filter(qs, item).select_related("camp").values_list("booked_at", "created_at", "camp__start_date")
         rows2 = [[r[0] if r[0] else r[1], r[2]] for r in rows]  # prefer 'booked_at' to 'created_at'
         if rows2:
@@ -70,7 +70,7 @@ def _fill_gaps(series):
 
 def get_booking_summary_stats(start_year, end_year) -> pd.DataFrame:
     rows = (
-        Booking.objects.confirmed()
+        Booking.objects.booked()
         .select_related("camp")
         .filter(camp__year__gte=start_year, camp__year__lte=end_year)
         .values_list("camp__year", "sex")
@@ -104,7 +104,7 @@ def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_t
 
     data = {}
     for item in items:
-        qs = Booking.objects.confirmed().select_related(None).select_related("camp").only("birth_date", "camp")
+        qs = Booking.objects.booked().select_related(None).select_related("camp").only("birth_date", "camp")
         objs = query_filter(qs, item)
         vals = [b.age_on_camp() for b in objs]
         data[labeller(item)] = counts(vals)

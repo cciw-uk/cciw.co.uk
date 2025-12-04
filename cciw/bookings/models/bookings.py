@@ -12,7 +12,6 @@ from django.db import models
 from django.db.models import Q, QuerySet
 from django.utils import timezone
 from django.utils.functional import cached_property
-from django.utils.safestring import mark_safe
 from django_countries.fields import CountryField
 
 from cciw.accounts.models import User
@@ -63,16 +62,16 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
     def in_basket_or_booked(self):
         return self.in_basket() | self.booked()
 
-    def confirmed(self):
-        return self.filter(state=BookingState.BOOKED, booking_expires_at__isnull=True)
-
+    # TODO #52 - this should be 'has current entry on the queue, but not booked',
+    # we need the queue model.
+    # We also need to re-visit anywhere that uses this, e.g. "unconfirmed_places",
+    # text that talks about bookings "expiring"
     def unconfirmed(self):
-        return self.filter(state=BookingState.BOOKED, booking_expires_at__isnull=False)
+        return self.filter(state=BookingState.INFO_COMPLETE)
 
-    def payable(self, *, confirmed_only: bool):
+    def payable(self):
         """
         Returns bookings for which payment is expected.
-        If confirmed_only is True, unconfirmed places are excluded.
         """
         # See also:
         #   Booking.is_payable()
@@ -81,8 +80,9 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
         # 'Full refund' cancelled bookings do not have payment expected, but the
         # others do.
-        return self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND]) | (
-            self.confirmed() if confirmed_only else self.booked()
+        return (
+            self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND])
+            | self.booked()
         )
 
     def cancelled(self):
@@ -271,19 +271,9 @@ class Booking(models.Model):
     shelved = models.BooleanField(default=False, help_text="Used by user to put on 'shelf'")
 
     # State - internal
-    state = models.CharField(
-        choices=BookingState,
-        help_text=mark_safe(
-            "<ul>"
-            "<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
-            "<li>For people paying online who have been stopped (e.g. due to having a custom discount or serious illness or child too young etc.), set to 'Manually approved' to allow them to book and pay</li>"
-            "<li>If there are queries before it can be booked, set to 'Information complete'</li>"
-            "</ul>"
-        ),
-    )
+    state = models.CharField(choices=BookingState)
 
     created_at = models.DateTimeField(default=timezone.now)
-    booking_expires_at = models.DateTimeField(null=True, blank=True)
     created_online = models.BooleanField(blank=True, default=False)
 
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
@@ -322,19 +312,13 @@ class Booking(models.Model):
         self.save()
         self.update_approvals()
 
-    def is_payable(self, *, confirmed_only: bool) -> bool:
+    def is_payable(self) -> bool:
         # See also BookingQuerySet.payable()
-        return self.state in [BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND] or (
-            self.is_confirmed if confirmed_only else self.is_booked
-        )
+        return self.state in [BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND] or self.is_booked
 
     @property
     def is_booked(self) -> bool:
         return self.state == BookingState.BOOKED
-
-    @property
-    def is_confirmed(self) -> bool:
-        return self.is_booked and self.booking_expires_at is None
 
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:
@@ -522,11 +506,8 @@ class Booking(models.Model):
         return get_booking_problems(self, booking_sec=booking_sec, agreement_fetcher=agreement_fetcher)
 
     def confirm(self):
-        self.booking_expires_at = None
-        self.save()
-
-    def expire(self):
-        self._unbook()
+        # TODO #52 - should involve queue?
+        self.state = BookingState.BOOKED
         self.save()
 
     def cancel_and_move_to_shelf(self):
@@ -535,7 +516,8 @@ class Booking(models.Model):
         self.save()
 
     def _unbook(self):
-        self.booking_expires_at = None
+        # TODO #52 - change entry on the queue?
+
         # Here we don't use BookingState.CANCELLED_FULL_REFUND,
         # because we assume the user might want to edit and book
         # again:

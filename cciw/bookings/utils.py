@@ -20,7 +20,7 @@ def format_address(*args):
 
 def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
     spreadsheet = ExcelSimpleBuilder()
-    bookings = list(camp.bookings.confirmed().order_by("first_name", "last_name"))
+    bookings = list(camp.bookings.booked().order_by("first_name", "last_name"))
 
     columns = [
         ("First name", lambda b: b.first_name),
@@ -114,7 +114,7 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
 def camp_sharable_transport_details_to_spreadsheet(camp: Camp):
     spreadsheet = ExcelSimpleBuilder()
     accounts = (
-        BookingAccount.objects.filter(share_phone_number=True).filter(bookings__in=camp.bookings.confirmed()).distinct()
+        BookingAccount.objects.filter(share_phone_number=True).filter(bookings__in=camp.bookings.booked()).distinct()
     )
     columns: list[tuple[str, Callable[[BookingAccount], Any]]] = [
         ("Name", lambda a: a.name),
@@ -134,7 +134,7 @@ def year_bookings_to_spreadsheet(year: int) -> ExcelSimpleBuilder:
     spreadsheet = ExcelSimpleBuilder()
     bookings = (
         Booking.objects.filter(camp__year=year)
-        .confirmed()
+        .booked()
         .order_by("camp__camp_name__slug", "account__name", "first_name", "last_name")
         .select_related("camp", "camp__camp_name", "account")
     )

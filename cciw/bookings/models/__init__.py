@@ -15,7 +15,6 @@ from .bookings import (
     Booking,
 )
 from .constants import KEEP_FINANCIAL_RECORDS_FOR, Sex
-from .expiry import expire_bookings
 from .payments import (
     AccountTransferPayment,
     ManualPayment,

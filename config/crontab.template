@@ -11,9 +11,6 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 0       1 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE apply_data_retention
 0       2 * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE clean_orphaned_data
 
-# expire_bookings must be run only once an hour
-30      * * * *  %(PROJECT_USER)s $PYTHON $DJANGO_MANAGE expire_bookings
-
 
 # Recycle webserver instance once a day
 30      2 * * *  root          supervisorctl restart %(PROJECT_NAME)s_uwsgi

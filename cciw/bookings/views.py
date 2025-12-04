@@ -625,7 +625,7 @@ def pay(request, *, installment: bool = False):
             "stage": BookingStage.PAY,
             "title": "Booking - pay",
             "unconfirmed_places": acc.bookings.for_year(this_year).unconfirmed(),
-            "confirmed_places": acc.bookings.for_year(this_year).confirmed(),
+            "booked_places": acc.bookings.for_year(this_year).booked(),
             "balance_due_now": balance_due_now,
             "balance_full": balance_full,
             "account_id": acc.id,
@@ -701,7 +701,7 @@ def account_overview(request):
         {
             "title": "Booking - account overview",
             "stage": BookingStage.OVERVIEW,
-            "confirmed_places": bookings.confirmed()
+            "booked_places": bookings.booked()
             .with_prefetch_camp_info()
             .with_prefetch_missing_agreements(agreement_fetcher),
             "unconfirmed_places": bookings.unconfirmed()

@@ -36,11 +36,11 @@
   <section class="grouped">
     <h1>Your places {{ thisyear }}</h1>
 
-    {% if confirmed_places %}
+    {% if booked_places %}
       <h2>Confirmed places</h2>
       <p>You have the following confirmed places on camps this year:</p>
 
-      {% include "cciw/bookings/place_table.html" with bookings=confirmed_places show_missing_agreements=True %}
+      {% include "cciw/bookings/place_table.html" with bookings=booked_places show_missing_agreements=True %}
 
       <p>Information about what to bring on camp will be sent in an email or letter
         before camp.</p>
@@ -84,7 +84,7 @@
       {% include "cciw/bookings/place_table.html" with bookings=cancelled_places %}
     {% endif %}
 
-    {% if not confirmed_places and not unconfirmed_places and not cancelled_places and not basket_or_shelf %}
+    {% if not booked_places and not unconfirmed_places and not cancelled_places and not basket_or_shelf %}
       <div class="actionsplit">
         <div class="actionbutton">
           <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>

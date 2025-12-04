@@ -489,7 +489,6 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "shelved": keep,
     "state": keep,
     "created_at": keep,
-    "booking_expires_at": keep,
     "created_online": keep,
     "erased_at": keep,
 }
