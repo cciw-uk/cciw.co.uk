@@ -45,35 +45,39 @@
       <p>Information about what to bring on camp will be sent in an email or letter
         before camp.</p>
 
-    {% endif %}
-
-    {% if unconfirmed_places %}
-      <h2>Booked places</h2>
-
-      <p>The following places are booked, but will expire soon unless you pay:</p>
-
-      <div class="actiongroup">
-        <div class="actioninfo">
-          {% include "cciw/bookings/place_table.html" with bookings=unconfirmed_places show_missing_agreements=True %}
-        </div>
+      {% if payment_required %}
+        <h2>Payment required</h2>
         {% include "cciw/bookings/pending_payment_notice.html" %}
         <div class="actionbutton">
           <a href="{% url 'cciw-bookings-pay' %}" class="bigaction">Pay</a>
         </div>
-      </div>
+      {% endif %}
+
     {% endif %}
 
-    {% if basket_or_shelf %}
-      <h2>Basket / shelf</h2>
+    {% if waiting_places %}
+      <h2>Waiting in the queue</h2>
 
-      <p>These places are <b>not booked</b>:</p>
+      <p>The following places are waiting in the queue:</p>
 
       <div class="actiongroup">
         <div class="actioninfo">
-          {% include "cciw/bookings/place_table.html" with bookings=basket_or_shelf %}
+          {% include "cciw/bookings/place_table.html" with bookings=waiting_places show_missing_agreements=True %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if basket_or_shelf_places %}
+      <h2>Basket / shelf</h2>
+
+      <p>These places are <b>not in the queue</b>:</p>
+
+      <div class="actiongroup">
+        <div class="actioninfo">
+          {% include "cciw/bookings/place_table.html" with bookings=basket_or_shelf_places %}
         </div>
         <div class="actionbutton">
-          <a href="{% url 'cciw-bookings-list_bookings' %}" class="bigaction">Review and book</a>
+          <a href="{% url 'cciw-bookings-basket_list_bookings' %}" class="bigaction">Review and book</a>
         </div>
       </div>
     {% endif %}
@@ -84,7 +88,7 @@
       {% include "cciw/bookings/place_table.html" with bookings=cancelled_places %}
     {% endif %}
 
-    {% if not booked_places and not unconfirmed_places and not cancelled_places and not basket_or_shelf %}
+    {% if not booked_places and not waiting_places and not cancelled_places and not basket_or_shelf_places %}
       <div class="actionsplit">
         <div class="actionbutton">
           <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>

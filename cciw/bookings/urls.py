@@ -40,7 +40,7 @@ urlpatterns = [
         views.use_previous_data_modal,
         name="cciw-bookings-use_previous_data_modal",
     ),
-    path("basket/", views.list_bookings, name="cciw-bookings-list_bookings"),
+    path("basket/", views.basket_list_bookings, name="cciw-bookings-basket_list_bookings"),
     path("added/", views.added_to_queue, name="cciw-bookings-added_to_queue"),
     path("pay/", views.pay, name="cciw-bookings-pay"),
     path("pay-installment/", views.pay, name="cciw-bookings-pay-installment", kwargs=dict(installment=True)),

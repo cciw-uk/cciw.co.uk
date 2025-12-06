@@ -318,7 +318,7 @@ def add_or_edit_place(
                 custom_agreements=custom_agreements_checked,
             )
             messages.info(request, f'Details for "{booking.name}" were saved successfully')
-            return HttpResponseRedirect(reverse("cciw-bookings-list_bookings"))
+            return HttpResponseRedirect(reverse("cciw-bookings-basket_list_bookings"))
     else:
         form = form_class(data=form_input_data, instance=booking)
 
@@ -442,17 +442,23 @@ def make_state_token(bookings):
 @booking_account_required
 @redirect_if_agreement_fix_required
 @for_htmx(use_block_from_params=True)
-def list_bookings(request):
+def basket_list_bookings(request):
     """
-    List bookings a.k.a. checkout
+    List bookings ready to book
     """
-    return _list_bookings(request)
+    return _basket_list_bookings(request)
 
 
-def _list_bookings(request):
+def _basket_list_bookings(request):
     year = common.get_thisyear()
     now = timezone.now()
-    bookings = request.booking_account.bookings.for_year(year).order_by("id").with_prefetch_camp_info().with_approvals()
+    bookings = (
+        request.booking_account.bookings.for_year(year)
+        .order_by("id")
+        .not_in_queue()
+        .with_prefetch_camp_info()
+        .with_approvals()
+    )
     # NB - use lists here, not querysets, so that both state_token and book_now
     # functionality apply against same set of bookings.
     basket_bookings: list[Booking] = list(bookings.in_basket())
@@ -465,7 +471,7 @@ def _list_bookings(request):
         places = basket_bookings + shelf_bookings
         handled = _handle_list_booking_actions(request, places)
         if handled is True:
-            return _list_bookings(make_get_request(request))
+            return _basket_list_bookings(make_get_request(request))
         elif isinstance(handled, HttpResponse):
             return handled
 
@@ -704,21 +710,26 @@ def account_overview(request):
         if response := _handle_overview_booking_actions(request, bookings):
             return response
 
+    booked_places = bookings.booked().with_prefetch_camp_info().with_prefetch_missing_agreements(agreement_fetcher)
+    waiting_places = (
+        bookings.waiting_in_queue().with_prefetch_camp_info().with_prefetch_missing_agreements(agreement_fetcher)
+    )
+    not_in_queue_places = bookings.not_in_queue()
+    basket_or_shelf_places = (
+        not_in_queue_places.in_basket() | not_in_queue_places.on_shelf()
+    ).with_prefetch_camp_info()
     return TemplateResponse(
         request,
         "cciw/bookings/account_overview.html",
         {
             "title": "Booking - account overview",
             "stage": BookingStage.OVERVIEW,
-            "booked_places": bookings.booked()
-            .with_prefetch_camp_info()
-            .with_prefetch_missing_agreements(agreement_fetcher),
-            "unconfirmed_places": bookings.unconfirmed()
-            .with_prefetch_camp_info()
-            .with_prefetch_missing_agreements(agreement_fetcher),
+            "booked_places": booked_places,
+            "waiting_places": waiting_places,
             "cancelled_places": bookings.cancelled().with_prefetch_camp_info(),
-            "basket_or_shelf": (bookings.in_basket() | bookings.on_shelf()).with_prefetch_camp_info(),
-            "balance_due_now": account.get_balance_due_now(),
+            "basket_or_shelf_places": basket_or_shelf_places,
+            "balance_due_now": (balance_due_now := account.get_balance_due_now()),
+            "payment_required": balance_due_now > 0,
             "balance_full": account.get_balance_full(),
             "pending_payment_total": account.get_pending_payment_total(),
         },

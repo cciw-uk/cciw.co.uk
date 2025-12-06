@@ -15,7 +15,7 @@ from django.utils.functional import cached_property
 from django_countries.fields import CountryField
 
 from cciw.accounts.models import User
-from cciw.bookings.models.queue import BookingQueueEntry
+from cciw.bookings.models.queue import BookingQueueEntry, QueueState
 from cciw.cciwmain.models import Camp
 from cciw.utils.models import AfterFetchQuerySetMixin
 
@@ -49,26 +49,31 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(camp__year__exact=year)
 
     def in_basket(self):
-        return self._ready_to_book(shelved=False)
+        return self.filter(shelved=False, state=BookingState.INFO_COMPLETE)
 
     def on_shelf(self):
-        return self._ready_to_book(shelved=True)
-
-    def _ready_to_book(self, *, shelved):
-        return self.filter(shelved=shelved, state=BookingState.INFO_COMPLETE)
+        return self.filter(shelved=True, state=BookingState.INFO_COMPLETE)
 
     def booked(self):
         return self.filter(state=BookingState.BOOKED)
 
-    def in_basket_or_booked(self):
+    def basket_relevant(self):
+        """
+        Returns bookings that are relevant to "basket" stage in which
+        problems that span bookings need to be found.
+        """
+        # This includes things that are already booked,
+        # or are about to be booked.
         return self.in_basket() | self.booked()
 
-    # TODO #52 - this should be 'has current entry on the queue, but not booked',
-    # we need the queue model.
-    # We also need to re-visit anywhere that uses this, e.g. "unconfirmed_places",
-    # text that talks about bookings "expiring"
-    def unconfirmed(self):
-        return self.filter(state=BookingState.INFO_COMPLETE)
+    def in_queue(self):
+        return self.filter(queue_entry__isnull=False).exclude(queue_entry__state=QueueState.WITHDRAWN)
+
+    def not_in_queue(self):
+        return self.filter(queue_entry__isnull=True) | self.filter(queue_entry__state=QueueState.WITHDRAWN)
+
+    def waiting_in_queue(self):
+        return self.in_queue().filter(queue_entry__state=QueueState.WAITING).filter(state=BookingState.INFO_COMPLETE)
 
     def payable(self):
         """

@@ -219,7 +219,7 @@ def get_booking_errors(booking, booking_sec=False, agreement_fetcher=None) -> li
         incorporate_approvals_granted(booking, approvals_needed)
     errors.extend(approvals_needed)
 
-    relevant_bookings = booking.account.bookings.for_year(camp.year).in_basket_or_booked()
+    relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
     relevant_bookings_excluding_self = relevant_bookings.exclude(
         first_name=booking.first_name, last_name=booking.last_name
     )
@@ -430,7 +430,7 @@ def get_booking_warnings(booking, booking_sec=False) -> list[BookingProblem]:
             f"places for the same camper!"
         )
 
-    relevant_bookings = booking.account.bookings.for_year(camp.year).in_basket_or_booked()
+    relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
 
     if booking.price_type == PriceType.FULL:
         full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)

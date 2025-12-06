@@ -244,7 +244,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         self.assertTextPresent("Please enter the details needed to book a place on a camp")
         self.fill_by_name(data)
         self.submit("#id_save_btn")
-        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
+        self.assertUrlsEqual(reverse("cciw-bookings-basket_list_bookings"))
         new_booking = Booking.objects.exclude(id__in=old_booking_ids).get()
         return new_booking
 
@@ -837,7 +837,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         data = self.get_place_details()
         self.fill_by_name(data)
         self.submit()
-        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
+        self.assertUrlsEqual(reverse("cciw-bookings-basket_list_bookings"))
 
         # Did we create it?
         assert account.bookings.count() == 1
@@ -864,7 +864,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.fill_by_name(self.get_place_details())
         self.fill({f"#id_custom_agreement_{agreement.id}": True})
         self.submit()
-        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
+        self.assertUrlsEqual(reverse("cciw-bookings-basket_list_bookings"))
 
         booking = account.bookings.get()
         assert booking.custom_agreements_checked == [agreement.id]
@@ -1029,7 +1029,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         data["first_name"] = "A New Name"
         self.fill_by_name(data)
         self.submit()
-        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
+        self.assertUrlsEqual(reverse("cciw-bookings-basket_list_bookings"))
 
         # Did we alter it?
         booking.refresh_from_db()
@@ -1313,7 +1313,7 @@ class TestAccountTransferSL(AccountTransferBase, SeleniumBase):
 class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     # This includes tests for most of the business logic
 
-    urlname = "cciw-bookings-list_bookings"
+    urlname = "cciw-bookings-basket_list_bookings"
 
     def assert_book_button_enabled(self):
         assert self.is_element_present("#id_book_now_btn")

@@ -56,7 +56,7 @@ def bookingbar(context):
             BookingStage.LIST,
             "Basket",
             logged_in and has_account_details,
-            reverse("cciw-bookings-list_bookings"),
+            reverse("cciw-bookings-basket_list_bookings"),
             msg_need_account_details,
         ),
     ]
