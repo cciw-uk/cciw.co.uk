@@ -38,11 +38,13 @@ from cciw.bookings.models import (
     PriceChecker,
     PriceType,
     RefundPayment,
-    book_basket_now,
+    add_basket_to_queue,
+    book_bookings_now,
     build_paypal_custom_field,
 )
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
+from cciw.bookings.models.queue import QueueState
 from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
@@ -375,7 +377,7 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
 
         account: BookingAccount = booking.account
         # Book
-        book_basket_now([booking])
+        book_bookings_now([booking])
 
         # Place should be booked AND should not expire
         booking.refresh_from_db()
@@ -613,7 +615,7 @@ class TestBookingVerifySL(BookingVerifyBase, SeleniumBase):
 class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
     def _create_booking(self):
         booking = factories.create_booking()
-        book_basket_now([booking])
+        book_bookings_now([booking])
         booking: Booking = Booking.objects.get(id=booking.id)
         booking.confirm()
         assert len(BookingAccount.objects.payments_due()) == 1
@@ -1591,23 +1593,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         booking = self.create_booking()
         self.get_url(self.urlname)
         self.submit("[name=book_now]")
-        booking.refresh_from_db()
-        assert booking.state == BookingState.BOOKED
-        # TODO #52 - should be on queue
+        self.assertUrlsEqual(reverse("cciw-bookings-added_to_queue"))
+        self.assertTextPresent("added to the queue")
 
-    def test_book_unbookable(self):
-        """
-        Test that an unbookable place can't be booked
-        """
-        self.booking_login()
-        booking = self.create_booking(serious_illness=True)
-        self.get_url(self.urlname)
-        self.assert_book_button_disabled()
-        self.enable_book_button()
-        self.submit("[name=book_now]")
         booking.refresh_from_db()
-        assert booking.state == BookingState.INFO_COMPLETE
-        self.assertTextPresent("These places cannot be booked")
+
+        # Should be on queue, but not booked yet.
+        assert booking.is_in_queue
+        assert booking.state != BookingState.BOOKED
 
     def test_book_one_unbookable(self):
         """
@@ -1622,6 +1615,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit("[name=book_now]")
         for b in account.bookings.all():
             assert b.state == BookingState.INFO_COMPLETE
+            assert not b.is_in_queue
         self.assertTextPresent("These places cannot be booked")
 
     def test_same_name_same_camp(self):
@@ -1816,7 +1810,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         booking1 = self.create_booking()
         booking2 = self.create_booking()
-        book_basket_now([booking1, booking2])
+        book_bookings_now([booking1, booking2])
 
         self.get_url("cciw-bookings-pay")
 
@@ -1832,7 +1826,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_redirect_if_missing_agreements(self):
         self.booking_login()
         booking = self.create_booking(shortcut=True)
-        book_basket_now([booking])
+        book_bookings_now([booking])
         factories.create_custom_agreement(year=self.camp.year, name="COVID-19")
         self.get_url("cciw-bookings-pay")
         self.assertUrlsEqual(reverse("cciw-bookings-account_overview"))
@@ -1874,7 +1868,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         booking = factories.create_booking()
         (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
         account = booking.account
-        book_basket_now([booking])
+        book_bookings_now([booking])
         booking.refresh_from_db()
 
         mail.outbox = []
@@ -1982,7 +1976,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
     def test_email_for_good_payment(self):
         booking = factories.create_booking(state=BookingState.INFO_COMPLETE)
         account = booking.account
-        book_basket_now([booking])
+        book_bookings_now([booking])
 
         mail.outbox = []
         factories.create_ipn(account=account, mc_gross=booking.amount_due)
@@ -2000,7 +1994,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         account = booking1.account
         booking2 = factories.create_booking(name="Another Child", account=account)
 
-        book_basket_now([booking1, booking2])
+        book_bookings_now([booking1, booking2])
 
         mail.outbox = []
         account.receive_payment(account.get_balance_full())
@@ -2035,7 +2029,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         account = booking.account
 
         # Book it
-        book_basket_now([booking])
+        book_bookings_now([booking])
         # Sanity check initial condition:
         mail.outbox = []
         booking.refresh_from_db()
@@ -2190,11 +2184,11 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         # Book a place and pay
         self.booking_login()
         booking1 = self.create_booking(name="Frédéric Bloggs")
-        book_basket_now([booking1])
+        add_basket_to_queue([booking1])
 
         # Book another
         booking2 = self.create_booking(name="Another Child")
-        book_basket_now([booking2])
+        add_basket_to_queue([booking2])
 
         # 3rd place, not booked at all
         self.create_booking(name="3rd Child")
@@ -2219,6 +2213,8 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         # Basket/Shelf
         self.assertTextPresent("Basket / shelf")
 
+        # TODO #52 - queue or not in queue
+
         # Cancellation
         self.assertTextPresent("Cancelled places")
 
@@ -2227,7 +2223,7 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         booking1 = self.create_booking()
         booking2 = self.create_booking()
         booking3 = self.create_booking()
-        book_basket_now([booking1, booking2, booking3])
+        book_bookings_now([booking1, booking2, booking3])
 
         agreement = factories.create_custom_agreement(year=booking1.camp.year, name="COVID-19")
 
@@ -2430,7 +2426,7 @@ class TestEarlyBird(TestBase):
         with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the future
             mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
-            book_basket_now([booking])
+            book_bookings_now([booking])
         booking.refresh_from_db()
         assert booking.early_bird_discount
         price_checker = PriceChecker()
@@ -2442,7 +2438,7 @@ class TestEarlyBird(TestBase):
         with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the past
             mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
-            book_basket_now([booking])
+            book_bookings_now([booking])
         booking.refresh_from_db()
         assert not booking.early_bird_discount
         assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
@@ -2560,6 +2556,24 @@ class TestBookingModel(TestBase):
         # Check that approve_booking_for_problem actually worked
         booking = Booking.objects.get()
         assert booking.saved_approvals_unapproved == []
+
+    def test_add_to_queue(self):
+        booking = factories.create_booking()
+        assert not booking.is_in_queue
+        booking.add_to_queue()
+        assert booking.is_in_queue
+        booking.refresh_from_db()
+        assert booking.queue_entry.state == QueueState.WAITING
+
+        # Multiple times is fine and does nothing.
+        old_queue_entry = booking.queue_entry
+        created_at = old_queue_entry.created_at
+
+        booking.add_to_queue()
+        booking.refresh_from_db()
+
+        assert booking.queue_entry == old_queue_entry
+        assert booking.queue_entry.created_at == created_at
 
 
 class TestPaymentModels(TestBase):

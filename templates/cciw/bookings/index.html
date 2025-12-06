@@ -68,31 +68,7 @@
   <p>You can <a href="{% url 'cciw-bookings-start' %}">book and pay online</a>,
     providing you have a debit card, credit card, or PayPal account.</p>
 
-  {% if booking_open_data.opens_for_booking_on %}
-
-    <p>Due to very high demand, we cannot guarantee a place to everyone. Our
-      system is as follows:</p>
-
-    <ul>
-      <li>Bookings will be open from <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>.</li>
-      <li>The initial booking period will finish on <b>{{ booking_open_data.closes_for_initial_period|date:"j F" }}</b>.</li>
-      <li>All bookings made during this period will then be considered <b>together</b>.</li>
-      <li>A priority system will be applied for some places, based on previous
-        attendance and some other factors.</li>
-      <li>Any remaining places will be decided by a lottery system.</li>
-      <li>At this point we will notify you of the outcome.</li>
-      <li>Those who have not been given places will automatically be placed on a
-        waiting list, in which case you may be offered a place if other bookings are cancelled.</li>
-      <li>Bookings after the initial period will still be accepted and added to the
-        waiting list, but due to high demand they are unlikely to be offered
-        places.</li>
-    </ul>
-
-    <p>
-      We're sorry that some people will inevitably be disappointed!
-    </p>
-
-  {% endif %}
+  {% include "cciw/bookings/booking_process_info.html" %}
 
   </p>
 

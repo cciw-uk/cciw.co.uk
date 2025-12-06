@@ -54,16 +54,9 @@ def bookingbar(context):
         ),
         (
             BookingStage.LIST,
-            "Checkout",
+            "Basket",
             logged_in and has_account_details,
             reverse("cciw-bookings-list_bookings"),
-            msg_need_account_details,
-        ),
-        (
-            BookingStage.PAY,
-            "Pay",
-            logged_in and has_account_details,
-            reverse("cciw-bookings-pay"),
             msg_need_account_details,
         ),
     ]

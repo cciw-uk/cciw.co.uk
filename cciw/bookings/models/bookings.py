@@ -15,6 +15,7 @@ from django.utils.functional import cached_property
 from django_countries.fields import CountryField
 
 from cciw.accounts.models import User
+from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain.models import Camp
 from cciw.utils.models import AfterFetchQuerySetMixin
 
@@ -101,7 +102,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         """
         Returns Bookings that need approving
         """
-        qs = self.filter(state=BookingState.INFO_COMPLETE).select_related("camp")
+        qs = self.filter(state=BookingState.INFO_COMPLETE).in_basket().select_related("camp")
         approvals_booking_ids_qs = BookingApproval.objects.need_approving().values_list("booking_id", flat=True)
         qs = qs.filter(id__in=approvals_booking_ids_qs)
         return qs
@@ -152,6 +153,9 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
                 booking.missing_agreements = booking.get_missing_agreements(agreement_fetcher=agreement_fetcher)
 
         return self.register_after_fetch_callback(add_missing_agreements)
+
+    def with_queue_info(self) -> BookingQuerySet:
+        return self.select_related("queue_entry")
 
     # Data retention
 
@@ -319,6 +323,27 @@ class Booking(models.Model):
     @property
     def is_booked(self) -> bool:
         return self.state == BookingState.BOOKED
+
+    @property
+    def _queue_entry_or_none(self) -> BookingQueueEntry | None:
+        try:
+            return self.queue_entry
+        except BookingQueueEntry.DoesNotExist:
+            return None
+
+    @property
+    def is_in_queue(self) -> bool:
+        return (queue_entry := self._queue_entry_or_none) is not None and queue_entry.is_current
+
+    def add_to_queue(self) -> BookingQueueEntry:
+        queue_entry = self._queue_entry_or_none
+        if queue_entry is not None:
+            if not queue_entry.is_current:
+                queue_entry.make_current()
+        else:
+            queue_entry = BookingQueueEntry.objects.create_for_booking(self)
+            self.queue_entry = queue_entry
+        return queue_entry
 
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:

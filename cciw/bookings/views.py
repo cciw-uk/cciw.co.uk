@@ -37,16 +37,16 @@ from cciw.bookings.models import (
     Price,
     PriceType,
     any_bookings_possible,
-    book_basket_now,
     build_paypal_custom_field,
     early_bird_is_available,
     get_booking_open_data,
     get_booking_open_data_thisyear,
     get_early_bird_cutoff_date,
 )
+from cciw.bookings.models.baskets import add_basket_to_queue
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.cciwmain import common
-from cciw.cciwmain.common import get_current_domain, htmx_form_validate
+from cciw.cciwmain.common import get_current_domain, get_thisyear, htmx_form_validate
 from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
 
 from .decorators import (
@@ -478,9 +478,9 @@ def _list_bookings(request):
                     "to the details. Please check the details and try again.",
                 )
             else:
-                if book_basket_now(basket_bookings):
-                    messages.info(request, "Places booked!")
-                    return HttpResponseRedirect(reverse("cciw-bookings-pay"))
+                if add_basket_to_queue(basket_bookings):
+                    messages.info(request, "Places added to queue!")
+                    return HttpResponseRedirect(reverse("cciw-bookings-added_to_queue"))
                 else:
                     messages.error(request, "These places cannot be booked for the reasons given below.")
             # Start over, because things may have changed.
@@ -568,6 +568,18 @@ def _handle_list_booking_actions(request: HttpRequest, places: list[Booking]) ->
     return False
 
 
+@booking_account_required
+def added_to_queue(request: HttpRequest) -> HttpResponse:
+    return TemplateResponse(
+        request,
+        "cciw/bookings/added_to_queue.html",
+        {
+            "title": "Booking - added to queue",
+            "booking_open_data": get_booking_open_data(get_thisyear()),
+        },
+    )
+
+
 class CustomAmountPayPalForm(PayPalPaymentsForm):
     amount = forms.IntegerField(widget=forms.widgets.NumberInput)
 
@@ -608,7 +620,6 @@ def mk_paypal_form(
 @redirect_if_agreement_fix_required
 def pay(request, *, installment: bool = False):
     acc: BookingAccount = request.booking_account
-    this_year = common.get_thisyear()
     balance_due_now = acc.get_balance_due_now()
     balance_full = acc.get_balance_full()
 
@@ -623,9 +634,7 @@ def pay(request, *, installment: bool = False):
         "cciw/bookings/pay.html",
         {
             "stage": BookingStage.PAY,
-            "title": "Booking - pay",
-            "unconfirmed_places": acc.bookings.for_year(this_year).unconfirmed(),
-            "booked_places": acc.bookings.for_year(this_year).booked(),
+            "title": "Booking - payment",
             "balance_due_now": balance_due_now,
             "balance_full": balance_full,
             "account_id": acc.id,

@@ -1,12 +1,6 @@
-{% extends 'cciw/bookings/standard.html' %}
+{% extends 'cciw/standard.html' %}
 
 {% block content %}
-
-  {% if unconfirmed_places %}
-    <p>After booking you have 24 hours to complete payment online, or the bookings
-      will expire. If necessary you can go back and <a href="{% url 'cciw-bookings-add_place' %}">book other places</a>
-      and then pay for them all together.</p>
-  {% endif %}
 
   <h2>Payment methods</h2>
 

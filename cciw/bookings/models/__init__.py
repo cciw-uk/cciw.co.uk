@@ -4,7 +4,7 @@ Accounts and places for campers coming in camps
 
 from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
-from .baskets import book_basket_now
+from .baskets import add_basket_to_queue, book_bookings_now
 from .bookings import (
     BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS,
     BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS,
@@ -42,6 +42,7 @@ from .yearconfig import (
     get_early_bird_cutoff_date,
     most_recent_booking_year,
 )
+from .queue import BookingQueueEntry
 
 __all__ = [
     "AccountTransferPayment",
@@ -92,6 +93,7 @@ __all__ = [
     "add_basket_to_queue",
     "YearConfig",
     "BookingApproval",
+    "BookingQueueEntry",
 ]
 
 

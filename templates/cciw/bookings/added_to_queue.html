@@ -1,0 +1,21 @@
+{% extends 'cciw/standard.html' %}
+
+{% block content %}
+
+  <h2>Thank you</h2>
+
+  <p>Thank you for booking!</p>
+
+  <p>Your bookings have been added to the queue, and we will notify you when
+    places have been allocated.
+  </p>
+
+  <p>You can check the status of bookings on
+    your <a href="{% url 'cciw-bookings-account_overview' %}">account overview</a> page.
+  </p>
+
+  <h2>Booking process information</h2>
+
+  {% include 'cciw/bookings/booking_process_info.html' %}
+
+{% endblock %}
