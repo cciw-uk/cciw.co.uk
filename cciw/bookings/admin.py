@@ -471,6 +471,10 @@ class ApprovalsInline(admin.TabularInline):
     def get_queryset(self, request):
         return super().get_queryset(request).current()
 
+    def has_add_permission(self, request, obj) -> bool:
+        # Disable add another for approvals, it doesn't make sense
+        return False
+
 
 class QueueStateInline(admin.TabularInline):
     model = BookingQueueEntry
