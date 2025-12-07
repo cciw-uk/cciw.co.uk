@@ -73,7 +73,12 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(queue_entry__isnull=True) | self.filter(queue_entry__state=QueueState.WITHDRAWN)
 
     def waiting_in_queue(self):
-        return self.in_queue().filter(queue_entry__state=QueueState.WAITING).filter(state=BookingState.INFO_COMPLETE)
+        # WAITING should always correspond with INFO_COMPLETE
+        return self.in_queue().filter(queue_entry__state=QueueState.WAITING, state=BookingState.INFO_COMPLETE)
+
+    def accepted_in_queue(self):
+        # ACCEPTED should always correspond with BOOKED
+        return self.in_queue().filter(queue_entry__state=QueueState.ACCEPTED, state=BookingState.BOOKED)
 
     def payable(self):
         """

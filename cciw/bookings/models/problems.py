@@ -144,7 +144,7 @@ class BookingApproval(models.Model):
         return self.status == ApprovalStatus.APPROVED
 
     def __str__(self):
-        return f"{self.get_type_display()}:{self.get_status_display()} for {self.booking.name}"
+        return f"{self.get_type_display()}: {self.get_status_display()} for {self.booking.name}"
 
     @property
     def short_description(self) -> str:

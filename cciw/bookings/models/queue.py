@@ -13,6 +13,10 @@ if TYPE_CHECKING:
     from .bookings import Booking
 
 
+# TODO - do we need this, or should it be a 'active' boolean to indicate `withdrawn',
+# with the other two states determined by `Booking.state`?
+
+
 class QueueState(models.TextChoices):
     # Initial state:
     WAITING = "waiting", "Waiting"
@@ -48,6 +52,9 @@ class BookingQueueEntry(models.Model):
     class Meta:
         verbose_name = "queue entry"
         verbose_name_plural = "queue entries"
+
+    def __str__(self):
+        return f"Queue entry for {self.booking.name}"
 
     @property
     def is_current(self) -> bool:

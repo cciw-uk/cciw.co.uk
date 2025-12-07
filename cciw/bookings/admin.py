@@ -9,6 +9,7 @@ from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
+from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain import common
 from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
@@ -289,6 +290,29 @@ class CustomAgreementFilter(admin.SimpleListFilter):
             return queryset
 
 
+class QueueStateFilter(admin.SimpleListFilter):
+    title = "queue state"
+    parameter_name = "queue_state"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("n", "Not in queue"),
+            ("w", "In queue - waiting"),
+            ("a", "In queue - accepted"),
+        ]
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val is None:
+            return queryset
+        if val == "n":
+            return queryset.not_in_queue()
+        elif val == "w":
+            return queryset.waiting_in_queue()
+        elif val == "a":
+            return queryset.accepted_in_queue()
+
+
 class BookingAdminForm(forms.ModelForm):
     manual_payment_amount = forms.DecimalField(label="Amount", decimal_places=2, max_digits=10, required=False)
     manual_payment_payment_type = forms.ChoiceField(
@@ -448,6 +472,19 @@ class ApprovalsInline(admin.TabularInline):
         return super().get_queryset(request).current()
 
 
+class QueueStateInline(admin.TabularInline):
+    model = BookingQueueEntry
+    extra = 0
+    fields = ["state", "created_at"]
+    # We need to ensure queue 'state' and 'self.state' correspond,
+    # so we don't allow them both to be managed via the admin.
+    readonly_fields = ["state", "created_at"]
+
+    def has_add_permission(self, request, obj) -> bool:
+        # Disable "add another", doesn't make sense
+        return False
+
+
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     def camp(booking):
@@ -466,6 +503,7 @@ class BookingAdmin(admin.ModelAdmin):
         "early_bird_discount",
         "serious_illness",
         "state",
+        QueueStateFilter,
         "created_online",
         CustomAgreementFilter,
     ]
@@ -474,7 +512,7 @@ class BookingAdmin(admin.ModelAdmin):
 
     form = BookingAdminForm
 
-    inlines = [ApprovalsInline, SupportingInformationInline]
+    inlines = [ApprovalsInline, SupportingInformationInline, QueueStateInline]
 
     fieldsets = (
         (
