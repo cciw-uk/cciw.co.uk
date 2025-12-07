@@ -475,6 +475,10 @@ class ApprovalsInline(admin.TabularInline):
         # Disable add another for approvals, it doesn't make sense
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        # Admin shouldn't delete, should only set the state.
+        return False
+
 
 class QueueStateInline(admin.TabularInline):
     model = BookingQueueEntry
