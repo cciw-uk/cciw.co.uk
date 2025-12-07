@@ -482,31 +482,6 @@ which we've already started to use
         white-space: nowrap;
     }
 
-    table.innerborders {
-        width: 100%;
-        border-collapse: collapse;
-        > tbody > tr > td {
-            padding: 2px 5px;
-            border: solid 1px var(--primaryColor);
-
-            &:first-child {
-                border-left: 0px;
-            }
-            &:last-child {
-                border-right: 0px;
-            }
-        }
-        > tbody > tr {
-            &:first-child > td {
-                border-top: 0px;
-            }
-            &:last-child > td {
-                border-bottom: 0px;
-            }
-        }
-
-    }
-
     table > tbody > tr.spacer > td {
         border-left-width: 0px;
         border-right-width: 0px;
@@ -832,12 +807,12 @@ which we've already started to use
             font-weight: bold;
         }
 
-        tr.problemssection > td {
-            margin: 0;
-            padding: 0;
-        }
         tr.problemssection > td, td.bookinglistaction {
             border-bottom-width: 2px;
+        }
+
+        tr.problemssection table.topheaders {
+            margin: 0.5em 0em;
         }
 
         td.price {
@@ -850,12 +825,6 @@ which we've already started to use
         input[type=submit] {
             margin-bottom: 1px;
         }
-    }
-
-    .booking-ok-icon,
-    .booking-warning-icon,
-    .booking-error-icon {
-        margin-right: 0.5em;
     }
 
     /* Smaller screens */

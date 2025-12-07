@@ -63,38 +63,46 @@
 </tr>
 <tr class="problemssection">
   <td colspan="3">
-    <table class="innerborders">
-      {% for problem in booking.problems %}
-        <tr>
-          <td>
-            {% if problem.blocker %}
-              <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
-            {% elif problem.warning %}
-              <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">
-            {% else %}
-              {# for approvals that have been granted #}
-              <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
-            {% endif %}
-          </td>
-          <td>{{ problem.description }}</td>
-          <td><i>{{ problem.status_display }}</i></td>
-        </tr>
-      {% endfor %}
-      <tr>
-        {% if booking.bookable %}
-          <td>
-            <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
-          </td>
-          <td colspan="2">
-            This place can be booked
-          </td>
-        {% else %}
-          <td>
-            <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
-          </td>
-          <td colspan="2">This place cannot be booked</td>
-        {% endif %}
-      </tr>
-    </table>
+    <div>Status:
+      {% if booking.bookable %}
+        <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
+        This place can be booked
+      {% else %}
+        <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
+        This place cannot be booked
+      {% endif %}
+    </div>
+
+    {% if booking.problems %}
+      <table class="topheaders">
+        <thead>
+          <tr>
+            <th>Issue</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for problem in booking.problems %}
+            <tr>
+              <td>{{ problem.description }}</td>
+              <td>
+                {% if problem.blocker %}
+                  <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
+                {% elif problem.warning %}
+                  <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">
+                {% else %}
+                {# for approvals that have been granted #}
+                  <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
+                {% endif %}
+
+                <i>{{ problem.status_display }}</i>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    {% endif %}
   </td>
+
 </tr>
