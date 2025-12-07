@@ -807,10 +807,6 @@ which we've already started to use
             font-weight: bold;
         }
 
-        tr.problemssection > td, td.bookinglistaction {
-            border-bottom-width: 2px;
-        }
-
         tr.problemssection table.topheaders {
             margin: 0.5em 0em;
         }
