@@ -4,8 +4,10 @@ Models relating to the queue system
 
 from __future__ import annotations
 
+import hashlib
 import itertools
 from dataclasses import dataclass
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -50,6 +52,21 @@ class BookingQueueEntry(models.Model):
 
     # Fields relating to priority rules:
     created_at = models.DateTimeField(default=timezone.now)
+
+    @cached_property
+    def tiebreaker(self) -> str:
+        # A "random" number used to implement our "lottery" system.
+        # We actually use a pseudorandom number by hashing some internal
+        # fields that can't be gamed easily.
+        internal_state = self.created_at.timestamp() * self.id
+        hashed = hashlib.sha256(data=bytes(str(internal_state), "utf-8"))
+        return hashed.hexdigest()
+
+    @cached_property
+    def tiebreaker_display(self) -> int:
+        # We make it user presentable by turning it into a number
+        # between 0 and 65000 ish
+        return int(self.tiebreaker[0:4], 16)
 
     objects = BookingQueueEntryManager()
 
@@ -101,8 +118,11 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     def queue_position_key(booking: Booking) -> int:
         return booking.rank_info.queue_position_rank
 
+    def tiebreaker_key(booking: Booking) -> int:
+        return booking.queue_entry.tiebreaker
+
     def overall_key(booking: Booking) -> tuple:
-        return (queue_position_key(booking),)
+        return (queue_position_key(booking), tiebreaker_key(booking))
 
     queue_bookings.sort(key=overall_key)
     return list(queue_bookings)

@@ -10,7 +10,12 @@
           <th>First name</th>
           <th>Last name</th>
           <th>Queue position</th>
-          <th></th>
+          <th>
+            <span
+              title="This is a random number assigned to each booking as our 'lottery' system">
+              Tiebreaker
+            </span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -20,7 +25,7 @@
             <td>{{ booking.first_name }}</td>
             <td>{{ booking.last_name }}</td>
             <td>{{ booking.rank_info.queue_position_rank }}</td>
-            <td></td>
+            <td>{{ booking.queue_entry.tiebreaker_display }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -28,4 +33,5 @@
   {% else %}
     <p>No bookings in the queue.</p>
   {% endif %}
+
 {% endblock %}
