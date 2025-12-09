@@ -43,9 +43,9 @@ BookingQueueEntryManager = BookingQueueEntryManagerBase.from_queryset(BookingQue
 class BookingQueueEntry(models.Model):
     booking = models.OneToOneField(to="bookings.Booking", on_delete=models.CASCADE, related_name="queue_entry")
     state = models.CharField(choices=QueueState, default=QueueState.WAITING)
-    created_at = models.DateTimeField(default=timezone.now)
 
-    # TODO #52: all the fields relating to the priority rules
+    # Fields relating to priority rules:
+    created_at = models.DateTimeField(default=timezone.now)
 
     objects = BookingQueueEntryManager()
 
