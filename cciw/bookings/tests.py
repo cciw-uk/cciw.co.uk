@@ -16,6 +16,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django_functest import FuncBaseMixin, Upload
+from freezegun import freeze_time
 from hypothesis import example, given
 from hypothesis import strategies as st
 
@@ -44,7 +45,7 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
-from cciw.bookings.models.queue import QueueState
+from cciw.bookings.models.queue import QueueState, rank_queue_bookings
 from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
@@ -2814,3 +2815,60 @@ def test_booking_open():
     Price.objects.all().delete()
     assert not get_booking_open_data(year).is_open_for_booking
     assert not get_booking_open_data(year).is_open_for_entry
+
+
+def create_year_config_for_queue_tests() -> YearConfig:
+    return factories.create_year_config(
+        year=2025,
+        open_for_entry_on=datetime(2025, 2, 1),
+        open_for_booking_on=datetime(2025, 3, 1),
+        close_for_initial_period=datetime(2025, 4, 1),
+    )
+
+
+@pytest.mark.django_db
+def test_rank_queue_booking():
+    year_config = create_year_config_for_queue_tests()
+    with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+        b1 = factories.create_booking()
+        b2 = factories.create_booking()
+        b3 = factories.create_booking()
+        b4 = factories.create_booking()
+        b5 = factories.create_booking()
+    with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=1)):
+        b1.add_to_queue()
+    with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=2)):
+        b2.add_to_queue()
+        assert datetime.today() < year_config.bookings_close_for_initial_period
+    with freeze_time(year_config.bookings_close_for_initial_period + timedelta(days=1)):
+        assert datetime.today() > year_config.bookings_close_for_initial_period
+        b3.add_to_queue()
+
+    with freeze_time(year_config.bookings_close_for_initial_period + timedelta(days=2)):
+        b4.add_to_queue()
+
+    ranked_bookings = rank_queue_bookings(camp=b1.camp)
+
+    assert b1 in ranked_bookings
+    assert b2 in ranked_bookings
+    assert b3 in ranked_bookings
+    assert b4 in ranked_bookings
+    assert b5 not in ranked_bookings
+
+    # Don't know if b1 or b2 will be first.
+    b1_q = [b for b in ranked_bookings if b.id == b1.id][0]
+    b2_q = [b for b in ranked_bookings if b.id == b2.id][0]
+
+    b3_q = ranked_bookings[2]
+    assert b3_q.id == b3.id
+
+    b4_q = ranked_bookings[3]
+    assert b4_q.id == b4.id
+
+    # First two are first equal, due to being within the initial period
+    assert b1_q.queue_position_rank == 1
+    assert b2_q.queue_position_rank == 1
+
+    # b3 and b4 are after the cut-off
+    assert b3_q.queue_position_rank == 2
+    assert b4_q.queue_position_rank == 3

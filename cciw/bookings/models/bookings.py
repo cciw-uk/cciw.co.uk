@@ -45,19 +45,22 @@ class Array(models.Func):
 
 
 class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
-    def for_year(self, year):
+    def for_year(self, year: int) -> BookingQuerySet:
         return self.filter(camp__year__exact=year)
 
-    def in_basket(self):
+    def for_camp(self, camp: Camp) -> BookingQuerySet:
+        return self.filter(camp=camp)
+
+    def in_basket(self) -> BookingQuerySet:
         return self.filter(shelved=False, state=BookingState.INFO_COMPLETE)
 
-    def on_shelf(self):
+    def on_shelf(self) -> BookingQuerySet:
         return self.filter(shelved=True, state=BookingState.INFO_COMPLETE)
 
-    def booked(self):
+    def booked(self) -> BookingQuerySet:
         return self.filter(state=BookingState.BOOKED)
 
-    def basket_relevant(self):
+    def basket_relevant(self) -> BookingQuerySet:
         """
         Returns bookings that are relevant to "basket" stage in which
         problems that span bookings need to be found.
@@ -66,21 +69,21 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         # or are about to be booked.
         return self.in_basket() | self.booked()
 
-    def in_queue(self):
+    def in_queue(self) -> BookingQuerySet:
         return self.filter(queue_entry__isnull=False).exclude(queue_entry__state=QueueState.WITHDRAWN)
 
-    def not_in_queue(self):
+    def not_in_queue(self) -> BookingQuerySet:
         return self.filter(queue_entry__isnull=True) | self.filter(queue_entry__state=QueueState.WITHDRAWN)
 
-    def waiting_in_queue(self):
+    def waiting_in_queue(self) -> BookingQuerySet:
         # WAITING should always correspond with INFO_COMPLETE
         return self.in_queue().filter(queue_entry__state=QueueState.WAITING, state=BookingState.INFO_COMPLETE)
 
-    def accepted_in_queue(self):
+    def accepted_in_queue(self) -> BookingQuerySet:
         # ACCEPTED should always correspond with BOOKED
         return self.in_queue().filter(queue_entry__state=QueueState.ACCEPTED, state=BookingState.BOOKED)
 
-    def payable(self):
+    def payable(self) -> BookingQuerySet:
         """
         Returns bookings for which payment is expected.
         """
@@ -96,7 +99,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
             | self.booked()
         )
 
-    def cancelled(self):
+    def cancelled(self) -> BookingQuerySet:
         return self.filter(
             state__in=[
                 BookingState.CANCELLED_DEPOSIT_KEPT,
