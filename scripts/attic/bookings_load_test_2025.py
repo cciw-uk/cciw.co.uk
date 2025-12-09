@@ -12,12 +12,12 @@ import django
 django.setup()
 
 import random
+from dataclasses import dataclass
 from datetime import date
 from functools import cached_property
 from typing import Literal, cast
 
 import requests
-from attr import dataclass
 from django.conf import settings
 from faker import Faker
 from locust import HttpUser, SequentialTaskSet, between, task

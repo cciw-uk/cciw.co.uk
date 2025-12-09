@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from attr import dataclass
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import ValidationError
