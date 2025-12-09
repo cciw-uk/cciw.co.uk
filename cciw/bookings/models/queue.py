@@ -52,6 +52,7 @@ class BookingQueueEntry(models.Model):
 
     # Fields relating to priority rules:
     created_at = models.DateTimeField(default=timezone.now)
+    officer_child = models.BooleanField(default=False)
 
     @cached_property
     def tiebreaker(self) -> str:
@@ -115,6 +116,9 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     assert year_config is not None
     add_rank_info(queue_bookings, year_config)
 
+    def is_officer_child_key(booking: Booking) -> int:
+        return 0 if booking.queue_entry.officer_child else 1
+
     def queue_position_key(booking: Booking) -> int:
         return booking.rank_info.queue_position_rank
 
@@ -122,7 +126,7 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
         return booking.queue_entry.tiebreaker
 
     def overall_key(booking: Booking) -> tuple:
-        return (queue_position_key(booking), tiebreaker_key(booking))
+        return (is_officer_child_key(booking), queue_position_key(booking), tiebreaker_key(booking))
 
     queue_bookings.sort(key=overall_key)
     return list(queue_bookings)
