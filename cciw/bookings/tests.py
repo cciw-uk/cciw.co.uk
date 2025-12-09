@@ -2866,9 +2866,9 @@ def test_rank_queue_booking():
     assert b4_q.id == b4.id
 
     # First two are first equal, due to being within the initial period
-    assert b1_q.queue_position_rank == 1
-    assert b2_q.queue_position_rank == 1
+    assert b1_q.rank_info.queue_position_rank == 1
+    assert b2_q.rank_info.queue_position_rank == 1
 
     # b3 and b4 are after the cut-off
-    assert b3_q.queue_position_rank == 2
-    assert b4_q.queue_position_rank == 3
+    assert b3_q.rank_info.queue_position_rank == 2
+    assert b4_q.rank_info.queue_position_rank == 3

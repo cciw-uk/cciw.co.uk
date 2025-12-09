@@ -4,6 +4,8 @@ Models relating to the queue system
 
 from __future__ import annotations
 
+import itertools
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -68,17 +70,24 @@ class BookingQueueEntry(models.Model):
             self.save()
 
 
+@dataclass
+class RankInfo:
+    queue_position_rank: int
+
+
 def rank_queue_bookings(camp: Camp) -> list[Booking]:
     from cciw.bookings.models import Booking
 
     queue_bookings = list(
         Booking.objects.for_camp(camp)
-        .in_queue()
+        .waiting_in_queue()
         .select_related(
             "camp",
             "queue_entry",
         )
     )
+    if not queue_bookings:
+        return []
 
     # Some of these things could be done using SQL window functions, but some
     # are much easier with Python.
@@ -86,10 +95,11 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     # So we prefer Python when it makes sense.
 
     year_config = get_year_config(camp.year)
-    _add_queue_position_ranking(queue_bookings, year_config)
+    assert year_config is not None
+    add_rank_info(queue_bookings, year_config)
 
     def queue_position_key(booking: Booking) -> int:
-        return booking.queue_position_rank
+        return booking.rank_info.queue_position_rank
 
     def overall_key(booking: Booking) -> tuple:
         return (queue_position_key(booking),)
@@ -98,10 +108,24 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     return list(queue_bookings)
 
 
-def _add_queue_position_ranking(bookings: list[Booking], year_config: YearConfig):
+type BookingId = int
+
+
+def add_rank_info(bookings: list[Booking], year_config: YearConfig):
+    queue_position_ranks: dict[BookingId, int] = get_queue_position_ranks(bookings, year_config)
+    for booking in bookings:
+        booking.rank_info = RankInfo(
+            queue_position_rank=queue_position_ranks[booking.id],
+        )
+
+
+def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig):
     """
-    Decorate bookings with `queue_position_ranking`
+    Define 'queue_position_ranks', based on 'queue_position' and the initial booking period.
     """
+
+    # Everyone booked within the initial period is first equal,
+    # everyone later is in ascending order.
 
     def is_in_initial_period(booking: Booking) -> bool:
         return booking.queue_entry.created_at.date() <= year_config.bookings_close_for_initial_period
@@ -113,9 +137,6 @@ def _add_queue_position_ranking(bookings: list[Booking], year_config: YearConfig
     # Sort so that those in the initial period are first,
     # the rest are in order of their `created_at`
     sorted_bookings = sorted(bookings, key=initial_sort_key)
-    # Assign rank
-    current_rank = 1
-    for booking in sorted_bookings:
-        if not is_in_initial_period(booking):
-            current_rank += 1
-        booking.queue_position_rank = current_rank
+    counter = itertools.count(start=2)
+    ranks = {b.id: (1 if is_in_initial_period(b) else next(counter)) for b in sorted_bookings}
+    return ranks
