@@ -3,20 +3,24 @@ from datetime import datetime
 
 import pandas_highcharts.core
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 
 from cciw.bookings.models import Booking, Price
 from cciw.bookings.models.prices import are_prices_set_for_year
+from cciw.bookings.models.queue import rank_queue_bookings
 from cciw.bookings.stats import get_booking_summary_stats
 from cciw.bookings.utils import (
     addresses_for_mailing_list,
     payments_to_spreadsheet,
     year_bookings_to_spreadsheet,
 )
+from cciw.cciwmain.common import CampId
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
+from cciw.officers.views.utils.campid import get_camp_or_404
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
 
 from .utils.auth import (
@@ -215,3 +219,25 @@ def brochure_mailing_list(request, year: int):
     return spreadsheet_response(
         addresses_for_mailing_list(year), f"CCIW-mailing-list-{year}", notice=DataRetentionNotice.CAMPERS
     )
+
+
+@cciw_secretary_or_booking_secretary_required
+def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
+    camps = Camp.objects.filter(year=int(year))
+    context = {
+        "camps": camps,
+        "title": "Booking queues",
+    }
+    return TemplateResponse(request, "cciw/officers/booking_queues.html", context)
+
+
+@cciw_secretary_or_booking_secretary_required
+def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
+    camp = get_camp_or_404(camp_id)
+    ranked_queue_bookings = rank_queue_bookings(camp)
+    context = {
+        "camp": camp,
+        "title": f"Booking queue - {camp.nice_name}",
+        "ranked_queue_bookings": ranked_queue_bookings,
+    }
+    return TemplateResponse(request, "cciw/officers/booking_queue.html", context)

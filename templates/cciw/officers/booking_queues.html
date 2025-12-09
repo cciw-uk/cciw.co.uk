@@ -1,0 +1,10 @@
+{% extends "cciw/officers/base.html" %}
+
+{% block content %}
+
+  <ul>
+    {% for camp in camps %}
+      <li><a href="{% url 'cciw-officers-booking_queue' camp_id=camp.url_id %}">{{ camp.nice_name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

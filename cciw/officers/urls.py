@@ -153,6 +153,16 @@ urlpatterns = [
         views.get_booking_expected_amount_due,
         name="cciw-officers-get_booking_expected_amount_due",
     ),
+    path(
+        "bookings/queue/<yyyy:year>/",
+        views.booking_queues,
+        name="cciw-officers-booking_queues",
+    ),
+    path(
+        "bookings/queue/<campid:camp_id>/",
+        views.booking_queue,
+        name="cciw-officers-booking_queue",
+    ),
     # Bookings progress
     path(
         "bookings/booking-progress-stats/<yyyy:start_year>-<yyyy:end_year>/",

@@ -71,7 +71,14 @@ class BookingQueueEntry(models.Model):
 def rank_queue_bookings(camp: Camp) -> list[Booking]:
     from cciw.bookings.models import Booking
 
-    queue_bookings = list(Booking.objects.for_camp(camp).in_queue())
+    queue_bookings = list(
+        Booking.objects.for_camp(camp)
+        .in_queue()
+        .select_related(
+            "camp",
+            "queue_entry",
+        )
+    )
 
     # Some of these things could be done using SQL window functions, but some
     # are much easier with Python.

@@ -1,0 +1,31 @@
+{% extends "cciw/officers/base.html" %}
+
+{% block content %}
+
+  {% if ranked_queue_bookings %}
+    <table class="topheaders">
+      <thead>
+        <tr>
+          <th>Place</th>
+          <th>First name</th>
+          <th>Last name</th>
+          <th>Queue position</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in ranked_queue_bookings %}
+          <tr>
+            <td>{{ booking.place_status }}</td>
+            <td>{{ booking.first_name }}</td>
+            <td>{{ booking.last_name }}</td>
+            <td>{{ booking.queue_position_rank }}</td>
+            <td></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No bookings in the queue.</p>
+  {% endif %}
+{% endblock %}

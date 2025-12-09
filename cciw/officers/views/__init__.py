@@ -23,6 +23,8 @@ from .applications import (
 )
 from .booking_secretary import (
     booking_problems_json,
+    booking_queue,
+    booking_queues,
     booking_secretary_reports,
     booking_summary_stats,
     booking_summary_stats_download,

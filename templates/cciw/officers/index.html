@@ -7,6 +7,7 @@
     <ul>
       {% if show_booking_secretary_links %}
         <li><a href="{% url 'admin:app_list' 'bookings' %}">Manage bookings</a></li>
+        <li><a href="{% url 'cciw-officers-booking_queues' thisyear %}">Booking queues</a></li>
       {% endif %}
       {% if show_booking_report_links %}
         <li><a href="{% url 'cciw-officers-booking_secretary_reports' thisyear %}">
