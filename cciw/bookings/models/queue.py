@@ -152,7 +152,7 @@ def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig):
     # everyone later is in ascending order.
 
     def is_in_initial_period(booking: Booking) -> bool:
-        return booking.queue_entry.created_at.date() <= year_config.bookings_close_for_initial_period
+        return booking.queue_entry.created_at.date() <= year_config.bookings_close_for_initial_period_on
 
     def initial_sort_key(booking: Booking) -> tuple:
         # Those in initial period should come first

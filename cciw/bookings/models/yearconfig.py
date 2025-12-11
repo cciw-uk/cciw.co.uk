@@ -21,7 +21,7 @@ class YearConfig(models.Model):
     bookings_open_for_booking_on = models.DateField(
         verbose_name="open for booking", help_text="The date that we allow people to press 'Book'"
     )
-    bookings_close_for_initial_period = models.DateField(
+    bookings_close_for_initial_period_on = models.DateField(
         verbose_name="close initial booking period",
         help_text="The last date of the initial booking period. Bookings made on and before this date are considered together.",
     )
@@ -46,7 +46,7 @@ class BookingOpenData:
 
     opens_for_booking_on: date | None
     opens_for_entry_on: date | None
-    closes_for_initial_period: date | None
+    closes_for_initial_period_on: date | None
 
     @classmethod
     def from_year_config(cls, config: YearConfig) -> BookingOpenData:
@@ -55,7 +55,7 @@ class BookingOpenData:
         return cls(
             opens_for_booking_on=config.bookings_open_for_booking_on,
             opens_for_entry_on=config.bookings_open_for_entry_on,
-            closes_for_initial_period=config.bookings_close_for_initial_period,
+            closes_for_initial_period_on=config.bookings_close_for_initial_period_on,
             is_open_for_booking=config.bookings_open_for_booking_on <= today,
             is_open_for_entry=config.bookings_open_for_entry_on <= today,
         )
@@ -65,7 +65,7 @@ class BookingOpenData:
         return cls(
             opens_for_booking_on=None,
             opens_for_entry_on=None,
-            closes_for_initial_period=None,
+            closes_for_initial_period_on=None,
             is_open_for_booking=False,
             is_open_for_entry=False,
         )

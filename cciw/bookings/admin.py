@@ -757,7 +757,7 @@ class YearConfigAdmin(admin.ModelAdmin):
         "year",
         "bookings_open_for_entry_on",
         "bookings_open_for_booking_on",
-        "bookings_close_for_initial_period",
+        "bookings_close_for_initial_period_on",
     ]
 
 

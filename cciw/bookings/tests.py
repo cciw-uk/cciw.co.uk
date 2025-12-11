@@ -177,7 +177,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         date_for_data_entry = "past" if open_for_data_entry else "future"
         year: int = year or self.camp.year
         return factories.create_year_config(
-            year=year, open_for_booking_on=time_for_booking, open_for_entry_on=date_for_data_entry
+            year=year, bookings_open_for_booking_on=time_for_booking, bookings_open_for_entry_on=date_for_data_entry
         )
 
     def add_prices(self, early_bird_discount=Auto):
@@ -2797,17 +2797,23 @@ def test_booking_open():
     assert not get_booking_open_data(year).is_open_for_booking
     assert not get_booking_open_data(year).is_open_for_entry
 
-    config = factories.create_year_config(year=year, open_for_booking_on="future", open_for_entry_on="future")
+    config = factories.create_year_config(
+        year=year, bookings_open_for_booking_on="future", bookings_open_for_entry_on="future"
+    )
     assert not get_booking_open_data(year).is_open_for_booking
     assert not get_booking_open_data(year).is_open_for_entry
     config.delete()
 
-    config = factories.create_year_config(year=year, open_for_booking_on="past", open_for_entry_on="past")
+    config = factories.create_year_config(
+        year=year, bookings_open_for_booking_on="past", bookings_open_for_entry_on="past"
+    )
     assert get_booking_open_data(year).is_open_for_booking
     assert get_booking_open_data(year).is_open_for_entry
     config.delete()
 
-    config = factories.create_year_config(year=year, open_for_booking_on="future", open_for_entry_on="past")
+    config = factories.create_year_config(
+        year=year, bookings_open_for_booking_on="future", bookings_open_for_entry_on="past"
+    )
     assert not get_booking_open_data(year).is_open_for_booking
     assert get_booking_open_data(year).is_open_for_entry
 
@@ -2820,9 +2826,9 @@ def test_booking_open():
 def create_year_config_for_queue_tests() -> YearConfig:
     return factories.create_year_config(
         year=2025,
-        open_for_entry_on=datetime(2025, 2, 1),
-        open_for_booking_on=datetime(2025, 3, 1),
-        close_for_initial_period=datetime(2025, 4, 1),
+        bookings_open_for_entry_on=datetime(2025, 2, 1),
+        bookings_open_for_booking_on=datetime(2025, 3, 1),
+        bookings_close_for_initial_period_on=datetime(2025, 4, 1),
     )
 
 
@@ -2839,12 +2845,12 @@ def test_rank_queue_booking():
         b1.add_to_queue()
     with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=2)):
         b2.add_to_queue()
-        assert datetime.today() < year_config.bookings_close_for_initial_period
-    with freeze_time(year_config.bookings_close_for_initial_period + timedelta(days=1)):
-        assert datetime.today() > year_config.bookings_close_for_initial_period
+        assert datetime.today() < year_config.bookings_close_for_initial_period_on
+    with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
+        assert datetime.today() > year_config.bookings_close_for_initial_period_on
         b3.add_to_queue()
 
-    with freeze_time(year_config.bookings_close_for_initial_period + timedelta(days=2)):
+    with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=2)):
         b4.add_to_queue()
 
     ranked_bookings = rank_queue_bookings(camp=b1.camp)

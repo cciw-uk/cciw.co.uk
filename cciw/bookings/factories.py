@@ -290,41 +290,41 @@ def create_supporting_information(
 def create_year_config(
     *,
     year: int,
-    open_for_entry_on: date | Literal["past", "future"] = "future",
-    open_for_booking_on: date | Literal["past", "future"] = "future",
-    close_for_initial_period: date | Literal["past", "future"] = "future",
+    bookings_open_for_entry_on: date | Literal["past", "future"] = "future",
+    bookings_open_for_booking_on: date | Literal["past", "future"] = "future",
+    bookings_close_for_initial_period_on: date | Literal["past", "future"] = "future",
 ) -> YearConfig:
-    if open_for_entry_on == "past":
-        open_for_entry_on = datetime.today() - timedelta(days=3)
-    elif open_for_entry_on == "future":
-        open_for_entry_on = datetime.today() + timedelta(days=1)
+    if bookings_open_for_entry_on == "past":
+        bookings_open_for_entry_on = datetime.today() - timedelta(days=3)
+    elif bookings_open_for_entry_on == "future":
+        bookings_open_for_entry_on = datetime.today() + timedelta(days=1)
 
-    if open_for_booking_on == "past":
-        open_for_booking_on = min(
+    if bookings_open_for_booking_on == "past":
+        bookings_open_for_booking_on = min(
             datetime.today() - timedelta(days=2),
-            open_for_entry_on + timedelta(days=1),
+            bookings_open_for_entry_on + timedelta(days=1),
         )
-    elif open_for_booking_on == "future":
-        open_for_booking_on = max(
+    elif bookings_open_for_booking_on == "future":
+        bookings_open_for_booking_on = max(
             datetime.today() + timedelta(days=1),
-            open_for_entry_on + timedelta(days=1),
+            bookings_open_for_entry_on + timedelta(days=1),
         )
 
-    if close_for_initial_period == "past":
-        close_for_initial_period = min(
+    if bookings_close_for_initial_period_on == "past":
+        bookings_close_for_initial_period_on = min(
             datetime.today() - timedelta(days=1),
-            open_for_booking_on + timedelta(days=1),
+            bookings_open_for_booking_on + timedelta(days=1),
         )
-    elif close_for_initial_period == "future":
-        close_for_initial_period = max(
+    elif bookings_close_for_initial_period_on == "future":
+        bookings_close_for_initial_period_on = max(
             datetime.today() + timedelta(days=1),
-            open_for_booking_on + timedelta(days=1),
+            bookings_open_for_booking_on + timedelta(days=1),
         )
-    assert open_for_entry_on <= open_for_booking_on <= close_for_initial_period
+    assert bookings_open_for_entry_on <= bookings_open_for_booking_on <= bookings_close_for_initial_period_on
 
     return YearConfig.objects.create(
         year=year,
-        bookings_open_for_booking_on=open_for_booking_on,
-        bookings_open_for_entry_on=open_for_entry_on,
-        bookings_close_for_initial_period=close_for_initial_period,
+        bookings_open_for_booking_on=bookings_open_for_booking_on,
+        bookings_open_for_entry_on=bookings_open_for_entry_on,
+        bookings_close_for_initial_period_on=bookings_close_for_initial_period_on,
     )
