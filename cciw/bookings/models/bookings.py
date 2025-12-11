@@ -9,7 +9,7 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, Value, functions
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django_countries.fields import CountryField
@@ -192,6 +192,16 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(erased_at__isnull=True)
 
 
+def sql_normalise_human_name_for_match(*fields_or_values):
+    """
+    Applies normalisation to a human name for matching purposes
+    """
+    # Strip multiple spaces plus leading/trailing.
+    return functions.Lower(
+        functions.Trim(functions.Replace(functions.Concat(*fields_or_values), Value("  "), Value(" ")))
+    )
+
+
 class BookingManagerBase(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("camp", "account")
@@ -294,6 +304,33 @@ class Booking(models.Model):
     created_online = models.BooleanField(blank=True, default=False)
 
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
+
+    # Generated:
+
+    # fuzzy_camper_id is used for matching campers from one year to the next.
+    # Unfortunately it isn't easy to do this precisely, as we don't have a
+    # proper concept of "camper identity".
+    #
+    # We use "full name plus birth year" as an approximate solution. For our
+    # scale of data, this works well:
+    # - we do have some duplicate names, so birth year is necessary
+    # - we can't use full birth_date, because:
+    #   - about 2% of people make mistakes and correct in subsequent years
+    #   - our GDPR scrubbing removes exact birth date (while leaving birth year)
+
+    fuzzy_camper_id = models.GeneratedField(
+        expression=functions.Concat(
+            sql_normalise_human_name_for_match(
+                "first_name",
+                Value(" "),
+                "last_name",
+            ),
+            Value(" "),
+            functions.Cast(functions.ExtractYear("birth_date"), output_field=models.CharField()),
+        ),
+        output_field=models.CharField(),
+        db_persist=True,
+    )
 
     objects = BookingManager()
 

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
-from django.db.models import ManyToOneRel, Value
+from django.db.models import GeneratedField, ManyToOneRel, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.urls import reverse
@@ -325,7 +325,7 @@ class BookingAdminForm(forms.ModelForm):
         fields = [
             f.name
             for f in Booking._meta.get_fields()
-            if f.name not in ["erased_at"] and not isinstance(f, ManyToOneRel)
+            if f.name not in ["erased_at"] and not isinstance(f, ManyToOneRel) and not isinstance(f, GeneratedField)
         ]
 
 
