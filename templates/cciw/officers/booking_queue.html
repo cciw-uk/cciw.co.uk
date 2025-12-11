@@ -25,29 +25,34 @@
             >Tiebreaker
             </span>
           </th>
+          <th>
+            Action
+          </th>
         </tr>
       </thead>
-      <tbody>
-        {% for booking in ranked_queue_bookings %}
-          <tr>
-            <td>{{ booking.place_status }}</td>
-            <td>{{ booking.first_name }}</td>
-            <td>{{ booking.last_name }}</td>
-            <td>{{ booking.queue_entry.officer_child }}</td>
-            <td>{{ booking.rank_info.queue_position_rank }}</td>
-            <td>{{ booking.queue_entry.tiebreaker_display }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
+      {% partialdef bookings-table-body inline %}
+        <tbody id="id_bookings_table">
+          {% for booking in ranked_queue_bookings %}
+            {% include "cciw/officers/booking_queue_row_inc.html" with booking=booking %}
+          {% endfor %}
+        </tbody>
+      {% endpartialdef %}
     </table>
   {% else %}
     <p>No bookings in the queue.</p>
   {% endif %}
 
   <style>
-    table span[title] {
-      text-decoration: underline dotted;
-      cursor: help;
+    table {
+      span[title] {
+        text-decoration: underline dotted;
+        cursor: help;
+      }
+      input[type=submit] {
+        padding: 3px 6px;
+        margin: 0;
+      }
     }
+
   </style>
 {% endblock %}

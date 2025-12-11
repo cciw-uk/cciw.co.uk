@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from cciw.accounts.models import User, get_reference_contact_users
+from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain.utils import is_valid_email
 
 from .create import create_officer
@@ -244,3 +245,9 @@ class DBSCheckForm(ModelForm):
         dbs_check: DBSCheck = self.instance
         dbs_check.officer = officer
         return super().save(**kwargs)
+
+
+class UpdateQueueEntryForm(ModelForm):
+    class Meta:
+        model = BookingQueueEntry
+        fields = ["officer_child"]

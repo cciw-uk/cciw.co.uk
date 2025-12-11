@@ -20,6 +20,7 @@ from cciw.bookings.utils import (
 from cciw.cciwmain.common import CampId
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
+from cciw.officers.forms import UpdateQueueEntryForm
 from cciw.officers.views.utils.campid import get_camp_or_404
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
 
@@ -234,10 +235,71 @@ def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
 @cciw_secretary_or_booking_secretary_required
 def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
+    mode = "display"
+
+    refresh_table_body_only = False
+
+    if request.headers.get("Hx-Request", False) and request.method == "POST":
+        # htmx edit row mode.
+        # Changing any fields can change the ranking, so we have to update the whole list,
+        # so this isn't like "edit single row" functionality where we can update just one part
+        # of the page.
+
+        # For edit mode, we do want just one row, but we need to get the ranking info for the
+        # whole camp, so we can show the right data in the other cells.
+
+        if "cancel" in request.POST:
+            # Do nothing, just refresh the whole list.
+            refresh_table_body_only = True
+        else:
+            booking_id = int(request.POST["booking_id"])
+            ranked_queue_bookings = rank_queue_bookings(camp)
+            booking = [b for b in ranked_queue_bookings if b.id == booking_id][0]
+            queue_entry = booking.queue_entry
+
+            if "edit" in request.POST:
+                # Show edit form
+                form = UpdateQueueEntryForm(instance=queue_entry)
+                mode = "edit"
+
+            elif "save" in request.POST:
+                # save the data, refresh the whole page.
+                # TODO - hx-target needs to be set server-side, not client side,
+                # because it depends on whether form is valid or not.
+                # TODO
+                form = UpdateQueueEntryForm(data=request.POST, instance=queue_entry)
+                if form.is_valid():
+                    form.save()
+                    # show whole list.
+                    mode = "display"
+                    refresh_table_body_only = True
+                else:
+                    mode = "edit"
+
+            if mode == "edit":
+                # Initial edit mode, or failed 'save'
+                return TemplateResponse(
+                    request,
+                    "cciw/officers/booking_queue_row_inc.html",
+                    {"booking": booking, "mode": mode, "form": form},
+                    headers={"HX-Retarget": f"[data-booking-id='{booking.id}']"},
+                )
+
     ranked_queue_bookings = rank_queue_bookings(camp)
+
+    template_name = "cciw/officers/booking_queue.html"
+    headers = {}
+    if refresh_table_body_only:
+        # We use server side HX-Retarget here and above, because client side
+        # can't set the hx-target: if form validation fails, we target a
+        # different element than if it succeeds.
+        headers.update({"HX-Retarget": "#id_bookings_table"})
+        template_name = f"{template_name}#bookings-table-body"
+
     context = {
         "camp": camp,
         "title": f"Booking queue - {camp.nice_name}",
         "ranked_queue_bookings": ranked_queue_bookings,
+        "mode": mode,
     }
-    return TemplateResponse(request, "cciw/officers/booking_queue.html", context)
+    return TemplateResponse(request, template_name, context, headers=headers)

@@ -1,0 +1,41 @@
+<tr data-booking-id="{{ booking.id }}">
+  {% if mode == 'display' %}
+    <td>{{ booking.place_status }}</td>
+    <td>{{ booking.first_name }}</td>
+    <td>{{ booking.last_name }}</td>
+    <td>{% if booking.queue_entry.officer_child %}✔️{% endif %}</td>
+    <td>{{ booking.rank_info.queue_position_rank }}</td>
+    <td>{{ booking.queue_entry.tiebreaker_display }}</td>
+    <td>
+      <input
+        type="submit" name="edit" value="Edit"
+        hx-post="."
+        hx-vals='{"booking_id": "{{ booking.id }}"}'
+        hx-swap="outerHTML"
+      >
+    </td>
+  {% elif mode == 'edit' %}
+    <td>{{ booking.place_status }}</td>
+    <td>{{ booking.first_name }}</td>
+    <td>{{ booking.last_name }}</td>
+    <td>
+      <label>Officer child: {{ form.officer_child }}</label>
+    </td>
+    <td>{{ booking.rank_info.queue_position_rank }}</td>
+    <td>{{ booking.queue_entry.tiebreaker_display }}</td>
+    <td>
+      <input
+        type="submit" name="save" value="Save"
+        hx-post="."
+        hx-swap="outerHTML"
+        hx-vals='{"booking_id": {{ booking.id }} }'
+        hx-include="closest tr"
+      >
+      <input
+        type="submit" name="cancel" value="Cancel"
+        hx-post="."
+        hx-swap="outerHTML"
+      >
+    </td>
+  {% endif %}
+</tr>
