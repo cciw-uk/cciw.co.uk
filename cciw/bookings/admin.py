@@ -506,6 +506,7 @@ class BookingAdmin(admin.ModelAdmin):
     ordering = ["-created_at"]
     list_filter = [
         YearFilter,
+        "camp__camp_name",
         "sex",
         "price_type",
         "early_bird_discount",
