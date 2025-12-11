@@ -68,6 +68,9 @@ class CampName(models.Model):
 
     objects = CampNameManager()
 
+    class Meta:
+        ordering = ("name",)
+
     def __str__(self):
         return self.name
 
