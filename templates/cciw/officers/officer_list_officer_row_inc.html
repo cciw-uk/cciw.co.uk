@@ -5,27 +5,20 @@
     <td>{{ invitation.role.name }}</td>
     {% if not readonly %}
       <td>
-        <form
+        <input
+          type="submit" name="edit" value="Edit"
           hx-get="{% url 'cciw-officers-update_officer' %}?invitation_id={{ invitation.id }}"
           hx-target="[data-officer-id='{{ invitation.officer.id }}']"
           hx-swap="outerHTML"
         >
-          <input type="submit" name="edit" value="Edit">
-        </form>
 
-        <form
-          method="POST"
-          action="."
+        <input
+          type="submit" name="remove" value="Remove"
           hx-post="."
-          hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
-        {# propagate selected 'role': #}
+          hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"], "officer_id":"{{ invitation.officer.id }}" }'
+          {# propagate selected 'role' in 'Available officers' section to maintain state: #}
           hx-include="#id_chooseofficer__form"
         >
-          {% csrf_token %}
-        {# htmx issue 1132 - use form instead of putting things on button #}
-          <input type="hidden" name="officer_id" value="{{ invitation.officer.id }}">
-          <input type="submit" name="remove" value="Remove">
-        </form>
 
         {% include "cciw/officers/resend_email_form_inc.html" with caption="Resend email" officer_id=invitation.officer_id %}
 
