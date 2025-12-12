@@ -91,6 +91,7 @@ class BookingQueueEntry(models.Model):
 @dataclass
 class RankInfo:
     queue_position_rank: int
+    previous_attendance_score: int
 
 
 def rank_queue_bookings(camp: Camp) -> list[Booking]:
@@ -122,11 +123,20 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     def queue_position_key(booking: Booking) -> int:
         return booking.rank_info.queue_position_rank
 
+    def previous_attendance_key(booking: Booking) -> int:
+        # More attendance is better.
+        return -booking.rank_info.previous_attendance_score
+
     def tiebreaker_key(booking: Booking) -> int:
         return booking.queue_entry.tiebreaker
 
     def overall_key(booking: Booking) -> tuple:
-        return (is_officer_child_key(booking), queue_position_key(booking), tiebreaker_key(booking))
+        return (
+            is_officer_child_key(booking),
+            queue_position_key(booking),
+            previous_attendance_key(booking),
+            tiebreaker_key(booking),
+        )
 
     queue_bookings.sort(key=overall_key)
     return list(queue_bookings)
@@ -137,9 +147,11 @@ type BookingId = int
 
 def add_rank_info(bookings: list[Booking], year_config: YearConfig):
     queue_position_ranks: dict[BookingId, int] = get_queue_position_ranks(bookings, year_config)
+    attendance_scores: dict[BookingId, int] = get_previous_attendance_score(bookings, year_config)
     for booking in bookings:
         booking.rank_info = RankInfo(
             queue_position_rank=queue_position_ranks[booking.id],
+            previous_attendance_score=attendance_scores[booking.id],
         )
 
 
@@ -164,3 +176,18 @@ def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig):
     counter = itertools.count(start=2)
     ranks = {b.id: (1 if is_in_initial_period(b) else next(counter)) for b in sorted_bookings}
     return ranks
+
+
+def get_previous_attendance_score(bookings: list[Booking], year_config: YearConfig) -> dict[BookingId, int]:
+    from cciw.bookings.models import Booking
+
+    camper_ids: list[str] = [b.fuzzy_camper_id for b in bookings]
+    attendance_counts: dict[str, str | int] = (
+        Booking.objects.booked()
+        .filter(camp__year__lt=year_config.year, fuzzy_camper_id__in=camper_ids)
+        .values("fuzzy_camper_id")
+        .annotate(attendance_count=models.Count("id"))
+    )
+    counts_by_fuzzy_camper_id: dict[str, int] = {d["fuzzy_camper_id"]: d["attendance_count"] for d in attendance_counts}
+    counts_by_id: dict[BookingId, int] = {b.id: counts_by_fuzzy_camper_id.get(b.fuzzy_camper_id, 0) for b in bookings}
+    return counts_by_id
