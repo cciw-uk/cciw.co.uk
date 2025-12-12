@@ -8,7 +8,8 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from cciw.accounts.models import User, get_reference_contact_users
-from cciw.bookings.models.queue import BookingQueueEntry
+from cciw.bookings.models.bookings import Booking
+from cciw.bookings.models.queue import BookingQueueEntry, get_previous_attendance_count
 from cciw.cciwmain.utils import is_valid_email
 
 from .create import create_officer
@@ -248,8 +249,13 @@ class DBSCheckForm(ModelForm):
 
 
 class UpdateQueueEntryForm(ModelForm):
+    def clean(self):
+        booking: Booking = self.instance.booking
+        previous_attendance_count = get_previous_attendance_count(booking)
+        if self.cleaned_data.get("first_timer_allocated", False) and previous_attendance_count > 0:
+            raise ValidationError("You cannot allocate 'first timer' for someone who has previously attended")
+        return super().clean()
+
     class Meta:
         model = BookingQueueEntry
         fields = ["officer_child", "first_timer_allocated"]
-
-    # TODO validation for first_timer_allocated

@@ -42,6 +42,12 @@
         hx-post="."
         hx-swap="outerHTML"
       >
+      {% if form.errors %}
+        <br>
+        {% for k, error in form.errors.items %}
+          {{ error }}
+        {% endfor %}
+      {% endif %}
     </td>
   {% endif %}
 </tr>

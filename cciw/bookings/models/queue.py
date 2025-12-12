@@ -152,11 +152,13 @@ type BookingId = int
 
 def add_rank_info(bookings: list[Booking], year_config: YearConfig):
     queue_position_ranks: dict[BookingId, int] = get_queue_position_ranks(bookings, year_config)
-    attendance_scores: dict[BookingId, int] = get_previous_attendance_score(bookings, year_config)
+    attendance_counts: dict[BookingId, int] = get_previous_attendance_counts(bookings, year_config)
     for booking in bookings:
         booking.rank_info = RankInfo(
             queue_position_rank=queue_position_ranks[booking.id],
-            previous_attendance_score=attendance_scores[booking.id],
+            # score is currently the same as the count - the more attendance,
+            # the better.
+            previous_attendance_score=attendance_counts[booking.id],
         )
 
 
@@ -183,7 +185,7 @@ def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig):
     return ranks
 
 
-def get_previous_attendance_score(bookings: list[Booking], year_config: YearConfig) -> dict[BookingId, int]:
+def get_previous_attendance_counts(bookings: list[Booking], year_config: YearConfig) -> dict[BookingId, int]:
     from cciw.bookings.models import Booking
 
     camper_ids: list[str] = [b.fuzzy_camper_id for b in bookings]
@@ -196,3 +198,9 @@ def get_previous_attendance_score(bookings: list[Booking], year_config: YearConf
     counts_by_fuzzy_camper_id: dict[str, int] = {d["fuzzy_camper_id"]: d["attendance_count"] for d in attendance_counts}
     counts_by_id: dict[BookingId, int] = {b.id: counts_by_fuzzy_camper_id.get(b.fuzzy_camper_id, 0) for b in bookings}
     return counts_by_id
+
+
+def get_previous_attendance_count(booking: Booking) -> int:
+    year_config = get_year_config(booking.camp.year)
+    counts = get_previous_attendance_counts([booking], year_config)
+    return counts[booking.id]
