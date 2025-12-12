@@ -285,6 +285,14 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
                     headers={"HX-Retarget": f"[data-booking-id='{booking.id}']"},
                 )
 
+    # TODO - show warnings for:
+    # - first timer allocations greater than 10%
+
+    # TODO - populate 'place' column using cutoffs for total/male/female.
+    # TODO - allow changing of number of places total/male/female directly on this page.
+    # TODO - buttons to confirm places. Take to a different page.
+    # TODO - track changes that are made via this page, for auditing
+
     ranked_queue_bookings = rank_queue_bookings(camp)
 
     template_name = "cciw/officers/booking_queue.html"

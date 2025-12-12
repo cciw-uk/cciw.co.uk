@@ -53,6 +53,7 @@ class BookingQueueEntry(models.Model):
     # Fields relating to priority rules:
     created_at = models.DateTimeField(default=timezone.now)
     officer_child = models.BooleanField(default=False)
+    first_timer_allocated = models.BooleanField(default=False)
 
     @cached_property
     def tiebreaker(self) -> str:
@@ -127,6 +128,9 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
         # More attendance is better.
         return -booking.rank_info.previous_attendance_score
 
+    def first_timer_key(booking: Booking) -> int:
+        return 0 if booking.queue_entry.first_timer_allocated else 1
+
     def tiebreaker_key(booking: Booking) -> int:
         return booking.queue_entry.tiebreaker
 
@@ -135,6 +139,7 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
             is_officer_child_key(booking),
             queue_position_key(booking),
             previous_attendance_key(booking),
+            first_timer_key(booking),
             tiebreaker_key(booking),
         )
 

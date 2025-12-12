@@ -250,4 +250,6 @@ class DBSCheckForm(ModelForm):
 class UpdateQueueEntryForm(ModelForm):
     class Meta:
         model = BookingQueueEntry
-        fields = ["officer_child"]
+        fields = ["officer_child", "first_timer_allocated"]
+
+    # TODO validation for first_timer_allocated
