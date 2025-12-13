@@ -508,3 +508,11 @@ details summary {
         flex-direction: column;
     }
 }
+
+table.stickyheaders {
+    position: relative;
+    & > thead > tr > th {
+        position: sticky;
+        top: 0;
+    }
+}
