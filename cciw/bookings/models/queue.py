@@ -13,6 +13,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
 from django.db import models
+from django.db.models import Value, functions
 from django.utils import timezone
 
 from cciw.bookings.models.constants import Sex
@@ -43,7 +44,12 @@ class BookingQueueEntryQuerySet(models.QuerySet):
 
 class BookingQueueEntryManagerBase(models.Manager):
     def create_for_booking(self, booking: Booking):
-        return self.create(booking=booking, state=QueueState.WAITING)
+        return self.create(
+            booking=booking,
+            state=QueueState.WAITING,
+            sibling_surname=booking.last_name,
+            sibling_booking_account=booking.account,
+        )
 
 
 BookingQueueEntryManager = BookingQueueEntryManagerBase.from_queryset(BookingQueueEntryQuerySet)
@@ -57,6 +63,21 @@ class BookingQueueEntry(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     officer_child = models.BooleanField(default=False)
     first_timer_allocated = models.BooleanField(default=False)
+
+    # Siblings are decided using the booking account and a surname.
+    # These default to the values on the Booking model, but we make them editable
+    # to allow for corrections in cases where this is wrong.
+    sibling_booking_account = models.ForeignKey("bookings.BookingAccount", on_delete=models.PROTECT)
+    sibling_surname = models.CharField()
+    sibling_fuzzy_id = models.GeneratedField(
+        expression=functions.Concat(
+            functions.Lower("sibling_surname"),
+            Value("-"),
+            functions.Cast("sibling_booking_account_id", output_field=models.CharField()),
+        ),
+        output_field=models.CharField(),
+        db_persist=True,
+    )
 
     @cached_property
     def tiebreaker(self) -> str:
