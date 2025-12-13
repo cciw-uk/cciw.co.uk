@@ -15,11 +15,14 @@
     <td>{{ booking.queue_entry.tiebreaker_display }}</td>
     <td>
       <input
-        type="submit" name="edit-queue-entry" value="Edit"
+        type="submit" name="edit-queue-entry" value="Edit queue details"
         hx-post="."
         hx-vals='{"booking_id": "{{ booking.id }}"}'
         hx-swap="outerHTML"
       >
+      &nbsp;
+      <a href="{% url 'admin:bookings_booking_change' booking.id %}" target="_blank">Edit booking</a>
+
     </td>
   {% else %}
     {% partial place_status %}
