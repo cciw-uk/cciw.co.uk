@@ -308,6 +308,8 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     context = {
         "camp": camp,
+        "year": camp.year,
+        "last_year": camp.year - 1,
         "places_left": places_left,
         "ready_to_allocate": ready_to_allocate,
         "title": f"Booking queue - {camp.nice_name}",

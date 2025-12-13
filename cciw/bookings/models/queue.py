@@ -104,6 +104,7 @@ class QueueCutoff(StrEnum):
 class RankInfo:
     queue_position_rank: int
     previous_attendance_score: int
+    in_previous_year_waiting_list: bool
     cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
 
 
@@ -143,6 +144,10 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     def first_timer_key(booking: Booking) -> int:
         return 0 if booking.queue_entry.first_timer_allocated else 1
 
+    def previous_year_waiting_list_key(booking: Booking) -> int:
+        # In the list means higher priority
+        return 0 if booking.rank_info.in_previous_year_waiting_list else 1
+
     def tiebreaker_key(booking: Booking) -> int:
         return booking.queue_entry.tiebreaker
 
@@ -152,6 +157,7 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
             queue_position_key(booking),
             previous_attendance_key(booking),
             first_timer_key(booking),
+            previous_year_waiting_list_key(booking),
             tiebreaker_key(booking),
         )
 
@@ -165,12 +171,14 @@ type BookingId = int
 def add_rank_info(bookings: list[Booking], year_config: YearConfig):
     queue_position_ranks: dict[BookingId, int] = get_queue_position_ranks(bookings, year_config)
     attendance_counts: dict[BookingId, int] = get_previous_attendance_counts(bookings, year_config)
+    in_previous_year_waiting_list_info: dict[BookingId, bool] = get_previous_waiting_list_status(bookings, year_config)
     for booking in bookings:
         booking.rank_info = RankInfo(
             queue_position_rank=queue_position_ranks[booking.id],
             # score is currently the same as the count - the more attendance,
             # the better.
             previous_attendance_score=attendance_counts[booking.id],
+            in_previous_year_waiting_list=in_previous_year_waiting_list_info[booking.id],
         )
 
 
@@ -216,6 +224,34 @@ def get_previous_attendance_count(booking: Booking) -> int:
     year_config = get_year_config(booking.camp.year)
     counts = get_previous_attendance_counts([booking], year_config)
     return counts[booking.id]
+
+
+def get_previous_waiting_list_status(bookings: list[Booking], year_config: YearConfig) -> dict[BookingId, bool]:
+    """
+    Get info about whether bookings were in waiting list (and not offered a place) in the previous year
+    """
+    # 2026 only: we didn't have a real "waiting list" record in 2025, so for
+    # this year, we will assume that anyone who filled in details but didn't get
+    # a place was on the "waiting list".
+
+    # For 2027 and later we should change this to be based on BookingQueueEntry
+    from cciw.bookings.models import Booking
+
+    camper_ids: list[str] = [b.fuzzy_camper_id for b in bookings]
+    previous_year = year_config.year - 1
+    previous_year_waiting_list = (
+        Booking.objects.in_basket()
+        .filter(camp__year=previous_year, fuzzy_camper_id__in=camper_ids)
+        .values("fuzzy_camper_id")
+        .annotate(queue_count=models.Count("id"))
+    )
+    in_waiting_list_by_fuzzy_camper_id: dict[str, int] = {
+        d["fuzzy_camper_id"]: d["queue_count"] for d in previous_year_waiting_list
+    }
+    in_waiting_list_by_id: dict[BookingId, bool] = {
+        b.id: in_waiting_list_by_fuzzy_camper_id.get(b.fuzzy_camper_id, 0) > 0 for b in bookings
+    }
+    return in_waiting_list_by_id
 
 
 class PlacesToAllocate(PlacesLeft):
