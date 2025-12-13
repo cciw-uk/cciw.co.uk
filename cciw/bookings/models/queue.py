@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import itertools
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from enum import StrEnum
 from functools import cached_property
@@ -39,7 +39,8 @@ class QueueState(models.TextChoices):
 
 
 class BookingQueueEntryQuerySet(models.QuerySet):
-    pass
+    def current(self):
+        return self.exclude(state=QueueState.WITHDRAWN)
 
 
 class BookingQueueEntryManagerBase(models.Manager):
@@ -126,6 +127,7 @@ class RankInfo:
     queue_position_rank: int
     previous_attendance_score: int
     in_previous_year_waiting_list: bool
+    sibling_bonus: int
     cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
 
 
@@ -150,7 +152,7 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
 
     year_config = get_year_config(camp.year)
     assert year_config is not None
-    add_rank_info(queue_bookings, year_config)
+    add_rank_info(queue_bookings, year_config, camp)
 
     def is_officer_child_key(booking: Booking) -> int:
         return 0 if booking.queue_entry.officer_child else 1
@@ -169,6 +171,10 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
         # In the list means higher priority
         return 0 if booking.rank_info.in_previous_year_waiting_list else 1
 
+    def sibling_bonus_key(booking: Booking) -> int:
+        # More siblings is better
+        return -booking.rank_info.sibling_bonus
+
     def tiebreaker_key(booking: Booking) -> int:
         return booking.queue_entry.tiebreaker
 
@@ -179,6 +185,7 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
             previous_attendance_key(booking),
             first_timer_key(booking),
             previous_year_waiting_list_key(booking),
+            sibling_bonus_key(booking),
             tiebreaker_key(booking),
         )
 
@@ -189,10 +196,16 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
 type BookingId = int
 
 
-def add_rank_info(bookings: list[Booking], year_config: YearConfig):
+def add_rank_info(bookings: list[Booking], year_config: YearConfig, camp: Camp):
     queue_position_ranks: dict[BookingId, int] = get_queue_position_ranks(bookings, year_config)
     attendance_counts: dict[BookingId, int] = get_previous_attendance_counts(bookings, year_config)
     in_previous_year_waiting_list_info: dict[BookingId, bool] = get_previous_waiting_list_status(bookings, year_config)
+    sibling_bonus_scores: dict[BookingId, int] = get_sibling_bonus_scores(
+        bookings,
+        camp,
+        attendance_counts=attendance_counts,
+        in_previous_year_waiting_list_info=in_previous_year_waiting_list_info,
+    )
     for booking in bookings:
         booking.rank_info = RankInfo(
             queue_position_rank=queue_position_ranks[booking.id],
@@ -200,6 +213,7 @@ def add_rank_info(bookings: list[Booking], year_config: YearConfig):
             # the better.
             previous_attendance_score=attendance_counts[booking.id],
             in_previous_year_waiting_list=in_previous_year_waiting_list_info[booking.id],
+            sibling_bonus=sibling_bonus_scores[booking.id],
         )
 
 
@@ -273,6 +287,90 @@ def get_previous_waiting_list_status(bookings: list[Booking], year_config: YearC
         b.id: in_waiting_list_by_fuzzy_camper_id.get(b.fuzzy_camper_id, 0) > 0 for b in bookings
     }
     return in_waiting_list_by_id
+
+
+def get_sibling_bonus_scores(
+    bookings: list[Booking],
+    camp: Camp,
+    *,
+    attendance_counts: dict[BookingId, int],
+    in_previous_year_waiting_list_info: dict[BookingId, bool],
+) -> dict[BookingId, int]:
+    from cciw.bookings.models import Booking
+
+    siblings_dict = find_siblings(bookings, camp)
+
+    # We are supposed to give a score for siblings "already attending". However,
+    # we don't know who is actually attending yet (we are trying to decide that,
+    # a circular dependency).
+
+    # So, we instead give points for any sibling with a high probability of being
+    # on the camp.
+
+    # Some may already be booked, in which case the probability is 1.
+    # (though, at the point this is used and relevant, this is probably going to be zero)
+    already_booked_ids: set[BookingId] = set(Booking.objects.for_camp(camp).booked().values_list("id", flat=True))
+
+    # For the rest, we can use information we already have to guess if they have
+    # a high probability of being accepted.
+
+    # These are based on the ranking criteria, but simplified a bit.
+    is_officer_child_ids: set[BookingId] = set(b.id for b in bookings if b.queue_entry.officer_child)
+    has_attended_before_ids: set[BookingId] = set(b_id for b_id, count in attendance_counts.items() if count > 0)
+    is_first_timer_ids: set[BookingId] = set(b.id for b in bookings if b.queue_entry.first_timer_allocated)
+    in_previous_year_waiting_list_ids: set[BookingId] = set(
+        b_id for b_id, in_list in in_previous_year_waiting_list_info.items() if in_list
+    )
+
+    high_probability_booking_ids = (
+        already_booked_ids
+        # Anyone hitting one of the top 4 criteria has a high chance of getting a place
+        | is_officer_child_ids
+        | has_attended_before_ids
+        | is_first_timer_ids
+        | in_previous_year_waiting_list_ids
+    )
+
+    retval: dict[BookingId, int] = {}
+    for booking in bookings:
+        booking_siblings = siblings_dict[booking.id]
+        siblings_with_high_probability = high_probability_booking_ids & booking_siblings
+        # The score is the number of siblings.
+        retval[booking.id] = len(siblings_with_high_probability)
+
+    return retval
+
+
+def find_siblings(bookings: list[Booking], camp: Camp) -> dict[BookingId, set[BookingId]]:
+    """
+    Find the sibling booking IDs for all bookings in the list.
+    """
+    # We need to find siblings who are in the queue, and also who are booked on the camp.
+
+    # (Technically including those who already booked won't make a difference in
+    # realistic situations due to other factors, but we include for completeness)
+
+    # We are interested in getting info only for those in the current `bookings` list.
+    sibling_fuzzy_ids = [b.queue_entry.sibling_fuzzy_id for b in bookings]
+
+    # We need to get siblings "booked" or "in queue".
+    # Those booked will also have a queue entry for the same camp, so we can
+    # base this on BookingQueueEntry.objects.current():
+    sibling_queue_entries = BookingQueueEntry.objects.current().filter(
+        booking__camp=camp, sibling_fuzzy_id__in=sibling_fuzzy_ids
+    )
+    booking_and_sibling_ids = sibling_queue_entries.values_list("booking_id", "sibling_fuzzy_id")
+    sibling_to_booking_ids_dict: dict[str, list[BookingId]] = defaultdict(list)
+    for booking_id, sibling_fuzzy_id in booking_and_sibling_ids:
+        sibling_to_booking_ids_dict[sibling_fuzzy_id].append(booking_id)
+
+    # For each booking ID, get the set of *other* booking IDs that are siblings.
+    booking_to_sibling_booking_ids_dict: dict[BookingId, set[BookingId]] = {}
+    for booking in bookings:
+        all_siblings_ids = sibling_to_booking_ids_dict.get(booking.queue_entry.sibling_fuzzy_id, [])
+        non_self_siblings = set(all_siblings_ids) - set([booking.id])
+        booking_to_sibling_booking_ids_dict[booking.id] = non_self_siblings
+    return booking_to_sibling_booking_ids_dict
 
 
 class PlacesToAllocate(PlacesLeft):

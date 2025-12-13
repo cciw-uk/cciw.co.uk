@@ -11,6 +11,7 @@
     <td>{{ booking.rank_info.previous_attendance_score }}</td>
     <td>{% if booking.queue_entry.first_timer_allocated %}✔️{% endif %}</td>
     <td>{% if booking.rank_info.in_previous_year_waiting_list %}✔️{% endif %}</td>
+    <td>{{ booking.rank_info.sibling_bonus }}</td>
     <td>{{ booking.queue_entry.tiebreaker_display }}</td>
     <td>
       <input
@@ -35,6 +36,7 @@
       <label>First timer: {{ form.first_timer_allocated }}</label>
     </td>
     <td>{% if booking.rank_info.in_previous_year_waiting_list %}✔️{% endif %}</td>
+    <td>{{ booking.rank_info.sibling_bonus }}</td>
     <td>{{ booking.queue_entry.tiebreaker_display }}</td>
     <td>
       <input

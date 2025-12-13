@@ -288,6 +288,8 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
                     headers={"HX-Retarget": f"[data-booking-id='{booking.id}']"},
                 )
 
+    # TODO - UI for fixing up sibling fuzzy matching, if needed?
+
     # TODO - show warnings for:
     # - first timer allocations greater than 10%
 
