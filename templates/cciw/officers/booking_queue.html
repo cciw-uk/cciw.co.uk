@@ -1,6 +1,33 @@
 {% extends "cciw/officers/base.html" %}
 
 {% block content %}
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Maximum places -
+          <a href="{% url 'admin:cciwmain_camp_change' camp.id %}" target="_blank">Edit</a>
+        </th>
+        <th>Places left</th>
+      </tr>
+    </thead>
+    <tr>
+      <th scope="row">Total</th>
+      <td>{{ camp.max_campers }}</td>
+      <td>{{ places_left.total }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Male</th>
+      <td>{{ camp.max_male_campers }}</td>
+      <td>{{ places_left.male }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Female</th>
+      <td>{{ camp.max_female_campers }}</td>
+      <td>{{ places_left.female }}</td>
+    </tr>
+  </table>
+  <br>
 
   {% if ranked_queue_bookings %}
     <table class="topheaders">

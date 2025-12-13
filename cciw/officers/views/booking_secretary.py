@@ -235,6 +235,7 @@ def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
 @cciw_secretary_or_booking_secretary_required
 def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
+    places_left = camp.get_places_left()
     edit_queue_entry_mode = False
 
     refresh_table_body_only = False
@@ -291,7 +292,6 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     # - first timer allocations greater than 10%
 
     # TODO - populate 'place' column using cutoffs for total/male/female.
-    # TODO - allow changing of number of places total/male/female directly on this page.
     # TODO - buttons to confirm places. Take to a different page.
     # TODO - track changes that are made via this page, for auditing
 
@@ -308,6 +308,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     context = {
         "camp": camp,
+        "places_left": places_left,
         "title": f"Booking queue - {camp.nice_name}",
         "ranked_queue_bookings": ranked_queue_bookings,
         "edit_queue_entry_mode": edit_queue_entry_mode,
