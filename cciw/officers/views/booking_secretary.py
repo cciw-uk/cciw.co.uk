@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from cciw.bookings.models import Booking, Price
 from cciw.bookings.models.prices import are_prices_set_for_year
-from cciw.bookings.models.queue import rank_queue_bookings
+from cciw.bookings.models.queue import add_queue_cutoffs, rank_queue_bookings
 from cciw.bookings.stats import get_booking_summary_stats
 from cciw.bookings.utils import (
     addresses_for_mailing_list,
@@ -291,11 +291,12 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     # TODO - show warnings for:
     # - first timer allocations greater than 10%
 
-    # TODO - populate 'place' column using cutoffs for total/male/female.
     # TODO - buttons to confirm places. Take to a different page.
     # TODO - track changes that are made via this page, for auditing
 
     ranked_queue_bookings = rank_queue_bookings(camp)
+    ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
+    # TODO - need to refresh table at top when something changes
 
     template_name = "cciw/officers/booking_queue.html"
     headers = {}
@@ -309,6 +310,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     context = {
         "camp": camp,
         "places_left": places_left,
+        "ready_to_allocate": ready_to_allocate,
         "title": f"Booking queue - {camp.nice_name}",
         "ranked_queue_bookings": ranked_queue_bookings,
         "edit_queue_entry_mode": edit_queue_entry_mode,

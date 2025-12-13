@@ -6,15 +6,18 @@ from __future__ import annotations
 
 import hashlib
 import itertools
+from collections import Counter
 from dataclasses import dataclass
+from enum import StrEnum
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from django.db import models
 from django.utils import timezone
 
+from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig, get_year_config
-from cciw.cciwmain.models import Camp
+from cciw.cciwmain.models import Camp, PlacesLeft
 
 if TYPE_CHECKING:
     from .bookings import Booking
@@ -89,10 +92,19 @@ class BookingQueueEntry(models.Model):
             self.save()
 
 
+class QueueCutoff(StrEnum):
+    UNDECIDED = "U"
+    ACCEPTED = "A"
+    AFTER_TOTAL_CUTOFF = "T"
+    AFTER_MALE_CUTOFF = "M"
+    AFTER_FEMALE_CUTOFF = "F"
+
+
 @dataclass
 class RankInfo:
     queue_position_rank: int
     previous_attendance_score: int
+    cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
 
 
 def rank_queue_bookings(camp: Camp) -> list[Booking]:
@@ -204,3 +216,38 @@ def get_previous_attendance_count(booking: Booking) -> int:
     year_config = get_year_config(booking.camp.year)
     counts = get_previous_attendance_counts([booking], year_config)
     return counts[booking.id]
+
+
+class PlacesToAllocate(PlacesLeft):
+    pass
+
+
+def add_queue_cutoffs(*, ranked_queue_bookings: list[Booking], places_left: PlacesLeft) -> PlacesToAllocate:
+    """
+    Updates the rank_info.cutoff_state field on each Booking, and returns
+    a `PlacesToAllocate' object.
+    """
+    accepted: Counter[Literal["total", "m", "f"]] = Counter()
+    for booking in ranked_queue_bookings:
+        sex: Sex = booking.sex
+        sex_limit = places_left.male if sex == Sex.MALE else places_left.female
+        accepted_sex_count = accepted[sex]
+        accepted_total_count = accepted["total"]
+        if accepted_total_count >= places_left.total:
+            cutoff = QueueCutoff.AFTER_TOTAL_CUTOFF
+        elif accepted_sex_count >= sex_limit:
+            cutoff = QueueCutoff.AFTER_MALE_CUTOFF if sex == Sex.MALE else QueueCutoff.AFTER_FEMALE_CUTOFF
+        else:
+            cutoff = QueueCutoff.ACCEPTED
+            accepted[sex] += 1
+            accepted["total"] += 1
+
+        booking.rank_info.cutoff_state = cutoff
+
+    to_allocate_bookings = [b for b in ranked_queue_bookings if b.rank_info.cutoff_state == QueueCutoff.ACCEPTED]
+    places_to_allocate = PlacesToAllocate(
+        total=len(to_allocate_bookings),
+        male=len([b for b in to_allocate_bookings if b.sex == Sex.MALE]),
+        female=len([b for b in to_allocate_bookings if b.sex == Sex.FEMALE]),
+    )
+    return places_to_allocate

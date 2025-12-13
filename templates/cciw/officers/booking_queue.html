@@ -9,22 +9,26 @@
           <a href="{% url 'admin:cciwmain_camp_change' camp.id %}" target="_blank">Edit</a>
         </th>
         <th>Places left</th>
+        <th>Ready to allocate</th>
       </tr>
     </thead>
     <tr>
       <th scope="row">Total</th>
       <td>{{ camp.max_campers }}</td>
       <td>{{ places_left.total }}</td>
+      <td>{{ ready_to_allocate.total }}</td>
     </tr>
     <tr>
       <th scope="row">Male</th>
       <td>{{ camp.max_male_campers }}</td>
       <td>{{ places_left.male }}</td>
+      <td>{{ ready_to_allocate.male }}</td>
     </tr>
     <tr>
       <th scope="row">Female</th>
       <td>{{ camp.max_female_campers }}</td>
       <td>{{ places_left.female }}</td>
+      <td>{{ ready_to_allocate.female }}</td>
     </tr>
   </table>
   <br>
@@ -33,7 +37,9 @@
     <table class="topheaders">
       <thead>
         <tr>
-          <th>Place</th>
+          <th>
+            <span title="A: accepted, T: below the total cutoff, M/F below the male/female cutoffs">Accept?</span>
+          </th>
           <th>First name</th>
           <th>Last name</th>
           <th>
@@ -92,6 +98,9 @@
       input[type=submit] {
         padding: 3px 6px;
         margin: 0;
+      }
+      td.to-accept {
+        background-color: #00ff00;
       }
     }
 

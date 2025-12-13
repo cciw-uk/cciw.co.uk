@@ -1,6 +1,11 @@
 <tr data-booking-id="{{ booking.id }}">
   {% if not edit_queue_entry_mode %}
-    <td>{{ booking.place_status }}</td>
+    {% partialdef place_status inline %}
+      <td {% if booking.rank_info.cutoff_state == "A" %}
+            class="to-accept"
+          {% endif %}
+      >{{ booking.rank_info.cutoff_state }}</td>
+    {% endpartialdef %}
     <td>{{ booking.first_name }}</td>
     <td>{{ booking.last_name }}</td>
     <td>{% if booking.queue_entry.officer_child %}✔️{% endif %}</td>
@@ -17,7 +22,7 @@
       >
     </td>
   {% else %}
-    <td>{{ booking.place_status }}</td>
+    {% partial place_status %}
     <td>{{ booking.first_name }}</td>
     <td>{{ booking.last_name }}</td>
     <td>
