@@ -30,11 +30,12 @@ from .payments import (
     parse_paypal_custom_field,
 )
 from .prices import Price, PriceChecker, PriceType
-from .problems import ApprovalNeeded, ApprovalNeededType
+from .problems import ApprovalNeeded, ApprovalNeededType, BookingApproval
 from .reports import booking_report_by_camp, outstanding_bookings_with_fees
 from .states import BookingState
 from .supporting_information import SupportingInformation, SupportingInformationDocument, SupportingInformationType
 from .yearconfig import (
+    YearConfig,
     any_bookings_possible,
     early_bird_is_available,
     get_booking_open_data,
@@ -88,6 +89,10 @@ __all__ = [
     "ApprovalNeeded",
     "get_booking_open_data",
     "get_booking_open_data_thisyear",
+    "book_bookings_now",
+    "add_basket_to_queue",
+    "YearConfig",
+    "BookingApproval",
 ]
 
 

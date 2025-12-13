@@ -498,6 +498,9 @@ BOOKING_MAPPED_FIELD_GROUPS = [
     (
         "account_id",  # Makes the mapping specific to different accounts.
         "first_name",
+    ),
+    (
+        "account_id",  # Makes the mapping specific to different accounts.
         "last_name",
     ),
     (
@@ -866,6 +869,7 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
         },
     ),
     bookings.SupportingInformationType: IgnoreTable(),
+    bookings.BookingApproval: IgnoreTable(),
     bookings.Price: IgnoreTable(),
     bookings.Payment: IgnoreTable(),
     bookings.ManualPayment: IgnoreTable(),
@@ -873,6 +877,7 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
     bookings.RefundPayment: IgnoreTable(),
     bookings.WriteOffDebt: IgnoreTable(),
     bookings.PaymentSource: IgnoreTable(),
+    bookings.YearConfig: IgnoreTable(),
     #
     paypal.PayPalIPN: AnonymiseWithMap(paypal.PayPalIPN, PAYPAL_IPN_FIELD_MAP),
     # Applications and officers
@@ -980,6 +985,7 @@ IGNORE_TABLES = [
     "wiki.plugins.*",
     "django_nyt.models.*",
     "captcha.models.*",
+    "django_q.models.*",
 ]
 
 
@@ -1008,6 +1014,8 @@ def test_anonymisation():
             assert isinstance(f, models.Field)
             # Standard fields that don't need anonymising:
             if isinstance(f, models.AutoField | models.ForeignKey):
+                continue
+            if isinstance(f, models.GeneratedField):
                 continue
             if f.name == "erased_at":
                 continue
