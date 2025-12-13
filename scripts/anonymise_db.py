@@ -844,6 +844,17 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
         BOOKING_FIELD_MAP,
         BOOKING_MAPPED_FIELD_GROUPS,
     ),
+    bookings.BookingQueueEntry: AnonymiseWithMap(
+        bookings.BookingQueueEntry,
+        {
+            "state": keep,
+            "created_at": keep,
+            "officer_child": keep,
+            "first_timer_allocated": keep,
+            "sibling_booking_account": keep,
+            "sibling_surname": lambda f, queue_entry, v: queue_entry.booking.last_name,
+        },
+    ),
     bookings.SupportingInformation: AnonymiseWithMap(
         bookings.SupportingInformation,
         {
