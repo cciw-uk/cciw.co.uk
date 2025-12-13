@@ -238,12 +238,12 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     places_left = camp.get_places_left()
     edit_queue_entry_mode = False
 
-    refresh_table_body_only = False
+    refresh_contents_only = False
 
     if request.headers.get("Hx-Request", False) and request.method == "POST":
         if "cancel-edit-queue-entry" in request.POST:
             # Do nothing, just refresh the whole list.
-            refresh_table_body_only = True
+            refresh_contents_only = True
         elif "edit-queue-entry" in request.POST or "save-queue-entry" in request.POST:
             # htmx edit row mode.
 
@@ -271,7 +271,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
                 if form.is_valid():
                     form.save()
                     # show whole list.
-                    refresh_table_body_only = True
+                    refresh_contents_only = True
                 else:
                     edit_queue_entry_mode = True
 
@@ -296,16 +296,15 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     ranked_queue_bookings = rank_queue_bookings(camp)
     ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
-    # TODO - need to refresh table at top when something changes
 
     template_name = "cciw/officers/booking_queue.html"
     headers = {}
-    if refresh_table_body_only:
+    if refresh_contents_only:
         # We use server side HX-Retarget here and above, because client side
         # can't set the hx-target: if form validation fails, we target a
         # different element than if it succeeds.
-        headers.update({"HX-Retarget": "#id_bookings_table"})
-        template_name = f"{template_name}#bookings-table-body"
+        headers.update({"HX-Retarget": "#id_main_content"})
+        template_name = f"{template_name}#main-content"
 
     context = {
         "camp": camp,

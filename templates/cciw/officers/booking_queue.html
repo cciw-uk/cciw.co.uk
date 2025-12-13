@@ -1,93 +1,98 @@
 {% extends "cciw/officers/base.html" %}
 
 {% block content %}
-  <table>
-    <thead>
-      <tr>
-        <th></th>
-        <th>Maximum places -
-          <a href="{% url 'admin:cciwmain_camp_change' camp.id %}" target="_blank">Edit</a>
-        </th>
-        <th>Places left</th>
-        <th>Ready to allocate</th>
-      </tr>
-    </thead>
-    <tr>
-      <th scope="row">Total</th>
-      <td>{{ camp.max_campers }}</td>
-      <td>{{ places_left.total }}</td>
-      <td>{{ ready_to_allocate.total }}</td>
-    </tr>
-    <tr>
-      <th scope="row">Male</th>
-      <td>{{ camp.max_male_campers }}</td>
-      <td>{{ places_left.male }}</td>
-      <td>{{ ready_to_allocate.male }}</td>
-    </tr>
-    <tr>
-      <th scope="row">Female</th>
-      <td>{{ camp.max_female_campers }}</td>
-      <td>{{ places_left.female }}</td>
-      <td>{{ ready_to_allocate.female }}</td>
-    </tr>
-  </table>
-  <br>
 
-  {% if ranked_queue_bookings %}
-    <table class="topheaders">
-      <thead>
+  {% partialdef main-content inline %}
+    <div id="id_main_content">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Maximum places -
+              <a href="{% url 'admin:cciwmain_camp_change' camp.id %}" target="_blank">Edit</a>
+            </th>
+            <th>Places left</th>
+            <th>Ready to allocate</th>
+          </tr>
+        </thead>
         <tr>
-          <th>
-            <span title="A: accepted, T: below the total cutoff, M/F below the male/female cutoffs">Accept?</span>
-          </th>
-          <th>First name</th>
-          <th>Last name</th>
-          <th>
-            <span
-              title="This should be checked if the booking is for a child of someone who is an officer on the same camp."
-            >Officer child</span>
-          </th>
-          <th>
-            <span
-              title="The position in the queue, this is always '1' for those who book within the initial period. Lower is better."
-            >Queue position</span>
-          </th>
-          <th>
-            <span
-              title="The number of times they have previously been on camp. A higher number is better."
-            >
-              Previous attendance
-            </span>
-          </th>
-          <th>
-            <span
-              title="Place has been chosen for 'first timer' allocation. Available for up to 10% of places, for leaders to allocate to campers associated with a serving officer."
-            >
-              First timer
-            </span>
-          </th>
-          <th>
-            <span
-              title="This is a random number assigned to each booking as our 'lottery' system. Lower is better."
-            >Tiebreaker
-            </span>
-          </th>
-          <th>
-            Action
-          </th>
+          <th scope="row">Total</th>
+          <td>{{ camp.max_campers }}</td>
+          <td>{{ places_left.total }}</td>
+          <td>{{ ready_to_allocate.total }}</td>
         </tr>
-      </thead>
-      {% partialdef bookings-table-body inline %}
-        <tbody id="id_bookings_table">
-          {% for booking in ranked_queue_bookings %}
-            {% include "cciw/officers/booking_queue_row_inc.html" with booking=booking %}
-          {% endfor %}
-        </tbody>
-      {% endpartialdef %}
-    </table>
-  {% else %}
-    <p>No bookings in the queue.</p>
-  {% endif %}
+        <tr>
+          <th scope="row">Male</th>
+          <td>{{ camp.max_male_campers }}</td>
+          <td>{{ places_left.male }}</td>
+          <td>{{ ready_to_allocate.male }}</td>
+        </tr>
+        <tr>
+          <th scope="row">Female</th>
+          <td>{{ camp.max_female_campers }}</td>
+          <td>{{ places_left.female }}</td>
+          <td>{{ ready_to_allocate.female }}</td>
+        </tr>
+      </table>
+      <br>
+
+      {% if ranked_queue_bookings %}
+        <table class="topheaders">
+          <thead>
+            <tr>
+              <th>
+                <span title="A: accepted, T: below the total cutoff, M/F below the male/female cutoffs">Accept?</span>
+              </th>
+              <th>First name</th>
+              <th>Last name</th>
+              <th>
+                <span
+                  title="This should be checked if the booking is for a child of someone who is an officer on the same camp."
+                >Officer child</span>
+              </th>
+              <th>
+                <span
+                  title="The position in the queue, this is always '1' for those who book within the initial period. Lower is better."
+                >Queue position</span>
+              </th>
+              <th>
+                <span
+                  title="The number of times they have previously been on camp. A higher number is better."
+                >
+                  Previous attendance
+                </span>
+              </th>
+              <th>
+                <span
+                  title="Place has been chosen for 'first timer' allocation. Available for up to 10% of places, for leaders to allocate to campers associated with a serving officer."
+                >
+                  First timer
+                </span>
+              </th>
+              <th>
+                <span
+                  title="This is a random number assigned to each booking as our 'lottery' system. Lower is better."
+                >Tiebreaker
+                </span>
+              </th>
+              <th>
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in ranked_queue_bookings %}
+              {% include "cciw/officers/booking_queue_row_inc.html" with booking=booking %}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No bookings in the queue.</p>
+      {% endif %}
+
+    </div>
+  {% endpartialdef %}
+
 
   <style>
     table {
