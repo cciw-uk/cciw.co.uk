@@ -516,6 +516,8 @@
       columns: all
     - name: bookings.SupportingInformationType
       columns: all
+    - name: bookings.YearConfig
+      columns: all
     - name: cciwmain.Site
       columns: all
     - name: cciwmain.CampName
