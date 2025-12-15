@@ -463,6 +463,15 @@
       - booking_expires_at
       - created_online
 
+    - name: bookings.BookingApproval
+      columns:
+      - type
+      - is_current
+      - status
+      - description
+      - created_at
+      - checked_at
+
     - name: accounts.User
       columns:
       - last_login
