@@ -237,7 +237,7 @@ class Camp(models.Model):
 
     @property
     def nice_name(self) -> str:
-        return f"Camp {self.name}, year {self.year}"
+        return f"{self.name.title()} Camp, year {self.year}"
 
     @property
     def bracketted_old_name(self) -> str:
