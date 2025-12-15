@@ -165,7 +165,7 @@ def field_requires_privacy_policy(field: Field) -> bool:
     # By default we don't need a policy for FKs, they link data but
     # don't themselves contain personal data.
     # AutoFields similarly and other auto created fields
-    if isinstance(field, models.AutoField | models.ForeignKey | GenericForeignKey):
+    if isinstance(field, models.AutoField | models.ForeignKey | GenericForeignKey | models.GeneratedField):
         return False
     if field.auto_created:
         return False
