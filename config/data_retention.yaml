@@ -315,6 +315,10 @@
         # camp", but anonymise.
         birth_date: preserve age on camp
 
+    - name: bookings.BookingQueueEntry
+      columns:
+      - sibling_surname
+
     - name: ipn.PayPalIPN
       # This contains all the data PayPal sends to us about a payment,
       # some of which are address details that we can remove
@@ -470,6 +474,13 @@
       - description
       - created_at
       - checked_at
+
+    - name: bookings.BookingQueueEntry
+      columns:
+      - state
+      - created_at
+      - officer_child
+      - first_timer_allocated
 
     - name: accounts.User
       columns:

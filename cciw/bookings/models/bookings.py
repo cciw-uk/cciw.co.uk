@@ -179,14 +179,14 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(self._in_use_q(now))
 
     def _in_use_q(self, now: datetime):
+        # See also BookingQueueEntryQuerySet.not_in_use()
         return Q(
             camp__end_date__gte=now.date(),
         )
 
-    def older_than(self, before_datetime):
-        return self.filter(
-            Q(created_at__lt=before_datetime) & Q(Q(camp__isnull=True) | Q(camp__end_date__lt=before_datetime))
-        )
+    def older_than(self, before_datetime: datetime):
+        # See also BookingQueueEntryQuerySet.older_than()
+        return self.filter(created_at__lt=before_datetime, camp__end_date__lt=before_datetime)
 
     def non_erased(self):
         return self.filter(erased_at__isnull=True)

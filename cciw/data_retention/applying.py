@@ -36,6 +36,7 @@ from cciw.bookings.models import (
     SupportingInformation,
     SupportingInformationDocument,
 )
+from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application
 
@@ -369,6 +370,7 @@ NOT_IN_USE_METHODS = {
     Message: lambda now: Message.objects.not_in_use(now),
     Application: lambda now: Application.objects.not_in_use(now),
     Booking: lambda now: Booking.objects.not_in_use(now),
+    BookingQueueEntry: lambda now: BookingQueueEntry.objects.not_in_use(now),
     BookingAccount: lambda now: BookingAccount.objects.not_in_use(now),
     User: lambda now: User.objects.not_in_use(now),
     SupportingInformation: lambda now: SupportingInformation.objects.not_in_use(now),
@@ -388,6 +390,7 @@ OLDER_THAN_METHODS = {
     Message: lambda qs, before_datetime: qs.older_than(before_datetime),
     Application: lambda qs, before_datetime: qs.older_than(before_datetime),
     Booking: lambda qs, before_datetime: qs.older_than(before_datetime),
+    BookingQueueEntry: lambda qs, before_datetime: qs.older_than(before_datetime),
     BookingAccount: lambda qs, before_datetime: qs.older_than(before_datetime),
     User: lambda qs, before_datetime: qs.older_than(before_datetime),
     SupportingInformation: lambda qs, before_datetime: qs.older_than(before_datetime),

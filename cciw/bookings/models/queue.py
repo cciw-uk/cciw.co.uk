@@ -8,6 +8,7 @@ import hashlib
 import itertools
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
@@ -41,6 +42,14 @@ class QueueState(models.TextChoices):
 class BookingQueueEntryQuerySet(models.QuerySet):
     def current(self):
         return self.exclude(state=QueueState.WITHDRAWN)
+
+    def not_in_use(self, now: datetime):
+        # See also BookingQuerySet.not_in_use()
+        return self.filter(booking__camp__end_date__lt=now.date())
+
+    def older_than(self, before_datetime: datetime):
+        # See also BookingQuerySet.older_than()
+        return self.filter(created_at__lt=before_datetime, booking__camp__end_date__lt=before_datetime)
 
 
 class BookingQueueEntryManagerBase(models.Manager):
@@ -79,6 +88,9 @@ class BookingQueueEntry(models.Model):
         output_field=models.CharField(),
         db_persist=True,
     )
+
+    # Internal only:
+    erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     @cached_property
     def tiebreaker(self) -> str:
