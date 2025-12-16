@@ -63,7 +63,7 @@ def get_camp_officer_stats(camp) -> pd.DataFrame:
             # values get propagated to all rows,
             # and then backwards with zeros.
         )
-        .fillna(method="ffill")
+        .ffill()
         .fillna(value=0)
     )
 

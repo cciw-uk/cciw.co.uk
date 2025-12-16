@@ -2432,7 +2432,6 @@ class TestEarlyBird(TestBase):
         assert booking.early_bird_discount
         price_checker = PriceChecker()
         assert booking.amount_due == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(year)
-        return booking
 
     def test_book_basket_doesnt_apply_discount(self):
         booking = factories.create_booking()
