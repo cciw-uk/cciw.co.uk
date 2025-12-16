@@ -30,6 +30,7 @@ from .payments import (
 )
 from .prices import Price, PriceChecker, PriceType
 from .problems import ApprovalNeeded, ApprovalNeededType, BookingApproval
+from .queue import BookingQueueEntry
 from .reports import booking_report_by_camp, outstanding_bookings_with_fees
 from .states import BookingState
 from .supporting_information import SupportingInformation, SupportingInformationDocument, SupportingInformationType
@@ -42,7 +43,6 @@ from .yearconfig import (
     get_early_bird_cutoff_date,
     most_recent_booking_year,
 )
-from .queue import BookingQueueEntry
 
 __all__ = [
     "AccountTransferPayment",

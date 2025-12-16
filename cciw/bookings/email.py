@@ -6,7 +6,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-import mailer as queued_mail
 from django.conf import settings
 from django.core import mail
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
@@ -143,10 +142,7 @@ def send_places_confirmed_email(bookings):
     body = loader.render_to_string("cciw/bookings/place_confirmed_email.txt", c)
     subject = "[CCIW] Booking - place confirmed"
 
-    # Use queued_mail, which uses DB storage, because this function gets
-    # triggered from within payment processing, and we want to ensure that
-    # network errors won't affect this processing.
-    queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     # Email leaders. Bookings could be for different camps, so send different
     # emails.
@@ -168,7 +164,7 @@ def send_places_confirmed_email(bookings):
 
             emails = admin_emails_for_camp(booking.camp)
             if emails:
-                queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
+                mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
 
 
 def send_booking_approved_mail(booking):
@@ -185,7 +181,7 @@ def send_booking_approved_mail(booking):
     }
     body = loader.render_to_string("cciw/bookings/place_approved_email.txt", c)
     subject = "[CCIW] Booking - approved"
-    queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     return True
 
@@ -201,7 +197,7 @@ def send_booking_confirmed_mail(booking):
     }
     body = loader.render_to_string("cciw/bookings/place_booked_email.txt", c)
     subject = "[CCIW] Booking - confirmed"
-    queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     return True
 

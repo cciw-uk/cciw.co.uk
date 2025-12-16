@@ -457,35 +457,44 @@ TEMPLATES = [
 
 # == EMAIL ==
 
-# Try to ensure we don't send real mail when testing.
-
-# First step: set EMAIL_BACKEND correctly. This deals with mail sent via
-# django's send_mail.
-
+# Try to ensure we don't send real mail when testing,
+# and use django-mailer in production.
+#
+# Use of django-mailer, which puts mails in a queue in the database, is quite
+# important for some cases for ensuring reliable email sending.
+#
+# It is especially important for use of transactions:
+#
+# - we don't want temporary email failure to cause a transaction to be rolled
+#   back, especially if it involves payment processing, or booking places (and
+#   we send emails as part of both of those)
+#
+# - if a transaction is rolled back for some another reason, we typically don't
+#   want to send any associated emails. By storing email in a database queue, it
+#   participates in transactions and is rolled back automatically.
+#
 
 EMAIL_RECIPIENTS = SECRETS["EMAIL_RECIPIENTS"]
 SERVER_EMAIL = "CCIW website <noreply@cciw.co.uk>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 ADMINS = [("webmaster", email) for email in EMAIL_RECIPIENTS["WEBMASTER"]]
 
-
+EMAIL_BACKEND = "mailer.backend.DbBackend"
 if PRODUCTION:
     # We currently send using SMTP (amazon SES)
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    MAILER_EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = SECRETS["SMTP_HOST"]
     EMAIL_PORT = SECRETS["SMTP_PORT"]
     EMAIL_HOST_USER = SECRETS["SMTP_USERNAME"]
     EMAIL_HOST_PASSWORD = SECRETS["SMTP_PASSWORD"]
     EMAIL_USE_TLS = SECRETS["SMTP_USE_TLS"]
+elif STAGING:
+    # MAYBE - something better than this for staging that allows
+    # us to see attempts at mail sending?
+    MAILER_EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    # TODO STAGING - something better than this?
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# django-mailer - used for some things where we need a queue. It is not used as
-# default backend via EMAIL_BACKEND, but by calling mailer.send_mail explicitly,
-# usally aliased as queued_mail.send_mail. We also can test this is being used
-# e.g. in TestBaseMixin
-MAILER_EMAIL_BACKEND = EMAIL_BACKEND
+    # development
+    MAILER_EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 MAILER_USE_FILE_LOCK = False
 

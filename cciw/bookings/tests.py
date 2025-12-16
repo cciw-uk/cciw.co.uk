@@ -52,10 +52,9 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spread
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
-from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
+from cciw.utils.tests.base import TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
@@ -321,7 +320,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         return super().fill(data2, scroll=scroll)
 
 
-class BookingBaseMixin(AtomicChecksMixin):
+class BookingBaseMixin:
     # Constants used in 'assertTextPresent' and 'assertTextAbsent', the latter
     # being prone to false positives if a constant isn't used.
     ABOVE_MAXIMUM_AGE = "above the maximum age"
@@ -361,7 +360,7 @@ class BookingBaseMixin(AtomicChecksMixin):
 # created the same way a user would.
 
 
-class TestBookingModels(AtomicChecksMixin, TestBase):
+class TestBookingModels(TestBase):
     def test_camp_open_for_bookings(self):
         today = date.today()
         camp = camps_factories.create_camp(start_date=today + timedelta(days=10))
@@ -1138,7 +1137,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         self.assertTextPresent(
             f"An email has been sent to {booking.account.email} telling them the place has been approved"
         )
-        mails = send_queued_mail()
+        mails = mail.outbox
         assert len(mails) == 1
 
         # Unapprove:
@@ -1259,7 +1258,7 @@ class TestEditPaymentAdminSL(EditPaymentAdminBase, SeleniumBase):
     pass
 
 
-class AccountTransferBase(fix_autocomplete_fields(["from_account", "to_account"]), AtomicChecksMixin, FuncBaseMixin):
+class AccountTransferBase(fix_autocomplete_fields(["from_account", "to_account"]), FuncBaseMixin):
     def test_add_account_transfer(self):
         account_1 = BookingAccount.objects.create(email="account1@example.com", name="Joe")
         account_2 = BookingAccount.objects.create(email="account2@example.com", name="Jane")
@@ -1892,7 +1891,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # 1 to account
 
         # TODO #52
-        # mails = send_queued_mail()
+        # mails = mail.outbox
         # account_mails = [m for m in mails if m.to == [account.email]]
         # assert len(account_mails) == 1
 
@@ -1983,7 +1982,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         mail.outbox = []
         factories.create_ipn(account=account, mc_gross=booking.amount_due)
 
-        mails = send_queued_mail()
+        mails = mail.outbox
         assert len(mails) == 1
 
         assert mails[0].subject == "[CCIW] Booking - place confirmed"
@@ -2001,7 +2000,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         mail.outbox = []
         account.receive_payment(account.get_balance_full())
 
-        mails = send_queued_mail()
+        mails = mail.outbox
         assert len(mails) == 1
 
         assert mails[0].subject == "[CCIW] Booking - place confirmed"

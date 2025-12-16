@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
 
-import mailer as queued_mail
 from django.conf import settings
+from django.core import mail
 from django.db import models
 from django.db.models import TextChoices
 from django.urls import reverse
@@ -143,7 +143,7 @@ Spaminess: {self.bogosity_percent}% - {self.get_spam_classification_bogofilter_d
 
     """
 
-        queued_mail.send_mail(
+        mail.send_mail(
             f"[CCIW] Website feedback {self.id}",
             body,
             settings.SERVER_EMAIL,

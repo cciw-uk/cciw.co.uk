@@ -162,6 +162,10 @@ def test_erase_mailer_Message(db):
         keep=timedelta(days=365),
     )
 
+    # We use django-mailer here explicitly, rather than django.core.mail,
+    # because we need to test the cleanup of Message objects, and in tests
+    # Django swaps out the email backend to a dummy one that doesn't use
+    # django_mailer at all.
     queued_mail.send_mail("[CCIW] Subject", "message", "from@example.com", ["to@example.com"])
     start = timezone.now()
     message = mailer_models.Message.objects.get()

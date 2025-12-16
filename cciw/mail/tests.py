@@ -3,13 +3,11 @@ import re
 from email import policy
 from unittest import mock
 
-import mailer as queued_mail
 import mailer.engine
 import pytest
 from django.core import mail
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
-from django.db.transaction import atomic
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from requests.exceptions import ConnectionError
@@ -19,7 +17,7 @@ from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.tests import factories as officer_factories
 from cciw.officers.tests.base import RolesSetupMixin
 from cciw.utils.functional import partition
-from cciw.utils.tests.base import AtomicChecksMixin, TestBase
+from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
@@ -407,29 +405,10 @@ def emailify(msg):
     return msg.strip().replace("\n", "\r\n").encode("utf-8")
 
 
-_NON_QUEUED_EMAIL_SENDING_DISALLOWED = []
-
-
-def disable_nonqueued_email_sending():
-    _NON_QUEUED_EMAIL_SENDING_DISALLOWED.append(None)
-
-
-def enable_nonqueued_email_sending():
-    _NON_QUEUED_EMAIL_SENDING_DISALLOWED.pop(0)
-
-
-# Most mail is sent directly, but some is specifically put on a queue, to ensure
-# errors don't mess up payment processing. We 'send' and retrieve those here:
-def send_queued_mail() -> list[mail.EmailMessage]:
-    # mailer itself uses transactions for sending. Normally it runs in a
-    # separate process, but in tests we run it in process, which would trigger
-    # our AtomicChecksMixin logic. This means we can't do
-    # `MAILER_EMAIL_BACKEND=TestMailBackend`, so we use
-    # `QueuedMailTestEmailBackend`
+def send_queued_mail():
+    # We need to ensure we don't send real emails.
     with override_settings(MAILER_EMAIL_BACKEND="cciw.mail.tests.QueuedMailTestMailBackend"):
         mailer.engine.send_all()
-
-    return mail.queued_outbox
 
 
 class EmailTransactionAssertionError(AssertionError):
@@ -453,50 +432,28 @@ class TestMailBackend(CheckSubjectMixin, LocMemEmailBackend):
     __test__ = False
 
     def send_messages(self, messages):
-        # Transaction check
-        if len(_NON_QUEUED_EMAIL_SENDING_DISALLOWED) > 0:
-            raise EmailTransactionAssertionError(
-                "Normal email should not be sent within transactions, use queued_mail instead"
-            )
         self.check_messages(messages)
 
         return super().send_messages(messages)
 
 
 class QueuedMailTestMailBackend(CheckSubjectMixin, BaseEmailBackend):
-    # Same as Django's locmem EmailBackend, but uses 'queued_outbox' instead of 'outbox',
-    # and uses CheckSubjectMixin
+    # Same as Django's locmem EmailBackend, but uses CheckSubjectMixin
     __test__ = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not hasattr(mail, "queued_outbox"):
-            mail.queued_outbox = []
+        if not hasattr(mail, "outbox"):
+            mail.outbox = []
 
     def send_messages(self, messages):
         self.check_messages(messages)
         msg_count = 0
-        for message in messages:  # .message() triggers header validation
-            message.message()
-            mail.queued_outbox.append(message)
+        for message in messages:
+            message.message()  # .message() triggers header validation
+            mail.outbox.append(message)
             msg_count += 1
         return msg_count
-
-
-class TestAtomicChecksMixin(AtomicChecksMixin, TestBase):
-    # A test for our tests! Checking that TestMailBackend/Atomic monkey patching actually works
-    def test_TestMailBackend_disallows_mail_within_atomic_blocks(self):
-        with self.assertRaises(EmailTransactionAssertionError):
-            with atomic():
-                mail.send_mail("[CCIW] subject", "hello", "x@cciw.co.uk", ["x@example.com"])
-
-    def test_TestMailBackend_allows_queued_mail_within_atomic_blocks(self):
-        with atomic():
-            queued_mail.send_mail("[CCIW] subject", "hello", "x@cciw.co.uk", ["x@example.com"])
-
-    def test_TestMailBackend_enforces_subject(self):
-        with self.assertRaises(EmailSubjectAssertionError):
-            mail.send_mail("bad subject", "hello", "x@cciw.co.uk", ["x@example.com"])
 
 
 def _is_forwarded_message(raw_message):
