@@ -6,6 +6,7 @@ from cciw.accounts.models import User
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.officers import applications
 from cciw.officers.models import Application, Qualification
+from cciw.officers.templatetags.rtf import unicode_to_rtf
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RequireQualificationTypesMixin
 from cciw.utils.tests.base import TestBase
@@ -227,3 +228,9 @@ class ApplicationUtils(TestBase):
         # Check that thisyears_applications works if there are no future camps
         c2.delete()
         assert applications.thisyears_applications(u).exists()
+
+
+def test_unicode_to_rtf():
+    assert unicode_to_rtf("hello") == "hello"
+    assert unicode_to_rtf("é") == "\\'e9"
+    assert unicode_to_rtf("ⓒ") == "\\'3f"  # == '?'

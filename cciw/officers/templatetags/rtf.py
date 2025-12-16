@@ -37,10 +37,8 @@ def unicode_to_rtf(u):
                 # use \' method:
                 converted = "\\'" + hex(val)[2:]
             else:
-                # Don't even know if this works.  The
-                # '?' is the alternate rendering, one byte long,
-                # to match the '\uc1' directive
-                converted = "\\u%d ?" % val
+                # Don't know what to do here
+                converted = "?"
         else:
             converted = str(char)
         output.append(converted)

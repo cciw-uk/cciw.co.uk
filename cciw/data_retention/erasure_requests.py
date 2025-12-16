@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Generic, TypeVar
 
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from django.db.models import F, Model, Q, Value
@@ -22,11 +21,9 @@ from cciw.data_retention.applying import (
 from cciw.data_retention.datatypes import Policy
 from cciw.officers.models import Application
 
-M = TypeVar("M", bound=Model)
-
 
 @dataclass(kw_only=True)
-class SearchResult(Generic[M]):
+class SearchResult[M]:
     pk: int
     model: type[M]
     email: str
