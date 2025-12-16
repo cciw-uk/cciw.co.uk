@@ -21,6 +21,9 @@ def create_camp(
     future: bool = Auto,
     officers: list[User] = Auto,
     officers_role: CampRole | str = Auto,
+    max_campers: int = 80,
+    max_male_campers: int = 60,
+    max_female_campers: int = 60,
 ) -> Camp:
     assert not (leader is not Auto and leaders is not Auto), "Only supply one of 'leaders' and 'leader'"
     if leader:
@@ -76,6 +79,9 @@ def create_camp(
         year=year,
         start_date=start_date,
         chaplain=make_into_person(chaplain) if chaplain else None,
+        max_campers=max_campers,
+        max_male_campers=max_male_campers,
+        max_female_campers=max_female_campers,
     )
     if leaders:
         set_camp_leaders(camp, leaders)

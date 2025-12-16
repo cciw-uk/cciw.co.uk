@@ -43,9 +43,10 @@ from cciw.bookings.models import (
     book_bookings_now,
     build_paypal_custom_field,
 )
+from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
-from cciw.bookings.models.queue import rank_queue_bookings
+from cciw.bookings.models.queue import add_queue_cutoffs, get_booking_queue_problems, rank_queue_bookings
 from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
@@ -2877,3 +2878,20 @@ def test_rank_queue_booking():
     # b3 and b4 are after the cut-off
     assert b3_q.rank_info.queue_position_rank == 2
     assert b4_q.rank_info.queue_position_rank == 3
+
+
+@pytest.mark.django_db
+def test_get_booking_queue_problems():
+    year_config = create_year_config_for_queue_tests()
+    camp = camps_factories.create_camp(
+        year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
+    )
+    bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(0, 15)]
+    for b in bookings:
+        queue_entry = b.add_to_queue()
+        queue_entry.first_timer_allocated = True
+        queue_entry.save()
+    ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
+    add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=camp.get_places_left())
+    problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
+    assert len(problems.rejected_first_timers) == 5

@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import itertools
 from collections import Counter, defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -23,6 +24,10 @@ from cciw.cciwmain.models import Camp, PlacesLeft
 
 if TYPE_CHECKING:
     from .bookings import Booking
+
+
+# TODO - use this value as a validation issue.
+FIRST_TIMER_PERCENTAGE = 10
 
 
 class BookingQueueEntryQuerySet(models.QuerySet):
@@ -399,3 +404,24 @@ def add_queue_cutoffs(*, ranked_queue_bookings: list[Booking], places_left: Plac
         female=len([b for b in to_allocate_bookings if b.sex == Sex.FEMALE]),
     )
     return places_to_allocate
+
+
+@dataclass
+class BookingQueueProblems:
+    general_messages: Sequence[str]
+    rejected_first_timers: Sequence[Booking]
+
+    @property
+    def has_items(self) -> bool:
+        return self.general_messages or self.rejected_first_timers
+
+
+def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp: Camp) -> BookingQueueProblems:
+    general_messages = []
+    # If 'first timer' is allocated, they may assume that it 'works'
+    rejected_first_timers = [
+        b
+        for b in ranked_queue_bookings
+        if b.rank_info.cutoff_state != QueueCutoff.ACCEPTED and b.queue_entry.first_timer_allocated
+    ]
+    return BookingQueueProblems(general_messages=general_messages, rejected_first_timers=rejected_first_timers)

@@ -36,12 +36,29 @@
       </table>
       <br>
 
+      <h2>Usage</h2>
+      <p>
+        This page shows places in the "queue" that are ready to be allocated. Some manual inputs are required, and
+        you must then use the buttons at the end to confirm the places.
+      </p>
+
+      <h2>Rules</h2>
+      <ul>
+        <li>“Officer child” - use this to mark campers who are the children of
+          officers serving on the same camp.</li>
+        <li>“Chosen first timer” - for campers coming for the first time, and are associated with serving officers,
+          this option can used to increase priority for the selected campers.
+
+          It can applied a limited number of times - up to {{ FIRST_TIMER_PERCENTAGE }}%
+          of the total places for a camp.</li>
+      </ul>
+
       {% if ranked_queue_bookings %}
         <table class="stickyheaders">
           <thead>
             <tr>
               <th>
-                <span title="A: accepted, T: below the total cutoff, M/F below the male/female cutoffs">Accept?</span>
+                <span title="A: will be accepted, T: below the total cutoff, M/F below the male/female cutoffs">Accept?</span>
               </th>
               <th>First name</th>
               <th>Last name</th>
@@ -66,7 +83,7 @@
                 <span
                   title="Place has been chosen for 'first timer' allocation. Available for up to 10% of places, for leaders to allocate to campers associated with a serving officer."
                 >
-                  First timer
+                  Chosen first timer
                 </span>
               </th>
               <th>
@@ -105,6 +122,27 @@
       {% endif %}
 
     </div>
+    <br>
+
+    {% if problems.has_items %}
+      <h2>Problems</h2>
+      <ul>
+        {% for message in problems.general_messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        {% if problems.rejected_first_timers %}
+          <li>Some of the places marked as "chosen first timers" have nonetheless fallen below
+            the cut-offs and won't have a place allocated:
+            <ul>
+              {% for booking in problems.rejected_first_timers %}
+                <li>{{ booking.name }}</li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endif %}
+      </ul>
+    {% endif %}
+
   {% endpartialdef %}
 
 

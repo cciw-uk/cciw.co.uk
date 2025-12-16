@@ -11,7 +11,12 @@ from django.utils import timezone
 
 from cciw.bookings.models import Booking, Price
 from cciw.bookings.models.prices import are_prices_set_for_year
-from cciw.bookings.models.queue import add_queue_cutoffs, rank_queue_bookings
+from cciw.bookings.models.queue import (
+    FIRST_TIMER_PERCENTAGE,
+    add_queue_cutoffs,
+    get_booking_queue_problems,
+    rank_queue_bookings,
+)
 from cciw.bookings.models.yearconfig import get_year_config
 from cciw.bookings.stats import get_booking_summary_stats
 from cciw.bookings.utils import (
@@ -305,6 +310,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
     ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
+    problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
 
     template_name = "cciw/officers/booking_queue.html"
     headers = {}
@@ -324,5 +330,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "title": f"Booking queue - {camp.nice_name}",
         "ranked_queue_bookings": ranked_queue_bookings,
         "edit_queue_entry_mode": edit_queue_entry_mode,
+        "problems": problems,
+        "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
     }
     return TemplateResponse(request, template_name, context, headers=headers)
