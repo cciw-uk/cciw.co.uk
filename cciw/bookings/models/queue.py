@@ -125,8 +125,10 @@ class RankInfo:
     cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
 
 
-def rank_queue_bookings(camp: Camp) -> list[Booking]:
+def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]:
     from cciw.bookings.models import Booking
+
+    assert camp.year == year_config.year
 
     queue_bookings = list(
         Booking.objects.for_camp(camp)
@@ -143,9 +145,6 @@ def rank_queue_bookings(camp: Camp) -> list[Booking]:
     # are much easier with Python.
 
     # So we prefer Python when it makes sense.
-
-    year_config = get_year_config(camp.year)
-    assert year_config is not None
     add_rank_info(queue_bookings, year_config, camp)
 
     def is_officer_child_key(booking: Booking) -> int:

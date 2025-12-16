@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas_highcharts.core
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import Http404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -11,6 +12,7 @@ from django.utils import timezone
 from cciw.bookings.models import Booking, Price
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.queue import add_queue_cutoffs, rank_queue_bookings
+from cciw.bookings.models.yearconfig import get_year_config
 from cciw.bookings.stats import get_booking_summary_stats
 from cciw.bookings.utils import (
     addresses_for_mailing_list,
@@ -235,6 +237,11 @@ def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
 @cciw_secretary_or_booking_secretary_required
 def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
+    year_config = get_year_config(year=camp.year)
+    if year_config is None:
+        raise Http404(
+            f"The booking queue for {camp.nice_name} can't be accessed until the booking configuration dates for {camp.year} have been defined"
+        )
     places_left = camp.get_places_left()
     edit_queue_entry_mode = False
 
@@ -256,7 +263,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
             # get the ranking info for the whole camp, so we can show the right
             # data in the other cells.
             booking_id = int(request.POST["booking_id"])
-            ranked_queue_bookings = rank_queue_bookings(camp)
+            ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
             booking = [b for b in ranked_queue_bookings if b.id == booking_id][0]
             queue_entry = booking.queue_entry
 
@@ -296,7 +303,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     # TODO - buttons to confirm places. Take to a different page.
     # TODO - track changes that are made via this page, for auditing
 
-    ranked_queue_bookings = rank_queue_bookings(camp)
+    ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
     ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
 
     template_name = "cciw/officers/booking_queue.html"

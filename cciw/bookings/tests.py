@@ -2788,7 +2788,7 @@ def test_tolerate_truncated_trailing_equals(email):
 @pytest.mark.django_db
 def test_booking_open():
     # Initially:
-    year = datetime.today().year  # doesn't really matter
+    year = date.today().year  # doesn't really matter
     assert not get_booking_open_data(year).is_open_for_booking
     assert not get_booking_open_data(year).is_open_for_entry
 
@@ -2822,18 +2822,18 @@ def test_booking_open():
     assert not get_booking_open_data(year).is_open_for_entry
 
 
-def create_year_config_for_queue_tests() -> YearConfig:
+def create_year_config_for_queue_tests(year: int = 2025) -> YearConfig:
     return factories.create_year_config(
-        year=2025,
-        bookings_open_for_entry_on=datetime(2025, 2, 1),
-        bookings_open_for_booking_on=datetime(2025, 3, 1),
-        bookings_close_for_initial_period_on=datetime(2025, 4, 1),
+        year=year,
+        bookings_open_for_entry_on=date(year, 2, 1),
+        bookings_open_for_booking_on=date(year, 3, 1),
+        bookings_close_for_initial_period_on=date(year, 4, 1),
     )
 
 
 @pytest.mark.django_db
 def test_rank_queue_booking():
-    year_config = create_year_config_for_queue_tests()
+    year_config = create_year_config_for_queue_tests(year=2025)
     with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         b1 = factories.create_booking()
         b2 = factories.create_booking()
@@ -2844,15 +2844,15 @@ def test_rank_queue_booking():
         b1.add_to_queue()
     with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=2)):
         b2.add_to_queue()
-        assert datetime.today() < year_config.bookings_close_for_initial_period_on
+        assert date.today() < year_config.bookings_close_for_initial_period_on
     with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
-        assert datetime.today() > year_config.bookings_close_for_initial_period_on
+        assert date.today() > year_config.bookings_close_for_initial_period_on
         b3.add_to_queue()
 
     with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=2)):
         b4.add_to_queue()
 
-    ranked_bookings = rank_queue_bookings(camp=b1.camp)
+    ranked_bookings = rank_queue_bookings(camp=b1.camp, year_config=year_config)
 
     assert b1 in ranked_bookings
     assert b2 in ranked_bookings

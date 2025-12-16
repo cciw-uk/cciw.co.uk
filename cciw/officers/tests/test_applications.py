@@ -187,7 +187,7 @@ class ApplicationUtils(TestBase):
         # * An application form for the second year, that is submitted
         #   just after the last camp for the first year
 
-        # We have to use datetime.today(), because this is used by
+        # We have to use date.today(), because this is used by
         # thisyears_applications.
 
         future_camp_start = date(date.today().year + 1, 8, 1)

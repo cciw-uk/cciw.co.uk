@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Literal
 
@@ -22,6 +22,7 @@ from cciw.bookings.models import (
     WriteOffDebt,
     build_paypal_custom_field,
 )
+from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -40,7 +41,7 @@ def create_booking(
     first_name: str = Auto,
     last_name: str = Auto,
     name: str = Auto,
-    sex: str = "m",
+    sex: str = Sex.MALE,
     birth_date: date = Auto,
     address_line1="123 My street",
     address_city="Metrocity",
@@ -295,29 +296,29 @@ def create_year_config(
     bookings_close_for_initial_period_on: date | Literal["past", "future"] = "future",
 ) -> YearConfig:
     if bookings_open_for_entry_on == "past":
-        bookings_open_for_entry_on = datetime.today() - timedelta(days=3)
+        bookings_open_for_entry_on = date.today() - timedelta(days=3)
     elif bookings_open_for_entry_on == "future":
-        bookings_open_for_entry_on = datetime.today() + timedelta(days=1)
+        bookings_open_for_entry_on = date.today() + timedelta(days=1)
 
     if bookings_open_for_booking_on == "past":
         bookings_open_for_booking_on = min(
-            datetime.today() - timedelta(days=2),
+            date.today() - timedelta(days=2),
             bookings_open_for_entry_on + timedelta(days=1),
         )
     elif bookings_open_for_booking_on == "future":
         bookings_open_for_booking_on = max(
-            datetime.today() + timedelta(days=1),
+            date.today() + timedelta(days=1),
             bookings_open_for_entry_on + timedelta(days=1),
         )
 
     if bookings_close_for_initial_period_on == "past":
         bookings_close_for_initial_period_on = min(
-            datetime.today() - timedelta(days=1),
+            date.today() - timedelta(days=1),
             bookings_open_for_booking_on + timedelta(days=1),
         )
     elif bookings_close_for_initial_period_on == "future":
         bookings_close_for_initial_period_on = max(
-            datetime.today() + timedelta(days=1),
+            date.today() + timedelta(days=1),
             bookings_open_for_booking_on + timedelta(days=1),
         )
     assert bookings_open_for_entry_on <= bookings_open_for_booking_on <= bookings_close_for_initial_period_on
