@@ -477,7 +477,7 @@
 
     - name: bookings.BookingQueueEntry
       columns:
-      - state
+      - is_active
       - created_at
       - officer_child
       - first_timer_allocated

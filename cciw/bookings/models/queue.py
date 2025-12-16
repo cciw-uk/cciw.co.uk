@@ -24,24 +24,10 @@ from cciw.cciwmain.models import Camp, PlacesLeft
 if TYPE_CHECKING:
     from .bookings import Booking
 
-# TODO - do we need this, or should it be a 'active' boolean to indicate `withdrawn',
-# with the other two states determined by `Booking.state`?
-
-
-class QueueState(models.TextChoices):
-    # Initial state:
-    WAITING = "waiting", "Waiting"
-
-    # The place is accepted and booked:
-    ACCEPTED = "accepted", "Accepted"
-
-    # Booker no longer wants the place:
-    WITHDRAWN = "withdrawn", "Withdrawn"
-
 
 class BookingQueueEntryQuerySet(models.QuerySet):
-    def current(self):
-        return self.exclude(state=QueueState.WITHDRAWN)
+    def active(self):
+        return self.exclude(is_active=False)
 
     def not_in_use(self, now: datetime):
         # See also BookingQuerySet.not_in_use()
@@ -56,7 +42,7 @@ class BookingQueueEntryManagerBase(models.Manager):
     def create_for_booking(self, booking: Booking):
         return self.create(
             booking=booking,
-            state=QueueState.WAITING,
+            is_active=True,
             sibling_surname=booking.last_name,
             sibling_booking_account=booking.account,
         )
@@ -67,7 +53,7 @@ BookingQueueEntryManager = BookingQueueEntryManagerBase.from_queryset(BookingQue
 
 class BookingQueueEntry(models.Model):
     booking = models.OneToOneField(to="bookings.Booking", on_delete=models.CASCADE, related_name="queue_entry")
-    state = models.CharField(choices=QueueState, default=QueueState.WAITING)
+    is_active = models.BooleanField(default=True)
 
     # Fields relating to priority rules:
     created_at = models.DateTimeField(default=timezone.now)
@@ -116,13 +102,9 @@ class BookingQueueEntry(models.Model):
     def __str__(self):
         return f"Queue entry for {self.booking.name}"
 
-    @property
-    def is_current(self) -> bool:
-        return self.state != QueueState.WITHDRAWN
-
-    def make_current(self) -> None:
-        if self.state == QueueState.WITHDRAWN:
-            self.state = QueueState.WAITING
+    def make_active(self) -> None:
+        if not self.is_active:
+            self.is_active = True
             self.save()
 
 
@@ -367,8 +349,8 @@ def find_siblings(bookings: list[Booking], camp: Camp) -> dict[BookingId, set[Bo
 
     # We need to get siblings "booked" or "in queue".
     # Those booked will also have a queue entry for the same camp, so we can
-    # base this on BookingQueueEntry.objects.current():
-    sibling_queue_entries = BookingQueueEntry.objects.current().filter(
+    # base this on BookingQueueEntry.objects.active():
+    sibling_queue_entries = BookingQueueEntry.objects.active().filter(
         booking__camp=camp, sibling_fuzzy_id__in=sibling_fuzzy_ids
     )
     booking_and_sibling_ids = sibling_queue_entries.values_list("booking_id", "sibling_fuzzy_id")

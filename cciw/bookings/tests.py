@@ -45,7 +45,7 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
-from cciw.bookings.models.queue import QueueState, rank_queue_bookings
+from cciw.bookings.models.queue import rank_queue_bookings
 from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
@@ -2564,7 +2564,7 @@ class TestBookingModel(TestBase):
         booking.add_to_queue()
         assert booking.is_in_queue
         booking.refresh_from_db()
-        assert booking.queue_entry.state == QueueState.WAITING
+        assert booking.queue_entry.is_active
 
         # Multiple times is fine and does nothing.
         old_queue_entry = booking.queue_entry

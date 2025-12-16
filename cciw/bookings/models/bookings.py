@@ -15,7 +15,7 @@ from django.utils.functional import cached_property
 from django_countries.fields import CountryField
 
 from cciw.accounts.models import User
-from cciw.bookings.models.queue import BookingQueueEntry, QueueState
+from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain.models import Camp
 from cciw.utils.models import AfterFetchQuerySetMixin
 
@@ -70,18 +70,16 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.in_basket() | self.booked()
 
     def in_queue(self) -> BookingQuerySet:
-        return self.filter(queue_entry__isnull=False).exclude(queue_entry__state=QueueState.WITHDRAWN)
+        return self.filter(queue_entry__isnull=False, queue_entry__is_active=True)
 
     def not_in_queue(self) -> BookingQuerySet:
-        return self.filter(queue_entry__isnull=True) | self.filter(queue_entry__state=QueueState.WITHDRAWN)
+        return self.filter(queue_entry__isnull=True) | self.filter(queue_entry__is_active=False)
 
     def waiting_in_queue(self) -> BookingQuerySet:
-        # WAITING should always correspond with INFO_COMPLETE
-        return self.in_queue().filter(queue_entry__state=QueueState.WAITING, state=BookingState.INFO_COMPLETE)
+        return self.in_queue().filter(state=BookingState.INFO_COMPLETE)
 
     def accepted_in_queue(self) -> BookingQuerySet:
-        # ACCEPTED should always correspond with BOOKED
-        return self.in_queue().filter(queue_entry__state=QueueState.ACCEPTED, state=BookingState.BOOKED)
+        return self.in_queue().filter(state=BookingState.BOOKED)
 
     def payable(self) -> BookingQuerySet:
         """
@@ -383,13 +381,13 @@ class Booking(models.Model):
 
     @property
     def is_in_queue(self) -> bool:
-        return (queue_entry := self._queue_entry_or_none) is not None and queue_entry.is_current
+        return (queue_entry := self._queue_entry_or_none) is not None and queue_entry.is_active
 
     def add_to_queue(self) -> BookingQueueEntry:
         queue_entry = self._queue_entry_or_none
         if queue_entry is not None:
-            if not queue_entry.is_current:
-                queue_entry.make_current()
+            if not queue_entry.is_active:
+                queue_entry.make_active()
         else:
             queue_entry = BookingQueueEntry.objects.create_for_booking(self)
             self.queue_entry = queue_entry

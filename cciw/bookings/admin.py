@@ -483,10 +483,8 @@ class ApprovalsInline(admin.TabularInline):
 class QueueStateInline(admin.TabularInline):
     model = BookingQueueEntry
     extra = 0
-    fields = ["state", "created_at"]
-    # We need to ensure queue 'state' and 'self.state' correspond,
-    # so we don't allow them both to be managed via the admin.
-    readonly_fields = ["state", "created_at"]
+    fields = ["is_active", "created_at"]
+    readonly_fields = ["is_active", "created_at"]
 
     def has_add_permission(self, request, obj) -> bool:
         # Disable "add another", doesn't make sense
