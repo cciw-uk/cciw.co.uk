@@ -2902,3 +2902,29 @@ def test_get_booking_queue_problems():
     add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=camp.get_places_left())
     problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
     assert len(problems.rejected_first_timers) == 5
+
+
+class BookingQueuePage(SeleniumBase):
+    def _ensure_camp(self):
+        if not hasattr(self, "year_config"):
+            self.year_config = create_year_config_for_queue_tests()
+        if not hasattr(self, "camp"):
+            self.camp: Camp = camps_factories.create_camp(year=self.year_config.year)
+
+    def _create_booking(self) -> Booking:
+        self._ensure_camp()
+        return factories.create_booking(camp=self.camp)
+
+    def test_edit_queue_entry(self):
+        booking = self._create_booking()
+        booking.add_to_queue()
+        assert not booking.queue_entry.officer_child
+        self.officer_login(officers_factories.create_booking_secretary())
+        self.get_url("cciw-officers-booking_queue", camp_id=booking.camp.url_id)
+        self.click(f'[data-booking-id="{booking.id}"] input[value="Edit queue details"]')
+        self.fill({f'[data-booking-id="{booking.id}"] #id_officer_child': True})
+        self.click(f'[data-booking-id="{booking.id}"] input[value="Save"]')
+        self.wait_for_ajax()
+        booking.refresh_from_db()
+
+        assert booking.queue_entry.officer_child
