@@ -60,10 +60,16 @@ BookingQueueEntryManager = BookingQueueEntryManagerBase.from_queryset(BookingQue
 
 class BookingQueueEntry(models.Model):
     booking = models.OneToOneField(to="bookings.Booking", on_delete=models.CASCADE, related_name="queue_entry")
+
+    # We avoid deleting queue entries, so that our auditing etc. works
+    # better, so we have this soft-delete function instead.
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     # Fields relating to priority rules:
+
+    # enqueued_at can be different from created_at if they were removed from the queue
+    # (by making `is_active` False)
     enqueued_at = models.DateTimeField(default=timezone.now)
     officer_child = models.BooleanField(default=False)
     first_timer_allocated = models.BooleanField(default=False)
@@ -252,14 +258,14 @@ def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig):
     # everyone later is in ascending order.
 
     def is_in_initial_period(booking: Booking) -> bool:
-        return booking.queue_entry.created_at.date() <= year_config.bookings_close_for_initial_period_on
+        return booking.queue_entry.enqueued_at.date() <= year_config.bookings_close_for_initial_period_on
 
     def initial_sort_key(booking: Booking) -> tuple:
         # Those in initial period should come first
-        return (not is_in_initial_period(booking), booking.queue_entry.created_at)
+        return (not is_in_initial_period(booking), booking.queue_entry.enqueued_at)
 
     # Sort so that those in the initial period are first,
-    # the rest are in order of their `created_at`
+    # the rest are in order of their `enqueued_at`
     sorted_bookings = sorted(bookings, key=initial_sort_key)
     counter = itertools.count(start=2)
     ranks = {b.id: (1 if is_in_initial_period(b) else next(counter)) for b in sorted_bookings}
