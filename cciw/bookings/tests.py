@@ -1083,7 +1083,12 @@ class TestEditPlaceSL(EditPlaceBase, SeleniumBase):
     pass
 
 
-def fix_autocomplete_fields(field_names):
+def fix_autocomplete_fields(field_names: list[str]):
+    """
+    Returns a mixin class that adds some hacks so that auto-complete fields
+    in the admin work with WebTest.
+    """
+
     class FixAutocompleteFieldMixin:
         def fill_by_name(self, fields):
             new_fields = {}

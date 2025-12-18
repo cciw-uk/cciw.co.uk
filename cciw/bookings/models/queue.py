@@ -380,7 +380,7 @@ def add_queue_cutoffs(*, ranked_queue_bookings: list[Booking], places_left: Plac
     Updates the rank_info.cutoff_state field on each Booking, and returns
     a `PlacesToAllocate' object.
     """
-    accepted: Counter[Literal["total", "m", "f"]] = Counter()
+    accepted: Counter[Literal["total"] | Sex] = Counter()
     for booking in ranked_queue_bookings:
         sex: Sex = booking.sex
         sex_limit = places_left.male if sex == Sex.MALE else places_left.female
@@ -413,7 +413,7 @@ class BookingQueueProblems:
 
     @property
     def has_items(self) -> bool:
-        return self.general_messages or self.rejected_first_timers
+        return bool(self.general_messages or self.rejected_first_timers)
 
 
 def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp: Camp) -> BookingQueueProblems:
