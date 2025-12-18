@@ -21,13 +21,6 @@ def bookingbar(context):
     )
     stages = [
         (
-            BookingStage.LOGIN,
-            "Log in",
-            False,
-            "",
-            'Go to "Overview" and use the "log out" link if you need to log in as someone else',
-        ),
-        (
             BookingStage.ACCOUNT,
             "Account details",
             logged_in,
