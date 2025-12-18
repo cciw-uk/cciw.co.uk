@@ -393,6 +393,10 @@ class Booking(models.Model):
             self.queue_entry = queue_entry
         return queue_entry
 
+    def withdraw_from_queue(self) -> None:
+        if self.is_in_queue:
+            self.queue_entry.make_inactive()
+
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:
             return None

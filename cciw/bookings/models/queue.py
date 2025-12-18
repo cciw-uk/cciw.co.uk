@@ -132,6 +132,12 @@ class BookingQueueEntry(models.Model):
     def make_active(self) -> None:
         if not self.is_active:
             self.is_active = True
+            self.enqueued_at = timezone.now()
+            self.save()
+
+    def make_inactive(self) -> None:
+        if self.is_active:
+            self.is_active = False
             self.save()
 
 
