@@ -13,6 +13,7 @@ from cciw.bookings.models import Booking, Price
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.queue import (
     FIRST_TIMER_PERCENTAGE,
+    BookingQueueEntry,
     add_queue_cutoffs,
     get_booking_queue_problems,
     rank_queue_bookings,
@@ -270,7 +271,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
             booking_id = int(request.POST["booking_id"])
             ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
             booking = [b for b in ranked_queue_bookings if b.id == booking_id][0]
-            queue_entry = booking.queue_entry
+            queue_entry: BookingQueueEntry = booking.queue_entry
 
             if "edit-queue-entry" in request.POST:
                 # Show edit form
@@ -279,9 +280,11 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
             elif "save-queue-entry" in request.POST:
                 # save the data, refresh the whole page.
+                old_queue_entry_fields = queue_entry.get_current_field_data()
                 form = UpdateQueueEntryForm(data=request.POST, instance=queue_entry)
                 if form.is_valid():
                     form.save()
+                    queue_entry.save_fields_changed_action_log(user=request.user, old_fields=old_queue_entry_fields)
                     # show whole list.
                     refresh_contents_only = True
                 else:

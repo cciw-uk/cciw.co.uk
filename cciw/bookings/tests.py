@@ -46,7 +46,12 @@ from cciw.bookings.models import (
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
-from cciw.bookings.models.queue import add_queue_cutoffs, get_booking_queue_problems, rank_queue_bookings
+from cciw.bookings.models.queue import (
+    QueueEntryActionLogType,
+    add_queue_cutoffs,
+    get_booking_queue_problems,
+    rank_queue_bookings,
+)
 from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
@@ -2888,6 +2893,24 @@ def test_rank_queue_booking():
 
 
 @pytest.mark.django_db
+def test_QueueEntry_get_current_field_data():
+    booking = factories.create_booking()
+    queue_entry = booking.add_to_queue()
+    assert sorted(queue_entry.get_current_field_data().keys()) == [
+        "booking_id",
+        "created_at",
+        "erased_at",
+        "first_timer_allocated",
+        "id",
+        "is_active",
+        "officer_child",
+        "sibling_booking_account_id",
+        "sibling_fuzzy_id",
+        "sibling_surname",
+    ]
+
+
+@pytest.mark.django_db
 def test_get_booking_queue_problems():
     year_config = create_year_config_for_queue_tests()
     camp = camps_factories.create_camp(
@@ -2919,12 +2942,26 @@ class BookingQueuePage(SeleniumBase):
         booking = self._create_booking()
         booking.add_to_queue()
         assert not booking.queue_entry.officer_child
-        self.officer_login(officers_factories.create_booking_secretary())
+        self.officer_login(user := officers_factories.create_booking_secretary())
         self.get_url("cciw-officers-booking_queue", camp_id=booking.camp.url_id)
         self.click(f'[data-booking-id="{booking.id}"] input[value="Edit queue details"]')
         self.fill({f'[data-booking-id="{booking.id}"] #id_officer_child': True})
         self.click(f'[data-booking-id="{booking.id}"] input[value="Save"]')
         self.wait_for_ajax()
         booking.refresh_from_db()
-
         assert booking.queue_entry.officer_child
+
+        action_logs = list(booking.queue_entry.action_logs.all())
+        assert len(action_logs) == 1
+        log = action_logs[0]
+        assert log.user == user
+        assert log.action_type == QueueEntryActionLogType.FIELDS_CHANGED
+        assert log.details == {
+            "fields_changed": [
+                {
+                    "name": "officer_child",
+                    "old_value": False,
+                    "new_value": True,
+                }
+            ]
+        }

@@ -16,8 +16,10 @@ from typing import TYPE_CHECKING, Literal
 
 from django.db import models
 from django.db.models import Value, functions
+from django.db.models.enums import TextChoices
 from django.utils import timezone
 
+from cciw.accounts.models import User
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig, get_year_config
 from cciw.cciwmain.models import Camp, PlacesLeft
@@ -98,6 +100,19 @@ class BookingQueueEntry(models.Model):
         # between 0 and 65000 ish
         return int(self.tiebreaker[0:4], 16)
 
+    def get_current_field_data(self) -> dict:
+        return {key: value for key, value in self.__dict__.items() if not key.startswith("_")}
+
+    def save_fields_changed_action_log(self, *, user: User, old_fields: dict) -> QueueEntryActionLog:
+        new_fields = self.get_current_field_data()
+        changed: list[dict] = []
+        for key, value in new_fields.items():
+            old_value = old_fields[key]
+            if old_value != value:
+                changed.append({"name": key, "old_value": old_value, "new_value": value})
+        details = {"fields_changed": changed}
+        return self.action_logs.create(user=user, action_type=QueueEntryActionLogType.FIELDS_CHANGED, details=details)
+
     objects = BookingQueueEntryManager()
 
     class Meta:
@@ -128,6 +143,18 @@ class RankInfo:
     in_previous_year_waiting_list: bool
     sibling_bonus: int
     cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
+
+
+class QueueEntryActionLogType(TextChoices):
+    FIELDS_CHANGED = "fields_changed", "fields changed"
+
+
+class QueueEntryActionLog(models.Model):
+    queue_entry = models.ForeignKey(BookingQueueEntry, related_name="action_logs", on_delete=models.CASCADE)
+    action_type = models.CharField(choices=QueueEntryActionLogType)
+    created_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="queue_entry_actions_performed")
+    details = models.JSONField(default=dict, blank=True)
 
 
 def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]:
