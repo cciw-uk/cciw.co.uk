@@ -2899,6 +2899,7 @@ def test_QueueEntry_get_current_field_data():
     assert sorted(queue_entry.get_current_field_data().keys()) == [
         "booking_id",
         "created_at",
+        "enqueued_at",
         "erased_at",
         "first_timer_allocated",
         "id",

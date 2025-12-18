@@ -479,6 +479,7 @@
       columns:
       - is_active
       - created_at
+      - enqueued_at
       - officer_child
       - first_timer_allocated
 
