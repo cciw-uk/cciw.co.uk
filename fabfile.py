@@ -193,7 +193,21 @@ def initial_secure(c):
     """
     apt.update_upgrade(c)
     ssh.disable_root_login_with_password(c)
+    enable_ufw_firewall(c)
     print("Security steps completed.")
+
+
+@root_task()
+def enable_ufw_firewall(c):
+    for command in [
+        "ufw default deny incoming",
+        "ufw default allow outgoing",
+        "ufw allow ssh",
+        "ufw allow 80/tcp",
+        "ufw allow 443/tcp",
+        "ufw enable",
+    ]:
+        c.run(command, echo=True)
 
 
 @root_task()
