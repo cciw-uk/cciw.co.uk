@@ -2755,6 +2755,9 @@ class DocumentDownloadView(WebTestBase):
         self.officer_login(officers_factories.create_booking_secretary())
         response = self.get_literal_url(info.document.url)
         assert response.status_code == 200
+        assert response.content == b"Hello"
+        assert response.headers["Content-Type"] == "text/plain"
+        assert response.headers["Content-Disposition"] == 'attachment; filename="temp.txt"'
 
 
 @given(st.emails())
