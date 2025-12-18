@@ -2893,6 +2893,29 @@ def test_rank_queue_booking():
 
 
 @pytest.mark.django_db
+def test_Booking_withdraw_from_queue_and_add_again():
+    with freeze_time("2025-01-01"):
+        booking = factories.create_booking()
+        booking.add_to_queue()
+        booking.refresh_from_db()
+        queue_entry_id = booking.queue_entry.id
+    with freeze_time("2025-01-02"):
+        booking.withdraw_from_queue()
+        booking.refresh_from_db()
+        assert not booking.queue_entry.is_active
+    with freeze_time("2025-01-03"):
+        booking.add_to_queue()
+        booking.refresh_from_db()
+        queue_entry_id2 = booking.queue_entry.id
+        # For auditing, it's simpler if we keep old BookingQueueEntry:
+        assert queue_entry_id == queue_entry_id2
+        assert booking.queue_entry.is_active
+        # But we need the `enqueued_at` to be updated
+        # to the date they were re-added to the queue.
+        assert booking.queue_entry.enqueued_at.date() == date(2025, 1, 3)
+
+
+@pytest.mark.django_db
 def test_QueueEntry_get_current_field_data():
     booking = factories.create_booking()
     queue_entry = booking.add_to_queue()
