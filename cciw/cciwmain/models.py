@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 
+from cciw.accounts.models import User
 from cciw.cciwmain.colors import Color, contrast_color
 
 from .common import CampId
@@ -38,9 +39,7 @@ class Site(models.Model):
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)", blank=True)
-    users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, verbose_name="Associated admin users", related_name="people", blank=True
-    )
+    users = models.ManyToManyField(User, verbose_name="Associated admin users", related_name="people", blank=True)
 
     def __str__(self):
         return self.name
@@ -135,7 +134,7 @@ class Camp(models.Model):
     )
     leaders = models.ManyToManyField(Person, related_name="camps_as_leader", verbose_name="leaders", blank=True)
     admins = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
+        User,
         related_name="camps_as_admin",
         verbose_name="admins",
         help_text="These users can manage references/applications for the camp. Not for normal officers.",
@@ -143,7 +142,7 @@ class Camp(models.Model):
     )
     site = models.ForeignKey(Site, on_delete=models.PROTECT)
 
-    officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through="officers.Invitation")
+    officers = models.ManyToManyField(User, through="officers.Invitation")
 
     special_info_html = models.TextField(
         verbose_name="Special information",

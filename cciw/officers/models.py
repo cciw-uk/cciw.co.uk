@@ -56,7 +56,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
     """
 
     officer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, related_name="applications"
+        User, on_delete=models.PROTECT, blank=True, related_name="applications"
     )  # blank=True to get the admin to work
     full_name = RequiredCharField("full name", max_length=NAME_LENGTH)
     birth_date = RequiredDateField("date of birth", null=True, default=None)
@@ -298,7 +298,7 @@ class ReferenceAction(models.Model):
     referee = models.ForeignKey(Referee, on_delete=models.CASCADE, related_name="actions")
     created_at = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ActionType.choices)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
 
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
@@ -456,7 +456,7 @@ class InvitationManager(models.Manager.from_queryset(InvitationQuerySet)):
 
 
 class Invitation(models.Model):
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="invitations")
+    officer = models.ForeignKey(User, on_delete=models.PROTECT, related_name="invitations")
     camp = models.ForeignKey(Camp, on_delete=models.CASCADE, related_name="invitations")
     role = models.ForeignKey(CampRole, on_delete=models.PROTECT, null=True, blank=True, related_name="invitations")
     added_on = models.DateField("date added", default=date.today)
@@ -620,7 +620,7 @@ class DBSCheck(models.Model):
         FORM = "form", "Full form"
         ONLINE = "online", "Online check"
 
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="dbs_checks")
+    officer = models.ForeignKey(User, on_delete=models.PROTECT, related_name="dbs_checks")
     dbs_number = models.CharField("Disclosure number", max_length=20)
     check_type = models.CharField("check type", max_length=20, choices=CheckType.choices, default=CheckType.FORM)
     completed_on = models.DateField(
@@ -691,11 +691,11 @@ class DBSActionLog(models.Model):
     Represents a log of a DBS action done by DBS officer
     """
 
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="dbsactionlogs", on_delete=models.PROTECT)
+    officer = models.ForeignKey(User, related_name="dbsactionlogs", on_delete=models.PROTECT)
     action_type = models.CharField("action type", max_length=40, choices=DBSActionLogType)
     created_at = models.DateTimeField("Created at", default=timezone.now)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         verbose_name="User who performed action",
         related_name="dbsactions_performed",
         null=True,
