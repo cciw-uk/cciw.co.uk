@@ -60,7 +60,6 @@ from .decorators import (
 
 
 class BookingStage:
-    LOGIN = "login"
     ACCOUNT = "account"
     OVERVIEW = "overview"
     PLACE = "place"
@@ -164,7 +163,6 @@ def start(request):
         request,
         "cciw/bookings/start.html",
         {
-            "stage": BookingStage.LOGIN,
             "title": "Booking - log in",
             "booking_open_data": get_booking_open_data_thisyear(),
             "form": form,
@@ -179,7 +177,6 @@ def email_sent(request):
         request,
         "cciw/bookings/email_sent.html",
         {
-            "stage": BookingStage.LOGIN,
             "title": "Booking - log in",
         },
     )
@@ -191,7 +188,6 @@ def link_expired_email_sent(request):
         request,
         "cciw/bookings/email_sent.html",
         {
-            "stage": BookingStage.LOGIN,
             "title": "Booking - log in",
             "link_expired": True,
         },
@@ -225,7 +221,6 @@ def verify_email_failed(request):
         request,
         "cciw/bookings/email_verification_failed.html",
         {
-            "stage": BookingStage.LOGIN,
             "title": "Booking - account email verification failed",
         },
     )
