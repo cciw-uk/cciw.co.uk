@@ -50,10 +50,6 @@ WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_
 logger = logging.getLogger(__name__)
 
 
-def active_staff(user):
-    return user.is_staff and user.is_active
-
-
 def user_has_role(user, role_names):
     if len(role_names) == 0:
         return False
@@ -199,6 +195,10 @@ class User(AbstractBaseUser):
         return f"{self.full_name} <{self.email}>"
 
     @property
+    def is_active_staff(self):
+        return self.is_staff and self.is_active
+
+    @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
@@ -317,15 +317,11 @@ class User(AbstractBaseUser):
     # Helpers for roles
     @cached_property
     def is_booking_secretary(self):
-        if not active_staff(self):
-            return False
-        return user_has_role(self, [BOOKING_SECRETARY_ROLE_NAME])
+        return self.is_active_staff and user_has_role(self, [BOOKING_SECRETARY_ROLE_NAME])
 
     @cached_property
     def is_treasurer(self):
-        if not active_staff(self):
-            return False
-        return user_has_role(self, [TREASURER_ROLE_NAME])
+        return self.is_active_staff and user_has_role(self, [TREASURER_ROLE_NAME])
 
     @cached_property
     def is_camp_admin(self):
@@ -333,47 +329,33 @@ class User(AbstractBaseUser):
         Returns True if the user is an admin for any camp, or has rights
         for editing camp/officer/reference/DBS information
         """
-        if not active_staff(self):
-            return False
-        return user_has_role(self, CAMP_MANAGER_ROLES) or len(self.current_camps_as_admin_or_leader) > 0
+        return self.is_active_staff and (
+            user_has_role(self, CAMP_MANAGER_ROLES) or len(self.current_camps_as_admin_or_leader) > 0
+        )
 
     @cached_property
     def is_potential_camp_officer(self):
-        return active_staff(self)
+        return self.is_active_staff
 
     @cached_property
     def is_cciw_secretary(self):
-        if not active_staff(self):
-            return False
-        return user_has_role(self, [SECRETARY_ROLE_NAME])
+        return self.is_active_staff and user_has_role(self, [SECRETARY_ROLE_NAME])
 
     @cached_property
     def is_committee_member(self):
-        if not active_staff(self):
-            return False
-        return user_has_role(self, [COMMITTEE_ROLE_NAME])
+        return self.is_active_staff and user_has_role(self, [COMMITTEE_ROLE_NAME])
 
     @cached_property
     def is_dbs_officer(self):
-        if not active_staff(self):
-            return False
-        return user_has_role(self, [DBS_OFFICER_ROLE_NAME])
+        return self.is_active_staff and user_has_role(self, [DBS_OFFICER_ROLE_NAME])
 
     @cached_property
     def is_wiki_user(self):
-        if not active_staff(self):
-            return False
-        return user_has_role(self, WIKI_ROLES)
+        return self.is_active_staff and user_has_role(self, WIKI_ROLES)
 
     @cached_property
     def can_manage_application_forms(self):
-        if self.has_perm("officers.change_application"):
-            return True
-        if self.is_camp_admin:
-            return True
-        if self.is_dbs_officer:
-            return True
-        return False
+        return self.has_perm("officers.change_application") or self.is_camp_admin or self.is_dbs_officer
 
     # These methods control permissions in admin
     def can_view_any_camps(self):
