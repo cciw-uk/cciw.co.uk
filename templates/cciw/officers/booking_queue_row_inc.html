@@ -20,8 +20,10 @@
         hx-vals='{"booking_id": "{{ booking.id }}"}'
         hx-swap="outerHTML"
       >
-      &nbsp;
-      <a href="{% url 'admin:bookings_booking_change' booking.id %}" target="_blank">Edit booking</a>
+      {% if can_edit_bookings %}
+        &nbsp;
+        <a href="{% url 'admin:bookings_booking_change' booking.id %}" target="_blank">Edit booking</a>
+      {% endif %}
     </td>
   {% else %}
     <td></td>
