@@ -335,5 +335,6 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "edit_queue_entry_mode": edit_queue_entry_mode,
         "problems": problems,
         "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
+        "can_edit_bookings": request.user.can_edit_bookings,
     }
     return TemplateResponse(request, template_name, context, headers=headers)
