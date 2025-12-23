@@ -450,10 +450,6 @@ class User(AbstractBaseUser):
         return [c for c in self.camps_as_admin_or_leader if c.year == common.get_thisyear()]
 
     @cached_property
-    def can_search_officer_names(self):
-        return self.is_dbs_officer or self.is_committee_member or self.is_cciw_secretary or self.is_camp_admin
-
-    @cached_property
     def can_edit_bookings(self) -> bool:
         return self.is_superuser or self.has_perm("bookings.change_booking")
 
