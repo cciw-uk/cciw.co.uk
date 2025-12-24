@@ -2989,3 +2989,28 @@ class BookingQueuePage(SeleniumBase):
                 }
             ]
         }
+
+
+@pytest.mark.django_db
+def test_booking_queue_track_changes():
+    booking = factories.create_booking()
+    booking.add_to_queue()
+    user = officers_factories.create_booking_secretary()
+    queue_entry = booking.queue_entry
+    with queue_entry.track_changes(user):
+        queue_entry.is_active = False
+        queue_entry.save()
+
+    logs = list(queue_entry.action_logs.all())
+    assert len(logs) == 1
+    log = logs[0]
+    assert log.details == {
+        "fields_changed": [
+            {
+                "name": "is_active",
+                "old_value": True,
+                "new_value": False,
+            }
+        ]
+    }
+    assert log.user == user
