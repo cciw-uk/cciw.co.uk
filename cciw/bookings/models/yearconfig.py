@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 
+from django.core.validators import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -35,6 +36,35 @@ class YearConfig(models.Model):
 
     def __str__(self) -> str:
         return f"Config for {self.year}"
+
+    def clean(self):
+        super().clean()
+        if (
+            self.bookings_open_for_booking_on
+            and self.bookings_open_for_entry_on
+            and (self.bookings_open_for_booking_on < self.bookings_open_for_entry_on)
+        ):
+            raise ValidationError("Field 'open for booking' must not be before 'open for data entry'")
+        if (
+            self.bookings_close_for_initial_period_on
+            and self.bookings_open_for_booking_on
+            and self.bookings_close_for_initial_period_on < self.bookings_open_for_booking_on
+        ):
+            raise ValidationError("Field 'close initial booking period' must not be before 'open for booking'")
+        if (
+            self.bookings_initial_notifications_on
+            and self.bookings_close_for_initial_period_on
+            and self.bookings_initial_notifications_on <= self.bookings_close_for_initial_period_on
+        ):
+            raise ValidationError(
+                "Field 'send initial bookings notifications' must be after 'close initial booking period'"
+            )
+        if (
+            self.payments_due_on
+            and self.bookings_initial_notifications_on
+            and self.payments_due_on <= self.bookings_initial_notifications_on
+        ):
+            raise ValidationError("Field 'payments due on' must be after 'send initial bookings notifications'")
 
 
 def get_year_config(year: int) -> YearConfig | None:
