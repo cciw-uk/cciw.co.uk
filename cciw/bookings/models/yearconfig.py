@@ -25,6 +25,13 @@ class YearConfig(models.Model):
         verbose_name="close initial booking period",
         help_text="The last date of the initial booking period. Bookings made on and before this date are considered together.",
     )
+    bookings_initial_notifications_on = models.DateField(
+        verbose_name="send initial bookings notifications",
+        help_text="The date we will have sent initial notifications about bookings, after the initial booking period",
+    )
+    payments_due_on = models.DateField(
+        help_text="The date we expect payment for places to be made (unless a payment plan is agreed on)"
+    )
 
     def __str__(self) -> str:
         return f"Config for {self.year}"

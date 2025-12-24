@@ -322,10 +322,14 @@ def create_year_config(
             bookings_open_for_booking_on + timedelta(days=1),
         )
     assert bookings_open_for_entry_on <= bookings_open_for_booking_on <= bookings_close_for_initial_period_on
+    bookings_initial_notifications_on = bookings_close_for_initial_period_on + timedelta(days=15)
+    payments_due_on = bookings_initial_notifications_on + timedelta(days=15)
 
     return YearConfig.objects.create(
         year=year,
         bookings_open_for_booking_on=bookings_open_for_booking_on,
         bookings_open_for_entry_on=bookings_open_for_entry_on,
         bookings_close_for_initial_period_on=bookings_close_for_initial_period_on,
+        bookings_initial_notifications_on=bookings_initial_notifications_on,
+        payments_due_on=payments_due_on,
     )
