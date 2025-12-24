@@ -7,7 +7,8 @@ from __future__ import annotations
 import hashlib
 import itertools
 from collections import Counter, defaultdict
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -106,6 +107,12 @@ class BookingQueueEntry(models.Model):
         # We make it user presentable by turning it into a number
         # between 0 and 65000 ish
         return int(self.tiebreaker[0:4], 16)
+
+    @contextmanager
+    def track_changes(self, user: User) -> Iterator[None]:
+        old_queue_entry_fields = self.get_current_field_data()
+        yield
+        self.save_fields_changed_action_log(user=user, old_fields=old_queue_entry_fields)
 
     def get_current_field_data(self) -> dict:
         return {key: value for key, value in self.__dict__.items() if not key.startswith("_")}
