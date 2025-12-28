@@ -1,25 +1,79 @@
 {% if booking_open_data.opens_for_booking_on %}
 
-  <p>Due to very high demand, we cannot guarantee a place to everyone. Our
-    system is as follows:</p>
+  <p>To ensure a fair and reliable booking process, CCiW has updated how
+    campers are booked due to high demand in previous years.</p>
+
+  <h3>Booking Period: {{ booking_open_data.opens_for_booking_on|date:"jS F" }} to {{ booking_open_data.closes_for_initial_period_on|date:"jS F" }}</h3>
 
   <ul>
-    <li>Bookings will be open from <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>.</li>
-    <li>The initial booking period will finish on <b>{{ booking_open_data.closes_for_initial_period_on|date:"j F" }}</b>.</li>
-    <li>All bookings made during this period will then be considered <b>together</b>.</li>
-    <li>A priority system will be applied for some places, based on previous
-      attendance and some other factors.</li>
-    <li>Any remaining places will be decided by a lottery system.</li>
-    <li>At this point we will notify you of the outcome.</li>
-    <li>Those who have not been given places will automatically be placed on a
-      waiting list, in which case you may be offered a place if other bookings are cancelled.</li>
-    <li>Bookings after the initial period will still be accepted and added to the
-      waiting list, but due to high demand they are unlikely to be offered
-      places.</li>
+    <li>During this period, bookings are not "first come, first served"</li>
+    <li>Places may be booked at any point during the period</li>
+    <li>All information entered at the time of booking must be accurate</li>
+    <li>No deposit is required during the booking phase</li>
   </ul>
 
-  <p>
-    We're sorry that some people will inevitably be disappointed!
-  </p>
+  <h3>Oversubscribed Camps</h3>
+
+  <p>If a camp is oversubscribed after the booking period closes, places will be allocated automatically using the
+    following priority order:</p>
+  <ol>
+    <li>Children of CCiW leaders or officers currently serving</li>
+    <li>Returning campers (prioritised by number of years previously attended)</li>
+    <li>Campers who were on the waiting list last year and not offered a place</li>
+    <li>Campers with a sibling attending the same camp</li>
+    <li>Remaining places allocated by lottery, subject to availability</li>
+
+  </ol>
+
+  <h3>Multiple Camp Applications</h3>
+
+  <p>If a camper is offered a place on one camp, any other applications will be
+    treated as the lowest of the above priorities. Camps are confirmed
+    sequentially, so CCiW cannot guarantee which camp will be confirmed first.</p>
+
+  {% if booking_open_data.initial_notifications_on %}
+    <h3>Notifications</h3>
+
+    <p>Families will be informed by {{ booking_open_data.initial_notifications_on|date:"jS F" }} whether:</p>
+
+    <ul>
+      <li>their child has been offered a place, or:</li>
+      <li>their child has been placed on the waiting list.</li>
+    </ul>
+  {% endif %}
+
+  {% if booking_open_data.payments_due_on %}
+    <h3>Payment Information</h3>
+
+    <ul>
+      <li>Full payment is due by {{ booking_open_data.payments_due_on|date:"jS F" }}.</li>
+      <li>If payment is not received, or a payment plan has not been agreed by this date, the
+        place will be offered to the next camper on the waiting list.</li>
+    </ul>
+
+    <h3>Payment Plans</h3>
+
+    <ul>
+      <li>Families requiring a payment plan must <a href="{% url 'cciw-contact_us-send' %}?bookings">contact the Bookings
+        Secretary</a> by {{ booking_open_data.payments_due_on|date:"jS F" }}.</li>
+      <li>Failure to do so will result in the place being offered to the next camper. </li>
+
+    </ul>
+
+  {% endif %}
+  <h3>Waiting List</h3>
+
+  <ul>
+    <li>All bookings made during the initial booking period that are not given
+      places remain on the waiting list in their ranked order.</li>
+    <li>Any bookings made after this point will be added below the original
+      group, in date order.</li>
+  </ul>
+
+  <h3>Questions</h3>
+
+  <p>If you have any questions, please <a href="{% url 'cciw-contact_us-send' %}?bookings">contact the Bookings
+    Secretary</a>.</p>
+
 
 {% endif %}

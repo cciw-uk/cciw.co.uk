@@ -84,6 +84,8 @@ class BookingOpenData:
     opens_for_booking_on: date | None
     opens_for_entry_on: date | None
     closes_for_initial_period_on: date | None
+    initial_notifications_on: date | None
+    payments_due_on: date | None
 
     @classmethod
     def from_year_config(cls, config: YearConfig) -> BookingOpenData:
@@ -93,6 +95,8 @@ class BookingOpenData:
             opens_for_booking_on=config.bookings_open_for_booking_on,
             opens_for_entry_on=config.bookings_open_for_entry_on,
             closes_for_initial_period_on=config.bookings_close_for_initial_period_on,
+            initial_notifications_on=config.bookings_initial_notifications_on,
+            payments_due_on=config.payments_due_on,
             is_open_for_booking=config.bookings_open_for_booking_on <= today,
             is_open_for_entry=config.bookings_open_for_entry_on <= today,
         )
@@ -103,6 +107,8 @@ class BookingOpenData:
             opens_for_booking_on=None,
             opens_for_entry_on=None,
             closes_for_initial_period_on=None,
+            initial_notifications_on=None,
+            payments_due_on=None,
             is_open_for_booking=False,
             is_open_for_entry=False,
         )

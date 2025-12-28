@@ -15,8 +15,6 @@
     <div class="bignotice">No more camp places are available for {{ thisyear }}, sorry!</div>
   {% endif %}
 
-
-
   <h2>Prices {{ thisyear }}</h2>
 
   {% if prices_set %}
@@ -63,24 +61,26 @@
     </p>
   {% endif %}
 
-  <h2>Online booking</h2>
-
-  <p>You can <a href="{% url 'cciw-bookings-start' %}">book and pay online</a>,
-    providing you have a debit card, credit card, or PayPal account.</p>
+  <h2>Booking process information</h2>
 
   {% include "cciw/bookings/booking_process_info.html" %}
 
-  </p>
+  {% if booking_open_data.is_open_for_entry  %}
+    <h2>Start the booking process</h2>
 
-  <p>When you book online, {{ full_payment_due_time }} before camp starts you
-    will be asked to pay the full amount.</p>
+    <p><a class="bigaction" href="{% url 'cciw-bookings-start' %}">Book online</a></p>
+  {% elif booking_open_data.opens_for_entry_on %}
+    <h2>Start the booking process</h2>
 
-  <h3>Officers and leaders</h3>
+    {% include "cciw/bookings/data_entry_open_inc.html" %}
+
+  {% endif %}
+
+  <h2>Officers and leaders</h2>
 
   <p>If you are wanting to come on camp as a leader/officer, you cannot book a
     place using this system – please instead see the information about applying
     to be a <a href="/helpers/officers/">leader or officer</a>.</p>
-
 
   <h2>Paper booking</h2>
 
@@ -108,7 +108,7 @@
 
   <p>If you would like a booking form sent in the post and are not on our
     distribution list (or have not received a booking form and think you should
-    have), please use the <a href="{% url 'cciw-contact_us-send' %}">contact
+    have), please use the <a href="{% url 'cciw-contact_us-send' %}?bookings">contact
       form</a> to request one. Please remember to include your address so that we
     can post one. If you are ordering a large number of booking forms, please
     include your telephone number so that we can verify the request.</p>
@@ -118,7 +118,6 @@
   <p>Contact:</p>
   <ul>
     <li>Postal address:<br/><br/>
-
 
       {% htmlchunk "booking_secretary_address" %}
     </li>

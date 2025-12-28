@@ -1,0 +1,12 @@
+{% if booking_open_data.opens_for_entry_on %}
+  <p>Booking is not yet open for {{ thisyear }}. You will be able to start
+    entering your booking information on <b>{{ booking_open_data.opens_for_entry_on|date:"j F" }}</b>.
+    {% if booking_open_data.opens_for_booking_on %}
+      Bookings will formally open on <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>.
+    {% endif %}
+  </p>
+
+{% else %}
+
+  <p>Booking is not yet open for {{ thisyear }}.</p>
+{% endif %}
