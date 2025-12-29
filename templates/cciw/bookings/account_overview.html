@@ -1,160 +1,150 @@
 {% extends 'cciw/bookings/standard.html' %}
 {% block content %}
 
-  <section class="grouped">
-    <h1>Your details</h1>
+  <h1>Your details</h1>
+
+  <div class="actiongroup">
+    {% with account=request.booking_account %}
+      <table class="sideheaders">
+        <tr>
+          <th>Name</th>
+          <td>{{ account.name }}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>{{ account.email }}</td>
+        </tr>
+        <tr>
+          <th>Address</th>
+          <td>{{ account.get_address_display|linebreaksbr }}</td>
+        </tr>
+        <tr>
+          <th>Post code</th>
+          <td>{{ account.address_post_code }}</td>
+        </tr>
+      </table>
+    {% endwith %}
+    <div class="actionbutton">
+      <a href="{% url 'cciw-bookings-account_details' %}" class="bigaction">Update details</a>
+    </div>
+  </div>
+
+  <h1>Your places {{ thisyear }}</h1>
+
+  {% if booked_places %}
+    <h2>Confirmed places</h2>
+    <p>You have the following confirmed places on camps this year:</p>
+
+    {% include "cciw/bookings/place_table.html" with bookings=booked_places show_missing_agreements=True %}
+
+    <p>Information about what to bring on camp will be sent in an email or letter
+      before camp.</p>
+
+    {% if payment_required %}
+      <h2>Payment required</h2>
+      {% include "cciw/bookings/pending_payment_notice.html" %}
+      <div class="actionbutton">
+        <a href="{% url 'cciw-bookings-pay' %}" class="bigaction">Pay</a>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+  {% if waiting_places %}
+    <h2>Waiting in the queue</h2>
+
+    <p>The following places are waiting in the queue:</p>
 
     <div class="actiongroup">
       <div class="actioninfo">
-        {% with account=request.booking_account %}
-          <table class="sideheaders">
-            <tr>
-              <th>Name</th>
-              <td>{{ account.name }}</td>
-            </tr>
-            <tr>
-              <th>Email</th>
-              <td>{{ account.email }}</td>
-            </tr>
-            <tr>
-              <th>Address</th>
-              <td>{{ account.get_address_display|linebreaksbr }}</td>
-            </tr>
-            <tr>
-              <th>Post code</th>
-              <td>{{ account.address_post_code }}</td>
-            </tr>
-          </table>
-        {% endwith %}
-      </div>
-      <div class="actionbutton">
-        <a href="{% url 'cciw-bookings-account_details' %}" class="bigaction">Update details</a>
+        {% include "cciw/bookings/place_table.html" with bookings=waiting_places show_missing_agreements=True %}
       </div>
     </div>
-  </section>
+  {% endif %}
 
-  <section class="grouped">
-    <h1>Your places {{ thisyear }}</h1>
+  {% if basket_or_shelf_places %}
+    <h2>Basket / shelf</h2>
 
-    {% if booked_places %}
-      <h2>Confirmed places</h2>
-      <p>You have the following confirmed places on camps this year:</p>
+    <p>These places are <b>not in the queue</b>:</p>
 
-      {% include "cciw/bookings/place_table.html" with bookings=booked_places show_missing_agreements=True %}
-
-      <p>Information about what to bring on camp will be sent in an email or letter
-        before camp.</p>
-
-      {% if payment_required %}
-        <h2>Payment required</h2>
-        {% include "cciw/bookings/pending_payment_notice.html" %}
-        <div class="actionbutton">
-          <a href="{% url 'cciw-bookings-pay' %}" class="bigaction">Pay</a>
-        </div>
-      {% endif %}
-
-    {% endif %}
-
-    {% if waiting_places %}
-      <h2>Waiting in the queue</h2>
-
-      <p>The following places are waiting in the queue:</p>
-
-      <div class="actiongroup">
-        <div class="actioninfo">
-          {% include "cciw/bookings/place_table.html" with bookings=waiting_places show_missing_agreements=True %}
-        </div>
+    <div class="actiongroup">
+      <div class="actioninfo">
+        {% include "cciw/bookings/place_table.html" with bookings=basket_or_shelf_places %}
       </div>
-    {% endif %}
-
-    {% if basket_or_shelf_places %}
-      <h2>Basket / shelf</h2>
-
-      <p>These places are <b>not in the queue</b>:</p>
-
-      <div class="actiongroup">
-        <div class="actioninfo">
-          {% include "cciw/bookings/place_table.html" with bookings=basket_or_shelf_places %}
-        </div>
-        <div class="actionbutton">
-          <a href="{% url 'cciw-bookings-basket_list_bookings' %}" class="bigaction">Review and book</a>
-        </div>
+      <div class="actionbutton">
+        <a href="{% url 'cciw-bookings-basket_list_bookings' %}" class="bigaction">Review and book</a>
       </div>
-    {% endif %}
+    </div>
+  {% endif %}
 
-    {% if cancelled_places %}
-      <h2>Cancelled places</h2>
+  {% if cancelled_places %}
+    <h2>Cancelled places</h2>
 
-      {% include "cciw/bookings/place_table.html" with bookings=cancelled_places %}
-    {% endif %}
+    {% include "cciw/bookings/place_table.html" with bookings=cancelled_places %}
+  {% endif %}
 
-    {% if not booked_places and not waiting_places and not cancelled_places and not basket_or_shelf_places %}
-      <div class="actionsplit">
-        <div class="actionbutton">
-          <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>
-        </div>
-        <div class="actioninfo">
-          <p>You do not have any bookings entered for this year. Press the button to begin.</p>
-        </div>
+  {% if not booked_places and not waiting_places and not cancelled_places and not basket_or_shelf_places %}
+    <div class="actionsplit">
+      <div class="actionbutton">
+        <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>
       </div>
-    {% else %}
-      <h2>More places</h2>
-
-      <div class="actionsplit">
-        <div class="actionbutton">
-          <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>
-        </div>
-        <div class="actioninfo">
-          <p>Press the button and enter camper details to book another place on camp.</p>
-        </div>
+      <div class="actioninfo">
+        <p>You do not have any bookings entered for this year. Press the button to begin.</p>
       </div>
-    {% endif %}
-  </section>
+    </div>
+  {% else %}
+    <h2>More places</h2>
 
-  <section class="grouped">
-    <h1>Balance</h1>
-
-    {% if balance_full <= 0 %}
-      <p>You have nothing to pay.</p>
-    {% else %}
-      <div class="actionsplit">
-        <div class="actionbutton">
-          <a class="bigaction" href="{% url 'cciw-bookings-pay' %}">Pay</a>
-        </div>
-        <div class="actioninfo">
-          <p>Your total balance is: £{{ balance_full }}</p>
-          {% if balance_due_now != balance_full %}
-            <p>Balance currently due: £{{ balance_due_now }}</p>
-          {% endif %}
-        </div>
+    <div class="actionsplit">
+      <div class="actionbutton">
+        <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>
       </div>
-    {% endif %}
-    {% include "cciw/bookings/pending_payment_notice.html" %}
-  </section>
+      <div class="actioninfo">
+        <p>Press the button and enter camper details to book another place on camp.</p>
+      </div>
+    </div>
+  {% endif %}
 
-  <section class="grouped">
+  <h1>Balance</h1>
 
-    <h1>Logging out</h1>
+  {% if balance_full <= 0 %}
+    <p>You have nothing to pay.</p>
+  {% else %}
+    <div class="actionsplit">
+      <div class="actionbutton">
+        <a class="bigaction" href="{% url 'cciw-bookings-pay' %}">Pay</a>
+      </div>
+      <div class="actioninfo">
+        <p>Your total balance is: £{{ balance_full }}</p>
+        {% if balance_due_now != balance_full %}
+          <p>Balance currently due: £{{ balance_due_now }}</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  {% include "cciw/bookings/pending_payment_notice.html" %}
 
-    <p><strong>In order to log back in again, you will need to verify your email address as
-      you did the first time.</strong></p>
 
-    <p>By logging out, other users of this computer will not be able to access your
-      account details, which is important if you are using a public computer (for
-      example in an internet cafe).</p>
+  <h1>Logging out</h1>
 
-    <p>Press this button in order to go ahead and log out:</p>
+  <p><strong>In order to log back in again, you will need to verify your email address as
+    you did the first time.</strong></p>
 
-    <form action="" method="POST">
-      {% csrf_token %}
-      <p style="text-align: center">
-        <input type="submit" name="logout" value="Log out" class="bigaction">
-      </p>
-    </form>
+  <p>By logging out, other users of this computer will not be able to access your
+    account details, which is important if you are using a public computer (for
+    example in an internet cafe).</p>
 
-    <p>Otherwise your session will expire two weeks after you last logged in.</p>
+  <p>Press this button in order to go ahead and log out:</p>
 
-  </section>
+  <form action="" method="POST">
+    {% csrf_token %}
+    <p style="text-align: center">
+      <input type="submit" name="logout" value="Log out" class="bigaction">
+    </p>
+  </form>
+
+  <p>Otherwise your session will expire two weeks after you last logged in.</p>
+
 
   {% include 'cciw/bookings/help.html' %}
 
