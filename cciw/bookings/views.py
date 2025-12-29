@@ -73,7 +73,7 @@ class BookingStage:
 @booking_account_optional
 def index(request):
     year = common.get_thisyear()
-    bookingform_relpath = f"{settings.BOOKINGFORMDIR}/booking_form_{year}.pdf"
+    bookingform_relpath = f"{settings.BOOKING_FORM_DIR}/booking_form_{year}.pdf"
     context: dict = {
         "title": "Booking",
     }
