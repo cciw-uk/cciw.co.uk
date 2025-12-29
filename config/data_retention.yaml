@@ -38,11 +38,11 @@
 #
 # The format of this document is "Literate YAML", which means this document is both a
 # human-readable document and a machine-readable file that is automatically read and
-# applied by our software that handles data retention. Sections like this one are 'comments'
+# applied by our software that handles data retention. Sections like this one are "comments"
 # that are skipped by the software that reads it. The remainder is definitions and instructions
 # that are interpreted and applied by the software.
 #
-# This format has a lot of advantages:
+# The reasons for this choice of format:
 #
 # - There is no possibility of the CCiW committee updating a policy document but
 #   failing to communicate that to the web developers, because there is only a
@@ -77,9 +77,9 @@
 # For each group, we start by defining the rules that will be applied, then by
 # listing the tables and columns it applies to.
 #
-# All groups have an implicit rule: data which is still in use should not be
+# All groups have an implicit rule: data which is still "in use" should not be
 # deleted. (For example, the address of a person who still owes us money). Rules
-# for determining which data is in use are not defined in this document.
+# for determining which data is "in use" are not defined in this document.
 
 # Deletion mechanisms
 # -------------------
