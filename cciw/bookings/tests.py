@@ -442,17 +442,36 @@ class TestBookingModels(TestBase):
                 assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
 
 
-class TestBookingIndex(BookingBaseMixin, WebTestBase):
+class BookingIndexBase(BookingBaseMixin, FuncBaseMixin):
     def test_show_with_no_prices(self):
         camp = camps_factories.create_camp()
+        year = camp.year
         self.get_url("cciw-bookings-index")
-        self.assertTextPresent(f"Prices for {camp.year} have not been finalised yet")
+        self.assertTextPresent(f"Prices for {year} have not been finalised yet")
 
     def test_show_with_prices(self):
         camp = camps_factories.create_camp()
-        factories.create_prices(year=camp.year, full_price=100)
+        year = camp.year
+        factories.create_prices(year=year, full_price=100)
         self.get_url("cciw-bookings-index")
         self.assertTextPresent("£100")
+
+        # No YearConfig has been set, so we can't show much "booking process info"
+        self.assertTextPresent(f"The dates for the booking process for {year} have not been set.")
+
+    def test_show_with_yearconfig(self):
+        camp = camps_factories.create_camp()
+        year = camp.year
+        config = factories.create_year_config(year=year)
+        assert config.bookings_open_for_booking_on is not None
+
+        self.get_url("cciw-bookings-index")
+        # YearConfig has been set, so we show full "booking process info":
+        self.assertTextPresent("To ensure a fair and reliable booking process")
+
+
+class TestBookingIndexWT(BookingIndexBase, WebTestBase):
+    pass
 
 
 class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):

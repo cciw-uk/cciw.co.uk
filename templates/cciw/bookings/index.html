@@ -47,7 +47,7 @@
 
   {% endif %}
 
-  {% if booking_open_data.is_open_for_entry or price_list %}
+  {% if prices_set or price_list %}
     <p>For those in financial need, there are discounts available, which you can
       apply for as part of the booking process.</p>
 
@@ -61,9 +61,7 @@
     </p>
   {% endif %}
 
-  <h2>Booking process information</h2>
-
-  {% include "cciw/bookings/booking_process_info.html" %}
+  {% include "cciw/bookings/booking_process_info.html" with booking_open_data=booking_open_data  %}
 
   {% if booking_open_data.is_open_for_entry  %}
     <h2>Start the booking process</h2>

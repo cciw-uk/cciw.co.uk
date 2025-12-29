@@ -88,17 +88,36 @@ class BookingOpenData:
     payments_due_on: date | None
 
     @classmethod
-    def from_year_config(cls, config: YearConfig) -> BookingOpenData:
+    def from_year_config(cls, config: YearConfig, *, prices_are_set: bool) -> BookingOpenData:
         now = timezone.now()
         today = now.date()
+
+        opens_for_booking_on = config.bookings_open_for_booking_on
+        opens_for_entry_on = config.bookings_open_for_entry_on
+        closes_for_initial_period_on = config.bookings_close_for_initial_period_on
+        initial_notifications_on = config.bookings_initial_notifications_on
+        payments_due_on = config.payments_due_on
+
+        if prices_are_set:
+            is_open_for_booking = config.bookings_open_for_booking_on <= today
+            is_open_for_entry = config.bookings_open_for_entry_on <= today
+        else:
+            # if prices aren't set, even collecting data is complicated because
+            # the form expects to find prices, so we disallow in this case.
+            is_open_for_booking = False
+            is_open_for_entry = False
+
+            # We also can't say for sure when booking will open for entry/booking,
+            # but we can hope someone fills in the data
+
         return cls(
-            opens_for_booking_on=config.bookings_open_for_booking_on,
-            opens_for_entry_on=config.bookings_open_for_entry_on,
-            closes_for_initial_period_on=config.bookings_close_for_initial_period_on,
-            initial_notifications_on=config.bookings_initial_notifications_on,
-            payments_due_on=config.payments_due_on,
-            is_open_for_booking=config.bookings_open_for_booking_on <= today,
-            is_open_for_entry=config.bookings_open_for_entry_on <= today,
+            opens_for_booking_on=opens_for_booking_on,
+            opens_for_entry_on=opens_for_entry_on,
+            closes_for_initial_period_on=closes_for_initial_period_on,
+            initial_notifications_on=initial_notifications_on,
+            payments_due_on=payments_due_on,
+            is_open_for_booking=is_open_for_booking,
+            is_open_for_entry=is_open_for_entry,
         )
 
     @classmethod
@@ -115,17 +134,10 @@ class BookingOpenData:
 
 
 def get_booking_open_data(year: int) -> BookingOpenData:
-    if not are_prices_set_for_year(year):
-        # even collecting data is complicated if prices aren't set,
-        # because the form expects to find prices, so we disallow
-        # in this case, and we can't say when it will open because
-        # we don't know when prices which actually be entered.
-        return BookingOpenData.no_info()
-
     year_config = get_year_config(year)
     if year_config is None:
         return BookingOpenData.no_info()
-    return BookingOpenData.from_year_config(year_config)
+    return BookingOpenData.from_year_config(year_config, prices_are_set=are_prices_set_for_year(year))
 
 
 def get_booking_open_data_thisyear() -> BookingOpenData:

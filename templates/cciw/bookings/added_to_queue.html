@@ -14,8 +14,6 @@
     your <a href="{% url 'cciw-bookings-account_overview' %}">account overview</a> page.
   </p>
 
-  <h2>Booking process information</h2>
-
-  {% include 'cciw/bookings/booking_process_info.html' %}
+  {% include 'cciw/bookings/booking_process_info.html' with booking_open_data=booking_open_data %}
 
 {% endblock %}

@@ -1,3 +1,5 @@
+<h2>Booking process information</h2>
+
 {% if booking_open_data.opens_for_booking_on %}
 
   <p>To ensure a fair and reliable booking process, CCiW has updated how
@@ -75,5 +77,7 @@
   <p>If you have any questions, please <a href="{% url 'cciw-contact_us-send' %}?bookings">contact the Bookings
     Secretary</a>.</p>
 
+{% else %}
+  <p>The dates for the booking process for {{ thisyear }} have not been set.</p>
 
 {% endif %}
