@@ -31,6 +31,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers.forms import UpdateQueueEntryForm
 from cciw.officers.views.utils.campid import get_camp_or_404
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
+from cciw.utils.views import for_htmx2
 
 from .utils.auth import (
     booking_secretary_or_treasurer_required,
@@ -241,6 +242,7 @@ def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
 
 
 @cciw_secretary_or_booking_secretary_required
+@for_htmx2(use_partial_from_params=True)
 def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     year_config = get_year_config(year=camp.year)
@@ -249,59 +251,6 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
             f"The booking queue for {camp.nice_name} can't be accessed until the booking configuration dates for {camp.year} have been defined"
         )
     places_left = camp.get_places_left()
-    edit_queue_entry_mode = False
-
-    refresh_contents_only = False
-
-    if request.headers.get("Hx-Request", False) and request.method == "POST":
-        if "cancel-edit-queue-entry" in request.POST:
-            # Do nothing, just refresh the whole list.
-            refresh_contents_only = True
-        elif "edit-queue-entry" in request.POST or "save-queue-entry" in request.POST:
-            # htmx edit row mode.
-
-            # Changing any fields can change the ranking, so we have to update
-            # the whole list, so this isn't like the "edit single row"
-            # functionality in many pages where we can update just one part of
-            # the page.
-
-            # For edit mode, we do want to render just one row, but we need to
-            # get the ranking info for the whole camp, so we can show the right
-            # data in the other cells.
-            booking_id = int(request.POST["booking_id"])
-            ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
-            booking = [b for b in ranked_queue_bookings if b.id == booking_id][0]
-            queue_entry: BookingQueueEntry = booking.queue_entry
-
-            if "edit-queue-entry" in request.POST:
-                # Show edit form
-                form = UpdateQueueEntryForm(instance=queue_entry)
-                edit_queue_entry_mode = True
-
-            elif "save-queue-entry" in request.POST:
-                # save the data, refresh the whole page.
-                old_queue_entry_fields = queue_entry.get_current_field_data()
-                form = UpdateQueueEntryForm(data=request.POST, instance=queue_entry)
-                if form.is_valid():
-                    form.save()
-                    queue_entry.save_fields_changed_action_log(user=request.user, old_fields=old_queue_entry_fields)
-                    # show whole list.
-                    refresh_contents_only = True
-                else:
-                    edit_queue_entry_mode = True
-
-            if edit_queue_entry_mode:
-                # Initial edit mode, or failed 'save'
-                return TemplateResponse(
-                    request,
-                    "cciw/officers/booking_queue_row_inc.html",
-                    {
-                        "booking": booking,
-                        "edit_queue_entry_mode": edit_queue_entry_mode,
-                        "form": form,
-                    },
-                    headers={"HX-Retarget": f"[data-booking-id='{booking.id}']"},
-                )
 
     # TODO - UI for fixing up sibling fuzzy matching, if needed?
 
@@ -313,13 +262,6 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
 
     template_name = "cciw/officers/booking_queue.html"
-    headers = {}
-    if refresh_contents_only:
-        # We use server side HX-Retarget here and above, because client side
-        # can't set the hx-target: if form validation fails, we target a
-        # different element than if it succeeds.
-        headers.update({"HX-Retarget": "#id_main_content"})
-        template_name = f"{template_name}#main-content"
 
     context = {
         "camp": camp,
@@ -329,9 +271,69 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "ready_to_allocate": ready_to_allocate,
         "title": f"Booking queue - {camp.nice_name}",
         "ranked_queue_bookings": ranked_queue_bookings,
-        "edit_queue_entry_mode": edit_queue_entry_mode,
+        "edit_queue_entry_mode": False,
         "problems": problems,
         "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
         "can_edit_bookings": request.user.can_edit_bookings,
     }
-    return TemplateResponse(request, template_name, context, headers=headers)
+    return TemplateResponse(request, template_name, context, headers={})
+
+
+@cciw_secretary_or_booking_secretary_required
+def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
+    assert request.method == "POST"
+    assert "Hx-Request" in request.headers
+    camp = get_camp_or_404(camp_id)
+    year_config = get_year_config(year=camp.year)
+    trigger_page_update = False
+    booking_id = int(request.POST["booking_id"])
+
+    # We need all the bookings, ranked, to be able to show one row correctly.
+    ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
+    booking = [b for b in ranked_queue_bookings if b.id == booking_id][0]
+    queue_entry: BookingQueueEntry = booking.queue_entry
+
+    assert year_config is not None
+
+    if "edit-queue-entry" in request.POST:
+        # Show edit form
+        form = UpdateQueueEntryForm(instance=queue_entry)
+        edit_queue_entry_mode = True
+
+    elif "save-queue-entry" in request.POST:
+        # save the data, refresh the whole page.
+        old_queue_entry_fields = queue_entry.get_current_field_data()
+        form = UpdateQueueEntryForm(data=request.POST, instance=queue_entry)
+        if form.is_valid():
+            form.save()
+            queue_entry.save_fields_changed_action_log(user=request.user, old_fields=old_queue_entry_fields)
+            edit_queue_entry_mode = False
+            trigger_page_update = True
+        else:
+            edit_queue_entry_mode = True
+    else:
+        # Cancel button.
+        # Do nothing, just re-render the row
+        edit_queue_entry_mode = False
+        form = None
+
+    if not edit_queue_entry_mode:
+        # Include the allocation so that the first column displays correctly
+        add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=camp.get_places_left())
+
+    headers = {}
+    if trigger_page_update:
+        headers["HX-Trigger"] = f"refreshBookingQueueForCamp-{camp.id}"
+
+    return TemplateResponse(
+        request,
+        "cciw/officers/booking_queue_row_inc.html",
+        {
+            "camp": camp,
+            "booking": booking,
+            "edit_queue_entry_mode": edit_queue_entry_mode,
+            "form": form,
+            "can_edit_bookings": request.user.can_edit_bookings,
+        },
+        headers=headers,
+    )

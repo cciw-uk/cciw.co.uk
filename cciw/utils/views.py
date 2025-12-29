@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.http.request import HttpRequest, QueryDict
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
@@ -210,3 +211,58 @@ def make_get_request(request: HttpRequest) -> HttpRequest:
 
 def htmx_redirect(url):
     return HttpResponse(headers={"HX-Redirect": url})
+
+
+# New methods for htmx - using partials.
+# `for_htmx` is deprecated and should be replaced,
+# bulking out this function as necessary.
+def for_htmx2(
+    *,
+    use_partial_from_params: bool = False,
+):
+    """
+    If the request is from htmx, then render a partial page, using either:
+    - the partial specified in GET/POST parameter "use_partial", if `use_partial_from_params=True` is passed
+    """
+    if len([p for p in [use_partial_from_params] if p]) != 1:
+        raise ValueError("You must pass exactly one of 'use_partial_from_params=True'")
+
+    def decorator(view):
+        @wraps(view)
+        def _view(request, *args, **kwargs):
+            resp: TemplateResponse = view(request, *args, **kwargs)
+            if request.headers.get("Hx-Request", False):
+                if not hasattr(resp, "render"):
+                    if not resp.content and any(
+                        h in resp.headers
+                        for h in (
+                            "Hx-Trigger",
+                            "Hx-Trigger-After-Swap",
+                            "Hx-Trigger-After-Settle",
+                            "Hx-Redirect",
+                        )
+                    ):
+                        # This is a special case response with no body, that is
+                        # sent only because of some htmx headers. It doesn't
+                        # need modifying and can just be returned.
+                        return resp
+                    # Otherwise there is some mistake
+                    raise ValueError(f"Cannot modify a response of type {type(resp)} that isn't a TemplateResponse")
+
+                if resp.is_rendered:
+                    raise ValueError("Cannot modify a response that has already been rendered")
+
+                partial_to_use: str | None = None
+                if use_partial_from_params:
+                    use_partial_from_params_val = _get_param_from_request(request, "use_partial")
+                    assert use_partial_from_params_val is not None and len(use_partial_from_params_val) == 1
+                    partial_to_use = use_partial_from_params_val[0]
+
+                if partial_to_use is not None:
+                    resp.template_name = resp.template_name + "#" + partial_to_use
+
+            return resp
+
+        return _view
+
+    return decorator

@@ -1,4 +1,10 @@
-<tr data-booking-id="{{ booking.id }}">
+<tr data-booking-id="{{ booking.id }}"
+    hx-inherit="*"
+    hx-vals='{"booking_id": "{{ booking.id }}"}'
+    hx-target="this"
+    hx-swap="outerHTML"
+    hx-include="this"
+>
   {% if not edit_queue_entry_mode %}
     <td {% if booking.rank_info.cutoff_state == "A" %}
           class="to-accept"
@@ -16,9 +22,8 @@
     <td>
       <input
         type="submit" name="edit-queue-entry" value="Edit queue details"
-        hx-post="."
-        hx-vals='{"booking_id": "{{ booking.id }}"}'
-        hx-swap="outerHTML"
+        hx-post="{% url 'cciw-officers-booking_queue_row' camp_id=camp.url_id %}"
+
       >
       {% if can_edit_bookings %}
         &nbsp;
@@ -43,15 +48,11 @@
     <td>
       <input
         type="submit" name="save-queue-entry" value="Save"
-        hx-post="."
-        hx-swap="outerHTML"
-        hx-vals='{"booking_id": {{ booking.id }} }'
-        hx-include="closest tr"
+        hx-post="{% url 'cciw-officers-booking_queue_row' camp_id=camp.url_id %}"
       >
       <input
         type="submit" name="cancel-edit-queue-entry" value="Cancel"
-        hx-post="."
-        hx-swap="outerHTML"
+        hx-post="{% url 'cciw-officers-booking_queue_row' camp_id=camp.url_id %}"
       >
       {% if form.errors %}
         <br>

@@ -3,7 +3,12 @@
 {% block content %}
 
   {% partialdef main-content inline %}
-    <div id="id_main_content">
+    <div id="id_main_content"
+         hx-trigger="refreshBookingQueueForCamp-{{ camp.id }}"
+         hx-swap="outerHTML"
+         hx-post="."
+         hx-vals='{"use_partial": "main-content"}'
+    >
       <table>
         <thead>
           <tr>
@@ -121,27 +126,29 @@
         <p>No bookings in the queue.</p>
       {% endif %}
 
-    </div>
-    <br>
+      <br>
 
-    {% if problems.has_items %}
-      <h2>Problems</h2>
-      <ul>
-        {% for message in problems.general_messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-        {% if problems.rejected_first_timers %}
-          <li>Some of the places marked as "chosen first timers" have nonetheless fallen below
-            the cut-offs and won't have a place allocated:
-            <ul>
-              {% for booking in problems.rejected_first_timers %}
-                <li>{{ booking.name }}</li>
-              {% endfor %}
-            </ul>
-          </li>
-        {% endif %}
-      </ul>
-    {% endif %}
+      {% if problems.has_items %}
+        <h2>Problems</h2>
+        <ul>
+          {% for message in problems.general_messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+          {% if problems.rejected_first_timers %}
+            <li>Some of the places marked as "chosen first timers" have nonetheless fallen below
+              the cut-offs and won't have a place allocated:
+              <ul>
+                {% for booking in problems.rejected_first_timers %}
+                  <li>{{ booking.name }}</li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endif %}
+        </ul>
+      {% endif %}
+
+
+    </div>
 
   {% endpartialdef %}
 

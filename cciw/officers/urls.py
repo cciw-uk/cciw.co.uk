@@ -163,6 +163,11 @@ urlpatterns = [
         views.booking_queue,
         name="cciw-officers-booking_queue",
     ),
+    path(
+        "bookings/queue/<campid:camp_id>/row/",
+        views.booking_queue_row,
+        name="cciw-officers-booking_queue_row",
+    ),
     # Bookings progress
     path(
         "bookings/booking-progress-stats/<yyyy:start_year>-<yyyy:end_year>/",
