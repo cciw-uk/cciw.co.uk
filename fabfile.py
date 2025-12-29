@@ -431,7 +431,10 @@ def run_tests(c):
     """
     Run tests and other code quality checks
     """
-    c.local("pre-commit run ruff --all-files", echo=True)
+    # Run some "fail early" tests first - ruff and conventions
+    c.local("pre-commit run ruff-check --all-files", echo=True)
+    c.local("pytest cciw/cciwmain/tests/test_conventions.py -n0", echo=True)
+    # Complete test suite:
     c.local("pytest", echo=True, pty=True)
 
 
