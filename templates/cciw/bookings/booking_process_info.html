@@ -10,8 +10,12 @@
   <ul>
     <li>During this period, bookings are not "first come, first served"</li>
     <li>Places may be booked at any point during the period</li>
-    <li>All information entered at the time of booking must be accurate</li>
-    <li>No deposit is required during the booking phase</li>
+    <li>All information entered at the time of booking must be accurate</li>
+    <li>No deposit is required during the booking phase</li>
+    <li>If you have special requirements (like children with special needs),
+      please ensure you book early in this period to ensure there is time for
+      the place to be approved
+    </li>
   </ul>
 
   <h3>Oversubscribed Camps</h3>
@@ -58,8 +62,7 @@
     <ul>
       <li>Families requiring a payment plan must <a href="{% url 'cciw-contact_us-send' %}?bookings">contact the Bookings
         Secretary</a> by {{ booking_open_data.payments_due_on|date:"jS F" }}.</li>
-      <li>Failure to do so will result in the place being offered to the next camper. </li>
-
+      <li>Failure to do so will result in the place being offered to the next camper.</li>
     </ul>
 
   {% endif %}
