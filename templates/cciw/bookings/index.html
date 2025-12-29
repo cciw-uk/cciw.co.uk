@@ -78,46 +78,11 @@
     place using this system – please instead see the information about applying
     to be a <a href="/helpers/officers/">leader or officer</a>.</p>
 
-  <h2>Paper booking</h2>
-
-  {% if bookingform %}
-    <p>We are encouraging all bookings to be made online. However, if you have a
-      printer you can download and print a booking form for
-      {{ thisyear }}.  Please fill in the form and follow the instructions on it.
-      You will need a PDF reader to view or print the form.</p>
-
-    <p><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCiW
-      booking form for {{ thisyear }}</a> </p>
-
-    <p>Completed booking forms should be sent to the booking secretary (address
-      below, cheques made payable to “Christian Camps in Wales”).</p>
-
-  {% else %}
-
-    <p>We are encouraging all bookings to be made online. However, we try to
-      make the booking form available online as a PDF file, so that you can
-      download and print your own if necessary. There is no paper booking form for
-      {{ thisyear }} available yet but watch this space.
-    </p>
-
-  {% endif %}
-
-  <p>If you would like a booking form sent in the post and are not on our
-    distribution list (or have not received a booking form and think you should
-    have), please use the <a href="{% url 'cciw-contact_us-send' %}?bookings">contact
-      form</a> to request one. Please remember to include your address so that we
-    can post one. If you are ordering a large number of booking forms, please
-    include your telephone number so that we can verify the request.</p>
 
   <h2>Booking secretary</h2>
 
   <p>Contact:</p>
   <ul>
-    <li>Postal address:<br/><br/>
-
-      {% htmlchunk "booking_secretary_address" %}
-    </li>
-
     <li>Email: <a href="mailto:cciwbookings@gmail.com">cciwbookings@gmail.com</a><br/><br/></li>
 
     <li><a href="{% url 'cciw-contact_us-send' %}?bookings">Contact form</a><br/><br/></li>

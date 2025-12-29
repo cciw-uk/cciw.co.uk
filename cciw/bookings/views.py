@@ -1,6 +1,5 @@
 import contextlib
 import json
-import os
 import re
 from collections import defaultdict
 from datetime import timedelta
@@ -73,12 +72,9 @@ class BookingStage:
 @booking_account_optional
 def index(request):
     year = common.get_thisyear()
-    bookingform_relpath = f"{settings.BOOKING_FORM_DIR}/booking_form_{year}.pdf"
     context: dict = {
         "title": "Booking",
     }
-    if os.path.isfile(f"{settings.MEDIA_ROOT}/{bookingform_relpath}"):
-        context["bookingform"] = bookingform_relpath
     booking_open = get_booking_open_data(year)
     prices_set = are_prices_set_for_year(year)
 
