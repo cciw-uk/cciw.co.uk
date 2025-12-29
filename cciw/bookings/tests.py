@@ -1197,6 +1197,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         )
         mails = mail.outbox
         assert len(mails) == 1
+        assert mails[0].to == [booking.account.email]
 
         # Unapprove:
         self.get_url("admin:bookings_booking_change", booking.id)

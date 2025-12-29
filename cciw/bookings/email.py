@@ -173,9 +173,7 @@ def send_booking_approved_mail(booking):
         return False
 
     c = {
-        "book_and_pay_url": build_url_with_booking_token(
-            view_name="cciw-bookings-basket_list_bookings", email=account.email
-        ),
+        "book_url": build_url_with_booking_token(view_name="cciw-bookings-basket_list_bookings", email=account.email),
         "account": account,
         "booking": booking,
     }
