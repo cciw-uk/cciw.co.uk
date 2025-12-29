@@ -9,6 +9,8 @@ from django.utils import timezone
 from django_countries.fields import CountryField
 from paypal.standard.ipn.models import PayPalIPN
 
+from cciw.bookings.models.yearconfig import YearConfigFetcher
+
 from ..email import send_places_confirmed_email
 from .constants import DEFAULT_COUNTRY
 from .states import BookingState
@@ -97,8 +99,9 @@ class BookingAccountManagerBase(models.Manager):
         account: BookingAccount
         today = date.today()
 
+        config_fetcher = YearConfigFetcher()
         for account in potentials:
-            confirmed_balance_due = account.get_balance(today=today)
+            confirmed_balance_due = account.get_balance(today=today, config_fetcher=config_fetcher)
             if confirmed_balance_due > 0:
                 account.confirmed_balance_due = confirmed_balance_due
                 retval.append(account)
@@ -192,7 +195,7 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, *, today: date | None):
+    def get_balance(self, *, today: date | None, config_fetcher: YearConfigFetcher | None = None):
         """
         Gets the balance to pay on the account.
         If today is None, then the final balance is returned,
@@ -208,9 +211,12 @@ class BookingAccount(models.Model):
             payable_bookings = list(self.bookings.payable())
 
         total = Decimal("0.00")
+        if config_fetcher is None:
+            config_fetcher = YearConfigFetcher()
+
         booking: Booking
         for booking in payable_bookings:
-            total += booking.get_amount_due(today=today)
+            total += booking.get_amount_due(today=today, config_fetcher=config_fetcher)
 
         return total - self.total_received
 

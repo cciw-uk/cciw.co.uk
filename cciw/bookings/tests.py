@@ -52,7 +52,7 @@ from cciw.bookings.models.queue import (
     get_booking_queue_problems,
     rank_queue_bookings,
 )
-from cciw.bookings.models.yearconfig import YearConfig, get_booking_open_data
+from cciw.bookings.models.yearconfig import YearConfig, YearConfigFetcher, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -143,8 +143,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         if hasattr(self, "camp"):
             return
         # Need to create a Camp that we can choose i.e. is in the future.
-        # We also need it so that the full amount is not due
-        delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE.days
+        delta_days = 30
         start_date = self.today + timedelta(delta_days)
         self.camp = camps_factories.create_camp(
             camp_name="Blue",
@@ -378,36 +377,66 @@ class TestBookingModels(TestBase):
         assert not camp.open_for_bookings(today + timedelta(days=1))
 
     @mock.patch("cciw.bookings.models.bookings.early_bird_is_available", return_value=False)
-    def test_book_balance_due(self, m, use_prefetch_related_for_get_account=True):
-        booking = factories.create_booking(camp=camps_factories.create_camp(future=True))
+    def test_account_balance_due(self, m, use_prefetch_related_for_get_account=True):
+        year_config = create_year_config_for_queue_tests()
+        year: int = year_config.year
+        factories.create_prices(year=year, full_price=100)
+        camp = camps_factories.create_camp(year=year)
 
-        account: BookingAccount = booking.account
-        # Book
-        book_bookings_now([booking])
+        def assert_account_balance(expected: Decimal | int, full: bool = False):
+            expected = Decimal(expected)
+            config_fetcher = YearConfigFetcher()
+            config_fetcher.lookup_year(year)  # prefetch to avoid complicating assertNumQueries below
 
-        # Place should be booked AND should not expire
-        booking.refresh_from_db()
-        assert booking.state == BookingState.BOOKED
-
-        # balance should be zero
-        today = date.today()
-
-        for use_prefetch_related_for_get_account in [True, False]:
-            if use_prefetch_related_for_get_account:
-                # Tests that the other code paths in get_balance/BookingManager.payable
-                # work.
-                account = BookingAccount.objects.filter(id=account.id).prefetch_related("bookings")[0]
+            if full:
+                today = None
             else:
-                account = BookingAccount.objects.get(id=account.id)
-            with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
-                assert account.get_balance(today=today) == Decimal("0.00")
-                assert account.get_balance(today=today) == Decimal("0.00")
+                today = date.today()
+            for use_prefetch_related_for_get_account in [True, False]:
+                if use_prefetch_related_for_get_account:
+                    # Tests that the other code paths in get_balance/BookingManager.payable
+                    # work.
+                    account = BookingAccount.objects.filter(id=booking_account_id).prefetch_related("bookings")[0]
+                else:
+                    account = BookingAccount.objects.get(id=booking_account_id)
+                with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
+                    assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
+                    assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
 
-        # But for full amount, they still owe 100 (full price)
-        assert account.get_balance_full() == Decimal("100.00")
+        # Data entry
+        with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+            booking = factories.create_booking(camp=camp)
+            booking_account_id: int = booking.account.id
+            assert_account_balance(0)
 
-        # Test some model methods:
-        assert len(account.bookings.payable()) == 1
+        # "Book" button
+        with freeze_time(year_config.bookings_open_for_booking_on):
+            booking.add_to_queue()
+            assert_account_balance(0)
+
+        # Confirmed by booking secretary
+        with freeze_time(year_config.bookings_initial_notifications_on):
+            book_bookings_now([booking])
+            assert_account_balance(0)
+
+            # Place should be booked
+            booking.refresh_from_db()
+            assert booking.state == BookingState.BOOKED
+
+        # Before full payment due:
+        with freeze_time(year_config.payments_due_on - timedelta(days=1)):
+            # balance should be zero
+            assert_account_balance(0)
+
+            # But for full amount, they still owe 100 (full price)
+            assert_account_balance(100, full=True)
+
+            # Test some model methods:
+            assert len(booking.account.bookings.payable()) == 1
+
+        with freeze_time(year_config.payments_due_on):
+            assert_account_balance(100)
+            assert_account_balance(100, full=True)
 
     def test_booking_missing_agreements(self):
         camp = camps_factories.create_camp(future=True)
@@ -2855,6 +2884,8 @@ def test_booking_open():
 
 
 def create_year_config_for_queue_tests(year: int = 2025) -> YearConfig:
+    # Use sensible values that match what happens in reality,
+    # and the defaults in `create_camp()` factory
     return factories.create_year_config(
         year=year,
         bookings_open_for_entry_on=date(year, 2, 1),
@@ -3033,3 +3064,28 @@ def test_booking_queue_track_changes():
         ]
     }
     assert log.user == user
+
+
+@pytest.mark.django_db
+def test_year_config_fetcher(django_assert_num_queries):
+    factories.create_year_config(year=2025)
+    factories.create_year_config(year=2026)
+    fetcher = YearConfigFetcher()
+
+    with django_assert_num_queries(num=1):
+        cf = fetcher.lookup_year(2025)
+        assert isinstance(cf, YearConfig)
+
+    with django_assert_num_queries(num=0):
+        cf2 = fetcher.lookup_year(2025)
+        assert isinstance(cf2, YearConfig)
+        assert cf2 is cf
+
+    with django_assert_num_queries(num=1):
+        assert fetcher.lookup_year(2026) is not None
+
+    with django_assert_num_queries(num=1):
+        assert fetcher.lookup_year(2024) is None
+
+    with django_assert_num_queries(num=0):
+        assert fetcher.lookup_year(2024) is None

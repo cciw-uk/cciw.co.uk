@@ -3,6 +3,7 @@ from datetime import date
 
 from django.db.models import Prefetch
 
+from cciw.bookings.models.yearconfig import YearConfigFetcher
 from cciw.cciwmain.models import Camp
 
 from .bookings import Booking, Sex
@@ -61,13 +62,14 @@ def outstanding_bookings_with_fees(year: int) -> list[Booking]:
         counts[b.account_id] += 1
 
     today = date.today()
+    config_fetcher = YearConfigFetcher()
 
     outstanding = []
     for b in bookings:
         b.count_for_account = counts[b.account_id]
         if not hasattr(b.account, "calculated_balance"):
-            b.account.calculated_balance = b.account.get_balance(today=None)
-            b.account.calculated_balance_due = b.account.get_balance(today=today)
+            b.account.calculated_balance = b.account.get_balance(today=None, config_fetcher=config_fetcher)
+            b.account.calculated_balance_due = b.account.get_balance(today=today, config_fetcher=config_fetcher)
 
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)

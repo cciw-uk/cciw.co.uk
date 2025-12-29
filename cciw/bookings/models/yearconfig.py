@@ -71,6 +71,29 @@ def get_year_config(year: int) -> YearConfig | None:
     return YearConfig.objects.filter(year=year).first()
 
 
+class YearConfigFetcher:
+    """
+    Utility that looks up YearConfig objects, with caching to reduce queries
+    """
+
+    def __init__(self) -> None:
+        self._configs: dict[int, YearConfig | None] = {}
+
+    def lookup_year(self, year: int) -> YearConfig | None:
+        self._ensure_configs(years=[year])
+        return self._configs.get(year, None)
+
+    def _ensure_configs(self, years: list[int]) -> None:
+        missing_years = set(years) - set(self._configs.keys())
+        if missing_years:
+            configs: list[YearConfig] = list(YearConfig.objects.filter(year__in=missing_years))
+            # Ensure we add cache entries for both missing and found
+            missing = {year: None for year in years}
+            found = {cf.year: cf for cf in configs}
+            combined = missing | found
+            self._configs.update(combined)
+
+
 def any_bookings_possible(year: int) -> bool:
     camps: Iterable[Camp] = Camp.objects.filter(year=year)
     return any(c.get_places_left().total > 0 and c.is_open_for_bookings for c in camps)
