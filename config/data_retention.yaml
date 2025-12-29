@@ -482,6 +482,8 @@
       - enqueued_at
       - officer_child
       - first_timer_allocated
+      - declined_notification_sent_at
+      - accepted_notification_sent_at
 
     - name: accounts.User
       columns:

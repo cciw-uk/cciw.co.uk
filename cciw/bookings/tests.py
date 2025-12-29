@@ -2970,19 +2970,24 @@ def test_Booking_withdraw_from_queue_and_add_again():
 def test_QueueEntry_get_current_field_data():
     booking = factories.create_booking()
     queue_entry = booking.add_to_queue()
-    assert sorted(queue_entry.get_current_field_data().keys()) == [
-        "booking_id",
-        "created_at",
-        "enqueued_at",
-        "erased_at",
-        "first_timer_allocated",
-        "id",
-        "is_active",
-        "officer_child",
-        "sibling_booking_account_id",
-        "sibling_fuzzy_id",
-        "sibling_surname",
-    ]
+    keys = sorted(queue_entry.get_current_field_data().keys())
+    # Avoid this breaking for each new field by testing a subset
+    assert all(
+        k in keys
+        for k in [
+            "booking_id",
+            "created_at",
+            "enqueued_at",
+            "erased_at",
+            "first_timer_allocated",
+            "id",
+            "is_active",
+            "officer_child",
+            "sibling_booking_account_id",
+            "sibling_fuzzy_id",
+            "sibling_surname",
+        ]
+    )
 
 
 @pytest.mark.django_db

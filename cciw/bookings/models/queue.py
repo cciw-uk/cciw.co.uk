@@ -91,6 +91,8 @@ class BookingQueueEntry(models.Model):
     )
 
     # Internal only:
+    declined_notification_sent_at = models.DateTimeField(null=True, blank=True, default=None)
+    accepted_notification_sent_at = models.DateTimeField(null=True, blank=True, default=None)
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
     @cached_property
