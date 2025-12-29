@@ -613,6 +613,7 @@ BOOKING_EMAIL_VERIFY_TIMEOUT = timedelta(days=3)  # See also payments_due_email.
 BOOKING_SESSION_TIMEOUT = timedelta(weeks=2)
 BOOKING_EMAIL_REMINDER_FREQUENCY = timedelta(days=3)
 LATE_BOOKING_THRESHOLD = timedelta(days=14)
+BOOKINGS_TIME_FOR_SPECIAL_NEEDS_APPROVAL = timedelta(days=7)
 
 
 # == DBS ==

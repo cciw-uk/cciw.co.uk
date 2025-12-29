@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 
+from django.conf import settings
 from django.core.validators import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -109,6 +110,12 @@ class BookingOpenData:
     closes_for_initial_period_on: date | None
     initial_notifications_on: date | None
     payments_due_on: date | None
+
+    @property
+    def closes_for_initial_period_special_needs_on(self) -> date | None:
+        if self.closes_for_initial_period_on is None:
+            return None
+        return self.closes_for_initial_period_on - settings.BOOKINGS_TIME_FOR_SPECIAL_NEEDS_APPROVAL
 
     @classmethod
     def from_year_config(cls, config: YearConfig, *, prices_are_set: bool) -> BookingOpenData:
