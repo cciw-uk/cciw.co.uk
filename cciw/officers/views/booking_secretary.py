@@ -305,9 +305,6 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     # TODO - UI for fixing up sibling fuzzy matching, if needed?
 
-    # TODO - show warnings for:
-    # - first timer allocations greater than 10%
-
     # TODO - buttons to confirm places. Take to a different page.
     # TODO - track changes that are made via this page, for auditing
 

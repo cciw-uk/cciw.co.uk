@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import itertools
+import math
 from collections import Counter, defaultdict
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
@@ -29,7 +30,6 @@ if TYPE_CHECKING:
     from .bookings import Booking
 
 
-# TODO - use this value as a validation issue.
 FIRST_TIMER_PERCENTAGE = 10
 
 
@@ -44,6 +44,9 @@ class BookingQueueEntryQuerySet(models.QuerySet):
     def older_than(self, before_datetime: datetime):
         # See also BookingQuerySet.older_than()
         return self.filter(created_at__lt=before_datetime, booking__camp__end_date__lt=before_datetime)
+
+    def for_camp(self, camp: Camp):
+        return self.filter(booking__camp=camp)
 
 
 class BookingQueueEntryManagerBase(models.Manager):
@@ -468,9 +471,20 @@ class BookingQueueProblems:
 def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp: Camp) -> BookingQueueProblems:
     general_messages = []
     # If 'first timer' is allocated, they may assume that it 'works'
+    # so we add a warning if it hasn't.
     rejected_first_timers = [
         b
         for b in ranked_queue_bookings
         if b.rank_info.cutoff_state != QueueCutoff.ACCEPTED and b.queue_entry.first_timer_allocated
     ]
+    # We use camp for this query, not ranked_queue_bookings, because we need to include
+    # bookings that have already been accepted and are no longer in ranked_queue_bookings
+    first_timer_count = BookingQueueEntry.objects.for_camp(camp).filter(first_timer_allocated=True).count()
+    total_places = camp.max_campers
+    allowed_first_timers = math.ceil(total_places / FIRST_TIMER_PERCENTAGE)
+    if first_timer_count > allowed_first_timers:
+        general_messages.append(
+            f'{first_timer_count} bookings are marked as "chosen first timers", but only {allowed_first_timers} are allowed ({FIRST_TIMER_PERCENTAGE}%)'
+        )
+
     return BookingQueueProblems(general_messages=general_messages, rejected_first_timers=rejected_first_timers)

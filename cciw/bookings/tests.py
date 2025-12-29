@@ -2991,7 +2991,7 @@ def test_QueueEntry_get_current_field_data():
 
 
 @pytest.mark.django_db
-def test_get_booking_queue_problems():
+def test_get_booking_queue_problems_rejected_first_timers():
     year_config = create_year_config_for_queue_tests()
     camp = camps_factories.create_camp(
         year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
@@ -3005,6 +3005,23 @@ def test_get_booking_queue_problems():
     add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=camp.get_places_left())
     problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
     assert len(problems.rejected_first_timers) == 5
+
+
+@pytest.mark.django_db
+def test_get_booking_queue_problems_too_many_first_timers():
+    year_config = create_year_config_for_queue_tests()
+    camp = camps_factories.create_camp(
+        year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
+    )
+    bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(0, 10)]
+    for b in bookings:
+        queue_entry = b.add_to_queue()
+        queue_entry.first_timer_allocated = True
+        queue_entry.save()
+    problems = get_booking_queue_problems(ranked_queue_bookings=[], camp=camp)
+    assert (
+        problems.general_messages[0] == '10 bookings are marked as "chosen first timers", but only 2 are allowed (10%)'
+    )
 
 
 class BookingQueuePage(SeleniumBase):
