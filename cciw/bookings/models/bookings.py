@@ -6,7 +6,6 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, QuerySet, Value, functions
@@ -32,7 +31,7 @@ from .problems import (
     get_booking_problems,
 )
 from .states import BookingState
-from .yearconfig import early_bird_is_available
+from .yearconfig import YearConfigFetcher, early_bird_is_available
 
 if TYPE_CHECKING:
     from .problems import BookingApproval
@@ -445,18 +444,36 @@ class Booking(models.Model):
             return None
         return self.amount_due
 
-    def get_amount_due(self, *, today: date | None) -> Decimal:
+    def get_amount_due(self, *, today: date | None, config_fetcher: YearConfigFetcher) -> Decimal:
         """
         Get the amount due,
         if `today` is None, return the final amount due,
         otherwise the amount due right now.
         """
+        full_amount: Decimal = self.amount_due
         if today is not None:
-            if today < self.camp.start_date - settings.BOOKING_FULL_PAYMENT_DUE:
+            # If we have a YearConfig (which will be true for any bookings from
+            # 2026 onwards), we can use the `payments_due_on` date.
+
+            # If we don't (for all earlier bookings), we can assume the booking
+            # is past and payment is due.
+
+            # To avoid doing unnecessary lookups, we can also assume that for any
+            # booking where the camp is past, the payment is due.
+            if self.camp.end_date < today:
+                return full_amount
+
+            year_config = config_fetcher.lookup_year(self.camp.year)
+            if year_config is None:
+                # No info‚ assume past
+                return full_amount
+
+            if today < year_config.payments_due_on:
                 return Decimal(0)
             else:
-                return self.amount_due
-        return self.amount_due
+                return full_amount
+
+        return full_amount
 
     def can_have_early_bird_discount(self, booked_at=None):
         if booked_at is None:

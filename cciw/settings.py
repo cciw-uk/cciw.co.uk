@@ -611,8 +611,6 @@ COLORS_CSS_FILE = "css/camp_colors.css"
 # == Bookings ==
 BOOKING_EMAIL_VERIFY_TIMEOUT = timedelta(days=3)  # See also payments_due_email.txt if changing this
 BOOKING_SESSION_TIMEOUT = timedelta(weeks=2)
-BOOKING_FULL_PAYMENT_DUE = timedelta(days=90)
-BOOKING_FULL_PAYMENT_DUE_DISPLAY = "3 months"
 BOOKING_EMAIL_REMINDER_FREQUENCY = timedelta(days=3)
 LATE_BOOKING_THRESHOLD = timedelta(days=14)
 
