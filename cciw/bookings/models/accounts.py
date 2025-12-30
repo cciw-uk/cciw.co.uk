@@ -11,7 +11,6 @@ from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.models.yearconfig import YearConfigFetcher
 
-from ..email import send_places_confirmed_email
 from .constants import DEFAULT_COUNTRY
 from .states import BookingState
 
@@ -304,7 +303,3 @@ class BookingAccount(models.Model):
             return True
         else:
             return self.subscribe_to_mailings
-
-
-def places_confirmed_handler(*, bookings):
-    send_places_confirmed_email(bookings)

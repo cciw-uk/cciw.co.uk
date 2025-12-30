@@ -161,11 +161,31 @@
         </ul>
       {% endif %}
 
+      {% if ranked_queue_bookings and can_allocate_places %}
+        <h2>Allocate places</h2>
+        {% if ready_to_allocate.total %}
+          <p>You may go ahead and allocate the {{ ready_to_allocate.total }} places above that are marked "A". This will:</p>
+          <ul>
+            <li>Change the status of the place to "booked"</li>
+            <li>Notify the booking account that the place is allocated</li>
+            <li>Notify others on the list that they haven't been allocated a place (if they haven't been notified of this already)</li>
+          </ul>
+          <form method="POST" action="">
+            {% csrf_token %}
+            <button name="allocate">
+              Allocate places
+            </button>
+          </form>
+        {% else %}
+          <p>No places can be allocated, due to the maximum places set for the camp.</p>
+        {% endif %}
+      {% else %}
+        <p>You don't have permissions to go ahead and allocate these places</p>
+      {% endif %}
 
     </div>
 
   {% endpartialdef %}
-
 
   <style>
     table {

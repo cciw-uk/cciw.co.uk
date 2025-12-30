@@ -4,7 +4,7 @@ Accounts and places for campers coming in camps
 
 from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
-from .baskets import add_basket_to_queue, book_bookings_now
+from .baskets import add_basket_to_queue
 from .bookings import (
     BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS,
     BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS,
@@ -66,7 +66,6 @@ __all__ = [
     "WriteOffDebt",
     "booking_report_by_camp",
     "build_paypal_custom_field",
-    "is_booking_open_for_booking",
     "most_recent_booking_year",
     "outstanding_bookings_with_fees",
     "parse_paypal_custom_field",
@@ -83,8 +82,6 @@ __all__ = [
     "BOOKING_PLACE_GP_DETAILS",
     "PriceChecker",
     "KEEP_FINANCIAL_RECORDS_FOR",
-    "book_basket_now",
-    "expire_bookings",
     "ApprovalNeededType",
     "ApprovalNeeded",
     "get_booking_open_data",

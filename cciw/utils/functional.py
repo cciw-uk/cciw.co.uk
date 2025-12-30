@@ -1,9 +1,15 @@
-def partition(pred, iterable):
-    trues = []
-    falses = []
-    for i in iterable:
-        if pred(i):
-            trues.append(i)
+from collections.abc import Callable, Iterable
+
+
+def partition[T](values: Iterable[T], key: Callable[[T], bool]) -> tuple[list[T], list[T]]:
+    """
+    Partition a list into truthy/falsey values, as determined by `key` function
+    """
+    truthy: list[T] = []
+    falsey: list[T] = []
+    for item in values:
+        if key(item):
+            truthy.append(item)
         else:
-            falses.append(i)
-    return trues, falses
+            falsey.append(item)
+    return (truthy, falsey)

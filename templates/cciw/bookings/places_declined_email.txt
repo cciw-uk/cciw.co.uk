@@ -1,0 +1,20 @@
+{% autoescape off %}
+Dear {{ account.name }},
+
+Due to a lack of spaces, we're very sorry to inform you that the following places
+could not be booked on CCiW camps this year:
+
+{% for b in bookings %}
+Name: {{ b.name }}
+Camp: {{ b.camp }}
+Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
+{% endfor %}
+
+These bookings will stay in the waiting list, and you will be informed
+if a place becomes available.
+
+Thank you,
+
+The cciw.co.uk team.
+
+{% endautoescape %}

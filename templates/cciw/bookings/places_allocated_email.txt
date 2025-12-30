@@ -1,9 +1,6 @@
 {% autoescape off %}
 Dear {{ account.name }},
 
-{% if payment_received_recently %}Thank you for your payment.
-{% else %}Thanks you for your booking.
-{% endif %}
 {% if bookings|length == 1 %}The following place on a CCiW camp has been confirmed:
 {% else %}The following places on a CCiW camp have been confirmed:
 {% endif %}
@@ -12,14 +9,6 @@ Name: {{ b.name }}
 Camp: {{ b.camp }}
 Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
 {% endfor %}
-{% if early_bird_discount_missed %}
-------------------------------------------------------------
-PLEASE NOTE: You missed out!
-
-If you had booked earlier, you would have saved £{{ early_bird_discount_missed }}
-with our "early bird discount". Remember to check the web
-site and book earlier next year.
-------------------------------------------------------------{% endif %}
 
 The camp leaders will be in contact with more details in due time.
 

@@ -40,7 +40,6 @@ from cciw.bookings.models import (
     PriceType,
     RefundPayment,
     add_basket_to_queue,
-    book_bookings_now,
     build_paypal_custom_field,
 )
 from cciw.bookings.models.constants import Sex
@@ -49,7 +48,10 @@ from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
 from cciw.bookings.models.queue import (
     QueueEntryActionLogType,
     add_queue_cutoffs,
+    allocate_places_and_notify,
+    book_bookings_now,
     get_booking_queue_problems,
+    get_camp_booking_queue_ranking_result,
     rank_queue_bookings,
 )
 from cciw.bookings.models.yearconfig import YearConfig, YearConfigFetcher, get_booking_open_data
@@ -3054,17 +3056,41 @@ def test_get_booking_queue_problems_too_many_first_timers():
     )
 
 
-class BookingQueuePage(SeleniumBase):
+class BookingQueuePageBase(FuncBaseMixin):
     def _ensure_camp(self):
         if not hasattr(self, "year_config"):
             self.year_config = create_year_config_for_queue_tests()
         if not hasattr(self, "camp"):
             self.camp: Camp = camps_factories.create_camp(year=self.year_config.year)
 
-    def _create_booking(self) -> Booking:
+    def _create_booking(self, first_name: str = Auto) -> Booking:
         self._ensure_camp()
-        return factories.create_booking(camp=self.camp)
+        return factories.create_booking(camp=self.camp, first_name=first_name)
 
+    def test_allocate_places(self):
+        COUNT = 5
+        bookings = [self._create_booking(first_name=f"Joe {n}") for n in range(0, COUNT)]
+        for b in bookings:
+            b.add_to_queue()
+            assert b.state == BookingState.INFO_COMPLETE
+
+        camp = self.camp
+        self.officer_login(officers_factories.create_booking_secretary())
+        self.get_url("cciw-officers-booking_queue", camp_id=camp.url_id)
+
+        self.submit('[name="allocate"]')
+
+        for b in bookings:
+            b.refresh_from_db()
+            assert b.state == BookingState.BOOKED
+
+        self.assertTextPresent("5 places have been allocated, and 5 accounts have been emailed")
+
+        # More detailed tests for `allocate_places_and_notify` below.
+
+
+class TestBookingQueuePageSL(BookingQueuePageBase, SeleniumBase):
+    # This is Selenium only as it requires htmx
     def test_edit_queue_entry(self):
         booking = self._create_booking()
         booking.add_to_queue()
@@ -3072,6 +3098,7 @@ class BookingQueuePage(SeleniumBase):
         self.officer_login(user := officers_factories.create_booking_secretary())
         self.get_url("cciw-officers-booking_queue", camp_id=booking.camp.url_id)
         self.click(f'[data-booking-id="{booking.id}"] input[value="Edit queue details"]')
+        self.wait_for_ajax()
         self.fill({f'[data-booking-id="{booking.id}"] #id_officer_child': True})
         self.click(f'[data-booking-id="{booking.id}"] input[value="Save"]')
         self.wait_for_ajax()
@@ -3092,6 +3119,10 @@ class BookingQueuePage(SeleniumBase):
                 }
             ]
         }
+
+
+class TestBookingQueuePageWT(BookingQueuePageBase, WebTestBase):
+    pass
 
 
 @pytest.mark.django_db
@@ -3142,3 +3173,69 @@ def test_year_config_fetcher(django_assert_num_queries):
 
     with django_assert_num_queries(num=0):
         assert fetcher.lookup_year(2024) is None
+
+
+@pytest.mark.django_db
+def test_allocate_places(mailoutbox):
+    year_config = create_year_config_for_queue_tests()
+    camp: Camp = camps_factories.create_camp(
+        year=year_config.year, max_campers=5, max_male_campers=5, max_female_campers=5
+    )
+
+    # Enough accounts and bookings to test all the notification logic.
+
+    accounts = [factories.create_booking_account(name=f"Booker {n}") for n in range(0, 4)]
+    bookings = []
+    for account in accounts:
+        # 2 bookings for each account. With the odd number of places, this
+        # leaves one account with one booking confirmed, and one not.
+        bookings.extend(
+            [
+                factories.create_booking(
+                    camp=camp, account=account, first_name=f"Joe {n}", last_name=f"Family {account.name}"
+                )
+                for n in range(0, 2)
+            ]
+        )
+
+    for idx, booking in enumerate(bookings):
+        # We freeze time to after the initial booking period, to give determinism
+        # in ranking based on the time
+        start = year_config.bookings_close_for_initial_period_on + timedelta(days=1)
+        start_dt = datetime(start.year, start.month, start.day)
+        with freeze_time(start_dt + timedelta(hours=1 + idx)):
+            booking.add_to_queue()
+
+    ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
+    result = allocate_places_and_notify(ranking_result.bookings)
+
+    # First 2 accounts get both places accepted,
+    # next account gets 1 booking accepted, one declined,
+    # Last account gets both declined
+    assert result.accepted_account_count == 3
+    assert result.accepted_booking_count == 5
+    assert result.declined_and_notified_account_count == 2
+
+    assert (
+        outbox_count_1 := len(mailoutbox)
+    ) == result.accepted_account_count + result.declined_and_notified_account_count
+
+    for booking in bookings:
+        booking.refresh_from_db()
+        assert (
+            booking.queue_entry.declined_notification_sent_at is not None
+            or booking.queue_entry.accepted_notification_sent_at is not None
+        )
+
+    # Second time: do the same thing.
+    ranking_result2 = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
+    result2 = allocate_places_and_notify(ranking_result2.bookings)
+    # This time:
+    # - No places are allocated, as the camp is full.
+    # - No new emails should be sent, because
+    #   we notified all the "decline" bookings the first time.
+    assert result2.accepted_account_count == 0
+    assert result2.accepted_booking_count == 0
+    assert result2.declined_and_notified_account_count == 0
+
+    assert len(mailoutbox) == outbox_count_1
