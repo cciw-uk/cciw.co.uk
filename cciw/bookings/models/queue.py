@@ -26,8 +26,10 @@ from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig, get_year_config
 from cciw.cciwmain.models import Camp, PlacesBooked, PlacesLeft
 
+from .states import BookingState
+
 if TYPE_CHECKING:
-    from .bookings import Booking
+    from .bookings import Booking, BookingQuerySet
 
 
 FIRST_TIMER_PERCENTAGE = 10
@@ -529,3 +531,55 @@ def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp
         rejected_officer_children=rejected_officer_children,
         rejected_first_timers=rejected_first_timers,
     )
+
+
+@dataclass(frozen=True)
+class AllocationResult:
+    accepted_booking_count: int
+    accepted_account_count: int
+    declined_and_notified_account_count: int
+
+
+def allocate_places_and_notify(ranked_queue_bookings: Sequence[Booking]) -> AllocationResult:
+    accepted_booking_count: int = 0
+    accepted_booking_account_ids: set[int] = set([])
+
+    # TODO - group by booking account to reduce emails sent.
+    # TODO - notifications, positive and negative
+
+    for booking in ranked_queue_bookings:
+        if booking.rank_info.cutoff_state == QueueCutoff.ACCEPTED:
+            book_bookings_now([booking])
+            accepted_booking_count += 1
+            accepted_booking_account_ids.add(booking.account_id)
+
+    return AllocationResult(
+        accepted_booking_count=accepted_booking_count,
+        accepted_account_count=len(accepted_booking_account_ids),
+        declined_and_notified_account_count=0,  # TODO
+    )
+
+
+def book_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
+    """
+    Book a group of bookings.
+    """
+    # TODO #52 - this is used by tests currently,
+    # we probably want something that operates on BookingQueueEntry objects
+    # and changes the `state` value.
+    bookings: list[Booking] = list(bookings_qs)
+
+    now = timezone.now()
+
+    for b in bookings:
+        b.booked_at = now
+        # Early bird discounts are only applied for online bookings, and
+        # this needs to be re-assessed if a booking expires and is later
+        # booked again. Therefore it makes sense to put the logic here
+        # rather than in the Booking model.
+        b.early_bird_discount = b.can_have_early_bird_discount()
+        b.auto_set_amount_due()
+        b.state = BookingState.BOOKED
+        b.save()
+
+    return True

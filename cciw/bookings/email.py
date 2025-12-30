@@ -17,10 +17,7 @@ from django.utils import timezone
 from cciw.cciwmain import common
 
 if TYPE_CHECKING:
-    pass
-
-if TYPE_CHECKING:
-    pass
+    from .models import Booking
 
 
 class VerifyFailed:
@@ -168,7 +165,7 @@ def send_booking_approved_mail(booking):
     return True
 
 
-def send_booking_confirmed_mail(booking):
+def send_booking_confirmed_mail(booking: Booking):
     account = booking.account
     if not account.email:
         return False
