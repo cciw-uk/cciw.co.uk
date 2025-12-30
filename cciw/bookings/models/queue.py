@@ -182,6 +182,30 @@ class QueueEntryActionLog(models.Model):
     details = models.JSONField(default=dict, blank=True)
 
 
+@dataclass
+class RankingResult:
+    bookings: list[Booking]  # with .rank_info objects TODO nicer type for this
+    places_left: PlacesLeft
+    ready_to_allocate: PlacesToAllocate
+    problems: BookingQueueProblems
+
+
+def get_camp_booking_queue_ranking_result(*, camp: Camp, year_config: YearConfig) -> RankingResult:
+    """
+    The main entry point for view functions - get ranking of bookings.
+    """
+    places_left = camp.get_places_left()
+    ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
+    ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
+    problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
+    return RankingResult(
+        bookings=ranked_queue_bookings,
+        places_left=places_left,
+        ready_to_allocate=ready_to_allocate,
+        problems=problems,
+    )
+
+
 def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]:
     from cciw.bookings.models import Booking
 
