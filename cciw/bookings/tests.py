@@ -382,11 +382,11 @@ class TestBookingModels(TestBase):
         year: int = year_config.year
         factories.create_prices(year=year, full_price=100)
         camp = camps_factories.create_camp(year=year)
+        config_fetcher = YearConfigFetcher()
+        config_fetcher.lookup_year(year)  # prefetch to avoid complicating assertNumQueries below
 
         def assert_account_balance(expected: Decimal | int, *, full: bool = False):
             expected = Decimal(expected)
-            config_fetcher = YearConfigFetcher()
-            config_fetcher.lookup_year(year)  # prefetch to avoid complicating assertNumQueries below
 
             if full:
                 today = None
