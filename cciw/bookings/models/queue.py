@@ -461,23 +461,31 @@ def add_queue_cutoffs(*, ranked_queue_bookings: list[Booking], places_left: Plac
 @dataclass
 class BookingQueueProblems:
     general_messages: Sequence[str]
+    rejected_officer_children: Sequence[Booking]
     rejected_first_timers: Sequence[Booking]
 
     @property
     def has_items(self) -> bool:
-        return bool(self.general_messages or self.rejected_first_timers)
+        return bool(self.general_messages or self.rejected_officer_children or self.rejected_first_timers)
 
 
 def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp: Camp) -> BookingQueueProblems:
     general_messages = []
-    # If 'first timer' is allocated, they may assume that it 'works'
+    # If 'officer child' or 'first timer' is allocated, they may assume that it 'works'
     # so we add a warning if it hasn't.
+    rejected_officer_children = [
+        b
+        for b in ranked_queue_bookings
+        if b.rank_info.cutoff_state != QueueCutoff.ACCEPTED and b.queue_entry.officer_child
+    ]
     rejected_first_timers = [
         b
         for b in ranked_queue_bookings
         if b.rank_info.cutoff_state != QueueCutoff.ACCEPTED and b.queue_entry.first_timer_allocated
     ]
-    # We use camp for this query, not ranked_queue_bookings, because we need to include
+
+    # Check the number of first timers is within limits.
+    # We use `camp` for this query, not `ranked_queue_bookings`, because we need to include
     # bookings that have already been accepted and are no longer in ranked_queue_bookings
     first_timer_count = BookingQueueEntry.objects.for_camp(camp).filter(first_timer_allocated=True).count()
     total_places = camp.max_campers
@@ -487,4 +495,8 @@ def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp
             f'{first_timer_count} bookings are marked as "chosen first timers", but only {allowed_first_timers} are allowed ({FIRST_TIMER_PERCENTAGE}%)'
         )
 
-    return BookingQueueProblems(general_messages=general_messages, rejected_first_timers=rejected_first_timers)
+    return BookingQueueProblems(
+        general_messages=general_messages,
+        rejected_officer_children=rejected_officer_children,
+        rejected_first_timers=rejected_first_timers,
+    )

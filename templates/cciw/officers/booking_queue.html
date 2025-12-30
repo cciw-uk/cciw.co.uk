@@ -134,6 +134,16 @@
           {% for message in problems.general_messages %}
             <li>{{ message }}</li>
           {% endfor %}
+          {% if problems.rejected_officer_children %}
+            <li>Some of the places marked as "officer children" have nonetheless fallen below
+              the cut-offs and won't have a place allocated:
+              <ul>
+                {% for booking in problems.rejected_officer_children %}
+                  <li>{{ booking.name }}</li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endif %}
           {% if problems.rejected_first_timers %}
             <li>Some of the places marked as "chosen first timers" have nonetheless fallen below
               the cut-offs and won't have a place allocated:
