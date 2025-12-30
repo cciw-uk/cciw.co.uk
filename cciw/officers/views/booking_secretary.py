@@ -14,9 +14,7 @@ from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.queue import (
     FIRST_TIMER_PERCENTAGE,
     BookingQueueEntry,
-    add_queue_cutoffs,
-    get_booking_queue_problems,
-    rank_queue_bookings,
+    get_camp_booking_queue_ranking_result,
 )
 from cciw.bookings.models.yearconfig import get_year_config
 from cciw.bookings.stats import get_booking_summary_stats
@@ -250,33 +248,23 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         raise Http404(
             f"The booking queue for {camp.nice_name} can't be accessed until the booking configuration dates for {camp.year} have been defined"
         )
-    places_left = camp.get_places_left()
 
-    # TODO - UI for fixing up sibling fuzzy matching, if needed?
-
-    # TODO - buttons to confirm places. Take to a different page.
-    # TODO - track changes that are made via this page, for auditing
-
-    ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
-    ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
-    problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
-
-    template_name = "cciw/officers/booking_queue.html"
+    ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
 
     context = {
         "camp": camp,
         "year": camp.year,
         "last_year": camp.year - 1,
-        "places_left": places_left,
-        "ready_to_allocate": ready_to_allocate,
+        "places_left": ranking_result.places_left,
+        "ready_to_allocate": ranking_result.ready_to_allocate,
         "title": f"Booking queue - {camp.nice_name}",
-        "ranked_queue_bookings": ranked_queue_bookings,
+        "ranked_queue_bookings": ranking_result.bookings,
         "edit_queue_entry_mode": False,
-        "problems": problems,
+        "problems": ranking_result.problems,
         "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
         "can_edit_bookings": request.user.can_edit_bookings,
     }
-    return TemplateResponse(request, template_name, context, headers={})
+    return TemplateResponse(request, "cciw/officers/booking_queue.html", context)
 
 
 @cciw_secretary_or_booking_secretary_required
@@ -285,12 +273,14 @@ def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     assert "Hx-Request" in request.headers
     camp = get_camp_or_404(camp_id)
     year_config = get_year_config(year=camp.year)
+    assert year_config is not None
     trigger_page_update = False
     booking_id = int(request.POST["booking_id"])
 
-    # We need all the bookings, ranked, to be able to show one row correctly.
-    ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
-    booking = [b for b in ranked_queue_bookings if b.id == booking_id][0]
+    # We need all the bookings, ranked, to be able to show one row correctly,
+    # due to the 'Allocate' column.
+    ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
+    booking = [b for b in ranking_result.bookings if b.id == booking_id][0]
     queue_entry: BookingQueueEntry = booking.queue_entry
 
     assert year_config is not None
@@ -316,10 +306,6 @@ def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         # Do nothing, just re-render the row
         edit_queue_entry_mode = False
         form = None
-
-    if not edit_queue_entry_mode:
-        # Include the allocation so that the first column displays correctly
-        add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=camp.get_places_left())
 
     headers = {}
     if trigger_page_update:
