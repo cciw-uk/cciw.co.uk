@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import base64
 import binascii
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import timedelta
-from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core import mail
@@ -14,13 +12,11 @@ from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
 
+from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain import common
 
-if TYPE_CHECKING:
-    pass
-
-if TYPE_CHECKING:
-    pass
+from .models.accounts import BookingAccount
+from .models.bookings import Booking
 
 
 class VerifyFailed:
@@ -128,27 +124,44 @@ def send_pending_payment_email(account, ipn_obj):
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
-def send_places_confirmed_email(bookings):
-    if not bookings:
-        return
-    account = bookings[0].account
+def send_places_allocated_email(account: BookingAccount, bookings: Sequence[Booking]) -> None:
+    assert bookings
+    assert all(booking.account == account for booking in bookings)
     if not account.email:
         return
 
-    # We can't use 'processed_at' here, because this email can be sent
-    # in the middle of processing before that flag is updated.
-    payment_received_recently = account.payments.received_since(timezone.now() - timedelta(hours=1)).exists()
     c = {
         "domain": common.get_current_domain(),
         "account": account,
         "bookings": bookings,
-        "payment_received_recently": payment_received_recently,
-        "early_bird_discount_missed": sum(b.early_bird_discount_missed() for b in bookings),
     }
-    body = loader.render_to_string("cciw/bookings/place_confirmed_email.txt", c)
-    subject = "[CCIW] Booking - place confirmed"
+    body = loader.render_to_string("cciw/bookings/places_allocated_email.txt", c)
+    subject = "[CCIW] Booking - places confirmed"
 
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+    BookingQueueEntry.objects.filter(id__in=[b.queue_entry.id for b in bookings]).update(
+        accepted_notification_sent_at=timezone.now()
+    )
+
+
+def send_places_declined_email(account: BookingAccount, bookings: Sequence[Booking]) -> None:
+    assert bookings
+    assert all(booking.account == account for booking in bookings)
+    if not account.email:
+        return
+
+    c = {
+        "domain": common.get_current_domain(),
+        "account": account,
+        "bookings": bookings,
+    }
+    body = loader.render_to_string("cciw/bookings/places_declined_email.txt", c)
+    subject = "[CCIW] Booking - places declined"
+
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+    BookingQueueEntry.objects.filter(id__in=[b.queue_entry.id for b in bookings]).update(
+        declined_notification_sent_at=timezone.now()
+    )
 
 
 def send_booking_approved_mail(booking):
@@ -168,7 +181,7 @@ def send_booking_approved_mail(booking):
     return True
 
 
-def send_booking_confirmed_mail(booking):
+def send_booking_confirmed_mail(booking: Booking):
     account = booking.account
     if not account.email:
         return False

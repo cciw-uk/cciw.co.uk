@@ -43,6 +43,7 @@
       <label>First timer: {{ form.first_timer_allocated }}</label>
     </td>
     <td>{% if booking.rank_info.in_previous_year_waiting_list %}✔️{% endif %}</td>
+    {# MAYBE we should have some UI for fixing sibling fuzzy matching? #}
     <td>{{ booking.rank_info.sibling_bonus }}</td>
     <td>{{ booking.queue_entry.tiebreaker_display }}</td>
     <td>

@@ -2,9 +2,10 @@ import contextlib
 from datetime import datetime
 
 import pandas_highcharts.core
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import Http404
+from django.shortcuts import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -14,6 +15,7 @@ from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.queue import (
     FIRST_TIMER_PERCENTAGE,
     BookingQueueEntry,
+    allocate_places_and_notify,
     get_camp_booking_queue_ranking_result,
 )
 from cciw.bookings.models.yearconfig import get_year_config
@@ -251,6 +253,23 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
 
+    # TODO - check dates in year_config before enabling this button
+
+    can_allocate_places = request.user.is_booking_secretary
+    if can_allocate_places and request.method == "POST" and "allocate" in request.POST:
+        result = allocate_places_and_notify(ranking_result.bookings)
+        messages.info(
+            request,
+            f"{result.accepted_account_count} places have been allocated, "
+            + f"and {result.accepted_account_count} accounts have been emailed.",
+        )
+        if result.declined_and_notified_account_count:
+            messages.info(
+                request,
+                f"{result.declined_and_notified_account_count} accounts have been notified that places have not been allocated.",
+            )
+        return HttpResponseRedirect(".")
+
     context = {
         "camp": camp,
         "year": camp.year,
@@ -264,6 +283,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "problems": ranking_result.problems,
         "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
         "can_edit_bookings": request.user.can_edit_bookings,
+        "can_allocate_places": can_allocate_places,
     }
     return TemplateResponse(request, "cciw/officers/booking_queue.html", context)
 

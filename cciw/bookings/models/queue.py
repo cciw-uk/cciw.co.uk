@@ -8,7 +8,7 @@ import hashlib
 import itertools
 import math
 from collections import Counter, defaultdict
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
@@ -22,12 +22,16 @@ from django.db.models.enums import TextChoices
 from django.utils import timezone
 
 from cciw.accounts.models import User
+from cciw.bookings.models.accounts import BookingAccount
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig, get_year_config
 from cciw.cciwmain.models import Camp, PlacesBooked, PlacesLeft
+from cciw.utils.functional import partition
+
+from .states import BookingState
 
 if TYPE_CHECKING:
-    from .bookings import Booking
+    from .bookings import Booking, BookingQuerySet
 
 
 FIRST_TIMER_PERCENTAGE = 10
@@ -152,6 +156,10 @@ class BookingQueueEntry(models.Model):
             self.is_active = False
             self.save()
 
+    @property
+    def has_been_sent_declined_notification(self) -> bool:
+        return self.declined_notification_sent_at is not None
+
 
 class QueueCutoff(StrEnum):
     UNDECIDED = "U"
@@ -184,11 +192,19 @@ class QueueEntryActionLog(models.Model):
 
 @dataclass
 class RankingResult:
+    """
+    Results from get_camp_booking_queue_ranking_result:
+    - bookings with populated `.rank_info` attributes
+    - other related info
+    """
+
     bookings: list[Booking]  # with .rank_info objects TODO nicer type for this
+    problems: BookingQueueProblems
+    ready_to_allocate: PlacesToAllocate
+
+    # Summary of current stats, before allocation:
     places_booked: PlacesBooked
     places_left: PlacesLeft
-    ready_to_allocate: PlacesToAllocate
-    problems: BookingQueueProblems
 
 
 def get_camp_booking_queue_ranking_result(*, camp: Camp, year_config: YearConfig) -> RankingResult:
@@ -529,3 +545,68 @@ def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp
         rejected_officer_children=rejected_officer_children,
         rejected_first_timers=rejected_first_timers,
     )
+
+
+@dataclass(frozen=True)
+class AllocationResult:
+    accepted_booking_count: int
+    accepted_account_count: int
+    declined_and_notified_account_count: int
+
+
+def allocate_places_and_notify(ranked_queue_bookings: Sequence[Booking]) -> AllocationResult:
+    from cciw.bookings.email import send_places_allocated_email, send_places_declined_email
+
+    by_account_key: Callable[[Booking], BookingAccount] = lambda b: b.account
+    by_account_id_key: Callable[[Booking], int] = lambda b: b.account_id
+
+    # Sort bookings by account ID so that group by works
+    ranked_queue_bookings = sorted(ranked_queue_bookings, key=by_account_id_key)
+    to_book, to_decline = partition(
+        ranked_queue_bookings, key=lambda b: b.rank_info.cutoff_state == QueueCutoff.ACCEPTED
+    )
+
+    book_bookings_now(to_book)
+
+    to_book_grouped_by_account = [(a, list(g)) for a, g in itertools.groupby(to_book, key=by_account_key)]
+    for account, bookings in to_book_grouped_by_account:
+        send_places_allocated_email(account, bookings)
+
+    to_decline_and_notify = [b for b in to_decline if not b.queue_entry.has_been_sent_declined_notification]
+    to_decline_and_notify_grouped_by_account = [
+        (a, list(g)) for a, g in itertools.groupby(to_decline_and_notify, key=by_account_key)
+    ]
+
+    for account, bookings in to_decline_and_notify_grouped_by_account:
+        send_places_declined_email(account, bookings)
+
+    return AllocationResult(
+        accepted_booking_count=len(to_book),
+        accepted_account_count=len(to_book_grouped_by_account),
+        declined_and_notified_account_count=len(to_decline_and_notify_grouped_by_account),
+    )
+
+
+def book_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
+    """
+    Book a group of bookings.
+    """
+    # TODO #52 - this is used by tests currently,
+    # we probably want something that operates on BookingQueueEntry objects
+    # and changes the `state` value.
+    bookings: list[Booking] = list(bookings_qs)
+
+    now = timezone.now()
+
+    for b in bookings:
+        b.booked_at = now
+        # Early bird discounts are only applied for online bookings, and
+        # this needs to be re-assessed if a booking expires and is later
+        # booked again. Therefore it makes sense to put the logic here
+        # rather than in the Booking model.
+        b.early_bird_discount = b.can_have_early_bird_discount()
+        b.auto_set_amount_due()
+        b.state = BookingState.BOOKED
+        b.save()
+
+    return True
