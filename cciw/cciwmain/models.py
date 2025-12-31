@@ -85,11 +85,21 @@ class CampName(models.Model):
         return contrast_color(Color.from_rgb_string(self.color)).to_rgb_string()
 
 
-@dataclass
-class PlacesLeft:
+@dataclass(frozen=True)
+class Places:
     total: int
     male: int
     female: int
+
+
+@dataclass(frozen=True)
+class PlacesBooked(Places):
+    pass
+
+
+@dataclass(frozen=True)
+class PlacesLeft(Places):
+    pass
 
 
 class CampManager(models.Manager):
@@ -266,11 +276,7 @@ class Camp(models.Model):
     def age(self) -> str:
         return f"{self.minimum_age}-{self.maximum_age}"
 
-    def get_places_left(self) -> PlacesLeft:
-        """
-        Return the number of places left total and for male/female campers.
-        Note that the first isn't necessarily the sum of 2nd and 3rd.
-        """
+    def get_places_booked(self) -> PlacesBooked:
         from cciw.bookings.models import Sex
 
         females_booked = 0
@@ -282,11 +288,26 @@ class Camp(models.Model):
             elif s == Sex.FEMALE:
                 females_booked = c
         total_booked = males_booked + females_booked
+        return PlacesBooked(
+            total=total_booked,
+            male=males_booked,
+            female=females_booked,
+        )
+
+    def get_places_left(self, booked: PlacesBooked | None = None) -> PlacesLeft:
+        """
+        Return the number of places left total and for male/female campers.
+        Note that the first isn't necessarily the sum of 2nd and 3rd.
+
+        Uses `booked` if passed, otherwise calculates that as well.
+        """
+        if booked is None:
+            booked = self.get_places_booked()
         # negative numbers of places available is confusing for our purposes, so use max
         return PlacesLeft(
-            total=max(self.max_campers - total_booked, 0),
-            male=max(self.max_male_campers - males_booked, 0),
-            female=max(self.max_female_campers - females_booked, 0),
+            total=max(self.max_campers - booked.total, 0),
+            male=max(self.max_male_campers - booked.male, 0),
+            female=max(self.max_female_campers - booked.female, 0),
         )
 
     @property
