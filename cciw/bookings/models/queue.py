@@ -8,7 +8,7 @@ import hashlib
 import itertools
 import math
 from collections import Counter, defaultdict
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
@@ -22,9 +22,12 @@ from django.db.models.enums import TextChoices
 from django.utils import timezone
 
 from cciw.accounts.models import User
+from cciw.bookings.email import send_places_allocated_email, send_places_declined_email
+from cciw.bookings.models.accounts import BookingAccount
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig, get_year_config
 from cciw.cciwmain.models import Camp, PlacesBooked, PlacesLeft
+from cciw.utils.functional import partition
 
 from .states import BookingState
 
@@ -541,22 +544,29 @@ class AllocationResult:
 
 
 def allocate_places_and_notify(ranked_queue_bookings: Sequence[Booking]) -> AllocationResult:
-    accepted_booking_count: int = 0
-    accepted_booking_account_ids: set[int] = set([])
+    by_account_key: Callable[[Booking], BookingAccount] = lambda b: b.account
+    by_account_id_key: Callable[[Booking], int] = lambda b: b.account_id
 
-    # TODO - group by booking account to reduce emails sent.
-    # TODO - notifications, positive and negative
+    # Sort bookings by account ID so that group by works
+    ranked_queue_bookings = sorted(ranked_queue_bookings, key=by_account_id_key)
+    to_book, to_decline = partition(
+        ranked_queue_bookings, key=lambda b: b.rank_info.cutoff_state == QueueCutoff.ACCEPTED
+    )
 
-    for booking in ranked_queue_bookings:
-        if booking.rank_info.cutoff_state == QueueCutoff.ACCEPTED:
-            book_bookings_now([booking])
-            accepted_booking_count += 1
-            accepted_booking_account_ids.add(booking.account_id)
+    book_bookings_now(to_book)
+
+    to_book_grouped_by_account = [(a, list(g)) for a, g in itertools.groupby(to_book, key=by_account_key)]
+    for account, bookings in to_book_grouped_by_account:
+        send_places_allocated_email(account, bookings)
+
+    to_declined_grouped_by_account = [(a, list(g)) for a, g in itertools.groupby(to_decline, key=by_account_key)]
+    for account, bookings in to_declined_grouped_by_account:
+        send_places_declined_email(account, bookings)
 
     return AllocationResult(
-        accepted_booking_count=accepted_booking_count,
-        accepted_account_count=len(accepted_booking_account_ids),
-        declined_and_notified_account_count=0,  # TODO
+        accepted_booking_count=len(to_book),
+        accepted_account_count=len(to_book_grouped_by_account),
+        declined_and_notified_account_count=len(to_declined_grouped_by_account),
     )
 
 

@@ -3176,7 +3176,7 @@ def test_year_config_fetcher(django_assert_num_queries):
 
 
 @pytest.mark.django_db
-def test_allocate_places():
+def test_allocate_places(mailoutbox):
     year_config = create_year_config_for_queue_tests()
     camp: Camp = camps_factories.create_camp(
         year=year_config.year, max_campers=5, max_male_campers=5, max_female_campers=5
@@ -3201,14 +3201,21 @@ def test_allocate_places():
     for idx, booking in enumerate(bookings):
         # We freeze time to after the initial booking period, to give determinism
         # in ranking based on the time
-        with freeze_time(
-            year_config.bookings_close_for_initial_period_on + timedelta(days=1) + timedelta(hours=1 + idx)
-        ):
+        start = year_config.bookings_close_for_initial_period_on + timedelta(days=1)
+        start_dt = datetime(start.year, start.month, start.day)
+        with freeze_time(start_dt + timedelta(hours=1 + idx)):
             booking.add_to_queue()
 
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
     result = allocate_places_and_notify(ranking_result.bookings)
 
-    # First 2 accounts get both places accepted, next account gets 1 booking
+    # First 2 accounts get both places accepted,
+    # next account gets 1 booking accepted, one declined,
+    # Last account gets both declined
     assert result.accepted_account_count == 3
     assert result.accepted_booking_count == 5
+    assert result.declined_and_notified_account_count == 2
+
+    assert len(mailoutbox) == result.accepted_account_count + result.declined_and_notified_account_count
+
+    # TODO - run second time, nobody should be notified.
