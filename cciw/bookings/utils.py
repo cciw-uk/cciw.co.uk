@@ -69,7 +69,7 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
         "Everything", [n for n, f in everything_columns], [[f(b) for n, f in everything_columns] for b in bookings]
     )
 
-    def get_birthday(born):
+    def get_birthday(born: date):
         start = camp.start_date
         try:
             return born.replace(year=start.year)
