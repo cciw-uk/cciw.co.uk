@@ -2494,38 +2494,61 @@ class TestEarlyBird(TestBase):
         assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
 
 
-class TestExportPlaces(TestBase):
-    def test_summary(self):
-        booking = factories.create_booking()
-        booking.state = BookingState.BOOKED
-        booking.save()
+@pytest.mark.django_db
+def test_export_places_summary():
+    booking = factories.create_booking()
+    booking.state = BookingState.BOOKED
+    booking.save()
 
-        workbook = camp_bookings_to_spreadsheet(booking.camp).to_bytes()
-        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+    workbook = camp_bookings_to_spreadsheet(booking.camp).to_bytes()
+    wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
 
-        wksh_all = wkbk.worksheets[0]
+    wksh_all = wkbk.worksheets[0]
 
-        assert wksh_all.cell(1, 1).value == "First name"
-        assert wksh_all.cell(2, 1).value == booking.first_name
+    assert wksh_all.cell(1, 1).value == "First name"
+    assert wksh_all.cell(2, 1).value == booking.first_name
 
-    def test_birthdays(self):
-        camp = camps_factories.create_camp()
-        bday = camp.start_date + timedelta(1)
-        dob = bday.replace(bday.year - 12)
-        booking = factories.create_booking(birth_date=dob, camp=camp, state=BookingState.BOOKED)
 
-        workbook = camp_bookings_to_spreadsheet(booking.camp).to_bytes()
-        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
-        wksh_bdays = wkbk.worksheets[2]
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    # Choose some different dates to set camp, to exercise logic for calculating
+    # birthdays. Birthday is set day after camp start date.
+    "dates_and_age",
+    [
+        # camp start date, birth date, age on camp, birthday on camp
+        (
+            date(2012, 8, 1),
+            date(2000, 8, 2),
+            12,
+            date(2012, 8, 2),
+        ),
+        (
+            date(2017, 2, 28),  # not leap year
+            date(2004, 2, 29),
+            13,
+            date(2017, 2, 28),  # celebrate the day before
+        ),
+    ],
+)
+def test_export_places_birthdays(dates_and_age: tuple[date, date, int, date]):
+    camp = camps_factories.create_camp(start_date=dates_and_age[0])
+    birth_date = dates_and_age[1]
+    age = dates_and_age[2]
+    birthday_on_camp = dates_and_age[3]
+    booking = factories.create_booking(birth_date=birth_date, camp=camp, state=BookingState.BOOKED)
 
-        assert wksh_bdays.cell(1, 1).value == "First name"
-        assert wksh_bdays.cell(2, 1).value == booking.first_name
+    workbook = camp_bookings_to_spreadsheet(camp).to_bytes()
+    wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+    wksh_bdays = wkbk.worksheets[2]
 
-        assert wksh_bdays.cell(1, 3).value == "Birthday"
-        assert wksh_bdays.cell(2, 3).value == bday.strftime("%A %d %B")
+    assert wksh_bdays.cell(1, 1).value == "First name"
+    assert wksh_bdays.cell(2, 1).value == booking.first_name
 
-        assert wksh_bdays.cell(1, 4).value == "Age"
-        assert wksh_bdays.cell(2, 4).value == "12"
+    assert wksh_bdays.cell(1, 3).value == "Birthday"
+    assert wksh_bdays.cell(2, 3).value == birthday_on_camp.strftime("%A %d %B")
+
+    assert wksh_bdays.cell(1, 4).value == "Age"
+    assert wksh_bdays.cell(2, 4).value == str(age)
 
 
 class TestExportPaymentData(TestBase):
