@@ -1,13 +1,13 @@
 import os.path
 from dataclasses import dataclass
 from datetime import date
+from functools import cached_property
 
 from colorful.fields import RGBColorField
 from django.conf import settings
 from django.db import models
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils.functional import cached_property
 from django.utils.html import format_html
 
 from cciw.accounts.models import User
@@ -276,6 +276,14 @@ class Camp(models.Model):
     def age(self) -> str:
         return f"{self.minimum_age}-{self.maximum_age}"
 
+    @cached_property
+    def max_places(self) -> Places:
+        return Places(
+            total=self.max_campers,
+            male=self.max_male_campers,
+            female=self.max_female_campers,
+        )
+
     def get_places_booked(self) -> PlacesBooked:
         from cciw.bookings.models import Sex
 
@@ -305,9 +313,9 @@ class Camp(models.Model):
             booked = self.get_places_booked()
         # negative numbers of places available is confusing for our purposes, so use max
         return PlacesLeft(
-            total=max(self.max_campers - booked.total, 0),
-            male=max(self.max_male_campers - booked.male, 0),
-            female=max(self.max_female_campers - booked.female, 0),
+            total=max(self.max_places.total - booked.total, 0),
+            male=max(self.max_places.male - booked.male, 0),
+            female=max(self.max_places.female - booked.female, 0),
         )
 
     @property
