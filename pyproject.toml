@@ -5,7 +5,6 @@ readme = "README.rst"
 requires-python = "==3.13.*"
 dependencies = [
     "backports-strenum>=1.3.1",
-    "boltons>=24.1.0",
     "boto3>=1.27.1",
     "concurrent-log-handler>=0.9.20",
     "cryptography>=38.0.1",

@@ -29,7 +29,7 @@ def b(s):
 
 
 def partition_mailing_list_rejections(messages):
-    return partition(lambda m: re.match(r"\[CCIW\] Access to mailing list .* denied", m.subject), messages)
+    return partition(messages, lambda m: re.match(r"\[CCIW\] Access to mailing list .* denied", m.subject))
 
 
 class TestMailingLists(RolesSetupMixin, TestBase):
