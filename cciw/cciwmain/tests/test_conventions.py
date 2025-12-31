@@ -1,8 +1,9 @@
 from pathlib import Path
 from unittest.mock import Mock
 
-from boltons import iterutils
 from pyastgrep.api import Match, search_python_files
+
+from cciw.utils.functional import partition
 
 SRC_ROOT = Path(__file__).parent.parent.parent.resolve()
 
@@ -18,9 +19,7 @@ def assert_expected_pyastgrep_matches(xpath_expr: str, *, expected_count: int, m
     xpath_expr = xpath_expr.strip()
     matches: list[Match] = [item for item in search_python_files([SRC_ROOT], xpath_expr) if isinstance(item, Match)]
 
-    expected_matches, other_matches = iterutils.partition(
-        matches, key=lambda match: "pyastgrep: expected" in match.matching_line
-    )
+    expected_matches, other_matches = partition(matches, key=lambda match: "pyastgrep: expected" in match.matching_line)
 
     if len(expected_matches) < expected_count:
         assert False, f"Expected {expected_count} matches but found {len(expected_matches)} for {xpath_expr}"
