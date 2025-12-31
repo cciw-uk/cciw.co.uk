@@ -24,7 +24,7 @@ from django.utils import timezone
 from cciw.accounts.models import User
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.yearconfig import YearConfig, get_year_config
-from cciw.cciwmain.models import Camp, PlacesLeft
+from cciw.cciwmain.models import Camp, PlacesBooked, PlacesLeft
 
 if TYPE_CHECKING:
     from .bookings import Booking
@@ -185,6 +185,7 @@ class QueueEntryActionLog(models.Model):
 @dataclass
 class RankingResult:
     bookings: list[Booking]  # with .rank_info objects TODO nicer type for this
+    places_booked: PlacesBooked
     places_left: PlacesLeft
     ready_to_allocate: PlacesToAllocate
     problems: BookingQueueProblems
@@ -194,12 +195,16 @@ def get_camp_booking_queue_ranking_result(*, camp: Camp, year_config: YearConfig
     """
     The main entry point for view functions - get ranking of bookings.
     """
-    places_left = camp.get_places_left()
+    places_booked = camp.get_places_booked()
+    places_left = camp.get_places_left(booked=places_booked)
     ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
     ready_to_allocate = add_queue_cutoffs(ranked_queue_bookings=ranked_queue_bookings, places_left=places_left)
     problems = get_booking_queue_problems(ranked_queue_bookings=ranked_queue_bookings, camp=camp)
+
+    # We also return some other info needed by the main view functions:
     return RankingResult(
         bookings=ranked_queue_bookings,
+        places_booked=places_booked,
         places_left=places_left,
         ready_to_allocate=ready_to_allocate,
         problems=problems,
