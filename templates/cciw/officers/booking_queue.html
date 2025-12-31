@@ -23,21 +23,21 @@
         </thead>
         <tr>
           <th scope="row">Total</th>
-          <td>{{ camp.max_campers }}</td>
+          <td>{{ camp.max_places.total }}</td>
           <td>{{ places_booked.total }}</td>
           <td>{{ places_left.total }}</td>
           <td>{{ ready_to_allocate.total }}</td>
         </tr>
         <tr>
           <th scope="row">Male</th>
-          <td>{{ camp.max_male_campers }}</td>
+          <td>{{ camp.max_places.male }}</td>
           <td>{{ places_booked.male }}</td>
           <td>{{ places_left.male }}</td>
           <td>{{ ready_to_allocate.male }}</td>
         </tr>
         <tr>
           <th scope="row">Female</th>
-          <td>{{ camp.max_female_campers }}</td>
+          <td>{{ camp.max_places.female }}</td>
           <td>{{ places_booked.female }}</td>
           <td>{{ places_left.female }}</td>
           <td>{{ ready_to_allocate.female }}</td>
