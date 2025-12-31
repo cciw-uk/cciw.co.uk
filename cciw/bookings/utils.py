@@ -69,13 +69,21 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
         "Everything", [n for n, f in everything_columns], [[f(b) for n, f in everything_columns] for b in bookings]
     )
 
+    def round_years(rd: relativedelta) -> int:
+        if rd.months > 0:
+            return rd.years + 1
+        else:
+            return rd.years
+
     def get_birthday(born: date):
         start = camp.start_date
+        year_delta = round_years(relativedelta(start, born))
+        this_year = born.year + year_delta
         try:
-            return born.replace(year=start.year)
+            return born.replace(year=this_year)
         except ValueError:
             # raised when birth date is February 29 and the current year is not a leap year
-            return born.replace(year=start.year, day=born.day - 1)
+            return born.replace(year=this_year, day=born.day - 1)
 
     bday_columns = [
         ("First name", lambda b: b.first_name),
