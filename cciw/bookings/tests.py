@@ -2517,16 +2517,32 @@ def test_export_places_summary():
     [
         # camp start date, birth date, age on camp, birthday on camp
         (
+            # Day after camp starts
             date(2012, 8, 1),
             date(2000, 8, 2),
             12,
             date(2012, 8, 2),
         ),
         (
+            # Day camp starts
+            date(2012, 8, 1),
+            date(2000, 8, 1),
+            12,
+            date(2012, 8, 1),
+        ),
+        (
+            # Leap years!
             date(2017, 2, 28),  # not leap year
-            date(2004, 2, 29),
+            date(2004, 2, 29),  # leap birthday
             13,
             date(2017, 2, 28),  # celebrate the day before
+        ),
+        (
+            # Edge case for (unrealistic) scenario where camp spans a year end.
+            date(2025, 12, 31),
+            date(2013, 1, 1),
+            13,
+            date(2026, 1, 1),
         ),
     ],
 )
