@@ -4,7 +4,8 @@ import base64
 import binascii
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core import mail
@@ -14,7 +15,12 @@ from django.urls import reverse
 from django.utils import timezone
 
 from cciw.cciwmain import common
-from cciw.officers.email import admin_emails_for_camp
+
+if TYPE_CHECKING:
+    pass
+
+if TYPE_CHECKING:
+    pass
 
 
 class VerifyFailed:
@@ -143,28 +149,6 @@ def send_places_confirmed_email(bookings):
     subject = "[CCIW] Booking - place confirmed"
 
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
-
-    # Email leaders. Bookings could be for different camps, so send different
-    # emails.
-
-    # We don't care about timezones, or about accuracy better than 1 day,
-    # so use naive UTC datetimes, not aware datetimes.
-    today = datetime.utcnow().date()
-
-    for booking in bookings:
-        if (booking.camp.start_date - today) < settings.LATE_BOOKING_THRESHOLD:
-            c = {
-                "domain": common.get_current_domain(),
-                "account": account,
-                "booking": booking,
-                "camp": booking.camp,
-            }
-            body = loader.render_to_string("cciw/bookings/late_place_confirmed_email.txt", c)
-            subject = f"[CCIW] Late booking: {booking.name}"
-
-            emails = admin_emails_for_camp(booking.camp)
-            if emails:
-                mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
 
 
 def send_booking_approved_mail(booking):

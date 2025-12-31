@@ -1922,9 +1922,6 @@ class TestPayReturnPoints(BookingBaseMixin, BookingLogInMixin, WebTestBase):
 
 class TestPaymentReceived(BookingBaseMixin, TestBase):
     def test_receive_payment(self):
-        # Late booking:
-        Camp.objects.update(start_date=date.today() + timedelta(days=1))
-
         booking = factories.create_booking()
         (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
         account = booking.account
@@ -1953,12 +1950,6 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # mails = mail.outbox
         # account_mails = [m for m in mails if m.to == [account.email]]
         # assert len(account_mails) == 1
-
-        # # This is a late booking, therefore there is also:
-        # # 1 to camp leaders altogether
-        # leader_emails = [m for m in mails if sorted(m.to) == sorted([leader_1_user.email, leader_2_user.email])]
-        # assert len(leader_emails) == 1
-        # assert leader_emails[0].subject.startswith("[CCIW] Late booking:")
 
     def test_email_for_bad_payment_1(self):
         ipn_1 = IpnMock()
