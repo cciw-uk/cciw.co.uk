@@ -255,6 +255,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "camp": camp,
         "year": camp.year,
         "last_year": camp.year - 1,
+        "places_booked": ranking_result.places_booked,
         "places_left": ranking_result.places_left,
         "ready_to_allocate": ranking_result.ready_to_allocate,
         "title": f"Booking queue - {camp.nice_name}",
