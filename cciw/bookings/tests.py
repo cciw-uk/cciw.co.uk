@@ -61,7 +61,7 @@ from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.officers.tests import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.base import TestBase, disable_logging
+from cciw.utils.tests.base import disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
@@ -345,7 +345,6 @@ class BookingBaseMixin:
     BOOKING_IS_NOT_OPEN = "Booking is not yet open"
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
     BOOKINGS_WILL_EXPIRE = "you have 24 hours to complete payment online"
-    THANK_YOU_FOR_PAYMENT = "Thank you for your payment"
 
     def setUp(self):
         super().setUp()
@@ -366,111 +365,117 @@ class BookingBaseMixin:
 # created the same way a user would.
 
 
-class TestBookingModels(TestBase):
-    def test_camp_open_for_bookings(self):
-        today = date.today()
-        camp = camps_factories.create_camp(start_date=today + timedelta(days=10))
-        assert camp.open_for_bookings(today)
-        assert camp.open_for_bookings(camp.start_date)
-        assert not camp.open_for_bookings(camp.start_date + timedelta(days=1))
+@pytest.mark.django_db
+def test_Camp_open_for_bookings():
+    today = date.today()
+    camp = camps_factories.create_camp(start_date=today + timedelta(days=10))
+    assert camp.open_for_bookings(today)
+    assert camp.open_for_bookings(camp.start_date)
+    assert not camp.open_for_bookings(camp.start_date + timedelta(days=1))
 
-        camp.last_booking_date = today
-        assert camp.open_for_bookings(today)
-        assert not camp.open_for_bookings(today + timedelta(days=1))
+    camp.last_booking_date = today
+    assert camp.open_for_bookings(today)
+    assert not camp.open_for_bookings(today + timedelta(days=1))
 
-    @mock.patch("cciw.bookings.models.bookings.early_bird_is_available", return_value=False)
-    def test_account_balance_due(self, m, use_prefetch_related_for_get_account=True):
-        year_config = create_year_config_for_queue_tests()
-        year: int = year_config.year
-        factories.create_prices(year=year, full_price=100)
-        camp = camps_factories.create_camp(year=year)
-        config_fetcher = YearConfigFetcher()
-        config_fetcher.lookup_year(year)  # prefetch to avoid complicating assertNumQueries below
 
-        def assert_account_balance(expected: Decimal | int, *, full: bool = False):
-            expected = Decimal(expected)
+@mock.patch("cciw.bookings.models.bookings.early_bird_is_available", return_value=False)
+@pytest.mark.django_db
+def test_BookingAccount_balance_due(m, django_assert_num_queries):
+    year_config = create_year_config_for_queue_tests()
+    year: int = year_config.year
+    factories.create_prices(year=year, full_price=100)
+    camp = camps_factories.create_camp(year=year)
+    config_fetcher = YearConfigFetcher()
+    config_fetcher.lookup_year(year)  # prefetch to avoid complicating assertNumQueries below
 
-            if full:
-                today = None
+    def assert_account_balance(expected: Decimal | int, *, full: bool = False):
+        expected = Decimal(expected)
+
+        if full:
+            today = None
+        else:
+            today = date.today()
+        for use_prefetch_related_for_get_account in [True, False]:
+            if use_prefetch_related_for_get_account:
+                # Tests that the other code paths in get_balance/BookingManager.payable
+                # work.
+                account = BookingAccount.objects.filter(id=booking_account_id).prefetch_related("bookings")[0]
             else:
-                today = date.today()
-            for use_prefetch_related_for_get_account in [True, False]:
-                if use_prefetch_related_for_get_account:
-                    # Tests that the other code paths in get_balance/BookingManager.payable
-                    # work.
-                    account = BookingAccount.objects.filter(id=booking_account_id).prefetch_related("bookings")[0]
-                else:
-                    account = BookingAccount.objects.get(id=booking_account_id)
-                with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
-                    assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
-                    assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
+                account = BookingAccount.objects.get(id=booking_account_id)
+            with django_assert_num_queries(num=0 if use_prefetch_related_for_get_account else 2):
+                assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
+                assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
 
-        # Data entry
-        with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
-            booking = factories.create_booking(camp=camp)
-            booking_account_id: int = booking.account.id
-            assert_account_balance(0)
+    # Data entry
+    with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+        booking = factories.create_booking(camp=camp)
+        booking_account_id: int = booking.account.id
+        assert_account_balance(0)
 
-        # "Book" button
-        with freeze_time(year_config.bookings_open_for_booking_on):
-            booking.add_to_queue()
-            assert_account_balance(0)
+    # "Book" button
+    with freeze_time(year_config.bookings_open_for_booking_on):
+        booking.add_to_queue()
+        assert_account_balance(0)
 
-        # Confirmed by booking secretary
-        with freeze_time(year_config.bookings_initial_notifications_on):
-            book_bookings_now([booking])
-            assert_account_balance(0)
+    # Confirmed by booking secretary
+    with freeze_time(year_config.bookings_initial_notifications_on):
+        book_bookings_now([booking])
+        assert_account_balance(0)
 
-            # Place should be booked
-            booking.refresh_from_db()
-            assert booking.state == BookingState.BOOKED
+        # Place should be booked
+        booking.refresh_from_db()
+        assert booking.state == BookingState.BOOKED
 
-        # Before full payment due:
-        with freeze_time(year_config.payments_due_on - timedelta(days=1)):
-            # balance should be zero
-            assert_account_balance(0)
+    # Before full payment due:
+    with freeze_time(year_config.payments_due_on - timedelta(days=1)):
+        # balance should be zero
+        assert_account_balance(0)
 
-            # But for full amount, they still owe 100 (full price)
-            assert_account_balance(100, full=True)
+        # But for full amount, they still owe 100 (full price)
+        assert_account_balance(100, full=True)
 
-            # Test some model methods:
-            assert len(booking.account.bookings.payable()) == 1
+        # Test some model methods:
+        assert len(booking.account.bookings.payable()) == 1
 
-        with freeze_time(year_config.payments_due_on):
-            assert_account_balance(100)
-            assert_account_balance(100, full=True)
+    with freeze_time(year_config.payments_due_on):
+        assert_account_balance(100)
+        assert_account_balance(100, full=True)
 
-    def test_booking_missing_agreements(self):
-        camp = camps_factories.create_camp(future=True)
-        booking = factories.create_booking(state=BookingState.BOOKED, camp=camp)
-        agreement = factories.create_custom_agreement(year=booking.camp.year, name="test")
-        # Other agreement, different year so should be irrelevant:
-        factories.create_custom_agreement(year=booking.camp.year - 1, name="x")
-        assert booking in Booking.objects.agreement_fix_required()
-        assert booking not in Booking.objects.no_missing_agreements()
-        assert booking.get_missing_agreements() == [agreement]
 
-        booking.custom_agreements_checked = [agreement.id]
-        booking.save()
+@pytest.mark.django_db
+def test_Booking_missing_agreements():
+    camp = camps_factories.create_camp(future=True)
+    booking = factories.create_booking(state=BookingState.BOOKED, camp=camp)
+    agreement = factories.create_custom_agreement(year=booking.camp.year, name="test")
+    # Other agreement, different year so should be irrelevant:
+    factories.create_custom_agreement(year=booking.camp.year - 1, name="x")
+    assert booking in Booking.objects.agreement_fix_required()
+    assert booking not in Booking.objects.no_missing_agreements()
+    assert booking.get_missing_agreements() == [agreement]
 
-        assert booking not in Booking.objects.agreement_fix_required()
-        assert booking not in Booking.objects.missing_agreements()
-        assert booking in Booking.objects.no_missing_agreements()
-        assert booking.get_missing_agreements() == []
+    booking.custom_agreements_checked = [agreement.id]
+    booking.save()
 
-    def test_get_missing_agreements_performance(self):
-        # We can use common AgreementFetcher with get_missing_agreements to get
-        # good performance:
-        bookings = []
-        camp = camps_factories.get_any_camp()
-        for i in range(0, 20):
-            bookings.append(factories.create_booking(camp=camp))
-        agreement = factories.create_custom_agreement(year=camp.year, name="test")
-        agreement_fetcher = AgreementFetcher()
-        with self.assertNumQueries(2):
-            bookings = Booking.objects.filter(id__in=[booking.id for booking in bookings]).select_related("camp")
-            for booking in bookings:
-                assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
+    assert booking not in Booking.objects.agreement_fix_required()
+    assert booking not in Booking.objects.missing_agreements()
+    assert booking in Booking.objects.no_missing_agreements()
+    assert booking.get_missing_agreements() == []
+
+
+@pytest.mark.django_db
+def test_Booking_get_missing_agreements_performance(django_assert_num_queries):
+    # We can use common AgreementFetcher with get_missing_agreements to get
+    # good performance:
+    bookings = []
+    camp = camps_factories.get_any_camp()
+    for i in range(0, 20):
+        bookings.append(factories.create_booking(camp=camp))
+    agreement = factories.create_custom_agreement(year=camp.year, name="test")
+    agreement_fetcher = AgreementFetcher()
+    with django_assert_num_queries(num=2):
+        bookings = Booking.objects.filter(id__in=[booking.id for booking in bookings]).select_related("camp")
+        for booking in bookings:
+            assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
 
 
 class BookingIndexBase(BookingBaseMixin, FuncBaseMixin):
@@ -1922,222 +1927,238 @@ class TestPayReturnPoints(BookingBaseMixin, BookingLogInMixin, WebTestBase):
         assert resp.status_code == 200
 
 
-class TestPaymentReceived(BookingBaseMixin, TestBase):
-    def test_receive_payment(self):
-        booking = factories.create_booking()
-        (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
-        account = booking.account
-        book_bookings_now([booking])
-        booking.refresh_from_db()
+@pytest.mark.django_db
+def test_account_receive_payment():
+    booking = factories.create_booking()
+    (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
+    account = booking.account
+    book_bookings_now([booking])
+    booking.refresh_from_db()
 
-        mail.outbox = []
-        ManualPayment.objects.create(
-            account=account,
-            amount=booking.amount_due,
-        )
+    mail.outbox = []
+    ManualPayment.objects.create(
+        account=account,
+        amount=booking.amount_due,
+    )
 
-        account.refresh_from_db()
+    account.refresh_from_db()
 
-        # Check we updated the account
-        assert account.total_received == booking.amount_due
-        assert account.total_received > 0  # sanity check
+    # Check we updated the account
+    assert account.total_received == booking.amount_due
+    assert account.total_received > 0  # sanity check
 
-        # Check we updated the bookings
-        booking.refresh_from_db()
+    # Check we updated the bookings
+    booking.refresh_from_db()
 
-        # Check for emails sent
-        # 1 to account
+    # Check for emails sent
+    # 1 to account
 
-        # TODO #52
-        # mails = mail.outbox
-        # account_mails = [m for m in mails if m.to == [account.email]]
-        # assert len(account_mails) == 1
+    # TODO #52
+    # mails = mail.outbox
+    # account_mails = [m for m in mails if m.to == [account.email]]
+    # assert len(account_mails) == 1
 
-    def test_email_for_bad_payment_1(self):
-        ipn_1 = IpnMock()
-        ipn_1.id = 123
-        ipn_1.mc_gross = Decimal("1.00")
-        ipn_1.custom = "x"  # wrong format
 
-        mail.outbox = []
-        assert len(mail.outbox) == 0
-        paypal_payment_received(ipn_1)
+@pytest.mark.django_db
+def test_email_for_bad_payment_1():
+    ipn_1 = IpnMock()
+    ipn_1.id = 123
+    ipn_1.mc_gross = Decimal("1.00")
+    ipn_1.custom = "x"  # wrong format
 
-        assert len(mail.outbox) == 1
-        assert "/admin/ipn/paypal" in mail.outbox[0].body
-        assert "No associated account" in mail.outbox[0].body
+    mail.outbox = []
+    assert len(mail.outbox) == 0
+    paypal_payment_received(ipn_1)
 
-    def test_email_for_bad_payment_2(self):
-        account = BookingAccount(id=1234567)  # bad ID, not in DB
-        ipn_1 = IpnMock()
-        ipn_1.id = 123
-        ipn_1.mc_gross = Decimal("1.00")
-        ipn_1.custom = build_paypal_custom_field(account)
+    assert len(mail.outbox) == 1
+    assert "/admin/ipn/paypal" in mail.outbox[0].body
+    assert "No associated account" in mail.outbox[0].body
 
-        mail.outbox = []
-        assert len(mail.outbox) == 0
-        paypal_payment_received(ipn_1)
 
-        assert len(mail.outbox) == 1
-        assert "/admin/ipn/paypal" in mail.outbox[0].body
-        assert "No associated account" in mail.outbox[0].body
+@pytest.mark.django_db
+def test_email_for_bad_payment_2():
+    account = BookingAccount(id=1234567)  # bad ID, not in DB
+    ipn_1 = IpnMock()
+    ipn_1.id = 123
+    ipn_1.mc_gross = Decimal("1.00")
+    ipn_1.custom = build_paypal_custom_field(account)
 
-    def test_email_for_bad_payment_3(self):
-        ipn_1 = IpnMock()
-        ipn_1.id = 123
-        ipn_1.mc_gross = Decimal("1.00")
+    mail.outbox = []
+    assert len(mail.outbox) == 0
+    paypal_payment_received(ipn_1)
 
-        mail.outbox = []
-        assert len(mail.outbox) == 0
-        unrecognised_payment(ipn_1)
+    assert len(mail.outbox) == 1
+    assert "/admin/ipn/paypal" in mail.outbox[0].body
+    assert "No associated account" in mail.outbox[0].body
 
-        assert len(mail.outbox) == 1
-        assert "/admin/ipn/paypal" in mail.outbox[0].body
-        assert "Invalid IPN" in mail.outbox[0].body
 
-    def test_receive_payment_handler(self):
-        # Use the actual signal handler, check the good path.
-        account = factories.create_booking_account()
-        assert account.total_received == Decimal(0)
+@pytest.mark.django_db
+def test_email_for_bad_payment_3():
+    ipn_1 = IpnMock()
+    ipn_1.id = 123
+    ipn_1.mc_gross = Decimal("1.00")
 
-        ipn_1 = factories.create_ipn(account=account)
+    mail.outbox = []
+    assert len(mail.outbox) == 0
+    unrecognised_payment(ipn_1)
 
-        # Test for Payment objects
-        assert Payment.objects.count() == 1
-        assert Payment.objects.all()[0].amount == ipn_1.mc_gross
+    assert len(mail.outbox) == 1
+    assert "/admin/ipn/paypal" in mail.outbox[0].body
+    assert "Invalid IPN" in mail.outbox[0].body
 
-        # Test account updated
-        account.refresh_from_db()
-        assert account.total_received == ipn_1.mc_gross
 
-        # Test refund is wired up
-        ipn_2 = factories.create_ipn(
-            account=account,
-            parent_txn_id="1",
-            txn_id="2",
-            mc_gross=-1 * ipn_1.mc_gross,
-            payment_status="Refunded",
-        )
+@pytest.mark.django_db
+def test_receive_payment_signal_handler():
+    # Use the actual signal handler, check the good path.
+    account = factories.create_booking_account()
+    assert account.total_received == Decimal(0)
 
-        assert Payment.objects.count() == 2
-        assert Payment.objects.order_by("-created_at")[0].amount == ipn_2.mc_gross
+    ipn_1 = factories.create_ipn(account=account)
 
-        account.refresh_from_db()
-        assert account.total_received == Decimal(0)
+    # Test for Payment objects
+    assert Payment.objects.count() == 1
+    assert Payment.objects.all()[0].amount == ipn_1.mc_gross
 
-    @pytest.mark.xfail  # TODO #52
-    def test_email_for_good_payment(self):
-        booking = factories.create_booking(state=BookingState.INFO_COMPLETE)
-        account = booking.account
-        book_bookings_now([booking])
+    # Test account updated
+    account.refresh_from_db()
+    assert account.total_received == ipn_1.mc_gross
 
-        mail.outbox = []
-        factories.create_ipn(account=account, mc_gross=booking.amount_due)
+    # Test refund is wired up
+    ipn_2 = factories.create_ipn(
+        account=account,
+        parent_txn_id="1",
+        txn_id="2",
+        mc_gross=-1 * ipn_1.mc_gross,
+        payment_status="Refunded",
+    )
 
-        mails = mail.outbox
-        assert len(mails) == 1
+    assert Payment.objects.count() == 2
+    assert Payment.objects.order_by("-created_at")[0].amount == ipn_2.mc_gross
 
-        assert mails[0].subject == "[CCIW] Booking - place confirmed"
-        assert mails[0].to == [account.email]
-        assert self.THANK_YOU_FOR_PAYMENT in mails[0].body
+    account.refresh_from_db()
+    assert account.total_received == Decimal(0)
 
-    @pytest.mark.xfail  # TODO #52
-    def test_only_one_email_for_multiple_places(self):
-        booking1 = factories.create_booking(name="Princess Pearl")
-        account = booking1.account
-        booking2 = factories.create_booking(name="Another Child", account=account)
 
-        book_bookings_now([booking1, booking2])
+@pytest.mark.xfail  # TODO #52
+@pytest.mark.django_db
+def test_email_for_good_payment():
+    booking = factories.create_booking(state=BookingState.INFO_COMPLETE)
+    account = booking.account
+    book_bookings_now([booking])
 
-        mail.outbox = []
-        account.receive_payment(account.get_balance_full())
+    mail.outbox = []
+    factories.create_ipn(account=account, mc_gross=booking.amount_due)
 
-        mails = mail.outbox
-        assert len(mails) == 1
+    mails = mail.outbox
+    assert len(mails) == 1
 
-        assert mails[0].subject == "[CCIW] Booking - place confirmed"
-        assert mails[0].to == [account.email]
-        assert "Princess Pearl" in mails[0].body
-        assert "Another Child" in mails[0].body
+    assert mails[0].subject == "[CCIW] Booking - place confirmed"
+    assert mails[0].to == [account.email]
+    assert "Thank you for your payment" in mails[0].body
 
-    def test_concurrent_save(self):
-        acc1 = BookingAccount.objects.create(email="foo@foo.com")
-        acc2 = BookingAccount.objects.get(email="foo@foo.com")
 
-        acc1.receive_payment(Decimal("100.00"))
+@pytest.mark.xfail  # TODO #52
+@pytest.mark.django_db
+def test_only_one_email_for_multiple_places():
+    booking1 = factories.create_booking(name="Princess Pearl")
+    account = booking1.account
+    booking2 = factories.create_booking(name="Another Child", account=account)
 
-        assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
+    book_bookings_now([booking1, booking2])
 
-        acc2.save()  # this will have total_received = 0.00
+    mail.outbox = []
+    account.receive_payment(account.get_balance_full())
 
-        assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
+    mails = mail.outbox
+    assert len(mails) == 1
 
-    def test_pending_payment_handling(self):
-        # This test is story-style - checks the whole process
-        # of handling pending payments.
+    assert mails[0].subject == "[CCIW] Booking - place confirmed"
+    assert mails[0].to == [account.email]
+    assert "Princess Pearl" in mails[0].body
+    assert "Another Child" in mails[0].body
 
-        # Create a place
 
-        booking = factories.create_booking()
-        account = booking.account
+@pytest.mark.django_db
+def test_BookingAccount_concurrent_save():
+    acc1 = BookingAccount.objects.create(email="foo@foo.com")
+    acc2 = BookingAccount.objects.get(email="foo@foo.com")
 
-        # Book it
-        book_bookings_now([booking])
-        # Sanity check initial condition:
-        mail.outbox = []
-        booking.refresh_from_db()
+    acc1.receive_payment(Decimal("100.00"))
 
-        # Send payment that doesn't complete immediately
-        ipn_1 = factories.create_ipn(
-            account=account,
-            txn_id="8DX10782PJ789360R",
-            mc_gross=Decimal("20.00"),
-            payment_status="Pending",
-            pending_reason="echeck",
-        )
+    assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
 
-        # Money should not be counted as received
-        account = refresh(account)
-        assert account.total_received == Decimal("0.00")
+    acc2.save()  # this will have total_received = 0.00
 
-        # Custom email sent:
-        assert len(mail.outbox) == 1
-        m = mail.outbox[0]
-        assert "We have received a payment of £20.00 that is pending" in m.body
-        assert "echeck" in m.body
+    assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
 
-        # Check that we can tell the account has pending payments
-        # and how much.
-        three_days_later = timezone.now() + timedelta(days=3)
-        assert account.get_pending_payment_total(now=three_days_later) == Decimal("20.00")
 
-        # But pending payments are considered abandoned after 3 months.
-        three_months_later = three_days_later + timedelta(days=30 * 3)
-        assert account.get_pending_payment_total(now=three_months_later) == Decimal("0.00")
+@pytest.mark.django_db
+def test_pending_payment_handling():
+    # This test is story-style - checks the whole process
+    # of handling pending payments.
 
-        # Once confirmed payment comes in, we consider that there are no pending payments.
+    # Create a place
 
-        # A different payment doesn't affect whether pending ones are completed:
-        factories.create_ipn(
-            account=account,
-            txn_id="ABCDEF123",  # DIFFERENT txn_id
-            mc_gross=Decimal("10.00"),
-            payment_status="Completed",
-        )
-        account = refresh(account)
-        assert account.total_received == Decimal("10.00")
-        assert account.get_pending_payment_total(now=three_days_later) == Decimal("20.00")
+    booking = factories.create_booking()
+    account = booking.account
 
-        # But the same TXN id is recognised as cancelling the pending payment
-        factories.create_ipn(
-            account=account,
-            txn_id=ipn_1.txn_id,  # SAME txn_id
-            mc_gross=ipn_1.mc_gross,
-            payment_status="Completed",
-        )
-        account = refresh(account)
-        assert account.total_received == Decimal("30.00")
-        assert account.get_pending_payment_total(now=three_days_later) == Decimal("0.00")
+    # Book it
+    book_bookings_now([booking])
+    # Sanity check initial condition:
+    mail.outbox = []
+    booking.refresh_from_db()
+
+    # Send payment that doesn't complete immediately
+    ipn_1 = factories.create_ipn(
+        account=account,
+        txn_id="8DX10782PJ789360R",
+        mc_gross=Decimal("20.00"),
+        payment_status="Pending",
+        pending_reason="echeck",
+    )
+
+    # Money should not be counted as received
+    account = refresh(account)
+    assert account.total_received == Decimal("0.00")
+
+    # Custom email sent:
+    assert len(mail.outbox) == 1
+    m = mail.outbox[0]
+    assert "We have received a payment of £20.00 that is pending" in m.body
+    assert "echeck" in m.body
+
+    # Check that we can tell the account has pending payments
+    # and how much.
+    three_days_later = timezone.now() + timedelta(days=3)
+    assert account.get_pending_payment_total(now=three_days_later) == Decimal("20.00")
+
+    # But pending payments are considered abandoned after 3 months.
+    three_months_later = three_days_later + timedelta(days=30 * 3)
+    assert account.get_pending_payment_total(now=three_months_later) == Decimal("0.00")
+
+    # Once confirmed payment comes in, we consider that there are no pending payments.
+
+    # A different payment doesn't affect whether pending ones are completed:
+    factories.create_ipn(
+        account=account,
+        txn_id="ABCDEF123",  # DIFFERENT txn_id
+        mc_gross=Decimal("10.00"),
+        payment_status="Completed",
+    )
+    account = refresh(account)
+    assert account.total_received == Decimal("10.00")
+    assert account.get_pending_payment_total(now=three_days_later) == Decimal("20.00")
+
+    # But the same TXN id is recognised as cancelling the pending payment
+    factories.create_ipn(
+        account=account,
+        txn_id=ipn_1.txn_id,  # SAME txn_id
+        mc_gross=ipn_1.mc_gross,
+        payment_status="Completed",
+    )
+    account = refresh(account)
+    assert account.total_received == Decimal("30.00")
+    assert account.get_pending_payment_total(now=three_days_later) == Decimal("0.00")
 
 
 class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
@@ -2351,149 +2372,156 @@ class TestLogOutSL(LogOutBase, SeleniumBase):
     pass
 
 
-class TestManualPayment(TestBase):
-    def test_create(self):
-        account = BookingAccount.objects.create(email="foo@foo.com")
-        assert Payment.objects.count() == 0
-        ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
-        assert Payment.objects.count() == 1
-        assert Payment.objects.all()[0].amount == Decimal("100.00")
+@pytest.mark.django_db
+def test_ManualPayment_create():
+    account = BookingAccount.objects.create(email="foo@foo.com")
+    assert Payment.objects.count() == 0
+    ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
+    assert Payment.objects.count() == 1
+    assert Payment.objects.all()[0].amount == Decimal("100.00")
 
-        account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal("100.00")
-
-    def test_delete(self):
-        # Setup
-        account = BookingAccount.objects.create(email="foo@foo.com")
-        cp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
-        assert Payment.objects.count() == 1
-
-        # Test
-        cp.delete()
-        assert Payment.objects.count() == 2
-        account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal("0.00")
-
-    def test_edit(self):
-        # Setup
-        account = BookingAccount.objects.create(email="foo@foo.com")
-        cp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
-
-        cp.amount = Decimal("101.00")
-        with pytest.raises(Exception):
-            cp.save()
+    account = BookingAccount.objects.get(id=account.id)
+    assert account.total_received == Decimal("100.00")
 
 
-class TestRefundPayment(TestBase):
-    def test_create(self):
-        account = BookingAccount.objects.create(email="foo@foo.com")
-        assert Payment.objects.count() == 0
-        RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
-        assert Payment.objects.count() == 1
-        assert Payment.objects.all()[0].amount == Decimal("-100.00")
+@pytest.mark.django_db
+def test_ManualPayment_delete():
+    # Setup
+    account = BookingAccount.objects.create(email="foo@foo.com")
+    mp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
+    assert Payment.objects.count() == 1
 
-        account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal("-100.00")
-
-    def test_delete(self):
-        # Setup
-        account = BookingAccount.objects.create(email="foo@foo.com")
-        cp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
-        assert Payment.objects.count() == 1
-
-        # Test
-        cp.delete()
-        assert Payment.objects.count() == 2
-        account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal("0.00")
-
-    def test_edit(self):
-        # Setup
-        account = BookingAccount.objects.create(email="foo@foo.com")
-        cp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
-
-        cp.amount = Decimal("101.00")
-        with pytest.raises(Exception):
-            cp.save()
+    # Test
+    mp.delete()
+    assert Payment.objects.count() == 2
+    account = BookingAccount.objects.get(id=account.id)
+    assert account.total_received == Decimal("0.00")
 
 
-class TestCancel(TestBase):
-    """
-    Tests covering what happens when a user cancels.
-    """
+@pytest.mark.django_db
+def test_ManualPayment_edit():
+    # Setup
+    account = BookingAccount.objects.create(email="foo@foo.com")
+    mp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
 
-    def test_amount_due(self):
-        booking = factories.create_booking()
-        booking.state = BookingState.CANCELLED_FULL_REFUND
-        assert booking.expected_amount_due() == Decimal(0)
-
-    def test_account_amount_due(self):
-        booking = factories.create_booking()
-        account = booking.account
-        booking.state = BookingState.CANCELLED_HALF_REFUND
-        assert booking.expected_amount_due() > Decimal(0)
-        booking.auto_set_amount_due()
-        booking.save()
-
-        account.refresh_from_db()
-        assert account.get_balance_full() == booking.amount_due
+    mp.amount = Decimal("101.00")
+    with pytest.raises(Exception):
+        mp.save()
 
 
-class TestCancelFullRefund(TestBase):
-    """
-    Tests covering what happens when CCiW cancels a camp,
-    using 'full refund'.
-    """
+@pytest.mark.django_db
+def test_RefundPayment_create():
+    account = BookingAccount.objects.create(email="foo@foo.com")
+    assert Payment.objects.count() == 0
+    RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
+    assert Payment.objects.count() == 1
+    assert Payment.objects.all()[0].amount == Decimal("-100.00")
 
-    def test_amount_due(self):
-        booking = factories.create_booking()
-        booking.state = BookingState.CANCELLED_FULL_REFUND
-        assert booking.expected_amount_due() == Decimal("0.00")
-
-    def test_account_amount_due(self):
-        booking = factories.create_booking()
-        account = booking.account
-        booking.state = BookingState.CANCELLED_FULL_REFUND
-        booking.auto_set_amount_due()
-        booking.save()
-
-        account.refresh_from_db()
-        assert account.get_balance_full() == booking.amount_due
+    account = BookingAccount.objects.get(id=account.id)
+    assert account.total_received == Decimal("-100.00")
 
 
-class TestEarlyBird(TestBase):
-    def test_expected_amount_due(self):
-        booking = factories.create_booking()
-        price_checker = PriceChecker()
-        year = booking.camp.year
-        assert booking.expected_amount_due() == price_checker.get_full_price(year)
+@pytest.mark.django_db
+def test_RefundPayment_delete():
+    # Setup
+    account = BookingAccount.objects.create(email="foo@foo.com")
+    rp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
+    assert Payment.objects.count() == 1
 
-        booking.early_bird_discount = True
-        assert booking.expected_amount_due() == price_checker.get_full_price(
-            year
-        ) - price_checker.get_early_bird_discount(year)
+    # Test
+    rp.delete()
+    assert Payment.objects.count() == 2
+    account = BookingAccount.objects.get(id=account.id)
+    assert account.total_received == Decimal("0.00")
 
-    def test_book_basket_applies_discount(self):
-        booking = factories.create_booking()
-        year = booking.camp.year
-        with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
-            # Cut off date definitely in the future
-            mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
-            book_bookings_now([booking])
-        booking.refresh_from_db()
-        assert booking.early_bird_discount
-        price_checker = PriceChecker()
-        assert booking.amount_due == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(year)
 
-    def test_book_basket_doesnt_apply_discount(self):
-        booking = factories.create_booking()
-        with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
-            # Cut off date definitely in the past
-            mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
-            book_bookings_now([booking])
-        booking.refresh_from_db()
-        assert not booking.early_bird_discount
-        assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
+@pytest.mark.django_db
+def test_RefundPayment_edit():
+    # Setup
+    account = BookingAccount.objects.create(email="foo@foo.com")
+    rp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
+
+    rp.amount = Decimal("101.00")
+    with pytest.raises(Exception):
+        rp.save()
+
+
+@pytest.mark.django_db
+def test_cancel_amount_due():
+    booking = factories.create_booking()
+    booking.state = BookingState.CANCELLED_FULL_REFUND
+    assert booking.expected_amount_due() == Decimal(0)
+
+
+@pytest.mark.django_db
+def test_cancel_account_amount_due():
+    booking = factories.create_booking()
+    account = booking.account
+    booking.state = BookingState.CANCELLED_HALF_REFUND
+    assert booking.expected_amount_due() > Decimal(0)
+    booking.auto_set_amount_due()
+    booking.save()
+
+    account.refresh_from_db()
+    assert account.get_balance_full() == booking.amount_due
+
+
+@pytest.mark.django_db
+def test_cancel_full_refund_amount_due():
+    booking = factories.create_booking()
+    booking.state = BookingState.CANCELLED_FULL_REFUND
+    assert booking.expected_amount_due() == Decimal("0.00")
+
+
+@pytest.mark.django_db
+def test_cancel_full_refund_account_amount_due():
+    booking = factories.create_booking()
+    account = booking.account
+    booking.state = BookingState.CANCELLED_FULL_REFUND
+    booking.auto_set_amount_due()
+    booking.save()
+
+    account.refresh_from_db()
+    assert account.get_balance_full() == booking.amount_due
+
+
+@pytest.mark.django_db
+def test_early_bird_expected_amount_due():
+    booking = factories.create_booking()
+    price_checker = PriceChecker()
+    year = booking.camp.year
+    assert booking.expected_amount_due() == price_checker.get_full_price(year)
+
+    booking.early_bird_discount = True
+    assert booking.expected_amount_due() == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(
+        year
+    )
+
+
+@pytest.mark.django_db
+def test_early_bird_book_basket_applies_discount():
+    booking = factories.create_booking()
+    year = booking.camp.year
+    with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
+        # Cut off date definitely in the future
+        mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
+        book_bookings_now([booking])
+    booking.refresh_from_db()
+    assert booking.early_bird_discount
+    price_checker = PriceChecker()
+    assert booking.amount_due == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(year)
+
+
+@pytest.mark.django_db
+def test_early_bird_book_basket_doesnt_apply_discount():
+    booking = factories.create_booking()
+    with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
+        # Cut off date definitely in the past
+        mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
+        book_bookings_now([booking])
+    booking.refresh_from_db()
+    assert not booking.early_bird_discount
+    assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
 
 
 @pytest.mark.django_db
@@ -2569,129 +2597,135 @@ def test_export_places_birthdays(dates_and_age: tuple[date, date, int, date]):
     assert wksh_bdays.cell(2, 4).value == str(age)
 
 
-class TestExportPaymentData(TestBase):
-    def test_export(self):
-        account1 = BookingAccount.objects.create(name="Joe Bloggs", email="joe@foo.com")
-        account2 = BookingAccount.objects.create(name="Mary Muddle", email="mary@foo.com")
-        factories.create_ipn(account=account1, mc_gross=Decimal("10.00"))
-        ManualPayment.objects.create(account=account1, amount=Decimal("11.50"))
-        RefundPayment.objects.create(account=account1, amount=Decimal("0.25"))
-        AccountTransferPayment.objects.create(from_account=account2, to_account=account1, amount=Decimal("100.00"))
-        mp2 = ManualPayment.objects.create(account=account1, amount=Decimal("1.23"))
-        mp2.delete()
+@pytest.mark.django_db
+def test_export_payment_data():
+    account1 = BookingAccount.objects.create(name="Joe Bloggs", email="joe@foo.com")
+    account2 = BookingAccount.objects.create(name="Mary Muddle", email="mary@foo.com")
+    factories.create_ipn(account=account1, mc_gross=Decimal("10.00"))
+    ManualPayment.objects.create(account=account1, amount=Decimal("11.50"))
+    RefundPayment.objects.create(account=account1, amount=Decimal("0.25"))
+    AccountTransferPayment.objects.create(from_account=account2, to_account=account1, amount=Decimal("100.00"))
+    mp2 = ManualPayment.objects.create(account=account1, amount=Decimal("1.23"))
+    mp2.delete()
 
-        now = timezone.now()
-        workbook = payments_to_spreadsheet(now - timedelta(days=3), now + timedelta(days=3)).to_bytes()
+    now = timezone.now()
+    workbook = payments_to_spreadsheet(now - timedelta(days=3), now + timedelta(days=3)).to_bytes()
 
-        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
-        wksh = wkbk.worksheets[0]
-        data = [[c.value for c in r] for r in wksh.rows]
-        assert data[0] == ["Account name", "Account email", "Amount", "Date", "Type"]
+    wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+    wksh = wkbk.worksheets[0]
+    data = [[c.value for c in r] for r in wksh.rows]
+    assert data[0] == ["Account name", "Account email", "Amount", "Date", "Type"]
 
-        # Excel dates are a pain, so we ignore them
-        data2 = [[c for i, c in enumerate(r) if i != 3] for r in data[1:]]
-        assert ["Joe Bloggs", "joe@foo.com", 10.0, "PayPal"] in data2
-        assert ["Joe Bloggs", "joe@foo.com", 11.5, "Cheque"] in data2
-        assert ["Joe Bloggs", "joe@foo.com", -0.25, "Refund Cheque"] in data2
-        assert ["Joe Bloggs", "joe@foo.com", 100.00, "Account transfer"] in data2
+    # Excel dates are a pain, so we ignore them
+    data2 = [[c for i, c in enumerate(r) if i != 3] for r in data[1:]]
+    assert ["Joe Bloggs", "joe@foo.com", 10.0, "PayPal"] in data2
+    assert ["Joe Bloggs", "joe@foo.com", 11.5, "Cheque"] in data2
+    assert ["Joe Bloggs", "joe@foo.com", -0.25, "Refund Cheque"] in data2
+    assert ["Joe Bloggs", "joe@foo.com", 100.00, "Account transfer"] in data2
 
-        assert ["Joe Bloggs", "joe@foo.com", 1.23, "ManualPayment (deleted)"] not in data2
-        assert ["Joe Bloggs", "joe@foo.com", -1.23, "ManualPayment (deleted)"] not in data2
-
-
-class TestBookingModel(TestBase):
-    def test_saved_approvals_unapproved_and_need_approving(self):
-        booking = factories.create_booking()
-        assert len(Booking.objects.need_approving()) == 0
-
-        booking.serious_illness = True
-        booking.birth_date = date(1980, 1, 1)
-        booking.price_type = PriceType.CUSTOM
-        booking.save()
-        booking.update_approvals()
-
-        assert len(Booking.objects.need_approving()) == 1
-        booking: Booking = Booking.objects.get()
-        camper_age = booking.age_on_camp()
-        camp = booking.camp
-        actual_approvals = [(app.description, app.type) for app in booking.saved_approvals_unapproved]
-        expected_approvals = [
-            ("A custom discount needs to be arranged by the booking secretary", ANT.CUSTOM_PRICE),
-            ("Must be approved by leader due to serious illness/condition", ANT.SERIOUS_ILLNESS),
-            (
-                f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on 31 August {camp.year}",
-                ANT.TOO_OLD,
-            ),
-        ]
-        assert actual_approvals == expected_approvals
-        assert booking.saved_approvals_needed_summary == "Custom price, Serious illness, Too old"
-
-        # Check that update_approvals adds and removes correctly.
-        booking.serious_illness = False
-        booking.birth_date = date(camp.year - 2, 1, 1)
-        booking.price_type = PriceType.FULL
-        booking.save()
-        booking.update_approvals()
-
-        booking = Booking.objects.get()
-        types = [app.type for app in booking.saved_approvals_unapproved]
-        assert types == [ANT.TOO_YOUNG]
-
-        # Check that `need_approving` responds to approvals being done.
-        assert len(Booking.objects.need_approving()) == 1
-
-        booking.approve_booking_for_problem(type=ANT.TOO_YOUNG, user=officers_factories.get_any_officer())
-
-        assert len(Booking.objects.need_approving()) == 0
-
-        # Check that approve_booking_for_problem actually worked
-        booking = Booking.objects.get()
-        assert booking.saved_approvals_unapproved == []
-
-    def test_add_to_queue(self):
-        booking = factories.create_booking()
-        assert not booking.is_in_queue
-        booking.add_to_queue()
-        assert booking.is_in_queue
-        booking.refresh_from_db()
-        assert booking.queue_entry.is_active
-
-        # Multiple times is fine and does nothing.
-        old_queue_entry = booking.queue_entry
-        created_at = old_queue_entry.created_at
-
-        booking.add_to_queue()
-        booking.refresh_from_db()
-
-        assert booking.queue_entry == old_queue_entry
-        assert booking.queue_entry.created_at == created_at
+    assert ["Joe Bloggs", "joe@foo.com", 1.23, "ManualPayment (deleted)"] not in data2
+    assert ["Joe Bloggs", "joe@foo.com", -1.23, "ManualPayment (deleted)"] not in data2
 
 
-class TestPaymentModels(TestBase):
-    def test_payment_source_save_bad(self):
-        manual = factories.create_manual_payment()
-        refund = factories.create_refund_payment()
-        with pytest.raises(AssertionError):
-            PaymentSource.objects.create(manual_payment=manual, refund_payment=refund)
+@pytest.mark.django_db
+def test_booking_saved_approvals_unapproved_and_need_approving():
+    booking = factories.create_booking()
+    assert len(Booking.objects.need_approving()) == 0
 
-    def test_payment_source_save_good(self):
-        manual = factories.create_manual_payment()
-        PaymentSource.objects.all().delete()
-        p = PaymentSource.objects.create(manual_payment=manual)
-        assert p.id is not None
+    booking.serious_illness = True
+    booking.birth_date = date(1980, 1, 1)
+    booking.price_type = PriceType.CUSTOM
+    booking.save()
+    booking.update_approvals()
 
-    def test_write_off_debt_payment(self):
-        account = factories.create_booking_account()
-        factories.create_booking(account=account, state=BookingState.BOOKED)
-        account.refresh_from_db()
+    assert len(Booking.objects.need_approving()) == 1
+    booking: Booking = Booking.objects.get()
+    camper_age = booking.age_on_camp()
+    camp = booking.camp
+    actual_approvals = [(app.description, app.type) for app in booking.saved_approvals_unapproved]
+    expected_approvals = [
+        ("A custom discount needs to be arranged by the booking secretary", ANT.CUSTOM_PRICE),
+        ("Must be approved by leader due to serious illness/condition", ANT.SERIOUS_ILLNESS),
+        (
+            f"Camper will be {camper_age} which is above the maximum age ({camp.maximum_age}) on 31 August {camp.year}",
+            ANT.TOO_OLD,
+        ),
+    ]
+    assert actual_approvals == expected_approvals
+    assert booking.saved_approvals_needed_summary == "Custom price, Serious illness, Too old"
 
-        balance = account.get_balance_full()
-        assert balance > 0
+    # Check that update_approvals adds and removes correctly.
+    booking.serious_illness = False
+    booking.birth_date = date(camp.year - 2, 1, 1)
+    booking.price_type = PriceType.FULL
+    booking.save()
+    booking.update_approvals()
 
-        factories.create_write_off_debt_payment(account=account, amount=balance)
-        account.refresh_from_db()
+    booking = Booking.objects.get()
+    types = [app.type for app in booking.saved_approvals_unapproved]
+    assert types == [ANT.TOO_YOUNG]
 
-        assert account.get_balance_full() == 0
+    # Check that `need_approving` responds to approvals being done.
+    assert len(Booking.objects.need_approving()) == 1
+
+    booking.approve_booking_for_problem(type=ANT.TOO_YOUNG, user=officers_factories.get_any_officer())
+
+    assert len(Booking.objects.need_approving()) == 0
+
+    # Check that approve_booking_for_problem actually worked
+    booking = Booking.objects.get()
+    assert booking.saved_approvals_unapproved == []
+
+
+@pytest.mark.django_db
+def test_booking_add_to_queue():
+    booking = factories.create_booking()
+    assert not booking.is_in_queue
+    booking.add_to_queue()
+    assert booking.is_in_queue
+    booking.refresh_from_db()
+    assert booking.queue_entry.is_active
+
+    # Multiple times is fine and does nothing.
+    old_queue_entry = booking.queue_entry
+    created_at = old_queue_entry.created_at
+
+    booking.add_to_queue()
+    booking.refresh_from_db()
+
+    assert booking.queue_entry == old_queue_entry
+    assert booking.queue_entry.created_at == created_at
+
+
+@pytest.mark.django_db
+def test_payment_source_save_bad():
+    manual = factories.create_manual_payment()
+    refund = factories.create_refund_payment()
+    with pytest.raises(AssertionError):
+        PaymentSource.objects.create(manual_payment=manual, refund_payment=refund)
+
+
+@pytest.mark.django_db
+def test_payment_source_save_good():
+    manual = factories.create_manual_payment()
+    PaymentSource.objects.all().delete()
+    p = PaymentSource.objects.create(manual_payment=manual)
+    assert p.id is not None
+
+
+@pytest.mark.django_db
+def test_write_off_debt_payment():
+    account = factories.create_booking_account()
+    factories.create_booking(account=account, state=BookingState.BOOKED)
+    account.refresh_from_db()
+
+    balance = account.get_balance_full()
+    assert balance > 0
+
+    factories.create_write_off_debt_payment(account=account, amount=balance)
+    account.refresh_from_db()
+
+    assert account.get_balance_full() == 0
 
 
 class SupportingInformationAdminBase(fix_autocomplete_fields("booking"), FuncBaseMixin):
