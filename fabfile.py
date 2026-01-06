@@ -669,10 +669,16 @@ def restart_task_queue(c: Connection):
 
 
 @root_task()
+def restart_runmailer(c: Connection):
+    supervisorctl(c, f"restart {PROJECT_NAME}_runmailer")
+
+
+@root_task()
 def restart_all(c):
     supervisorctl(c, "reread")  # for first time, to ensure it can see webserver conf
     restart_webserver(c)
     restart_task_queue(c)
+    restart_runmailer(c)
 
 
 @root_task()
