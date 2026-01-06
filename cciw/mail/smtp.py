@@ -1,3 +1,4 @@
+import email.policy
 import logging
 
 from django.core.mail import EmailMessage
@@ -14,7 +15,9 @@ class RawEmailMessage(EmailMessage):
         super().__init__(**kwargs)
         self.mime_data = mime_data
 
-    def message(self):
+    def message(self, *, policy=email.policy.default):
+        # The main thing is that we return an object with an `as_bytes()`
+        # method, that's all that Django uses.
         return RawBytes(self.mime_data)
 
 
