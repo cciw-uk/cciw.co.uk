@@ -329,6 +329,24 @@ class Booking(models.Model):
         db_persist=True,
     )
 
+    # fuzzy_camper_id_strict is a narrower version of the above,
+    # that also limits to same booking account. This is far less likely
+    # to result in false positives when matching.
+    fuzzy_camper_id_strict = models.GeneratedField(
+        expression=functions.Concat(
+            functions.Cast("account_id", output_field=models.CharField()),
+            Value(" "),
+            sql_normalise_human_name_for_match(
+                "first_name",
+                Value(" "),
+                "last_name",
+            ),
+            functions.Cast(functions.ExtractYear("birth_date"), output_field=models.CharField()),
+        ),
+        output_field=models.CharField(),
+        db_persist=True,
+    )
+
     objects = BookingManager()
 
     class Meta:
