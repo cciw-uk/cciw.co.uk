@@ -41,7 +41,16 @@ class PriceQuerySet(models.QuerySet):
 
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
-    price_type = models.PositiveSmallIntegerField(choices=[(pt, pt.label) for pt in VALUED_PRICE_TYPES])
+    price_type = models.PositiveSmallIntegerField(
+        choices=[
+            (0, "Full price"),
+            (1, "2nd child discount"),
+            (2, "3rd child discount"),
+            (4, "South wales transport surcharge (pre 2015)"),
+            (5, "Deposit"),
+            (6, "Early bird discount"),
+        ]
+    )
     price = models.DecimalField(decimal_places=2, max_digits=10)
 
     objects = models.Manager.from_queryset(PriceQuerySet)()

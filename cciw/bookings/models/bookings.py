@@ -21,7 +21,7 @@ from cciw.utils.models import AfterFetchQuerySetMixin
 from .accounts import BookingAccount
 from .agreements import AgreementFetcher, CustomAgreement
 from .constants import DEFAULT_COUNTRY, Sex
-from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceType
+from .prices import Price, PriceType
 from .problems import (
     ApprovalNeededType,
     ApprovalStatus,
@@ -286,7 +286,9 @@ class Booking(models.Model):
     )
 
     # Price - partly from user (must fit business rules)
-    price_type = models.PositiveSmallIntegerField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])
+    price_type = models.PositiveSmallIntegerField(
+        choices=[(0, "Full price"), (1, "2nd child discount"), (2, "3rd child discount"), (3, "Custom discount")]
+    )
     early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
     booked_at = models.DateTimeField(null=True, blank=True, help_text="Online bookings only")
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
