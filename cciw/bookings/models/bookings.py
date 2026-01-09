@@ -426,6 +426,10 @@ class Booking(models.Model):
             return amount
 
     def auto_set_amount_due(self) -> None:
+        if self.camp.year < 2026:
+            # Business rules have changed, we can't calculate expected amount due
+            # any more, and we shouldn't every need to do this for old bookings.
+            return
         amount = self.expected_amount_due()
         if amount is None:
             # This happens for PriceType.CUSTOM
