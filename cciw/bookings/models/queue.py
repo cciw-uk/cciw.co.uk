@@ -486,10 +486,11 @@ def get_other_places_in_queue(bookings: Sequence[Booking], camp: Camp) -> dict[B
 
     # We can do a simpler query by starting with a new QuerySet:
     this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
-    other_camp_bookings = Booking.objects.in_queue().exclude(camp=camp)
+    other_camp_bookings = Booking.objects.for_year(camp.year).in_queue().exclude(camp=camp)
     with_matches = this_camp_bookings.annotate(
         other_places_count=Subquery(
             other_camp_bookings.filter(fuzzy_camper_id_strict=OuterRef("fuzzy_camper_id_strict"))
+            .values("fuzzy_camper_id_strict")
             .annotate(c=Count("id"))
             .values("c"),
             output_field=models.IntegerField(),
@@ -511,10 +512,11 @@ def get_other_places_booked(bookings: Sequence[Booking], camp: Camp) -> dict[Boo
     # We use fuzzy_camper_id_strict here (and above), because false positives for matching
     # have a very strong negative effect on priority
     this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
-    other_camp_bookings = Booking.objects.booked().exclude(camp=camp)
+    other_camp_bookings = Booking.objects.for_year(year=camp.year).booked().exclude(camp=camp)
     with_matches = this_camp_bookings.annotate(
         other_places_count=Subquery(
             other_camp_bookings.filter(fuzzy_camper_id_strict=OuterRef("fuzzy_camper_id_strict"))
+            .values("fuzzy_camper_id_strict")
             .annotate(c=Count("id"))
             .values("c"),
             output_field=models.IntegerField(),
