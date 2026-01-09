@@ -5,16 +5,16 @@ from django.db import models
 
 
 # Price types that can be selected in a booking or appear in Prices table.
-class PriceType(models.IntegerChoices):
-    FULL = 0, "Full price"
-    SECOND_CHILD = 1, "2nd child discount"
-    THIRD_CHILD = 2, "3rd child discount"
-    CUSTOM = 3, "Custom discount"
+class PriceType(models.TextChoices):
+    FULL = "full", "Full price"
+    SECOND_CHILD = "second_child", "2nd child discount"
+    THIRD_CHILD = "third_child", "3rd child discount"
+    CUSTOM = "custom_discount", "Custom discount"
     # South Wales transport not used from 2015 onwards, kept for historical data
-    SOUTH_WALES_TRANSPORT = 4, "South wales transport surcharge (pre 2015)"
+    SOUTH_WALES_TRANSPORT = "south_wales_transport", "South wales transport surcharge (pre 2015)"
     # Deposit not used from 2025 onwards, kept for historical data.
-    DEPOSIT = 5, "Deposit"
-    EARLY_BIRD_DISCOUNT = 6, "Early bird discount"
+    DEPOSIT = "deposit", "Deposit"
+    EARLY_BIRD_DISCOUNT = "early_bird_discount", "Early bird discount"
 
 
 BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
@@ -51,6 +51,7 @@ class Price(models.Model):
             (6, "Early bird discount"),
         ]
     )
+    price_type_new = models.CharField(choices=[(pt, pt.label) for pt in VALUED_PRICE_TYPES])
     price = models.DecimalField(decimal_places=2, max_digits=10)
 
     objects = models.Manager.from_queryset(PriceQuerySet)()
