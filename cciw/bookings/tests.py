@@ -211,6 +211,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             self.price_2nd_child,
             self.price_3rd_child,
             self.price_early_bird_discount,
+            self.price_booking_fee,
         ) = factories.create_prices(year=year, early_bird_discount=early_bird_discount)
 
     def create_booking(

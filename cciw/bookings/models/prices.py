@@ -30,11 +30,7 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 
 
 # Prices required to open bookings.
-REQUIRED_PRICE_TYPES = [
-    v
-    for v in VALUED_PRICE_TYPES
-    if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT, PriceType.BOOKING_FEE)
-]
+REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT)]
 
 
 class PriceQuerySet(models.QuerySet):

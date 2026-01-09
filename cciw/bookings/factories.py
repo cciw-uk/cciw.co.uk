@@ -240,7 +240,10 @@ def create_prices(*, year: int, early_bird_discount=Auto, full_price=Auto):
     price_early_bird_discount = Price.objects.get_or_create(
         year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT, defaults={"price": early_bird_discount}
     )[0].price
-    return price_full, price_2nd_child, price_3rd_child, price_early_bird_discount
+    price_booking_fee = Price.objects.get_or_create(
+        year=year, price_type=PriceType.BOOKING_FEE, defaults={"price": Decimal("30")}
+    )[0].price
+    return price_full, price_2nd_child, price_3rd_child, price_early_bird_discount, price_booking_fee
 
 
 def create_supporting_information_type(*, name="Test"):
