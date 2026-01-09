@@ -34,6 +34,12 @@ class YearConfig(models.Model):
     payments_due_on = models.DateField(
         help_text="The date we expect payment for places to be made (unless a payment plan is agreed on)"
     )
+    cancellations_full_refund_cutoff_on = models.DateField(
+        help_text="The last date people can cancel bookings and still get a full refund",
+        null=True,
+        default=None,
+        blank=True,
+    )
 
     def __str__(self) -> str:
         return f"Config for {self.year}"
@@ -110,6 +116,7 @@ class BookingOpenData:
     closes_for_initial_period_on: date | None
     initial_notifications_on: date | None
     payments_due_on: date | None
+    cancellations_full_refund_cutoff_on: date | None
 
     @property
     def closes_for_initial_period_special_needs_on(self) -> date | None:
@@ -127,6 +134,7 @@ class BookingOpenData:
         closes_for_initial_period_on = config.bookings_close_for_initial_period_on
         initial_notifications_on = config.bookings_initial_notifications_on
         payments_due_on = config.payments_due_on
+        cancellations_full_refund_cutoff_on = config.cancellations_full_refund_cutoff_on
 
         if prices_are_set:
             is_open_for_booking = config.bookings_open_for_booking_on <= today
@@ -148,6 +156,7 @@ class BookingOpenData:
             payments_due_on=payments_due_on,
             is_open_for_booking=is_open_for_booking,
             is_open_for_entry=is_open_for_entry,
+            cancellations_full_refund_cutoff_on=cancellations_full_refund_cutoff_on,
         )
 
     @classmethod
@@ -160,6 +169,7 @@ class BookingOpenData:
             payments_due_on=None,
             is_open_for_booking=False,
             is_open_for_entry=False,
+            cancellations_full_refund_cutoff_on=None,
         )
 
 
