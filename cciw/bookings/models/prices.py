@@ -1,7 +1,15 @@
+from __future__ import annotations
+
 from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
+from functools import cached_property
 
 from django.db import models
+from django.utils import timezone
+
+from cciw.bookings.models.yearconfig import early_bird_is_available, get_early_bird_cutoff_date
 
 
 # Price types that can be selected in a booking or appear in Prices table.
@@ -21,7 +29,7 @@ class PriceType(models.TextChoices):
 BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
 
 # Price types that are used by Price model
-VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] + [
+VALUED_PRICE_TYPES: list[PriceType] = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] + [
     PriceType.SOUTH_WALES_TRANSPORT,
     PriceType.DEPOSIT,
     PriceType.EARLY_BIRD_DISCOUNT,
@@ -30,7 +38,10 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
 
 
 # Prices required to open bookings.
-REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT)]
+# If changing this, PriceInfo.price_* should be changed to tolerate missing data
+REQUIRED_PRICE_TYPES: list[PriceType] = [
+    v for v in VALUED_PRICE_TYPES if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT)
+]
 
 
 class PriceQuerySet(models.QuerySet):
@@ -59,6 +70,8 @@ class PriceChecker:
     """
     Utility that looks up prices, with caching to reduce queries
     """
+
+    # TODO - merge this into PriceInfo
 
     # We don't look up prices immediately, but lazily, because there are
     # quite a few paths that don't need the price at all,
@@ -94,5 +107,61 @@ class PriceChecker:
         return self.get_price(year, PriceType.EARLY_BIRD_DISCOUNT)
 
 
+@dataclass(frozen=True)
+class PriceInfo:
+    year: int
+    prices: dict[PriceType, Decimal]
+    show_early_bird: bool
+
+    @classmethod
+    def get_for_year(cls, *, year: int, show_early_bird: bool = True) -> PriceInfo | None:
+        prices: list[Price] = list(Price.objects.filter(year=year))
+
+        price_dict: dict[PriceType, Decimal] = {p.price_type: p.price for p in prices}
+        if not all(pt in price_dict for pt in REQUIRED_PRICE_TYPES):
+            # Act as if prices haven't been set - it's easier
+            # than dealing with partial information.
+            return None
+
+        return cls(year=year, prices=price_dict, show_early_bird=show_early_bird)
+
+    @property
+    def price_full(self) -> Decimal:
+        return self.prices[PriceType.FULL]
+
+    @property
+    def price_second_child(self) -> Decimal:
+        return self.prices[PriceType.SECOND_CHILD]
+
+    @property
+    def price_third_child(self) -> Decimal:
+        return self.prices[PriceType.THIRD_CHILD]
+
+    @property
+    def price_early_bird_discount(self) -> Decimal:
+        return self.prices[PriceType.EARLY_BIRD_DISCOUNT]
+
+    @property
+    def price_list(self) -> list[tuple[str, Decimal]]:
+        return [
+            ("Full price", self.price_full),
+            ("2nd camper from the same family", self.price_second_child),
+            ("Subsequent children from the same family", self.price_third_child),
+        ]
+
+    @property
+    def price_list_with_discounts(self) -> list[tuple[str, Decimal, Decimal]]:
+        early_bird_discount = self.price_early_bird_discount
+        return [(caption, p, p - early_bird_discount) for caption, p in self.price_list]
+
+    @cached_property
+    def early_bird_is_available(self) -> bool:
+        return early_bird_is_available(year=self.year, booked_at=timezone.now())
+
+    @cached_property
+    def early_bird_date(self) -> datetime:
+        return get_early_bird_cutoff_date(self.year)
+
+
 def are_prices_set_for_year(year: int) -> bool:
-    return Price.objects.required_for_booking().filter(year=year).count() == len(REQUIRED_PRICE_TYPES)
+    return PriceInfo.get_for_year(year=year, show_early_bird=True) is not None

@@ -43,7 +43,7 @@ from cciw.bookings.models import (
     get_early_bird_cutoff_date,
 )
 from cciw.bookings.models.baskets import add_basket_to_queue
-from cciw.bookings.models.prices import are_prices_set_for_year
+from cciw.bookings.models.prices import PriceInfo
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, get_thisyear, htmx_form_validate
 from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
@@ -76,47 +76,23 @@ def index(request):
         "title": "Booking",
     }
     booking_open = get_booking_open_data(year)
-    prices_set = are_prices_set_for_year(year)
+    price_info = PriceInfo.get_for_year(year=year, show_early_bird=True)
+    prices_set = price_info is not None
 
-    def getp(v: PriceType) -> Decimal | None:
-        # Helper for getting price from incomplete list
-        try:
-            return [p for p in prices if p.price_type == v][0].price
-        except IndexError:
-            return None
-
-    if prices_set:
-        prices = Price.objects.for_year(year)
-        now = timezone.now()
-        early_bird_available = early_bird_is_available(year, now)
-        context["early_bird_available"] = early_bird_available
-        context["early_bird_date"] = get_early_bird_cutoff_date(year)
-        early_bird_discount = getp(PriceType.EARLY_BIRD_DISCOUNT)
+    if price_info:
+        prices_to_show = price_info
     else:
         # Show last year's prices
-        prices = Price.objects.for_year(year - 1)
-        early_bird_available = False
-        early_bird_discount = None  # Don't show early bird in price list, it might not be available.
-
-    prices = list(prices.required_for_booking())
-
-    price_list: list[tuple[str, Decimal | None]] = [
-        ("Full price", getp(PriceType.FULL)),
-        ("2nd camper from the same family", getp(PriceType.SECOND_CHILD)),
-        ("Subsequent children from the same family", getp(PriceType.THIRD_CHILD)),
-    ]
-    if any(p is None for _, p in price_list):
-        price_list = []
-    # Add discounts:
-    price_list_with_discounts: list[tuple[str, Decimal | None, Decimal]] = [
-        (caption, p, p - early_bird_discount if (p is not None and early_bird_discount is not None) else Decimal(0))
-        for caption, p in price_list
-    ]
+        prices_to_show = PriceInfo.get_for_year(
+            year=year - 1,
+            # Don't show early bird in price list, it might not be available.
+            # MAYBE this shouldn't be a property in PriceInfo, it's specific to this view
+            show_early_bird=False,
+        )
 
     context.update(
         {
-            "price_list": price_list_with_discounts,
-            "price_early_bird_discount": early_bird_discount,
+            "prices_to_show": prices_to_show,
             "prices_set": prices_set,
             "booking_open_data": booking_open,
             "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
@@ -317,7 +293,7 @@ def add_or_edit_place(
             "booking_open_data": get_booking_open_data_thisyear(),
             "stage": BookingStage.PLACE,
             "form": form,
-            "early_bird_available": early_bird_is_available(year, now),
+            "early_bird_available": early_bird_is_available(year=year, booked_at=now),
             "early_bird_date": get_early_bird_cutoff_date(year),
             "price_early_bird_discount": lambda: Price.objects.get(
                 year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT

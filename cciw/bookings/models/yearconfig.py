@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.validators import ValidationError
@@ -12,7 +13,8 @@ from django.utils import timezone
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
-from .prices import are_prices_set_for_year
+if TYPE_CHECKING:
+    from .prices import PriceInfo
 
 
 class YearConfig(models.Model):
@@ -125,7 +127,7 @@ class BookingOpenData:
         return self.closes_for_initial_period_on - settings.BOOKINGS_TIME_FOR_SPECIAL_NEEDS_APPROVAL
 
     @classmethod
-    def from_year_config(cls, config: YearConfig, *, prices_are_set: bool) -> BookingOpenData:
+    def from_year_config(cls, config: YearConfig, *, price_info: PriceInfo | None) -> BookingOpenData:
         now = timezone.now()
         today = now.date()
 
@@ -136,7 +138,8 @@ class BookingOpenData:
         payments_due_on = config.payments_due_on
         cancellations_full_refund_cutoff_on = config.cancellations_full_refund_cutoff_on
 
-        if prices_are_set:
+        if price_info is not None:
+            # prices are set
             is_open_for_booking = config.bookings_open_for_booking_on <= today
             is_open_for_entry = config.bookings_open_for_entry_on <= today
         else:
@@ -174,10 +177,14 @@ class BookingOpenData:
 
 
 def get_booking_open_data(year: int) -> BookingOpenData:
+    from cciw.bookings.models.prices import PriceInfo
+
     year_config = get_year_config(year)
     if year_config is None:
         return BookingOpenData.no_info()
-    return BookingOpenData.from_year_config(year_config, prices_are_set=are_prices_set_for_year(year))
+    return BookingOpenData.from_year_config(
+        year_config, price_info=PriceInfo.get_for_year(year=year, show_early_bird=True)
+    )
 
 
 def get_booking_open_data_thisyear() -> BookingOpenData:
@@ -199,5 +206,5 @@ def get_early_bird_cutoff_date(year: int) -> datetime:
     return datetime(year, 5, 1, tzinfo=timezone.get_default_timezone())
 
 
-def early_bird_is_available(year: int, booked_at_date: datetime) -> bool:
-    return booked_at_date < get_early_bird_cutoff_date(year)
+def early_bird_is_available(*, year: int, booked_at: datetime) -> bool:
+    return booked_at < get_early_bird_cutoff_date(year)

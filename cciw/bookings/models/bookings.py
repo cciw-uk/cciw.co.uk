@@ -485,7 +485,7 @@ class Booking(models.Model):
         if self.price_type == PriceType.CUSTOM:
             return False
         else:
-            return early_bird_is_available(self.camp.year, booked_at)
+            return early_bird_is_available(year=self.camp.year, booked_at=booked_at)
 
     def early_bird_discount_missed(self):
         """

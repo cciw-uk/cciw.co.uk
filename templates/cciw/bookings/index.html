@@ -25,27 +25,27 @@
       </div>
     {% endif %}
 
-    {% if price_early_bird_discount > 0 and early_bird_available %}
-      <p><b>Early bird discount of £{{ price_early_bird_discount }}
-        available if you book online before {{ early_bird_date|date:"jS F" }}!</b></p>
+    {% if price_info.price_early_bird_discount > 0 and price_info.early_bird_available %}
+      <p><b>Early bird discount of £{{ price_info.price_early_bird_discount }}
+        available if you book online before {{ price_info.early_bird_date|date:"jS F" }}!</b></p>
     {% endif %}
 
-    {% include "cciw/bookings/price_table.html" %}
+    {% include "cciw/bookings/price_table.html" with price_info=prices_to_show %}
 
   {% else %}
     <p><strong>Prices for {{ thisyear }} have not been finalised yet.</strong></p>
 
-    {% if price_list %}
+    {% if prices_to_show %}
       <p>However, you can see last year's prices below for reference. This year's
         prices will usually be the same or similar.</p>
 
-      {% include "cciw/bookings/price_table.html" %}
+      {% include "cciw/bookings/price_table.html" with price_info=prices_to_show %}
 
     {% endif %}
 
   {% endif %}
 
-  {% if prices_set or price_list %}
+  {% if prices_to_show %}
     <p>For those in financial need, there are discounts available, which you can
       apply for as part of the booking process.</p>
 

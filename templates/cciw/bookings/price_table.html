@@ -1,11 +1,11 @@
 <p>
   <table class="prices">
-    {% if price_early_bird_discount > 0 %}
+    {% if price_info.show_early_bird and price_info.price_early_bird_discount > 0 %}
       <tr>
         <td></td>
         <td></td>
         <td>
-          {% if prices_set and not early_bird_available %}
+          {% if price_info.early_bird_available %}
             <s>Early bird discount</s>
             <br>(too late, sorry!)
           {% else %}
@@ -13,22 +13,29 @@
           {% endif %}
         </td>
       </tr>
-    {% endif %}
 
-    {% for caption, price, discounted_price in price_list %}
-      <tr>
-        <td>{{ caption }}</td>
-        <td>£{{ price }}</td>
-        {% if price_early_bird_discount > 0 %}
+      {% for caption, price, discounted_price in price_info.price_list_with_discounts %}
+        <tr>
+          <td>{{ caption }}</td>
+          <td>£{{ price }}</td>
           <td>
-            {% if prices_set and not early_bird_available %}
+            {% if price_info.early_bird_available %}
               <s>£{{ discounted_price }}</s>
             {% else %}
               <b>£{{ discounted_price }}</b>
             {% endif %}
           </td>
-        {% endif %}
-      </tr>
-    {% endfor %}
+        </tr>
+      {% endfor %}
+
+    {% else %}
+
+      {% for caption, price in price_info.price_list %}
+        <tr>
+          <td>{{ caption }}</td>
+          <td>£{{ price }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
   </table>
 </p>
