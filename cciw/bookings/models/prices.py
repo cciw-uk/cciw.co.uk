@@ -99,6 +99,10 @@ class PriceInfo:
         return self.prices[PriceType.EARLY_BIRD_DISCOUNT]
 
     @property
+    def price_booking_fee(self) -> Decimal:
+        return self.prices[PriceType.BOOKING_FEE]
+
+    @property
     def price_list(self) -> list[tuple[str, Decimal]]:
         return [
             ("Full price", self.price_full),

@@ -75,6 +75,21 @@
       group, in date order.</li>
   </ul>
 
+  <h3>Cancellations</h3>
+
+  <ul>
+    {% if booking_open_data.cancellations_full_refund_cutoff_on and booking_open_data.cancellations_retained_fee %}
+
+      <li>Full refunds
+        (minus a £{{ booking_open_data.cancellations_retained_fee }} booking fee)
+        for cancellations up to {{ booking_open_data.cancellations_full_refund_cutoff_on|date:"jS F" }}</li>
+      <li>After that, a 50% refund, unless there are exceptional circumstances</li>
+
+    {% endif %}
+    <li>To cancel a place, please <a href="{% url 'cciw-contact_us-send' %}?bookings">contact the Bookings
+      Secretary</a>.</li>
+  </ul>
+
   <h3>Questions</h3>
 
   <p>If you have any questions, please <a href="{% url 'cciw-contact_us-send' %}?bookings">contact the Bookings

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -119,6 +120,7 @@ class BookingOpenData:
     initial_notifications_on: date | None
     payments_due_on: date | None
     cancellations_full_refund_cutoff_on: date | None
+    cancellations_retained_fee: Decimal | None
 
     @property
     def closes_for_initial_period_special_needs_on(self) -> date | None:
@@ -142,11 +144,13 @@ class BookingOpenData:
             # prices are set
             is_open_for_booking = config.bookings_open_for_booking_on <= today
             is_open_for_entry = config.bookings_open_for_entry_on <= today
+            cancellations_retained_fee = price_info.price_booking_fee
         else:
             # if prices aren't set, even collecting data is complicated because
             # the form expects to find prices, so we disallow in this case.
             is_open_for_booking = False
             is_open_for_entry = False
+            cancellations_retained_fee = None
 
             # We also can't say for sure when booking will open for entry/booking,
             # but we can hope someone fills in the data
@@ -160,6 +164,7 @@ class BookingOpenData:
             is_open_for_booking=is_open_for_booking,
             is_open_for_entry=is_open_for_entry,
             cancellations_full_refund_cutoff_on=cancellations_full_refund_cutoff_on,
+            cancellations_retained_fee=cancellations_retained_fee,
         )
 
     @classmethod
@@ -173,6 +178,7 @@ class BookingOpenData:
             is_open_for_booking=False,
             is_open_for_entry=False,
             cancellations_full_refund_cutoff_on=None,
+            cancellations_retained_fee=None,
         )
 
 
