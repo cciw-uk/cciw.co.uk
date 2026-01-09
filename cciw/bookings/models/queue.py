@@ -252,15 +252,15 @@ def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]
     def is_officer_child_key(booking: Booking) -> int:
         return 0 if booking.queue_entry.officer_child else 1
 
+    def first_timer_key(booking: Booking) -> int:
+        return 0 if booking.queue_entry.first_timer_allocated else 1
+
     def queue_position_key(booking: Booking) -> int:
         return booking.rank_info.queue_position_rank
 
     def previous_attendance_key(booking: Booking) -> int:
         # More attendance is better.
         return -booking.rank_info.previous_attendance_score
-
-    def first_timer_key(booking: Booking) -> int:
-        return 0 if booking.queue_entry.first_timer_allocated else 1
 
     def previous_year_waiting_list_key(booking: Booking) -> int:
         # In the list means higher priority
@@ -276,9 +276,9 @@ def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]
     def overall_key(booking: Booking) -> tuple:
         return (
             is_officer_child_key(booking),
+            first_timer_key(booking),
             queue_position_key(booking),
             previous_attendance_key(booking),
-            first_timer_key(booking),
             previous_year_waiting_list_key(booking),
             sibling_bonus_key(booking),
             tiebreaker_key(booking),
