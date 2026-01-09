@@ -43,7 +43,7 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.prices import PriceInfo, are_prices_set_for_year
-from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
+from cciw.bookings.models.problems import ApprovalStatus, BookingApproval, get_booking_problems
 from cciw.bookings.models.queue import (
     QueueEntryActionLogType,
     add_queue_cutoffs,
@@ -376,7 +376,7 @@ class BookingBaseMixin:
 # instead, but the way that multiple bookings and the basket/shelf interact mean
 # we need to test the view code as well. It would probably be good to rewrite
 # using a class like "CheckoutPage", which combines shelf and basket bookings,
-# and some of the logic in BookingListBookings. There is also the advantage that
+# and some of the logic in the list bookings view. There is also the advantage that
 # using self.create_booking() (which uses a view) ensures Booking instances are
 # created the same way a user would.
 
@@ -1426,6 +1426,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("£100")
         self.assertTextPresent("This place can be booked")
         self.assert_book_button_enabled()
+
+    # TODO - maybe some of these should be moved to model based tests via get_booking_problems()
 
     def test_handle_custom_price(self):
         self.booking_login()
@@ -3284,3 +3286,31 @@ def test_allocate_places(mailoutbox):
     assert result2.declined_and_notified_account_count == 0
 
     assert len(mailoutbox) == outbox_count_1
+
+
+@pytest.mark.django_db
+def test_booking_same_person_on_multiple_camps():
+    year_config = create_year_config_for_queue_tests()
+    year: int = year_config.year
+    camp_1: Camp = camps_factories.create_camp(year=year)
+    camp_2: Camp = camps_factories.create_camp(year=year)
+
+    # Enough accounts and bookings to test all the notification logic.
+
+    account = factories.create_booking_account()
+
+    booking_1 = factories.create_booking(camp=camp_1, account=account, first_name="Joe", last_name="Bloggs")
+    booking_2 = factories.create_booking(camp=camp_2, account=account, first_name="Joe", last_name="Bloggs")
+
+    problems1 = get_booking_problems(booking_2)
+    messages1 = [p.description for p in problems1]
+    msg = 'You are trying to book places for "Joe Bloggs" on more than one camp.'
+    assert len([True for m in messages1 if msg in m]) == 1
+
+    # If booking_1 is put on shelf, there is no problem.
+    booking_1.cancel_and_move_to_shelf()
+
+    problems2 = get_booking_problems(booking_2)
+    assert len(problems2) == len(problems1) - 1
+    messages2 = [p.description for p in problems2]
+    assert len([True for m in messages2 if msg in m]) == 0

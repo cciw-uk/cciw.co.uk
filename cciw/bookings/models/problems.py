@@ -200,13 +200,15 @@ def incorporate_approvals_granted(booking: Booking, approvals_needed: list[Appro
             app.linked_booking_approval = approvals_dict.get(app.type, None)
 
 
-def get_booking_problems(booking: Booking, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
+def get_booking_problems(
+    booking: Booking, *, booking_sec: bool = False, agreement_fetcher=None
+) -> list[BookingProblem]:
     return list(get_booking_errors(booking, booking_sec=booking_sec, agreement_fetcher=agreement_fetcher)) + list(
         get_booking_warnings(booking, booking_sec=booking_sec)
     )
 
 
-def get_booking_errors(booking, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
+def get_booking_errors(booking: Booking, *, booking_sec: bool = False, agreement_fetcher=None) -> list[BookingProblem]:
     errors: list[ApprovalNeeded | Blocker] = []
     camp: Camp = booking.camp
 
@@ -346,20 +348,22 @@ def get_booking_errors(booking, booking_sec=False, agreement_fetcher=None) -> li
     return errors
 
 
-def get_booking_warnings(booking, booking_sec=False) -> list[BookingProblem]:
+def get_booking_warnings(booking: Booking, *, booking_sec: bool = False) -> list[BookingProblem]:
     camp: Camp = booking.camp
     warnings: list[str] = []
 
-    if booking.account.bookings.filter(first_name=booking.first_name, last_name=booking.last_name, camp=camp).exclude(
-        id=booking.id
-    ):
+    relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
+
+    relevant_bookings_limited_to_self = relevant_bookings.filter(
+        first_name=booking.first_name, last_name=booking.last_name
+    )
+
+    if relevant_bookings_limited_to_self.filter(camp=camp).exclude(id=booking.id):
         warnings.append(
             f"You have entered another set of place details for a camper "
             f"called '{booking.name}' on camp {camp.name}. Please ensure you don't book multiple "
             f"places for the same camper!"
         )
-
-    relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
 
     if booking.price_type == PriceType.FULL:
         full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)
@@ -451,5 +455,12 @@ def get_booking_warnings(booking, booking_sec=False) -> list[BookingProblem]:
                         )
                         places_available = False
                         break
+
+    # Same person on multiple camps.
+    if relevant_bookings_limited_to_self.aggregate(count=models.Count("camp"))["count"] > 1:
+        warnings.append(
+            f'You are trying to book places for "{booking.name}" on more than one camp. '
+            + "This will result in one place having low priority and being unlikely to get allocated, but we cannot gaurantee which one."
+        )
 
     return [Warning(description=warning) for warning in warnings]
