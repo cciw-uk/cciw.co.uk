@@ -36,14 +36,13 @@ from cciw.bookings.models import (
     Payment,
     PaymentSource,
     Price,
-    PriceChecker,
     PriceType,
     RefundPayment,
     add_basket_to_queue,
     build_paypal_custom_field,
 )
 from cciw.bookings.models.constants import Sex
-from cciw.bookings.models.prices import are_prices_set_for_year
+from cciw.bookings.models.prices import PriceInfo, are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
 from cciw.bookings.models.queue import (
     QueueEntryActionLogType,
@@ -2505,14 +2504,13 @@ def test_cancel_full_refund_account_amount_due():
 @pytest.mark.django_db
 def test_early_bird_expected_amount_due():
     booking = factories.create_booking()
-    price_checker = PriceChecker()
     year = booking.camp.year
-    assert booking.expected_amount_due() == price_checker.get_full_price(year)
+    price_info = PriceInfo.get_for_year(year)
+    assert price_info is not None
+    assert booking.expected_amount_due() == price_info.price_full
 
     booking.early_bird_discount = True
-    assert booking.expected_amount_due() == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(
-        year
-    )
+    assert booking.expected_amount_due() == price_info.price_full - price_info.price_early_bird_discount
 
 
 @pytest.mark.django_db
@@ -2525,8 +2523,9 @@ def test_early_bird_book_basket_applies_discount():
         book_bookings_now([booking])
     booking.refresh_from_db()
     assert booking.early_bird_discount
-    price_checker = PriceChecker()
-    assert booking.amount_due == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(year)
+    price_info = PriceInfo.get_for_year(year)
+    assert price_info is not None
+    assert booking.amount_due == price_info.price_full - price_info.price_early_bird_discount
 
 
 @pytest.mark.django_db
@@ -2538,7 +2537,9 @@ def test_early_bird_book_basket_doesnt_apply_discount():
         book_bookings_now([booking])
     booking.refresh_from_db()
     assert not booking.early_bird_discount
-    assert booking.amount_due == PriceChecker().get_full_price(booking.camp.year)
+    price_info = PriceInfo.get_for_year(booking.camp.year)
+    assert price_info is not None
+    assert booking.amount_due == price_info.price_full
 
 
 @pytest.mark.django_db

@@ -28,7 +28,7 @@ from .payments import (
     credit_account,
     parse_paypal_custom_field,
 )
-from .prices import Price, PriceChecker, PriceType
+from .prices import Price, PriceType
 from .problems import ApprovalNeeded, ApprovalNeededType, BookingApproval
 from .queue import BookingQueueEntry
 from .reports import booking_report_by_camp, outstanding_bookings_with_fees
@@ -80,13 +80,11 @@ __all__ = [
     "BOOKING_PLACE_CAMPER_DETAILS",
     "BOOKING_PLACE_CONTACT_ADDRESS_DETAILS",
     "BOOKING_PLACE_GP_DETAILS",
-    "PriceChecker",
     "KEEP_FINANCIAL_RECORDS_FOR",
     "ApprovalNeededType",
     "ApprovalNeeded",
     "get_booking_open_data",
     "get_booking_open_data_thisyear",
-    "book_bookings_now",
     "add_basket_to_queue",
     "YearConfig",
     "BookingApproval",

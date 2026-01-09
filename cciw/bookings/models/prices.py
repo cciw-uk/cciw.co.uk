@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -66,54 +65,13 @@ class Price(models.Model):
         return f"{self.get_price_type_display()} {self.year} - {self.price}"
 
 
-class PriceChecker:
-    """
-    Utility that looks up prices, with caching to reduce queries
-    """
-
-    # TODO - merge this into PriceInfo
-
-    # We don't look up prices immediately, but lazily, because there are
-    # quite a few paths that don't need the price at all,
-    # and they can happen in a loop e.g. BookingAccount.get_balance_full()
-
-    def __init__(self, expected_years: list[int] | None = None):
-        self._prices = defaultdict(dict)
-        self._expected_years = expected_years or []
-
-    def _fetch_prices(self, year: int):
-        if year in self._prices:
-            return
-        # Try to get everything we think we'll need in a single query,
-        # and cache for later.
-        years = set(self._expected_years + [year])
-        for price in Price.objects.filter(year__in=years):
-            self._prices[price.year][price.price_type] = price.price
-
-    def get_price(self, year: int, price_type: PriceType) -> Decimal:
-        self._fetch_prices(year)
-        return self._prices[year][price_type]
-
-    def get_full_price(self, year: int) -> Decimal:
-        return self.get_price(year, PriceType.FULL)
-
-    def get_second_child_price(self, year: int) -> Decimal:
-        return self.get_price(year, PriceType.SECOND_CHILD)
-
-    def get_third_child_price(self, year: int) -> Decimal:
-        return self.get_price(year, PriceType.THIRD_CHILD)
-
-    def get_early_bird_discount(self, year: int) -> Decimal:
-        return self.get_price(year, PriceType.EARLY_BIRD_DISCOUNT)
-
-
 @dataclass(frozen=True)
 class PriceInfo:
     year: int
     prices: dict[PriceType, Decimal]
 
     @classmethod
-    def get_for_year(cls, *, year: int) -> PriceInfo | None:
+    def get_for_year(cls, year: int) -> PriceInfo | None:
         prices: list[Price] = list(Price.objects.filter(year=year))
 
         price_dict: dict[PriceType, Decimal] = {p.price_type: p.price for p in prices}
