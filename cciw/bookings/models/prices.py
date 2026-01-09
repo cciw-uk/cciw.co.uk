@@ -15,6 +15,7 @@ class PriceType(models.TextChoices):
     # Deposit not used from 2025 onwards, kept for historical data.
     DEPOSIT = "deposit", "Deposit"
     EARLY_BIRD_DISCOUNT = "early_bird_discount", "Early bird discount"
+    BOOKING_FEE = "booking_fee", "Booking fee"
 
 
 BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
@@ -24,11 +25,16 @@ VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceTy
     PriceType.SOUTH_WALES_TRANSPORT,
     PriceType.DEPOSIT,
     PriceType.EARLY_BIRD_DISCOUNT,
+    PriceType.BOOKING_FEE,
 ]
 
 
 # Prices required to open bookings.
-REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT)]
+REQUIRED_PRICE_TYPES = [
+    v
+    for v in VALUED_PRICE_TYPES
+    if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT, PriceType.BOOKING_FEE)
+]
 
 
 class PriceQuerySet(models.QuerySet):
