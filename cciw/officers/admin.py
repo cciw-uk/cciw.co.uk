@@ -265,7 +265,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
              In addition we reserve the right to take up additional character
              references from any other individuals deemed necessary. <strong>One
              reference must be from a Church leader. The other reference should
-             be from someone who has known you for more than 3 years.
+             be from a Christian who has known you for more than 3 years.
              A family member is not a suitable referee.</strong>""",
             },
         ),
