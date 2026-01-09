@@ -5,7 +5,6 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from django.db import models
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -313,76 +312,6 @@ def get_booking_errors(booking, booking_sec=False, agreement_fetcher=None) -> li
                 blocker("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
             )
 
-    # Check place availability
-    places_left = camp.get_places_left()
-
-    # We only want one message about places not being available, and the
-    # order here is important - if there are no places full stop, we don't
-    # want to display message about there being no places for boys etc.
-    places_available = True
-
-    def no_places_available_message(msg: str) -> str:
-        # Add a common message to each different "no places available" message
-        return format_html(
-            """{0}
-            You can <a href="{1}" target="_new">contact the booking secretary</a>
-            to be put on a waiting list. """,
-            msg,
-            reverse("cciw-contact_us-send") + "?bookings",
-        )
-
-    # Simple - no places left
-    if places_left.total <= 0:
-        errors.append(blocker(no_places_available_message("There are no places left on this camp.")))
-        places_available = False
-
-    SEXES = [
-        (Sex.MALE, "boys", places_left.male),
-        (Sex.FEMALE, "girls", places_left.female),
-    ]
-
-    if places_available:
-        for sex_const, sex_label, places_left_for_sex in SEXES:
-            if booking.sex == sex_const and places_left_for_sex <= 0:
-                errors.append(
-                    blocker(no_places_available_message(f"There are no places left for {sex_label} on this camp."))
-                )
-                places_available = False
-                break
-
-    if places_available:
-        # Complex - need to check the other places that are about to be booked.
-        # (if there is one place left, and two campers for it, we can't say that
-        # there are enough places)
-        same_camp_bookings = booking.account.bookings.filter(camp=camp).in_basket()
-        places_to_be_booked = len(same_camp_bookings)
-
-        if places_left.total < places_to_be_booked:
-            errors.append(
-                blocker(
-                    no_places_available_message(
-                        "There are not enough places left on this camp for the campers in this set of bookings."
-                    )
-                )
-            )
-            places_available = False
-
-        if places_available:
-            for sex_const, sex_label, places_left_for_sex in SEXES:
-                if booking.sex == sex_const:
-                    places_to_be_booked_for_sex = len([b for b in same_camp_bookings if b.sex == sex_const])
-                    if places_left_for_sex < places_to_be_booked_for_sex:
-                        errors.append(
-                            blocker(
-                                no_places_available_message(
-                                    f"There are not enough places for {sex_label} left on this camp "
-                                    "for the campers in this set of bookings."
-                                )
-                            )
-                        )
-                        places_available = False
-                        break
-
     if booking.south_wales_transport and not camp.south_wales_transport_available:
         errors.append(
             blocker("Transport from South Wales is not available for this camp, or all places have been taken already.")
@@ -460,5 +389,67 @@ def get_booking_warnings(booking, booking_sec=False) -> list[BookingProblem]:
                 )
 
             warnings.append(warning)
+
+    # Check place availability
+    places_left = camp.get_places_left()
+
+    # We only want one message about places not being available, and the
+    # order here is important - if there are no places full stop, we don't
+    # want to display message about there being no places for boys etc.
+    places_available = True
+
+    def no_places_available_message(msg: str) -> str:
+        # Add a common message to each different "no places available" message
+        return format_html(
+            """{0}
+            You will be placed on the waiting list if you book now.""",
+            msg,
+        )
+
+    # Simple - no places left
+    if places_left.total <= 0:
+        warnings.append(no_places_available_message("There are no places left on this camp."))
+        places_available = False
+
+    SEXES = [
+        (Sex.MALE, "boys", places_left.male),
+        (Sex.FEMALE, "girls", places_left.female),
+    ]
+
+    if places_available:
+        for sex_const, sex_label, places_left_for_sex in SEXES:
+            if booking.sex == sex_const and places_left_for_sex <= 0:
+                warnings.append(no_places_available_message(f"There are no places left for {sex_label} on this camp."))
+                places_available = False
+                break
+
+    if places_available:
+        # Complex - need to check the other places that are about to be booked.
+        # (if there is one place left, and two campers for it, we can't say that
+        # there are enough places)
+        same_camp_bookings = booking.account.bookings.filter(camp=camp).in_basket()
+        places_to_be_booked = len(same_camp_bookings)
+
+        if places_left.total < places_to_be_booked:
+            warnings.append(
+                no_places_available_message(
+                    "There are not enough places left on this camp for the campers in this set of bookings."
+                )
+            )
+            places_available = False
+
+        if places_available:
+            for sex_const, sex_label, places_left_for_sex in SEXES:
+                if booking.sex == sex_const:
+                    places_to_be_booked_for_sex = len([b for b in same_camp_bookings if b.sex == sex_const])
+                    if places_left_for_sex < places_to_be_booked_for_sex:
+                        warnings.append(
+                            no_places_available_message(
+                                f"There are not enough places for {sex_label} left on this camp "
+                                "for the campers in this set of bookings."
+                            )
+                        )
+                        places_available = False
+                        break
 
     return [Warning(description=warning) for warning in warnings]

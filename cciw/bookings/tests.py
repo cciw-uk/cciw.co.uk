@@ -371,7 +371,7 @@ class BookingBaseMixin:
 # == Test cases ==
 
 # Most tests are against views, instead of model-based tests.
-# Booking.get_booking_problems(), for instance, is tested especially in
+# get_booking_problems(), for instance, is tested especially in
 # TestListBookings. In theory this could be tested using model-based tests
 # instead, but the way that multiple bookings and the basket/shelf interact mean
 # we need to test the view code as well. It would probably be good to rewrite
@@ -1530,7 +1530,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="m")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NO_PLACES_LEFT)
-        self.assert_book_button_disabled()
+        self.assert_book_button_enabled()
 
         # Don't want a redundant message
         self.assertTextAbsent(self.NO_PLACES_LEFT_FOR_BOYS)
@@ -1543,13 +1543,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="m")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NO_PLACES_LEFT_FOR_BOYS)
-        self.assert_book_button_disabled()
-
-        # Check that we can still book female places
-        Booking.objects.filter(state=BookingState.INFO_COMPLETE).delete()
-        self.create_booking(sex="f")
-        self.get_url(self.urlname)
-        self.assertTextAbsent(self.NO_PLACES_LEFT)
         self.assert_book_button_enabled()
 
     def test_no_female_places_left(self):
@@ -1560,7 +1553,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NO_PLACES_LEFT_FOR_GIRLS)
-        self.assert_book_button_disabled()
+        self.assert_book_button_enabled()
 
     def test_not_enough_places_left(self):
         for i in range(0, self.camp.max_campers - 1):
@@ -1571,7 +1564,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NOT_ENOUGH_PLACES)
-        self.assert_book_button_disabled()
+        self.assert_book_button_enabled()
 
     def test_not_enough_male_places_left(self):
         for i in range(0, self.camp.max_male_campers - 1):
@@ -1583,7 +1576,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="m")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NOT_ENOUGH_PLACES_FOR_BOYS)
-        self.assert_book_button_disabled()
+        self.assert_book_button_enabled()
 
     def test_not_enough_female_places_left(self):
         for i in range(0, self.camp.max_female_campers - 1):
@@ -1595,7 +1588,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NOT_ENOUGH_PLACES_FOR_GIRLS)
-        self.assert_book_button_disabled()
+        self.assert_book_button_enabled()
 
     def test_booking_after_closing_date(self):
         self.camp.last_booking_date = self.today - timedelta(days=1)
