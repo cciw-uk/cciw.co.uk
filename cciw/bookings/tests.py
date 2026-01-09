@@ -129,14 +129,30 @@ class CreateBookingWebMixin(BookingLogInMixin):
     creates `self.camp` and `self.camp_2` and provides other utility methods.
     """
 
-    today = date(2020, 2, 1)
-
     # For other, model level tests, we prefer explicit use of factories
     # for the things under test.
 
     def setUp(self):
         super().setUp()
+        # We have to control freeze_time usage here for this mixin,
+        # to avoid some issues if the monkey patching runs too early.
+        # (specifically:
+        #   fontTools/misc/loggingTools.py:292: in __init__
+        #    TypeError: fake_perf_counter() takes 0 positional arguments but 1 was given)
+
+        import cciw.officers.views  # noqa - trigger some imports
+
+        # For most tests it is easier to assume a fixed date for booking,
+        # before the summer. Camp dates are then created relative to that.
+        freezer = freeze_time("2026-02-01")
+        freezer.start()
+        self.freezer = freezer
+        self.today = date.today()
         self.create_camps()
+
+    def tearDown(self):
+        super().tearDown()
+        self.freezer.stop()
 
     camp_minimum_age = 11
     camp_maximum_age = 17
@@ -173,7 +189,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         if not are_prices_set_for_year(year):
             self.add_prices()
         if not YearConfig.objects.filter(year=year).exists():
-            self.create_year_config()
+            self.create_year_config(year=year, open_for_booking=True, open_for_data_entry=True)
         assert get_booking_open_data(year).is_open_for_booking
 
     def create_year_config(
@@ -2950,7 +2966,7 @@ def test_booking_open():
     assert not get_booking_open_data(year).is_open_for_entry
 
 
-def create_year_config_for_queue_tests(year: int = 2025) -> YearConfig:
+def create_year_config_for_queue_tests(year: int = 2026) -> YearConfig:
     # Use sensible values that match what happens in reality,
     # and the defaults in `create_camp()` factory
     return factories.create_year_config(
@@ -2963,7 +2979,7 @@ def create_year_config_for_queue_tests(year: int = 2025) -> YearConfig:
 
 @pytest.mark.django_db
 def test_rank_queue_booking():
-    year_config = create_year_config_for_queue_tests(year=2025)
+    year_config = create_year_config_for_queue_tests(year=2026)
     with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         b1 = factories.create_booking()
         b2 = factories.create_booking()
@@ -3011,16 +3027,16 @@ def test_rank_queue_booking():
 
 @pytest.mark.django_db
 def test_Booking_withdraw_from_queue_and_add_again():
-    with freeze_time("2025-01-01"):
+    with freeze_time("2026-01-01"):
         booking = factories.create_booking()
         booking.add_to_queue()
         booking.refresh_from_db()
         queue_entry_id = booking.queue_entry.id
-    with freeze_time("2025-01-02"):
+    with freeze_time("2026-01-02"):
         booking.withdraw_from_queue()
         booking.refresh_from_db()
         assert not booking.queue_entry.is_active
-    with freeze_time("2025-01-03"):
+    with freeze_time("2026-01-03"):
         booking.add_to_queue()
         booking.refresh_from_db()
         queue_entry_id2 = booking.queue_entry.id
@@ -3029,7 +3045,7 @@ def test_Booking_withdraw_from_queue_and_add_again():
         assert booking.queue_entry.is_active
         # But we need the `enqueued_at` to be updated
         # to the date they were re-added to the queue.
-        assert booking.queue_entry.enqueued_at.date() == date(2025, 1, 3)
+        assert booking.queue_entry.enqueued_at.date() == date(2026, 1, 3)
 
 
 @pytest.mark.django_db
