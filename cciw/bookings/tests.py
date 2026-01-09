@@ -3001,7 +3001,7 @@ def test_rank_queue_booking():
     assert b2 in ranked_bookings
     assert b3 in ranked_bookings
     assert b4 in ranked_bookings
-    assert b5 not in ranked_bookings
+    assert b5 not in ranked_bookings  # never added to queue
 
     # Don't know if b1 or b2 will be first.
     b1_q = [b for b in ranked_bookings if b.id == b1.id][0]
@@ -3020,6 +3020,51 @@ def test_rank_queue_booking():
     # b3 and b4 are after the cut-off
     assert b3_q.rank_info.queue_position_rank == 2
     assert b4_q.rank_info.queue_position_rank == 3
+
+
+@pytest.mark.django_db
+def test_rank_queue_booking_same_camper_multiple_camps():
+    year = 2026
+    year_config = create_year_config_for_queue_tests(year=year)
+    camp_1 = camps_factories.create_camp(year=year)
+    camp_2 = camps_factories.create_camp(year=year)
+    with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+        b1 = factories.create_booking(camp=camp_1, first_name="Amy")
+        b2 = factories.create_booking(camp=camp_2, first_name=b1.first_name, last_name=b1.last_name, account=b1.account)
+        b1.add_to_queue()
+        b2.add_to_queue()
+    with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
+        b3 = factories.create_booking(camp=camp_2, first_name="Bob")
+        assert date.today() > year_config.bookings_close_for_initial_period_on
+        b3.add_to_queue()
+
+    # Before we book, we just know that b1 (and b2) have other places in queue:
+    ranked_bookings_camp_1 = rank_queue_bookings(camp=camp_1, year_config=year_config)
+    assert (b1_q := ranked_bookings_camp_1[0]) == b1
+    assert b1_q.rank_info.has_other_place_in_queue
+    assert not b1_q.rank_info.has_other_place_booked
+
+    # Then we booked one of them:
+    book_bookings_now([b1])
+
+    # And rank the other:
+    ranked_bookings_camp_2 = rank_queue_bookings(camp=camp_2, year_config=year_config)
+
+    assert b2 in ranked_bookings_camp_2
+    assert b3 in ranked_bookings_camp_2
+
+    # b2 will be at bottom, despite b3 being after the initial period...
+    assert (b3_q := ranked_bookings_camp_2[0]) == b3
+    assert (b2_q := ranked_bookings_camp_2[1]) == b2
+
+    # ...due to having another place booked
+    assert b2_q.rank_info.has_other_place_booked
+    assert not b3_q.rank_info.has_other_place_booked
+
+    # We also track if camper has other place in queue, to display in UI
+    assert b1_q.rank_info.has_other_place_in_queue
+    assert b2_q.rank_info.has_other_place_in_queue
+    assert not b3_q.rank_info.has_other_place_in_queue
 
 
 @pytest.mark.django_db

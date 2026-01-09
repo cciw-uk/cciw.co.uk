@@ -17,7 +17,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
 from django.db import models
-from django.db.models import Value, functions
+from django.db.models import Count, OuterRef, Subquery, Value, functions
 from django.db.models.enums import TextChoices
 from django.utils import timezone
 
@@ -175,6 +175,8 @@ class RankInfo:
     previous_attendance_score: int
     in_previous_year_waiting_list: bool
     sibling_bonus: int
+    has_other_place_in_queue: bool
+    has_other_place_booked: bool
     cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
 
 
@@ -255,6 +257,9 @@ def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]
     def first_timer_key(booking: Booking) -> int:
         return 0 if booking.queue_entry.first_timer_allocated else 1
 
+    def has_other_place_booked_key(booking: Booking) -> int:
+        return 1 if booking.rank_info.has_other_place_booked else 0
+
     def queue_position_key(booking: Booking) -> int:
         return booking.rank_info.queue_position_rank
 
@@ -277,6 +282,7 @@ def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]
         return (
             is_officer_child_key(booking),
             first_timer_key(booking),
+            has_other_place_booked_key(booking),
             queue_position_key(booking),
             previous_attendance_key(booking),
             previous_year_waiting_list_key(booking),
@@ -301,6 +307,8 @@ def add_rank_info(bookings: list[Booking], year_config: YearConfig, camp: Camp):
         attendance_counts=attendance_counts,
         in_previous_year_waiting_list_info=in_previous_year_waiting_list_info,
     )
+    other_places_in_queue: dict[BookingId, int] = get_other_places_in_queue(bookings, camp)
+    other_places_booked: dict[BookingId, int] = get_other_places_booked(bookings, camp)
     for booking in bookings:
         booking.rank_info = RankInfo(
             queue_position_rank=queue_position_ranks[booking.id],
@@ -309,6 +317,8 @@ def add_rank_info(bookings: list[Booking], year_config: YearConfig, camp: Camp):
             previous_attendance_score=attendance_counts[booking.id],
             in_previous_year_waiting_list=in_previous_year_waiting_list_info[booking.id],
             sibling_bonus=sibling_bonus_scores[booking.id],
+            has_other_place_in_queue=other_places_in_queue[booking.id] > 0,
+            has_other_place_booked=other_places_booked[booking.id] > 0,
         )
 
 
@@ -466,6 +476,48 @@ def find_siblings(bookings: list[Booking], camp: Camp) -> dict[BookingId, set[Bo
         non_self_siblings = set(all_siblings_ids) - set([booking.id])
         booking_to_sibling_booking_ids_dict[booking.id] = non_self_siblings
     return booking_to_sibling_booking_ids_dict
+
+
+def get_other_places_in_queue(bookings: Sequence[Booking], camp: Camp) -> dict[BookingId, int]:
+    """
+    Gets counts of bookings that have other places in queue for the same camper but different camp.
+    """
+    from cciw.bookings.models import Booking
+
+    # We can do a simpler query by starting with a new QuerySet:
+    this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
+    other_camp_bookings = Booking.objects.in_queue().exclude(camp=camp)
+    # We can match most easily using fuzzy_camper_id
+    with_matches = this_camp_bookings.annotate(
+        other_places_count=Subquery(
+            other_camp_bookings.filter(fuzzy_camper_id=OuterRef("fuzzy_camper_id")).annotate(c=Count("id")).values("c"),
+            output_field=models.IntegerField(),
+        )
+    ).values("id", "other_places_count")
+    with_matches_dict: dict[BookingId, int] = {b["id"]: b["other_places_count"] or 0 for b in with_matches}
+    for booking in bookings:
+        assert booking.id in with_matches_dict
+    return with_matches_dict
+
+
+def get_other_places_booked(bookings: Sequence[Booking], camp: Camp) -> dict[BookingId, int]:
+    """
+    Gets counts of bookings that other places booked for the same camper but different camp.
+    """
+    from cciw.bookings.models import Booking
+
+    this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
+    other_camp_bookings = Booking.objects.booked().exclude(camp=camp)
+    with_matches = this_camp_bookings.annotate(
+        other_places_count=Subquery(
+            other_camp_bookings.filter(fuzzy_camper_id=OuterRef("fuzzy_camper_id")).annotate(c=Count("id")).values("c"),
+            output_field=models.IntegerField(),
+        )
+    ).values("id", "other_places_count")
+    with_matches_dict: dict[BookingId, int] = {b["id"]: b["other_places_count"] or 0 for b in with_matches}
+    for booking in bookings:
+        assert booking.id in with_matches_dict
+    return with_matches_dict
 
 
 class PlacesToAllocate(PlacesLeft):
