@@ -286,9 +286,6 @@ class Booking(models.Model):
     )
 
     # Price - partly from user (must fit business rules)
-    price_type = models.PositiveSmallIntegerField(
-        choices=[(0, "Full price"), (1, "2nd child discount"), (2, "3rd child discount"), (3, "Custom discount")]
-    )
     price_type_new = models.CharField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])
     early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
     booked_at = models.DateTimeField(null=True, blank=True, help_text="Online bookings only")
