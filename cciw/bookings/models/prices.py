@@ -111,10 +111,9 @@ class PriceChecker:
 class PriceInfo:
     year: int
     prices: dict[PriceType, Decimal]
-    show_early_bird: bool
 
     @classmethod
-    def get_for_year(cls, *, year: int, show_early_bird: bool = True) -> PriceInfo | None:
+    def get_for_year(cls, *, year: int) -> PriceInfo | None:
         prices: list[Price] = list(Price.objects.filter(year=year))
 
         price_dict: dict[PriceType, Decimal] = {p.price_type: p.price for p in prices}
@@ -123,7 +122,7 @@ class PriceInfo:
             # than dealing with partial information.
             return None
 
-        return cls(year=year, prices=price_dict, show_early_bird=show_early_bird)
+        return cls(year=year, prices=price_dict)
 
     @property
     def price_full(self) -> Decimal:
@@ -164,4 +163,4 @@ class PriceInfo:
 
 
 def are_prices_set_for_year(year: int) -> bool:
-    return PriceInfo.get_for_year(year=year, show_early_bird=True) is not None
+    return PriceInfo.get_for_year(year=year) is not None

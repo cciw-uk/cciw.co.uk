@@ -182,9 +182,7 @@ def get_booking_open_data(year: int) -> BookingOpenData:
     year_config = get_year_config(year)
     if year_config is None:
         return BookingOpenData.no_info()
-    return BookingOpenData.from_year_config(
-        year_config, price_info=PriceInfo.get_for_year(year=year, show_early_bird=True)
-    )
+    return BookingOpenData.from_year_config(year_config, price_info=PriceInfo.get_for_year(year=year))
 
 
 def get_booking_open_data_thisyear() -> BookingOpenData:

@@ -76,19 +76,14 @@ def index(request):
         "title": "Booking",
     }
     booking_open = get_booking_open_data(year)
-    price_info = PriceInfo.get_for_year(year=year, show_early_bird=True)
+    price_info = PriceInfo.get_for_year(year=year)
     prices_set = price_info is not None
 
     if price_info:
         prices_to_show = price_info
     else:
         # Show last year's prices
-        prices_to_show = PriceInfo.get_for_year(
-            year=year - 1,
-            # Don't show early bird in price list, it might not be available.
-            # MAYBE this shouldn't be a property in PriceInfo, it's specific to this view
-            show_early_bird=False,
-        )
+        prices_to_show = PriceInfo.get_for_year(year=year - 1)
 
     context.update(
         {
