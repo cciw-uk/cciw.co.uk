@@ -2978,11 +2978,11 @@ def create_year_config_for_queue_tests(year: int = 2026) -> YearConfig:
 def test_rank_queue_booking():
     year_config = create_year_config_for_queue_tests(year=2026)
     with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
-        b1 = factories.create_booking()
-        b2 = factories.create_booking()
-        b3 = factories.create_booking()
-        b4 = factories.create_booking()
-        b5 = factories.create_booking()
+        b1 = factories.create_booking(first_name="Amy")
+        b2 = factories.create_booking(first_name="Bob")
+        b3 = factories.create_booking(first_name="Carla")
+        b4 = factories.create_booking(first_name="Dave")
+        b5 = factories.create_booking(first_name="Ed")
     with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=1)):
         b1.add_to_queue()
     with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=2)):
