@@ -487,10 +487,11 @@ def get_other_places_in_queue(bookings: Sequence[Booking], camp: Camp) -> dict[B
     # We can do a simpler query by starting with a new QuerySet:
     this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
     other_camp_bookings = Booking.objects.in_queue().exclude(camp=camp)
-    # We can match most easily using fuzzy_camper_id
     with_matches = this_camp_bookings.annotate(
         other_places_count=Subquery(
-            other_camp_bookings.filter(fuzzy_camper_id=OuterRef("fuzzy_camper_id")).annotate(c=Count("id")).values("c"),
+            other_camp_bookings.filter(fuzzy_camper_id_strict=OuterRef("fuzzy_camper_id_strict"))
+            .annotate(c=Count("id"))
+            .values("c"),
             output_field=models.IntegerField(),
         )
     ).values("id", "other_places_count")
@@ -506,11 +507,16 @@ def get_other_places_booked(bookings: Sequence[Booking], camp: Camp) -> dict[Boo
     """
     from cciw.bookings.models import Booking
 
+    # Similar to above, but for actually booked places.
+    # We use fuzzy_camper_id_strict here (and above), because false positives for matching
+    # have a very strong negative effect on priority
     this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
     other_camp_bookings = Booking.objects.booked().exclude(camp=camp)
     with_matches = this_camp_bookings.annotate(
         other_places_count=Subquery(
-            other_camp_bookings.filter(fuzzy_camper_id=OuterRef("fuzzy_camper_id")).annotate(c=Count("id")).values("c"),
+            other_camp_bookings.filter(fuzzy_camper_id_strict=OuterRef("fuzzy_camper_id_strict"))
+            .annotate(c=Count("id"))
+            .values("c"),
             output_field=models.IntegerField(),
         )
     ).values("id", "other_places_count")

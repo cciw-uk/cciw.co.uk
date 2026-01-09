@@ -12,6 +12,7 @@ from cciw.accounts.models import User
 
 from .constants import Sex
 from .prices import PriceType
+from .utils import normalise_booking_name
 
 if TYPE_CHECKING:
     from cciw.cciwmain.models import Camp
@@ -221,12 +222,8 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False, agreement
     errors.extend(approvals_needed)
 
     relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
-    relevant_bookings_excluding_self = relevant_bookings.exclude(
-        first_name=booking.first_name, last_name=booking.last_name
-    )
-    relevant_bookings_limited_to_self = relevant_bookings.filter(
-        first_name=booking.first_name, last_name=booking.last_name
-    )
+    relevant_bookings_excluding_self = relevant_bookings.exclude(fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict)
+    relevant_bookings_limited_to_self = relevant_bookings.filter(fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict)
 
     # 2nd/3rd child discounts
 
@@ -353,10 +350,7 @@ def get_booking_warnings(booking: Booking, *, booking_sec: bool = False) -> list
     warnings: list[str] = []
 
     relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
-
-    relevant_bookings_limited_to_self = relevant_bookings.filter(
-        first_name=booking.first_name, last_name=booking.last_name
-    )
+    relevant_bookings_limited_to_self = relevant_bookings.filter(fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict)
 
     if relevant_bookings_limited_to_self.filter(camp=camp).exclude(id=booking.id):
         warnings.append(
@@ -367,8 +361,10 @@ def get_booking_warnings(booking: Booking, *, booking_sec: bool = False) -> list
 
     if booking.price_type == PriceType.FULL:
         full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)
-        names = sorted({b.name for b in full_pricers})
-        if len(names) > 1:
+        unique_names = {normalise_booking_name(b) for b in full_pricers}
+        if len(unique_names) > 1:
+            # Use original names for printing message
+            names = sorted({b.name for b in full_pricers})
             pretty_names = ", ".join(names[1:]) + " and " + names[0]
             warning = "You have multiple places at 'Full price'. "
             if len(names) == 2:
@@ -380,8 +376,10 @@ def get_booking_warnings(booking: Booking, *, booking_sec: bool = False) -> list
 
     if booking.price_type == PriceType.SECOND_CHILD:
         second_childers = relevant_bookings.filter(price_type=PriceType.SECOND_CHILD)
-        names = sorted({b.name for b in second_childers})
-        if len(names) > 1:
+        unique_names = sorted({normalise_booking_name(b) for b in second_childers})
+        if len(unique_names) > 1:
+            # Use original names for printing message
+            names = sorted({b.name for b in second_childers})
             pretty_names = ", ".join(names[1:]) + " and " + names[0]
             warning = "You have multiple places at '2nd child discount'. "
             if len(names) == 2:

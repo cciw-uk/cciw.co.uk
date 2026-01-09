@@ -3345,11 +3345,12 @@ def test_booking_same_person_on_multiple_camps():
     account = factories.create_booking_account()
 
     booking_1 = factories.create_booking(camp=camp_1, account=account, first_name="Joe", last_name="Bloggs")
-    booking_2 = factories.create_booking(camp=camp_2, account=account, first_name="Joe", last_name="Bloggs")
+    # Note the lower case below, we should still get a match
+    booking_2 = factories.create_booking(camp=camp_2, account=account, first_name="joe", last_name="bloggs")
 
     problems1 = get_booking_problems(booking_2)
     messages1 = [p.description for p in problems1]
-    msg = 'You are trying to book places for "Joe Bloggs" on more than one camp.'
+    msg = 'You are trying to book places for "joe bloggs" on more than one camp.'
     assert len([True for m in messages1 if msg in m]) == 1
 
     # If booking_1 is put on shelf, there is no problem.

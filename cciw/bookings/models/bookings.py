@@ -31,6 +31,7 @@ from .problems import (
     get_booking_problems,
 )
 from .states import BookingState
+from .utils import sql_normalise_booking_name
 from .yearconfig import YearConfigFetcher, early_bird_is_available
 
 if TYPE_CHECKING:
@@ -189,16 +190,6 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(erased_at__isnull=True)
 
 
-def sql_normalise_human_name_for_match(*fields_or_values):
-    """
-    Applies normalisation to a human name for matching purposes
-    """
-    # Strip multiple spaces plus leading/trailing.
-    return functions.Lower(
-        functions.Trim(functions.Replace(functions.Concat(*fields_or_values), Value("  "), Value(" ")))
-    )
-
-
 class BookingManagerBase(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related("camp", "account")
@@ -317,11 +308,7 @@ class Booking(models.Model):
 
     fuzzy_camper_id = models.GeneratedField(
         expression=functions.Concat(
-            sql_normalise_human_name_for_match(
-                "first_name",
-                Value(" "),
-                "last_name",
-            ),
+            sql_normalise_booking_name(),
             Value(" "),
             functions.Cast(functions.ExtractYear("birth_date"), output_field=models.CharField()),
         ),
@@ -336,11 +323,7 @@ class Booking(models.Model):
         expression=functions.Concat(
             functions.Cast("account_id", output_field=models.CharField()),
             Value(" "),
-            sql_normalise_human_name_for_match(
-                "first_name",
-                Value(" "),
-                "last_name",
-            ),
+            sql_normalise_booking_name(),
             functions.Cast(functions.ExtractYear("birth_date"), output_field=models.CharField()),
         ),
         output_field=models.CharField(),
