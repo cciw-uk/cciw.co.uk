@@ -222,8 +222,12 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False, agreement
     errors.extend(approvals_needed)
 
     relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
-    relevant_bookings_excluding_self = relevant_bookings.exclude(fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict)
-    relevant_bookings_limited_to_self = relevant_bookings.filter(fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict)
+    relevant_bookings_excluding_self = relevant_bookings.exclude(
+        fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict_unsaved
+    )
+    relevant_bookings_limited_to_self = relevant_bookings.filter(
+        fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict_unsaved
+    )
 
     # 2nd/3rd child discounts
 
@@ -350,7 +354,9 @@ def get_booking_warnings(booking: Booking, *, booking_sec: bool = False) -> list
     warnings: list[str] = []
 
     relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()
-    relevant_bookings_limited_to_self = relevant_bookings.filter(fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict)
+    relevant_bookings_limited_to_self = relevant_bookings.filter(
+        fuzzy_camper_id_strict=booking.fuzzy_camper_id_strict_unsaved
+    )
 
     if relevant_bookings_limited_to_self.filter(camp=camp).exclude(id=booking.id):
         warnings.append(

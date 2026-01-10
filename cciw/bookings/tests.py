@@ -3360,3 +3360,17 @@ def test_booking_same_person_on_multiple_camps():
     assert len(problems2) == len(problems1) - 1
     messages2 = [p.description for p in problems2]
     assert len([True for m in messages2 if msg in m]) == 0
+
+
+@pytest.mark.django_db
+def test_booking_fuzzy_camper_id_strict():
+    booking_1 = factories.create_booking()
+    assert booking_1.fuzzy_camper_id_strict_unsaved == booking_1.fuzzy_camper_id_strict
+
+    booking_2 = Booking(
+        account=booking_1.account,
+        first_name=booking_1.first_name,
+        last_name=booking_1.last_name,
+        birth_date=booking_1.birth_date,
+    )
+    assert booking_2.fuzzy_camper_id_strict_unsaved == booking_1.fuzzy_camper_id_strict

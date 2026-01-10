@@ -31,7 +31,7 @@ from .problems import (
     get_booking_problems,
 )
 from .states import BookingState
-from .utils import sql_normalise_booking_name
+from .utils import normalise_booking_name, sql_normalise_booking_name
 from .yearconfig import YearConfigFetcher, early_bird_is_available
 
 if TYPE_CHECKING:
@@ -320,6 +320,7 @@ class Booking(models.Model):
     # fuzzy_camper_id_strict is a narrower version of the above,
     # that also limits to same booking account. This is far less likely
     # to result in false positives when matching.
+
     fuzzy_camper_id_strict = models.GeneratedField(
         expression=functions.Concat(
             functions.Cast("account_id", output_field=models.CharField()),
@@ -696,6 +697,11 @@ class Booking(models.Model):
             ]
             if v
         )
+
+    @property
+    def fuzzy_camper_id_strict_unsaved(self) -> str:
+        # Same as fuzzy_camper_id_strict, but when we haven't saved the data yet
+        return f"{self.account_id} {normalise_booking_name(self)} {self.birth_date.year}"
 
 
 # Attributes that the account holder is allowed to see
