@@ -43,6 +43,7 @@ def create(year: int, *, fix_names_from_anonymised: bool):
         old_id = b.id
 
         b.id = None  # Create new booking on save. This is a clone basically.
+        b.erased_at = None
         b.state = BookingState.INFO_COMPLETE
         b.created_at = timezone.now()
 
@@ -82,6 +83,7 @@ def create(year: int, *, fix_names_from_anonymised: bool):
             continue
 
         b.id = None  # Create new booking on save. This is a clone basically.
+        b.erased_at = None
         b.state = BookingState.INFO_COMPLETE
         b.created_at = timezone.now()
 
