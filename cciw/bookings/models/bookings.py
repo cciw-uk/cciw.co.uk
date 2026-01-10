@@ -325,6 +325,7 @@ class Booking(models.Model):
             functions.Cast("account_id", output_field=models.CharField()),
             Value(" "),
             sql_normalise_booking_name(),
+            Value(" "),
             functions.Cast(functions.ExtractYear("birth_date"), output_field=models.CharField()),
         ),
         output_field=models.CharField(),
