@@ -314,6 +314,7 @@ class Booking(models.Model):
         ),
         output_field=models.CharField(),
         db_persist=True,
+        db_index=True,
     )
 
     # fuzzy_camper_id_strict is a narrower version of the above,
@@ -328,6 +329,7 @@ class Booking(models.Model):
         ),
         output_field=models.CharField(),
         db_persist=True,
+        db_index=True,
     )
 
     objects = BookingManager()
