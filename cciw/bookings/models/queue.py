@@ -95,6 +95,7 @@ class BookingQueueEntry(models.Model):
         ),
         output_field=models.CharField(),
         db_persist=True,
+        db_index=True,
     )
 
     # Internal only:
