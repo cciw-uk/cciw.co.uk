@@ -1424,7 +1424,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("Camp Blue")
         self.assertTextPresent("Frédéric Bloggs")
         self.assertTextPresent("£100")
-        self.assertTextPresent("This place can be booked")
+        self.assertTextPresent("No problems with this booking")
         self.assert_book_button_enabled()
 
     # TODO - maybe some of these should be moved to model based tests via get_booking_problems()
@@ -1647,7 +1647,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("Camp Blue")
         self.assertTextPresent("Frédéric Bloggs")
         self.assertTextPresent("£100")
-        self.assertTextPresent("This place can be booked")
+        self.assertTextPresent("No problems with this booking")
 
         self.assertTextPresent("Another Child")
         self.assertTextPresent("£0.01")
