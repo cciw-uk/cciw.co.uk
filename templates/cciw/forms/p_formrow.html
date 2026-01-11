@@ -19,7 +19,7 @@
       {% if field.label %}{{ field.label_tag }}{% endif %}
     {% endif %}
     <div class="inputwidget">
-      {% if validation_only %}
+      {% if do_htmx_validation %}
         {{ field|attr:"hx-preserve:true" }}
       {% else %}
         {{ field }}
