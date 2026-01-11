@@ -37,7 +37,7 @@
 
       <tbody>
         {% for booking in basket_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking basket=1 showproblems=True %}
+          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_save_for_later=True showproblems=True %}
         {% endfor %}
 
         {% if discounts_available %}
@@ -139,7 +139,7 @@
       </thead>
       <tbody>
         {% for booking in shelf_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking shelf=1 showproblems=False %}
+          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_move_to_basket=True showproblems=False %}
         {% endfor %}
       </tbody>
     </table>

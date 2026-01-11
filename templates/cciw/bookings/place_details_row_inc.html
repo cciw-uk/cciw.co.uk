@@ -21,7 +21,7 @@
       hx-swap="none"
       value="View/edit">
     <br>
-    {% if basket %}
+    {% if show_save_for_later %}
       <input
         type="submit"
         name="shelve"
@@ -34,7 +34,7 @@
         value="Save for later"
       ><br>
     {% endif %}
-    {% if shelf %}
+    {% if show_move_to_basket %}
       <input
         type="submit"
         name="unshelve"
