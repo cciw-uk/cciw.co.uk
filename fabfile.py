@@ -435,7 +435,7 @@ def run_tests(c):
     c.local("pre-commit run ruff-check --all-files", echo=True)
     c.local("pytest cciw/cciwmain/tests/test_conventions.py -n0", echo=True)
     # Complete test suite:
-    c.local("pytest", echo=True, pty=True)
+    c.local("pytest --maxprocesses=2", echo=True, pty=True)
 
 
 def check_branch(c: Connection):
