@@ -29,7 +29,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             "subscribe_to_newsletter",
         ]
 
-    do_htmx_validation = False
+    do_htmx_validation = True
 
     def save(self, *args, **kwargs):
         old_subscription = BookingAccount.objects.get(id=self.instance.id).subscribe_to_newsletter
