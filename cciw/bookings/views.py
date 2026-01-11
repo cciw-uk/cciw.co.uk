@@ -411,8 +411,9 @@ def basket_list_bookings(request):
     return _basket_list_bookings(request)
 
 
-def _basket_list_bookings(request):
+def _basket_list_bookings(request: HttpRequest):
     year = common.get_thisyear()
+    booking_open_data = get_booking_open_data(year)
     now = timezone.now()
     bookings = (
         request.booking_account.bookings.for_year(year)
@@ -497,6 +498,10 @@ def _basket_list_bookings(request):
         for problem in booking.problems
     )
 
+    # There is no point in "Save for later" if they can't
+    # press "Apply now":
+    show_save_for_later_button = booking_open_data.is_open_for_booking
+
     return TemplateResponse(
         request,
         "cciw/bookings/list_bookings.html",
@@ -512,7 +517,8 @@ def _basket_list_bookings(request):
             "total": total,
             "grand_total": grand_total,
             "discounts_available": discounts.items(),
-            "booking_open_data": get_booking_open_data_thisyear(),
+            "booking_open_data": booking_open_data,
+            "show_save_for_later_button": show_save_for_later_button,
         },
     )
 
