@@ -29,7 +29,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             "subscribe_to_newsletter",
         ]
 
-    do_htmx_validation = True
+    do_htmx_validation = False
 
     def save(self, *args, **kwargs):
         old_subscription = BookingAccount.objects.get(id=self.instance.id).subscribe_to_newsletter
@@ -71,7 +71,7 @@ class FixPriceMixin:
 class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
     camp = forms.ChoiceField(choices=[], widget=forms.RadioSelect)
 
-    do_htmx_validation = True
+    do_htmx_validation = False
 
     label_overrides = {
         "camp": "Choose camp:",
