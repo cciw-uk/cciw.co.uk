@@ -266,7 +266,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         if result.declined_and_notified_account_count:
             messages.info(
                 request,
-                f"{result.declined_and_notified_account_count} accounts have been notified that places have not been allocated.",
+                f"{result.declined_and_notified_account_count} accounts have been notified that places have been declined.",
             )
         return HttpResponseRedirect(".")
 
