@@ -257,6 +257,7 @@ class Booking(models.Model):
     serious_illness = models.BooleanField(blank=True, default=False)
 
     # Other
+    # This is now unused, perhaps can be removed from model
     friends_for_tent_sharing = models.CharField(max_length=1000, blank=True, default="")
 
     # Agreement - from user

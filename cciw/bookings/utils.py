@@ -62,7 +62,6 @@ def camp_bookings_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
         ("Learning difficulties", lambda b: b.learning_difficulties),
         ("Dietary requirements", lambda b: b.dietary_requirements),
         ("Publicity photos consent", lambda b: b.publicity_photos_agreement),
-        ("Friends for tent sharing", lambda b: b.friends_for_tent_sharing),
     ]
 
     spreadsheet.add_sheet_with_header_row(

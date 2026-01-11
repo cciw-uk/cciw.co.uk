@@ -162,7 +162,6 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             "can_swim_25m",
             "learning_difficulties",
             "serious_illness",
-            "friends_for_tent_sharing",
             "agreement",
             "publicity_photos_agreement",
         ]
