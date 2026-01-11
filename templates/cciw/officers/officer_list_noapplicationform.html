@@ -7,7 +7,7 @@
   <div style="margin-left:2em;">
     {% for officer in officers_noapplicationform %}
       {{ officer.full_name }}
-      <a href="mailto:{{ officer.email }}">&lt;{{ officer.email }}&gt;</a><br/>
+      <a href="mailto:{{ officer.email }}">&lt;{{ officer.email }}&gt;</a><br>
     {% endfor %}
   </div>
 

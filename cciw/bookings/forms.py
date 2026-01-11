@@ -106,7 +106,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
                 "Camp {name}"
                 "</span>"
                 ", {leaders}, {start_date}"
-                "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
                 '<span class="placeAvailability">{availability}</span>',
                 url=c.get_absolute_url(),
                 slug=c.slug_name,

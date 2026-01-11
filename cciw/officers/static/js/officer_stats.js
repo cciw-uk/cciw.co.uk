@@ -62,8 +62,8 @@ $(document).ready(function() {
                 type: 'column'
             },
             tooltip: {
-                headerFormat: '<b>{point.x}</b><br/>',
-                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                headerFormat: '<b>{point.x}</b><br>',
+                pointFormat: '{series.name}: {point.y}<br>Total: {point.stackTotal}'
             },
             plotOptions: {
                 column: {
@@ -132,8 +132,8 @@ $(document).ready(function() {
         if (stack) {
             $.extend(data, {
                 tooltip: {
-                    headerFormat: '<b>{point.x}</b><br/>',
-                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                    headerFormat: '<b>{point.x}</b><br>',
+                    pointFormat: '{series.name}: {point.y}<br>Total: {point.stackTotal}'
                 }
             });
         }

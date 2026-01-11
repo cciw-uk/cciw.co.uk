@@ -41,7 +41,7 @@
                 <td class="rightbreak">{{ officer.full_name }}</td>
                 <td>
                   {% for camp in officer_data.missing_application_forms %}
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">{{ camp.url_id }}</a><br/>
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">{{ camp.url_id }}</a><br>
                   {% endfor %}
                 </td>
                 <td class="rightbreak">
@@ -54,7 +54,7 @@
                     {{ camp.url_id }}
                     (<a target="_blank" href="{% url 'cciw-officers-manage_references' camp_id=camp.url_id %}?officer_id={{ officer.id }}">references</a>,
                     <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
-                    <br/>
+                    <br>
                   {% endfor %}
                 </td>
                 <td class="rightbreak">
@@ -67,7 +67,7 @@
                     {{ camp.url_id }}
                     (<a target="_blank" href="{% url 'cciw-officers-manage_dbss' year=camp.year %}?camp={{ camp.slug_name }}">DBSs</a>,
                     <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
-                    <br/>
+                    <br>
                   {% endfor %}
                 </td>
                 <td class="rightbreak">
