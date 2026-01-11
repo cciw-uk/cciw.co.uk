@@ -46,7 +46,7 @@ from cciw.bookings.models.baskets import add_basket_to_queue
 from cciw.bookings.models.prices import PriceInfo
 from cciw.bookings.models.problems import ApprovalNeeded
 from cciw.cciwmain import common
-from cciw.cciwmain.common import get_current_domain, get_thisyear, htmx_form_validate
+from cciw.cciwmain.common import get_current_domain, get_thisyear
 from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
 
 from .decorators import (
@@ -205,7 +205,7 @@ def not_logged_in(request):
 
 
 @booking_account_required
-@htmx_form_validate(form_class=AccountDetailsForm)
+# @htmx_form_validate(form_class=AccountDetailsForm) - reenable after htmx is fixed
 def account_details(request):
     form_class = AccountDetailsForm
 
@@ -229,7 +229,6 @@ def account_details(request):
 
 
 @account_details_required
-@htmx_form_validate(form_class=AddPlaceForm)
 def add_or_edit_place(
     request,
     booking_id: int | None = None,
