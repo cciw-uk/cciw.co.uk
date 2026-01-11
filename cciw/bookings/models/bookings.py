@@ -284,7 +284,7 @@ class Booking(models.Model):
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven
-    shelved = models.BooleanField(default=False, help_text="Used by user to put on 'shelf'")
+    shelved = models.BooleanField(default=False, help_text="Used by user to put in 'Saved for later'")
 
     # State - internal
     state = models.CharField(choices=BookingState)

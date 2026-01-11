@@ -705,7 +705,7 @@ def _handle_overview_booking_actions(request, bookings):
 
     def cancel(booking):
         booking.cancel_and_move_to_shelf()
-        messages.info(request, f'Place for "{booking.name}" cancelled and put "on the shelf".')
+        messages.info(request, f'Place for "{booking.name}" cancelled and put in "Saved for later".')
         return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
 
     for key in request.POST.keys():

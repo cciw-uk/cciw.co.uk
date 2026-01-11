@@ -1833,8 +1833,6 @@ class TestListBookingsSL(ListBookingsBase, SeleniumBase):
         assert not self.is_element_present(f'tr[data-booking-id="{booking.id}"] [name=shelve]')
         assert self.is_element_present(f'tr[data-booking-id="{booking.id}"] [name=unshelve]')
 
-        self.assertTextPresent("Shelf")
-
     def test_move_to_basket(self):
         self.booking_login()
         booking = self.create_booking()
@@ -1848,9 +1846,6 @@ class TestListBookingsSL(ListBookingsBase, SeleniumBase):
         # Should be changed
         booking.refresh_from_db()
         assert not booking.shelved
-
-        # Shelf section should disappear.
-        self.assertTextAbsent("Shelf")
 
     def test_delete_place(self):
         account = self.booking_login()
@@ -2296,7 +2291,7 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         self.assertTextPresent("Another Child")
 
         # Basket/Shelf
-        self.assertTextPresent("Basket / shelf")
+        self.assertTextPresent("Basket and Saved for later")
 
         # TODO #52 - queue or not in queue
 

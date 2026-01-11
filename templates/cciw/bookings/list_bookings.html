@@ -12,10 +12,16 @@
         <p>The places below are ready to be booked — but not booked yet!
           Please continue by choosing from the options below.</p>
       {% else %}
-        <p>The places below are ready to be booked. However,
-          you will need to return on <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>,
-          when bookings will formally open, to complete the process.
-        </p>
+        <p>The places below are ready to be booked. However, booking is not open yet. So:</p>
+
+        <ul>
+          <li>Leave the places in your basket (and add any others as needed)</li>
+          <li>Return between
+            <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b> and
+            <b>{{ booking_open_data.closes_for_initial_period_on|date:"j F" }}</b>
+            to complete the process.
+          </li>
+        </ul>
       {% endif %}
     {% endif %}
 
@@ -107,11 +113,12 @@
 
   {% endif %} {# basket_bookings #}
 
+
+  <h2>Saved for later</h2>
+
   {% if shelf_bookings %}
 
-    <h2>Shelf</h2>
-
-    <p>These place details are 'on the shelf' for later use - move them to the
+    <p>These place details are saved for later use - move them to the
       basket in order to book them.</p>
 
     <table class="topheaders bookinglist">
@@ -130,6 +137,13 @@
       </tbody>
     </table>
 
+  {% else %}
+
+    <p>
+      If you have some bookings in your basket above that are not ready to be
+      booked, awaiting approval or declined, use the "Save for later" button to
+      move them here so that you can book the other places.
+    </p>
 
   {% endif %}
 
