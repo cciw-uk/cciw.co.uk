@@ -121,6 +121,13 @@
     <p>These place details are saved for later use - move them to the
       basket in order to book them.</p>
 
+    {% if shelf_bookings_problems_pending_approval %}
+      <p>
+        <b>For bookings that need approval, you need to move the booking
+          to your basket for the booking secretary to be able to approve it.</b>
+      </p>
+    {% endif %}
+
     <table class="topheaders bookinglist">
       <thead>
         <tr>

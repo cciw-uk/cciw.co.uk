@@ -95,6 +95,13 @@ class ApprovalNeeded:
             return self.linked_booking_approval
         return BookingApproval(description=self.description, type=self.type, booking=self.booking)
 
+    @property
+    def is_pending(self) -> bool:
+        if self.linked_booking_approval is None:
+            # Initial status is pending
+            return True
+        return self.linked_booking_approval.is_pending
+
 
 @dataclass(frozen=True, kw_only=True)
 class Warning:
@@ -142,6 +149,10 @@ class BookingApproval(models.Model):
     @property
     def is_approved(self) -> bool:
         return self.status == ApprovalStatus.APPROVED
+
+    @property
+    def is_pending(self) -> bool:
+        return self.status == ApprovalStatus.PENDING
 
     def __str__(self):
         return f"{self.get_type_display()}: {self.get_status_display()} for {self.booking.name}"

@@ -44,6 +44,7 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.baskets import add_basket_to_queue
 from cciw.bookings.models.prices import PriceInfo
+from cciw.bookings.models.problems import ApprovalNeeded
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, get_thisyear, htmx_form_validate
 from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
@@ -490,6 +491,12 @@ def _basket_list_bookings(request):
     else:
         grand_total = None
 
+    shelf_bookings_problems_pending_approval = any(
+        isinstance(problem, ApprovalNeeded) and problem.is_pending
+        for booking in shelf_bookings
+        for problem in booking.problems
+    )
+
     return TemplateResponse(
         request,
         "cciw/bookings/list_bookings.html",
@@ -498,6 +505,7 @@ def _basket_list_bookings(request):
             "stage": BookingStage.LIST,
             "basket_bookings": basket_bookings,
             "shelf_bookings": shelf_bookings,
+            "shelf_bookings_problems_pending_approval": shelf_bookings_problems_pending_approval,
             "all_bookable": all_bookable,
             "all_unbookable": all_unbookable,
             "state_token": make_state_token(basket_bookings),
