@@ -257,7 +257,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     can_allocate_places = request.user.is_booking_secretary
     if can_allocate_places and request.method == "POST" and "allocate" in request.POST:
-        result = allocate_places_and_notify(ranking_result.bookings)
+        result = allocate_places_and_notify(ranking_result.bookings, by_user=request.user)
         messages.info(
             request,
             f"{result.accepted_account_count} places have been allocated, "

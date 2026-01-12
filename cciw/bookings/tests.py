@@ -3275,6 +3275,7 @@ def test_allocate_places(mailoutbox):
     camp: Camp = camps_factories.create_camp(
         year=year_config.year, max_campers=5, max_male_campers=5, max_female_campers=5
     )
+    booking_sec = officers_factories.create_booking_secretary()
 
     # Enough accounts and bookings to test all the notification logic.
 
@@ -3301,7 +3302,7 @@ def test_allocate_places(mailoutbox):
             booking.add_to_queue(by_user=booking.account)
 
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
-    result = allocate_places_and_notify(ranking_result.bookings)
+    result = allocate_places_and_notify(ranking_result.bookings, by_user=booking_sec)
 
     # First 2 accounts get both places accepted,
     # next account gets 1 booking accepted, one declined,
@@ -3320,10 +3321,13 @@ def test_allocate_places(mailoutbox):
             booking.queue_entry.declined_notification_sent_at is not None
             or booking.queue_entry.accepted_notification_sent_at is not None
         )
+        assert booking.queue_entry.action_logs.filter(
+            action_type__in=(QueueEntryActionLogType.ALLOCATED, QueueEntryActionLogType.DECLINED)
+        ).exists()
 
     # Second time: do the same thing.
     ranking_result2 = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
-    result2 = allocate_places_and_notify(ranking_result2.bookings)
+    result2 = allocate_places_and_notify(ranking_result2.bookings, by_user=booking_sec)
     # This time:
     # - No places are allocated, as the camp is full.
     # - No new emails should be sent, because

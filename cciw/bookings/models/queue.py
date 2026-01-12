@@ -208,6 +208,13 @@ class QueueEntryActionLogType(TextChoices):
     FIELDS_CHANGED = "fields_changed", "fields changed"
     CREATED = "created", "created"
 
+    # This is when they are allocated a place (becomes 'booked')
+    # using the normal queue mechanism
+    ALLOCATED = "allocated", "allocated"
+
+    # When they are not allocated a place, and are notified.
+    DECLINED = "declined", "declined"
+
 
 class QueueEntryActionLog(models.Model):
     queue_entry = models.ForeignKey(BookingQueueEntry, related_name="action_logs", on_delete=models.CASCADE)
@@ -643,7 +650,9 @@ class AllocationResult:
     declined_and_notified_account_count: int
 
 
-def allocate_places_and_notify(ranked_queue_bookings: Sequence[Booking]) -> AllocationResult:
+def allocate_places_and_notify(
+    ranked_queue_bookings: Sequence[Booking], *, by_user: User | BookingAccount
+) -> AllocationResult:
     from cciw.bookings.email import send_places_allocated_email, send_places_declined_email
 
     by_account_key: Callable[[Booking], BookingAccount] = lambda b: b.account
@@ -655,13 +664,24 @@ def allocate_places_and_notify(ranked_queue_bookings: Sequence[Booking]) -> Allo
         ranked_queue_bookings, key=lambda b: b.rank_info.cutoff_state == QueueCutoff.ACCEPTED
     )
 
+    # Allocate:
     book_bookings_now(to_book)
+    for booking in to_book:
+        booking.queue_entry.save_action_log(action_type=QueueEntryActionLogType.ALLOCATED, by_user=by_user)
 
     to_book_grouped_by_account = [(a, list(g)) for a, g in itertools.groupby(to_book, key=by_account_key)]
     for account, bookings in to_book_grouped_by_account:
         send_places_allocated_email(account, bookings)
 
+    # Decline:
     to_decline_and_notify = [b for b in to_decline if not b.queue_entry.has_been_sent_declined_notification]
+    for booking in to_decline_and_notify:
+        # We only add a 'DECLINED' action when they are notified as well,
+        # because "declining" happens implicitly every time they are passed over
+        # by the allocation process, and we don't need to log that every time.
+        # (we possibly don't need to log it at all)
+        booking.queue_entry.save_action_log(action_type=QueueEntryActionLogType.DECLINED, by_user=by_user)
+
     to_decline_and_notify_grouped_by_account = [
         (a, list(g)) for a, g in itertools.groupby(to_decline_and_notify, key=by_account_key)
     ]
