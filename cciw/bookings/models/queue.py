@@ -198,7 +198,18 @@ class QueueEntryActionLog(models.Model):
         null=True,
         blank=True,
         default=None,
+        help_text="The staff user that triggered the action",
     )
+    account_user = models.ForeignKey(
+        "bookings.BookingAccount",
+        on_delete=models.PROTECT,
+        related_name="queue_entry_actions_performed",
+        null=True,
+        blank=True,
+        default=None,
+        help_text="The booking account that triggered the action",
+    )
+
     details = models.JSONField(default=dict, blank=True)
 
 
