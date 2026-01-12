@@ -17,17 +17,18 @@ def booking_report_by_camp(year: int) -> list[Camp]:
       confirmed_bookings_girls
     """
     camps = Camp.objects.filter(year=year).prefetch_related(
-        Prefetch("bookings", queryset=Booking.objects.booked(), to_attr="confirmed_bookings")
+        Prefetch("bookings", queryset=Booking.objects.booked(), to_attr="confirmed_bookings"),
+        Prefetch("bookings", queryset=Booking.objects.waiting_in_queue(), to_attr="waiting_in_queue_bookings"),
     )
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
         c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == Sex.MALE]
         c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == Sex.FEMALE]
+        c.waiting_in_queue_bookings_boys = [b for b in c.waiting_in_queue_bookings if b.sex == Sex.MALE]
+        c.waiting_in_queue_bookings_girls = [b for b in c.waiting_in_queue_bookings if b.sex == Sex.FEMALE]
 
     # MAYBE - do some DB aggregation to avoid actually pulling about Booking objects
     # when all we need is counts?
-
-    # TODO #52 add in counts for queue
 
     return camps
 
