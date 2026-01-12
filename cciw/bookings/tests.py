@@ -45,6 +45,7 @@ from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.prices import PriceInfo, are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval, get_booking_problems
 from cciw.bookings.models.queue import (
+    BookingQueueEntry,
     QueueEntryActionLogType,
     add_queue_cutoffs,
     allocate_places_and_notify,
@@ -3195,7 +3196,7 @@ class TestBookingQueuePageSL(BookingQueuePageBase, SeleniumBase):
         action_logs = list(booking.queue_entry.action_logs.all())
         assert len(action_logs) == 1
         log = action_logs[0]
-        assert log.user == user
+        assert log.staff_user == user
         assert log.action_type == QueueEntryActionLogType.FIELDS_CHANGED
         assert log.details == {
             "fields_changed": [
@@ -3217,8 +3218,8 @@ def test_booking_queue_track_changes():
     booking = factories.create_booking()
     booking.add_to_queue()
     user = officers_factories.create_booking_secretary()
-    queue_entry = booking.queue_entry
-    with queue_entry.track_changes(user):
+    queue_entry: BookingQueueEntry = booking.queue_entry
+    with queue_entry.track_changes(staff_user=user):
         queue_entry.is_active = False
         queue_entry.save()
 
@@ -3234,7 +3235,7 @@ def test_booking_queue_track_changes():
             }
         ]
     }
-    assert log.user == user
+    assert log.staff_user == user
 
 
 @pytest.mark.django_db

@@ -119,15 +119,15 @@ class BookingQueueEntry(models.Model):
         return int(self.tiebreaker[0:4], 16)
 
     @contextmanager
-    def track_changes(self, user: User) -> Iterator[None]:
+    def track_changes(self, *, staff_user: User) -> Iterator[None]:
         old_queue_entry_fields = self.get_current_field_data()
         yield
-        self.save_fields_changed_action_log(user=user, old_fields=old_queue_entry_fields)
+        self.save_fields_changed_action_log(staff_user=staff_user, old_fields=old_queue_entry_fields)
 
     def get_current_field_data(self) -> dict:
         return {key: value for key, value in self.__dict__.items() if not key.startswith("_")}
 
-    def save_fields_changed_action_log(self, *, user: User, old_fields: dict) -> QueueEntryActionLog:
+    def save_fields_changed_action_log(self, *, staff_user: User, old_fields: dict) -> QueueEntryActionLog:
         new_fields = self.get_current_field_data()
         changed: list[dict] = []
         for key, value in new_fields.items():
@@ -135,7 +135,9 @@ class BookingQueueEntry(models.Model):
             if old_value != value:
                 changed.append({"name": key, "old_value": old_value, "new_value": value})
         details = {"fields_changed": changed}
-        return self.action_logs.create(user=user, action_type=QueueEntryActionLogType.FIELDS_CHANGED, details=details)
+        return self.action_logs.create(
+            staff_user=staff_user, action_type=QueueEntryActionLogType.FIELDS_CHANGED, details=details
+        )
 
     objects = BookingQueueEntryManager()
 
@@ -189,7 +191,9 @@ class QueueEntryActionLog(models.Model):
     queue_entry = models.ForeignKey(BookingQueueEntry, related_name="action_logs", on_delete=models.CASCADE)
     action_type = models.CharField(choices=QueueEntryActionLogType)
     created_at = models.DateTimeField(default=timezone.now)
-    user = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="queue_entry_actions_performed")
+    staff_user = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="queue_entry_actions_performed"
+    )
     details = models.JSONField(default=dict, blank=True)
 
 
