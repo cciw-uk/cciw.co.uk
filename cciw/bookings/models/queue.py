@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from functools import cached_property
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, assert_never
 
 from django.db import models
 from django.db.models import Count, OuterRef, Subquery, Value, functions
@@ -54,15 +54,19 @@ class BookingQueueEntryQuerySet(models.QuerySet):
 
 
 class BookingQueueEntryManagerBase(models.Manager):
-    def create_for_booking(self, booking: Booking, *, by_account: bool = True) -> BookingQueueEntry:
+    def create_for_booking(self, booking: Booking, *, by_user: User | BookingAccount) -> BookingQueueEntry:
         queue_entry: BookingQueueEntry = self.create(
             booking=booking,
             is_active=True,
             sibling_surname=booking.last_name,
             sibling_booking_account=booking.account,
         )
-        if by_account:
-            queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, account_user=booking.account)
+        if isinstance(by_user, BookingAccount):
+            queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, account_user=by_user)
+        elif isinstance(by_user, User):
+            queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, staff_user=by_user)
+        else:
+            assert_never(by_user)
         return queue_entry
 
 

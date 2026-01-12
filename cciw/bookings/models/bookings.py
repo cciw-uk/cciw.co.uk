@@ -388,13 +388,13 @@ class Booking(models.Model):
     def is_in_queue(self) -> bool:
         return (queue_entry := self._queue_entry_or_none) is not None and queue_entry.is_active
 
-    def add_to_queue(self, *, by_account: bool = True) -> BookingQueueEntry:
+    def add_to_queue(self, *, by_user: User | BookingAccount) -> BookingQueueEntry:
         queue_entry = self._queue_entry_or_none
         if queue_entry is not None:
             if not queue_entry.is_active:
                 queue_entry.make_active()
         else:
-            queue_entry = BookingQueueEntry.objects.create_for_booking(self, by_account=by_account)
+            queue_entry = BookingQueueEntry.objects.create_for_booking(self, by_user=by_user)
             self.queue_entry = queue_entry
         return queue_entry
 

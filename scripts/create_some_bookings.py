@@ -13,6 +13,8 @@ django.setup()
 from django.utils import timezone  # noqa: E402
 from faker import Faker  # noqa: E402
 
+from cciw.accounts.models import User  # noqa: E402
+from cciw.bookings.models.accounts import BookingAccount  # noqa: E402
 from cciw.bookings.models.bookings import Booking  # noqa: E402
 from cciw.bookings.models.states import BookingState  # noqa: E402
 from cciw.cciwmain.models import Camp  # noqa: E402
@@ -105,6 +107,6 @@ def create(year: int, *, fix_names_from_anonymised: bool):
         b.save()
 
 
-def add_to_queue(year: int, *, by_account: bool = True):
+def add_to_queue(year: int, *, by_user: User | BookingAccount):
     for booking in Booking.objects.for_year(year):
-        booking.add_to_queue(by_account=by_account)
+        booking.add_to_queue(by_user=by_user)

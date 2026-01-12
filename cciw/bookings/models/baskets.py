@@ -1,8 +1,11 @@
+from cciw.accounts.models import User
+
+from .accounts import BookingAccount
 from .agreements import AgreementFetcher
 from .bookings import Booking, BookingQuerySet
 
 
-def add_basket_to_queue(bookings_qs: BookingQuerySet | list[Booking], *, by_account: bool = True):
+def add_basket_to_queue(bookings_qs: BookingQuerySet | list[Booking], *, by_user: User | BookingAccount):
     """
     Add a basket of bookings to the queue, returning True if successful,
     False otherwise.
@@ -19,6 +22,6 @@ def add_basket_to_queue(bookings_qs: BookingQuerySet | list[Booking], *, by_acco
         raise AssertionError(f"Expected 1 year in basket, found {years}")
 
     for b in bookings:
-        b.add_to_queue(by_account=by_account)
+        b.add_to_queue(by_user=by_user)
 
     return True

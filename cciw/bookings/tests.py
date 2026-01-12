@@ -431,7 +431,7 @@ def test_BookingAccount_balance_due(m, django_assert_num_queries):
 
     # "Book" button
     with freeze_time(year_config.bookings_open_for_booking_on):
-        booking.add_to_queue()
+        booking.add_to_queue(by_user=booking.account)
         assert_account_balance(0)
 
     # Confirmed by booking secretary
@@ -2263,13 +2263,13 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
 
     def test_show(self):
         # Book a place and pay
-        self.booking_login()
+        account = self.booking_login()
         booking1 = self.create_booking(name="Frédéric Bloggs")
-        add_basket_to_queue([booking1])
+        add_basket_to_queue([booking1], by_user=account)
 
         # Book another
         booking2 = self.create_booking(name="Another Child")
-        add_basket_to_queue([booking2])
+        add_basket_to_queue([booking2], by_user=account)
 
         # 3rd place, not booked at all
         self.create_booking(name="3rd Child")
@@ -2690,7 +2690,7 @@ def test_booking_saved_approvals_unapproved_and_need_approving():
 def test_booking_add_to_queue():
     booking = factories.create_booking()
     assert not booking.is_in_queue
-    booking.add_to_queue(by_account=True)
+    booking.add_to_queue(by_user=booking.account)
     assert booking.is_in_queue
     booking.refresh_from_db()
     assert booking.queue_entry.is_active
@@ -2703,7 +2703,7 @@ def test_booking_add_to_queue():
     old_queue_entry = booking.queue_entry
     created_at = old_queue_entry.created_at
 
-    booking.add_to_queue()
+    booking.add_to_queue(by_user=booking.account)
     booking.refresh_from_db()
 
     assert booking.queue_entry == old_queue_entry
@@ -2984,16 +2984,16 @@ def test_rank_queue_booking():
         b4 = factories.create_booking(first_name="Dave")
         b5 = factories.create_booking(first_name="Ed")
     with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=1)):
-        b1.add_to_queue()
+        b1.add_to_queue(by_user=b1.account)
     with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=2)):
-        b2.add_to_queue()
+        b2.add_to_queue(by_user=b2.account)
         assert date.today() < year_config.bookings_close_for_initial_period_on
     with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
         assert date.today() > year_config.bookings_close_for_initial_period_on
-        b3.add_to_queue()
+        b3.add_to_queue(by_user=b3.account)
 
     with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=2)):
-        b4.add_to_queue()
+        b4.add_to_queue(by_user=b4.account)
 
     ranked_bookings = rank_queue_bookings(camp=b1.camp, year_config=year_config)
 
@@ -3031,12 +3031,12 @@ def test_rank_queue_booking_same_camper_multiple_camps():
     with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         b1 = factories.create_booking(camp=camp_1, first_name="Amy")
         b2 = factories.create_booking(camp=camp_2, first_name=b1.first_name, last_name=b1.last_name, account=b1.account)
-        b1.add_to_queue()
-        b2.add_to_queue()
+        b1.add_to_queue(by_user=b1.account)
+        b2.add_to_queue(by_user=b2.account)
     with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
         b3 = factories.create_booking(camp=camp_2, first_name="Bob")
         assert date.today() > year_config.bookings_close_for_initial_period_on
-        b3.add_to_queue()
+        b3.add_to_queue(by_user=b3.account)
 
     # Before we book, we just know that b1 (and b2) have other places in queue:
     ranked_bookings_camp_1 = rank_queue_bookings(camp=camp_1, year_config=year_config)
@@ -3071,7 +3071,7 @@ def test_rank_queue_booking_same_camper_multiple_camps():
 def test_Booking_withdraw_from_queue_and_add_again():
     with freeze_time("2026-01-01"):
         booking = factories.create_booking()
-        booking.add_to_queue()
+        booking.add_to_queue(by_user=booking.account)
         booking.refresh_from_db()
         queue_entry_id = booking.queue_entry.id
     with freeze_time("2026-01-02"):
@@ -3079,7 +3079,7 @@ def test_Booking_withdraw_from_queue_and_add_again():
         booking.refresh_from_db()
         assert not booking.queue_entry.is_active
     with freeze_time("2026-01-03"):
-        booking.add_to_queue()
+        booking.add_to_queue(by_user=booking.account)
         booking.refresh_from_db()
         queue_entry_id2 = booking.queue_entry.id
         # For auditing, it's simpler if we keep old BookingQueueEntry:
@@ -3093,7 +3093,7 @@ def test_Booking_withdraw_from_queue_and_add_again():
 @pytest.mark.django_db
 def test_QueueEntry_get_current_field_data():
     booking = factories.create_booking()
-    queue_entry = booking.add_to_queue()
+    queue_entry = booking.add_to_queue(by_user=booking.account)
     keys = sorted(queue_entry.get_current_field_data().keys())
     # Avoid this breaking for each new field by testing a subset
     assert all(
@@ -3122,7 +3122,7 @@ def test_get_booking_queue_problems_rejected_first_timers():
     )
     bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(0, 15)]
     for b in bookings:
-        queue_entry = b.add_to_queue()
+        queue_entry = b.add_to_queue(by_user=b.account)
         queue_entry.first_timer_allocated = True
         queue_entry.save()
     ranked_queue_bookings = rank_queue_bookings(camp=camp, year_config=year_config)
@@ -3139,7 +3139,7 @@ def test_get_booking_queue_problems_too_many_first_timers():
     )
     bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(0, 10)]
     for b in bookings:
-        queue_entry = b.add_to_queue()
+        queue_entry = b.add_to_queue(by_user=b.account)
         queue_entry.first_timer_allocated = True
         queue_entry.save()
     problems = get_booking_queue_problems(ranked_queue_bookings=[], camp=camp)
@@ -3163,7 +3163,7 @@ class BookingQueuePageBase(FuncBaseMixin):
         COUNT = 5
         bookings = [self._create_booking(first_name=f"Joe {n}") for n in range(0, COUNT)]
         for b in bookings:
-            b.add_to_queue()
+            b.add_to_queue(by_user=b.account)
             assert b.state == BookingState.INFO_COMPLETE
 
         camp = self.camp
@@ -3185,7 +3185,7 @@ class TestBookingQueuePageSL(BookingQueuePageBase, SeleniumBase):
     # This is Selenium only as it requires htmx
     def test_edit_queue_entry(self):
         booking = self._create_booking()
-        booking.add_to_queue()
+        booking.add_to_queue(by_user=booking.account)
         assert not booking.queue_entry.officer_child
         self.officer_login(user := officers_factories.create_booking_secretary())
         self.get_url("cciw-officers-booking_queue", camp_id=booking.camp.url_id)
@@ -3220,7 +3220,7 @@ class TestBookingQueuePageWT(BookingQueuePageBase, WebTestBase):
 @pytest.mark.django_db
 def test_booking_queue_track_changes():
     booking = factories.create_booking()
-    booking.add_to_queue()
+    booking.add_to_queue(by_user=booking.account)
     user = officers_factories.create_booking_secretary()
     queue_entry: BookingQueueEntry = booking.queue_entry
     with queue_entry.track_changes(staff_user=user):
@@ -3296,7 +3296,7 @@ def test_allocate_places(mailoutbox):
         start = year_config.bookings_close_for_initial_period_on + timedelta(days=1)
         start_dt = datetime(start.year, start.month, start.day)
         with freeze_time(start_dt + timedelta(hours=1 + idx)):
-            booking.add_to_queue()
+            booking.add_to_queue(by_user=booking.account)
 
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
     result = allocate_places_and_notify(ranking_result.bookings)

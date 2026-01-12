@@ -446,7 +446,7 @@ def _basket_list_bookings(request: HttpRequest):
                     "to the details. Please check the details and try again.",
                 )
             else:
-                if add_basket_to_queue(basket_bookings, by_account=True):
+                if add_basket_to_queue(basket_bookings, by_user=request.booking_account):
                     messages.info(request, "Places added to queue!")
                     return HttpResponseRedirect(reverse("cciw-bookings-added_to_queue"))
                 else:
