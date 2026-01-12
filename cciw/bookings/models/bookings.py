@@ -392,15 +392,15 @@ class Booking(models.Model):
         queue_entry = self._queue_entry_or_none
         if queue_entry is not None:
             if not queue_entry.is_active:
-                queue_entry.make_active()
+                queue_entry.make_active(by_user=by_user)
         else:
             queue_entry = BookingQueueEntry.objects.create_for_booking(self, by_user=by_user)
             self.queue_entry = queue_entry
         return queue_entry
 
-    def withdraw_from_queue(self) -> None:
+    def withdraw_from_queue(self, *, by_user: User | BookingAccount) -> None:
         if self.is_in_queue:
-            self.queue_entry.make_inactive()
+            self.queue_entry.make_inactive(by_user=by_user)
 
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:

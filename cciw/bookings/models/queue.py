@@ -14,8 +14,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from functools import cached_property
-from typing import TYPE_CHECKING, Literal, assert_never
+from typing import TYPE_CHECKING, Literal
 
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Count, OuterRef, Subquery, Value, functions
 from django.db.models.enums import TextChoices
@@ -61,12 +62,7 @@ class BookingQueueEntryManagerBase(models.Manager):
             sibling_surname=booking.last_name,
             sibling_booking_account=booking.account,
         )
-        if isinstance(by_user, BookingAccount):
-            queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, account_user=by_user)
-        elif isinstance(by_user, User):
-            queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, staff_user=by_user)
-        else:
-            assert_never(by_user)
+        queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, by_user=by_user)
         return queue_entry
 
 
@@ -126,15 +122,17 @@ class BookingQueueEntry(models.Model):
         return int(self.tiebreaker[0:4], 16)
 
     @contextmanager
-    def track_changes(self, *, staff_user: User) -> Iterator[None]:
+    def track_changes(self, *, by_user: User | BookingAccount) -> Iterator[None]:
         old_queue_entry_fields = self.get_current_field_data()
         yield
-        self.save_fields_changed_action_log(staff_user=staff_user, old_fields=old_queue_entry_fields)
+        self.save_fields_changed_action_log(by_user=by_user, old_fields=old_queue_entry_fields)
 
     def get_current_field_data(self) -> dict:
         return {key: value for key, value in self.__dict__.items() if not key.startswith("_")}
 
-    def save_fields_changed_action_log(self, *, staff_user: User, old_fields: dict) -> QueueEntryActionLog:
+    def save_fields_changed_action_log(
+        self, *, by_user: User | BookingAccount, old_fields: dict
+    ) -> QueueEntryActionLog:
         new_fields = self.get_current_field_data()
         changed: list[dict] = []
         for key, value in new_fields.items():
@@ -142,20 +140,23 @@ class BookingQueueEntry(models.Model):
             if old_value != value:
                 changed.append({"name": key, "old_value": old_value, "new_value": value})
         details = {"fields_changed": changed}
-        return self.action_logs.create(
-            staff_user=staff_user, action_type=QueueEntryActionLogType.FIELDS_CHANGED, details=details
+        return self.save_action_log(
+            by_user=by_user,
+            action_type=QueueEntryActionLogType.FIELDS_CHANGED,
+            details=details,
         )
 
     def save_action_log(
-        self,
-        *,
-        action_type: QueueEntryActionLogType,
-        account_user: BookingAccount | None = None,
-        staff_user: User | None = None,
+        self, *, action_type: QueueEntryActionLogType, by_user: User | BookingAccount, details: dict | None = None
     ) -> QueueEntryActionLog:
+        account_user: BookingAccount | None = by_user if isinstance(by_user, BookingAccount) else None
+        staff_user: User | None = by_user if isinstance(by_user, User) else None
+
         assert account_user or staff_user
-        assert not (account_user and staff_user)
-        return self.action_logs.create(account_user=account_user, staff_user=staff_user, action_type=action_type)
+        details = details or {}
+        return self.action_logs.create(
+            account_user=account_user, staff_user=staff_user, action_type=action_type, details=details
+        )
 
     objects = BookingQueueEntryManager()
 
@@ -166,16 +167,18 @@ class BookingQueueEntry(models.Model):
     def __str__(self):
         return f"Queue entry for {self.booking.name}"
 
-    def make_active(self) -> None:
+    def make_active(self, *, by_user: User | BookingAccount) -> None:
         if not self.is_active:
-            self.is_active = True
-            self.enqueued_at = timezone.now()
-            self.save()
+            with self.track_changes(by_user=by_user):
+                self.is_active = True
+                self.enqueued_at = timezone.now()
+                self.save()
 
-    def make_inactive(self) -> None:
+    def make_inactive(self, *, by_user: User | BookingAccount) -> None:
         if self.is_active:
-            self.is_active = False
-            self.save()
+            with self.track_changes(by_user=by_user):
+                self.is_active = False
+                self.save()
 
     @property
     def has_been_sent_declined_notification(self) -> bool:
@@ -229,7 +232,7 @@ class QueueEntryActionLog(models.Model):
         help_text="The booking account that triggered the action",
     )
 
-    details = models.JSONField(default=dict, blank=True)
+    details = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
 
 
 @dataclass

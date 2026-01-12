@@ -317,7 +317,7 @@ def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         form = UpdateQueueEntryForm(data=request.POST, instance=queue_entry)
         if form.is_valid():
             form.save()
-            queue_entry.save_fields_changed_action_log(staff_user=request.user, old_fields=old_queue_entry_fields)
+            queue_entry.save_fields_changed_action_log(by_user=request.user, old_fields=old_queue_entry_fields)
             edit_queue_entry_mode = False
             trigger_page_update = True
         else:

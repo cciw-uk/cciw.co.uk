@@ -3075,7 +3075,7 @@ def test_Booking_withdraw_from_queue_and_add_again():
         booking.refresh_from_db()
         queue_entry_id = booking.queue_entry.id
     with freeze_time("2026-01-02"):
-        booking.withdraw_from_queue()
+        booking.withdraw_from_queue(by_user=booking.account)
         booking.refresh_from_db()
         assert not booking.queue_entry.is_active
     with freeze_time("2026-01-03"):
@@ -3088,6 +3088,8 @@ def test_Booking_withdraw_from_queue_and_add_again():
         # But we need the `enqueued_at` to be updated
         # to the date they were re-added to the queue.
         assert booking.queue_entry.enqueued_at.date() == date(2026, 1, 3)
+
+    assert booking.queue_entry.action_logs.count() == 3
 
 
 @pytest.mark.django_db
@@ -3223,7 +3225,7 @@ def test_booking_queue_track_changes():
     booking.add_to_queue(by_user=booking.account)
     user = officers_factories.create_booking_secretary()
     queue_entry: BookingQueueEntry = booking.queue_entry
-    with queue_entry.track_changes(staff_user=user):
+    with queue_entry.track_changes(by_user=user):
         queue_entry.is_active = False
         queue_entry.save()
 
