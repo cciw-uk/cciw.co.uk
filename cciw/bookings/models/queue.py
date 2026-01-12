@@ -192,7 +192,12 @@ class QueueEntryActionLog(models.Model):
     action_type = models.CharField(choices=QueueEntryActionLogType)
     created_at = models.DateTimeField(default=timezone.now)
     staff_user = models.ForeignKey(
-        "accounts.User", on_delete=models.PROTECT, related_name="queue_entry_actions_performed"
+        "accounts.User",
+        on_delete=models.PROTECT,
+        related_name="queue_entry_actions_performed",
+        null=True,
+        blank=True,
+        default=None,
     )
     details = models.JSONField(default=dict, blank=True)
 
