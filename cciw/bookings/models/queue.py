@@ -294,47 +294,33 @@ def rank_queue_bookings(*, camp: Camp, year_config: YearConfig) -> list[Booking]
     # So we prefer Python when it makes sense.
     add_rank_info(queue_bookings, year_config, camp)
 
-    def is_officer_child_key(booking: Booking) -> int:
-        return 0 if booking.queue_entry.officer_child else 1
-
-    def first_timer_key(booking: Booking) -> int:
-        return 0 if booking.queue_entry.first_timer_allocated else 1
-
-    def has_other_place_booked_key(booking: Booking) -> int:
-        return 1 if booking.rank_info.has_other_place_booked else 0
-
-    def queue_position_key(booking: Booking) -> int:
-        return booking.rank_info.queue_position_rank
-
-    def previous_attendance_key(booking: Booking) -> int:
-        # More attendance is better.
-        return -booking.rank_info.previous_attendance_score
-
-    def previous_year_waiting_list_key(booking: Booking) -> int:
-        # In the list means higher priority
-        return 0 if booking.rank_info.in_previous_year_waiting_list else 1
-
-    def sibling_bonus_key(booking: Booking) -> int:
-        # More siblings is better
-        return -booking.rank_info.sibling_bonus
-
-    def tiebreaker_key(booking: Booking) -> int:
-        return booking.queue_entry.tiebreaker
-
-    def overall_key(booking: Booking) -> tuple:
-        return (
-            is_officer_child_key(booking),
-            first_timer_key(booking),
-            has_other_place_booked_key(booking),
-            queue_position_key(booking),
-            previous_attendance_key(booking),
-            previous_year_waiting_list_key(booking),
-            sibling_bonus_key(booking),
-            tiebreaker_key(booking),
-        )
-
-    queue_bookings.sort(key=overall_key)
+    queue_bookings.sort(key=ranking_key)
     return list(queue_bookings)
+
+
+def ranking_key(booking: Booking) -> tuple:
+    is_officer_child_key = 0 if booking.queue_entry.officer_child else 1
+    first_timer_key = 0 if booking.queue_entry.first_timer_allocated else 1
+    has_other_place_booked_key = 1 if booking.rank_info.has_other_place_booked else 0
+    queue_position_key: int = booking.rank_info.queue_position_rank
+    # More attendance is better:
+    previous_attendance_key: int = -booking.rank_info.previous_attendance_score
+    # In the list means higher priority:
+    previous_year_waiting_list_key = 0 if booking.rank_info.in_previous_year_waiting_list else 1
+    # More siblings is better:
+    sibling_bonus_key: int = -booking.rank_info.sibling_bonus
+    tiebreaker_key: int = booking.queue_entry.tiebreaker
+
+    return (
+        is_officer_child_key,
+        first_timer_key,
+        has_other_place_booked_key,
+        queue_position_key,
+        previous_attendance_key,
+        previous_year_waiting_list_key,
+        sibling_bonus_key,
+        tiebreaker_key,
+    )
 
 
 type BookingId = int
