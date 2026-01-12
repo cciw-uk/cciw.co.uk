@@ -2690,10 +2690,14 @@ def test_booking_saved_approvals_unapproved_and_need_approving():
 def test_booking_add_to_queue():
     booking = factories.create_booking()
     assert not booking.is_in_queue
-    booking.add_to_queue()
+    booking.add_to_queue(by_account=True)
     assert booking.is_in_queue
     booking.refresh_from_db()
     assert booking.queue_entry.is_active
+    action_log = booking.queue_entry.action_logs.all()[0]
+    assert action_log.account_user == booking.account
+    assert action_log.staff_user is None
+    assert action_log.action_type == QueueEntryActionLogType.CREATED
 
     # Multiple times is fine and does nothing.
     old_queue_entry = booking.queue_entry
@@ -3194,8 +3198,8 @@ class TestBookingQueuePageSL(BookingQueuePageBase, SeleniumBase):
         assert booking.queue_entry.officer_child
 
         action_logs = list(booking.queue_entry.action_logs.all())
-        assert len(action_logs) == 1
-        log = action_logs[0]
+        assert len(action_logs) == 2
+        log = action_logs[1]
         assert log.staff_user == user
         assert log.action_type == QueueEntryActionLogType.FIELDS_CHANGED
         assert log.details == {
@@ -3224,8 +3228,8 @@ def test_booking_queue_track_changes():
         queue_entry.save()
 
     logs = list(queue_entry.action_logs.all())
-    assert len(logs) == 1
-    log = logs[0]
+    assert len(logs) == 2
+    log = logs[1]
     assert log.details == {
         "fields_changed": [
             {

@@ -105,6 +105,6 @@ def create(year: int, *, fix_names_from_anonymised: bool):
         b.save()
 
 
-def add_to_queue(year: int):
+def add_to_queue(year: int, *, by_account: bool = True):
     for booking in Booking.objects.for_year(year):
-        booking.add_to_queue()
+        booking.add_to_queue(by_account=by_account)

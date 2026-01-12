@@ -54,13 +54,16 @@ class BookingQueueEntryQuerySet(models.QuerySet):
 
 
 class BookingQueueEntryManagerBase(models.Manager):
-    def create_for_booking(self, booking: Booking):
-        return self.create(
+    def create_for_booking(self, booking: Booking, *, by_account: bool = True) -> BookingQueueEntry:
+        queue_entry: BookingQueueEntry = self.create(
             booking=booking,
             is_active=True,
             sibling_surname=booking.last_name,
             sibling_booking_account=booking.account,
         )
+        if by_account:
+            queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, account_user=booking.account)
+        return queue_entry
 
 
 BookingQueueEntryManager = BookingQueueEntryManagerBase.from_queryset(BookingQueueEntryQuerySet)
@@ -139,6 +142,17 @@ class BookingQueueEntry(models.Model):
             staff_user=staff_user, action_type=QueueEntryActionLogType.FIELDS_CHANGED, details=details
         )
 
+    def save_action_log(
+        self,
+        *,
+        action_type: QueueEntryActionLogType,
+        account_user: BookingAccount | None = None,
+        staff_user: User | None = None,
+    ) -> QueueEntryActionLog:
+        assert account_user or staff_user
+        assert not (account_user and staff_user)
+        return self.action_logs.create(account_user=account_user, staff_user=staff_user, action_type=action_type)
+
     objects = BookingQueueEntryManager()
 
     class Meta:
@@ -185,6 +199,7 @@ class RankInfo:
 
 class QueueEntryActionLogType(TextChoices):
     FIELDS_CHANGED = "fields_changed", "fields changed"
+    CREATED = "created", "created"
 
 
 class QueueEntryActionLog(models.Model):
