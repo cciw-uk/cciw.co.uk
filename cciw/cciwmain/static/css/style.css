@@ -839,16 +839,17 @@ which we've already started to use
            to every `<td>` and ensure it contains all the information
            in the `thead` section, which will be hidden. */
             box-shadow: none;
-            margin-bottom: 2px;
+            margin-bottom: 1em;
 
             > thead {
                 display: none;
             }
             > tbody > tr {
                 display: block;
-                margin-top: 0.8em;
-                margin-bottom: 0.5em;
                 box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+            }
+            > tbody > tr + tr {
+                margin-top: 0.8em;
             }
             > tbody > tr > td {
                 display: block;
