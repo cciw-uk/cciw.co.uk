@@ -47,4 +47,9 @@ urlpatterns = [
     path("pay/done/", views.pay_done, name="cciw-bookings-pay_done"),
     path("pay/cancelled/", views.pay_cancelled, name="cciw-bookings-pay_cancelled"),
     path("overview/", views.account_overview, name="cciw-bookings-account_overview"),
+    path(
+        "manage-queue-booking/<int:booking_id>/",
+        views.manage_queue_booking_modal,
+        name="cciw-bookings-manage_queue_booking_modal",
+    ),
 ]

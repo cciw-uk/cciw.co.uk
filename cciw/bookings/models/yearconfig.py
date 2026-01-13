@@ -128,6 +128,14 @@ class BookingOpenData:
             return None
         return self.closes_for_initial_period_on - settings.BOOKINGS_TIME_FOR_SPECIAL_NEEDS_APPROVAL
 
+    @property
+    def is_closed_for_initial_period(self) -> bool:
+        end = self.closes_for_initial_period_on
+        if end is None:
+            return False
+        today: date = timezone.now().date()
+        return today > end
+
     @classmethod
     def from_year_config(cls, config: YearConfig, *, price_info: PriceInfo | None) -> BookingOpenData:
         now = timezone.now()

@@ -614,9 +614,16 @@ class Booking(models.Model):
         self.state = BookingState.BOOKED
         self.save()
 
-    def cancel_and_move_to_shelf(self):
+    def cancel_and_move_to_shelf(self) -> None:
         self._unbook()
+        self.move_to_shelf()
+
+    def move_to_shelf(self) -> None:
         self.shelved = True
+        self.save()
+
+    def move_to_basket(self) -> None:
+        self.shelved = False
         self.save()
 
     def _unbook(self):

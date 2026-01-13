@@ -5,6 +5,9 @@
       <th>Camp</th>
       <th>Dates</th>
       <th>Cost</th>
+      {% if show_manage_button %}
+        <th></th>
+      {% endif %}
     </tr>
   </thead>
   {% for booking in bookings %}
@@ -20,7 +23,22 @@
       </td>
       <td data-label="Dates">{{ booking.camp.nice_dates }}</td>
       <td data-label="Cost">£{{ booking.amount_due }}</td>
+      {% if show_manage_button %}
+        <td data-label="Manage">
+          <button
+            id="id_manage_booking_button_{{ booking.id }}"
+            type="button"
+            class="text-button"
+            hx-trigger="click"
+            hx-get="{% url 'cciw-bookings-manage_queue_booking_modal' booking_id=booking.id %}"
+            hx-target="body"
+            hx-swap="beforeend"
+          >⋮</button>
+        </td>
+      {% endif %}
     </tr>
+
+    {# TODO - this possibly isn't needed, or could be moved to the modal dialog #}
     {% if show_missing_agreements and booking.is_booked and booking.missing_agreements %}
       <tr>
         <td colspan="4">

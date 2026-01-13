@@ -1,0 +1,74 @@
+{# This form is loaded dynamically at the bottom of the account_overview.html template #}
+<dialog id="id_manage_queue_booking_modal" data-js-onload-showmodal
+        class="fullWidthDialog normal-text-styles"
+>
+  <div class="columns-space-between">
+    <h1 class="flex-grow-1">Manage booking</h1>
+    <form method="dialog" class="dialog-close-form"><button class="dialog-close">Close</button></form>
+  </div>
+
+  <div id="dialog-content-main">
+    <h2>Details</h2>
+    <table class="sideheaders">
+      <tbody>
+        <tr>
+          <th>Name</th>
+          <td>{{ booking.name }}</td>
+        </tr>
+        <tr>
+          <th>Camp</th>
+          <td>
+            <span class="with-camp-colors-{{ booking.camp.slug_name }}">{{ booking.camp.url_id }}</span>
+            ({{ booking.camp.leaders_formatted }})
+          </td>
+        </tr>
+        <tr>
+          <th>Dates</th>
+          <td>{{ booking.camp.nice_dates }}</td>
+        </tr>
+        <tr>
+          <th>Cost</th>
+          <td>£{{ booking.amount_due }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Status</h2>
+    {% if booking.is_in_queue and not booking.is_booked %}
+      <p>The booking application is being considered, and we will notify you
+        if it is accepted or not.
+      </p>
+    {% endif %}
+
+    <h2>Actions</h2>
+
+    <p>The following actions are available:</p>
+
+    {% if booking.is_in_queue and not booking.is_booked %}
+      <h3>Withdraw place</h3>
+      <p>If you no longer want this place, you may withdrawn it from the queue.
+        This will place it in "Saved for later" in case you change your mind.</p>
+
+      <p>If you need to change details for a booking, such as change the camp,
+        you will need to first withdraw it then re-book.
+        {% if booking_open_data.is_closed_for_initial_period %}
+          Note that this will mean that you lose your original place in the queue
+        {% endif %}
+      </p>
+
+      <form>
+        <div>
+          <button
+            name="withdraw"
+            type="submit"
+            hx-post="{{ request.get_full_path }}"
+            hx-target="#id_manage_queue_booking_modal"
+            hx-swap="outerHTML"
+          >
+            Withdraw booking from queue
+          </button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</dialog>

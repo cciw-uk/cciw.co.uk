@@ -2356,7 +2356,25 @@ class TestAccountOverviewWT(AccountOverviewBase, WebTestBase):
 
 
 class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
-    pass
+    def test_manage_place_withdraw(self):
+        account = self.booking_login()
+        booking = self.create_booking(shortcut=True)
+        booking.add_to_queue(by_user=account)
+
+        booking.refresh_from_db()
+        assert booking.is_in_queue
+
+        self.get_url(self.urlname)
+        manage_button_selector = f"#id_manage_booking_button_{booking.id}"
+        self.click(manage_button_selector)
+        self.wait_for_ajax()
+        self.click("button[name=withdraw]")
+        self.wait_for_ajax()
+
+        booking.refresh_from_db()
+        assert not booking.is_in_queue
+
+        assert not self.is_element_present(manage_button_selector)
 
 
 class LogOutBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):

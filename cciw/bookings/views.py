@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -47,7 +48,8 @@ from cciw.bookings.models.prices import PriceInfo
 from cciw.bookings.models.problems import ApprovalNeeded
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, get_thisyear, htmx_form_validate
-from cciw.utils.views import for_htmx, htmx_redirect, make_get_request
+from cciw.officers.views.utils.htmx import add_hx_trigger_header
+from cciw.utils.views import for_htmx, for_htmx2, htmx_redirect, make_get_request
 
 from .decorators import (
     account_details_required,
@@ -527,17 +529,15 @@ def _handle_list_booking_actions(request: HttpRequest, places: list[Booking]) ->
         return False
 
     try:
-        place = [p for p in places if p.id == int(request.POST["booking_id"])][0]
+        place: Booking = [p for p in places if p.id == int(request.POST["booking_id"])][0]
     except (ValueError, IndexError):
         return False
 
     if "shelve" in request.POST:
-        place.shelved = True
-        place.save()
+        place.move_to_shelf()
         return True
     elif "unshelve" in request.POST:
-        place.shelved = False
-        place.save()
+        place.move_to_basket()
         return True
     elif "delete" in request.POST:
         place.delete()
@@ -669,6 +669,7 @@ def pay_cancelled(request):
 
 
 @booking_account_required
+@for_htmx2(use_partial_from_params=True)
 def account_overview(request):
     if "logout" in request.POST:
         response = HttpResponseRedirect(reverse("cciw-bookings-index"))
@@ -733,3 +734,30 @@ def _handle_overview_booking_actions(request, bookings):
                     booking = [b for b in fixable_bookings if b.id == booking_id][0]
                 if booking:
                     return action(booking)
+
+
+@booking_account_required
+def manage_queue_booking_modal(request: HttpRequest, booking_id: int) -> HttpResponse:
+    account: BookingAccount = request.booking_account
+    booking: Booking = get_object_or_404(account.bookings.filter(id=booking_id))
+    booking_open_data = get_booking_open_data(booking.camp.year)
+
+    if request.method == "POST" and "withdraw" in request.POST:
+        booking.withdraw_from_queue(by_user=account)
+        booking.move_to_shelf()
+        return add_hx_trigger_header(
+            HttpResponse(b""),
+            {
+                "refreshPlacesInfo": True,
+                "jsCloseModal": True,
+            },
+        )
+
+    return TemplateResponse(
+        request,
+        "cciw/bookings/manage_queue_booking_modal.html",
+        {
+            "booking": booking,
+            "booking_open_data": booking_open_data,
+        },
+    )
