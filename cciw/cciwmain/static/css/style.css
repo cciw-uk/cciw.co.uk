@@ -175,7 +175,7 @@ which we've already started to use
 }
 
 @layer components {
-    #content, header {
+    .normal-text-styles, header {
         h1, h2, h3, h4, h5, h6 {
             font-weight: normal;
             font-family: 'a028_extraboldregular', Tahoma;
@@ -362,7 +362,7 @@ which we've already started to use
         }
     }
 
-    #content {
+    .normal-text-styles {
         background-color: var(--contentBackgroundColor);
         h1 {
             /* TODO #49 do we need want this? Looks a bit weird. */
@@ -987,6 +987,10 @@ which we've already started to use
         }
     }
 
+    .dialog-close {
+        /* content padding here due to h1 styling, TODO rework */
+        margin-left: calc(var(--contentPadding) + 1em);
+    }
 }
 
 
@@ -996,6 +1000,11 @@ which we've already started to use
         display: flex;
         justify-content: space-between;
     }
+
+    .flex-grow-1 {
+        flex-grow: 1;
+    }
+
 
     /* Buttons */
     .compactButton {
