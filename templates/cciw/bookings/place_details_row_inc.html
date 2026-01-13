@@ -87,16 +87,17 @@
               <tr>
                 <td>{{ problem.description }}</td>
                 <td>
-                  {% if problem.blocker %}
-                    <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
-                  {% elif problem.warning %}
-                    <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">
-                  {% else %}
-                {# for approvals that have been granted #}
-                    <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
-                  {% endif %}
-
-                  <i>{{ problem.status_display }}</i>
+                  <nobr>
+                    {% if problem.blocker %}
+                      <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
+                    {% elif problem.warning %}
+                      <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">
+                    {% else %}
+                      {# for approvals that have been granted #}
+                      <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
+                    {% endif %}
+                    <i>{{ problem.status_display }}</i>
+                  </nobr>
                 </td>
               </tr>
             {% endfor %}
