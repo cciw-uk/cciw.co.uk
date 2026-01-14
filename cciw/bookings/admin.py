@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from django import forms
 from django.contrib import admin, messages
 from django.db.models import GeneratedField, ManyToOneRel, Value
@@ -39,6 +41,14 @@ FIRST_BOOKING_YEAR = 2012
 class PriceAdmin(admin.ModelAdmin):
     list_display = ["price_type", "year", "price"]
     ordering = ["-year", "price_type"]
+
+    def get_readonly_fields(self, request, obj=None) -> Sequence[str]:
+        if obj is not None and obj.id is not None:
+            if obj.year < common.get_thisyear():
+                # Make everything read only.
+                all_fields = [f.name for f in Price._meta.get_fields()]
+                return all_fields
+        return super().get_readonly_fields(request, obj)
 
 
 class BookingAccountForm(forms.ModelForm):
