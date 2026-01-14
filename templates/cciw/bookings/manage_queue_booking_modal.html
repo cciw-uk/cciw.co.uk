@@ -35,9 +35,15 @@
 
     <h2>Status</h2>
     {% if booking.is_in_queue and not booking.is_booked %}
-      <p>The booking application is being considered, and we will notify you
-        if it is accepted or not.
-      </p>
+      {% if booking.queue_entry.will_send_declined_notification %}
+        <p>The booking application is being considered, and we will notify you
+          if it is accepted or not.
+        </p>
+      {% else %}
+        <p>The booking application is in the waiting list. We will notify you
+          if a place comes up.
+        </p>
+      {% endif %}
     {% endif %}
 
     <h2>Actions</h2>

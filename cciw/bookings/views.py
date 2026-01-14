@@ -550,12 +550,24 @@ def _handle_list_booking_actions(request: HttpRequest, places: list[Booking]) ->
 
 @booking_account_required
 def added_to_queue(request: HttpRequest) -> HttpResponse:
+    account: BookingAccount = request.booking_account
+    waiting_in_queue_bookings: list[Booking] = list(account.bookings.waiting_in_queue())
+    all_will_send_declined_notification = all(
+        b.queue_entry.will_send_declined_notification for b in waiting_in_queue_bookings
+    )
+    none_will_send_declined_notification = all(
+        not b.queue_entry.will_send_declined_notification for b in waiting_in_queue_bookings
+    )
+
     return TemplateResponse(
         request,
         "cciw/bookings/added_to_queue.html",
         {
             "title": "Booking - added to queue",
             "booking_open_data": get_booking_open_data(get_thisyear()),
+            "all_will_send_declined_notification": all_will_send_declined_notification,
+            "none_will_send_declined_notification": none_will_send_declined_notification,
+            "waiting_in_queue_bookings": waiting_in_queue_bookings,
         },
     )
 

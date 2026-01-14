@@ -2,13 +2,44 @@
 
 {% block content %}
 
-  <h2>Thank you</h2>
+  <h2>Thank you!</h2>
 
-  <p>Thank you for booking!</p>
+  <p>Thank you for booking(s), which have been added to the queue.</p>
 
-  <p>Your bookings have been added to the queue, and we will notify you when
-    places have been allocated.
-  </p>
+  {# simpler messages for common cases of `all_will_send_declined_notification` and `none_will_send_declined_notification` #}
+  {% if all_will_send_declined_notification %}
+    <p>You have the following bookings waiting in the queue:</p>
+    <ul>
+      {% for booking in waiting_in_queue_bookings %}
+        <li>{{ booking.name }}</li>
+      {% endfor %}
+    </ul>
+    <p>We will notify you whether or not these places have been allocated.</p>
+
+  {% elif none_will_send_declined_notification %}
+    <p>You have the following bookings in the waiting list:</p>
+    <ul>
+      {% for booking in waiting_in_queue_bookings %}
+        <li>{{ booking.name }}</li>
+      {% endfor %}
+    </ul>
+    <p>We will notify you if places come up.</p>
+
+  {% else %}
+    {# mixed #}
+    <p>You have the following bookings waiting in the queue:</p>
+    <ul>
+      {% for booking in waiting_in_queue_bookings %}
+        <li>{{ booking.name }}:
+          {% if booking.queue_entry.will_send_declined_notification %}
+            We will notify you whether or not this place is allocated
+          {% else %}
+            We will notify you if a place comes up
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
   <p>You can check the status of bookings on
     your <a href="{% url 'cciw-bookings-account_overview' %}">account overview</a> page.
