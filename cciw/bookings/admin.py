@@ -46,6 +46,10 @@ class PriceAdmin(admin.ModelAdmin):
         if obj is not None and obj.id is not None:
             if obj.year < common.get_thisyear():
                 # Make everything read only.
+                # This is important especially because of `price_type`,
+                # because we want to show old data, while changing `PriceType`
+                # enum to only include values that are relevant to current data.
+                # If we have a `<select>` here that doesn't work.
                 all_fields = [f.name for f in Price._meta.get_fields()]
                 return all_fields
         return super().get_readonly_fields(request, obj)

@@ -415,10 +415,6 @@ class Booking(models.Model):
             return Decimal("0.00")
         else:
             amount = Price.objects.get(year=self.camp.year, price_type=self.price_type).price
-            # For booking 2015 and later, this is not needed, but it kept in
-            # case we need to query the expected amount due for older bookings.
-            if self.south_wales_transport:
-                amount += Price.objects.get(price_type=PriceType.SOUTH_WALES_TRANSPORT, year=self.camp.year).price
 
             if self.early_bird_discount:
                 amount -= Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT, year=self.camp.year).price
@@ -434,7 +430,7 @@ class Booking(models.Model):
     def auto_set_amount_due(self) -> None:
         if self.camp.year < 2026:
             # Business rules have changed, we can't calculate expected amount due
-            # any more, and we shouldn't every need to do this for old bookings.
+            # any more, and we shouldn't ever need to do this for old bookings.
             return
         amount = self.expected_amount_due()
         if amount is None:

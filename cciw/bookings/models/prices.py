@@ -17,19 +17,22 @@ class PriceType(models.TextChoices):
     SECOND_CHILD = "second_child", "2nd child discount"
     THIRD_CHILD = "third_child", "3rd child discount"
     CUSTOM = "custom_discount", "Custom discount"
-    # South Wales transport not used from 2015 onwards, kept for historical data
-    SOUTH_WALES_TRANSPORT = "south_wales_transport", "South wales transport surcharge (pre 2015)"
     # Deposit not used from 2025 onwards, kept for historical data.
     DEPOSIT = "deposit", "Deposit"
     EARLY_BIRD_DISCOUNT = "early_bird_discount", "Early bird discount"
     BOOKING_FEE = "booking_fee", "Booking fee"
 
 
+# We have some old values that are no longer in the enum,
+# but are in the historical data in the `Price` table.
+# - South Wales transport fee: not used from 2015 onwards, kept for historical data
+#   "south_wales_transport"
+
+
 BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
 
 # Price types that are used by Price model
 VALUED_PRICE_TYPES: list[PriceType] = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] + [
-    PriceType.SOUTH_WALES_TRANSPORT,
     PriceType.DEPOSIT,
     PriceType.EARLY_BIRD_DISCOUNT,
     PriceType.BOOKING_FEE,
@@ -38,9 +41,7 @@ VALUED_PRICE_TYPES: list[PriceType] = [val for val in BOOKING_PLACE_PRICE_TYPES 
 
 # Prices required to open bookings.
 # If changing this, PriceInfo.price_* should be changed to tolerate missing data
-REQUIRED_PRICE_TYPES: list[PriceType] = [
-    v for v in VALUED_PRICE_TYPES if v not in (PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT)
-]
+REQUIRED_PRICE_TYPES: list[PriceType] = [v for v in VALUED_PRICE_TYPES if v not in (PriceType.DEPOSIT,)]
 
 
 class PriceQuerySet(models.QuerySet):
