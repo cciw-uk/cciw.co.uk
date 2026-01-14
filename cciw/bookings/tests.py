@@ -3398,3 +3398,33 @@ def test_booking_fuzzy_camper_id_strict():
         birth_date=booking_1.birth_date,
     )
     assert booking_2.fuzzy_camper_id_strict_unsaved == booking_1.fuzzy_camper_id_strict
+
+
+@pytest.mark.django_db
+def test_add_to_queue_after_camp_full():
+    # Bookings that are added to a queue after a camp is full
+    # are marked as 'waiting_list_from_start'
+    camp: Camp = camps_factories.create_camp(max_campers=5)
+    initial_bookings = [factories.create_booking(camp=camp) for _ in range(0, 5)]
+    for initial_booking in initial_bookings:
+        initial_queue_entry = initial_booking.add_to_queue(by_user=initial_booking.account)
+        assert not initial_queue_entry.waiting_list_from_start
+
+    # Make camp full:
+    book_bookings_now(initial_bookings)
+
+    # Another one faces a camp already full
+    booking = factories.create_booking(camp=camp)
+    queue_entry = booking.add_to_queue(by_user=booking.account)
+    assert queue_entry.waiting_list_from_start
+
+    # If we cancel a place, then add again, and it faces an already full camp,
+    # then waiting_list_from_start should be adjusted.
+    camp.max_campers = 3
+    camp.save()
+
+    b1 = initial_bookings[0]
+    b1.withdraw_from_queue(by_user=b1.account)
+
+    q1 = b1.add_to_queue(by_user=b1.account)
+    assert q1.waiting_list_from_start

@@ -56,11 +56,14 @@ class BookingQueueEntryQuerySet(models.QuerySet):
 
 class BookingQueueEntryManagerBase(models.Manager):
     def create_for_booking(self, booking: Booking, *, by_user: User | BookingAccount) -> BookingQueueEntry:
+        # See also: BookingQueueEntry.make_active()
+        waiting_list_from_start = not places_are_available_for_booking(booking)
         queue_entry: BookingQueueEntry = self.create(
             booking=booking,
             is_active=True,
             sibling_surname=booking.last_name,
             sibling_booking_account=booking.account,
+            waiting_list_from_start=waiting_list_from_start,
         )
         queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, by_user=by_user)
         return queue_entry
@@ -174,9 +177,12 @@ class BookingQueueEntry(models.Model):
 
     def make_active(self, *, by_user: User | BookingAccount) -> None:
         if not self.is_active:
+            # See also: BookingQueueEntryManagerBase.create_for_booking()
             with self.track_changes(by_user=by_user):
                 self.is_active = True
                 self.enqueued_at = timezone.now()
+                if not places_are_available_for_booking(self.booking):
+                    self.waiting_list_from_start = True
                 self.save()
 
     def make_inactive(self, *, by_user: User | BookingAccount) -> None:
@@ -723,4 +729,15 @@ def book_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
         b.state = BookingState.BOOKED
         b.save()
 
+    return True
+
+
+def places_are_available_for_booking(booking: Booking) -> bool:
+    places_left: PlacesLeft = booking.camp.get_places_left()
+    if places_left.total <= 0:
+        return False
+    if booking.sex == Sex.MALE and places_left.male <= 0:
+        return False
+    if booking.sex == Sex.FEMALE and places_left.female <= 0:
+        return False
     return True
