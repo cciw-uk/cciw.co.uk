@@ -195,6 +195,13 @@ class BookingQueueEntry(models.Model):
     def has_been_sent_declined_notification(self) -> bool:
         return self.declined_notification_sent_at is not None
 
+    @property
+    def will_send_declined_notification(self) -> bool:
+        # If it they were put directly onto the waiting list, we only send
+        # notifications if it is allocated, not declined.
+        # We never send more than one declined.
+        return not self.waiting_list_from_start and not self.has_been_sent_declined_notification
+
 
 class QueueCutoff(StrEnum):
     UNDECIDED = "U"
@@ -685,7 +692,7 @@ def allocate_places_and_notify(
         send_places_allocated_email(account, bookings)
 
     # Decline:
-    to_decline_and_notify = [b for b in to_decline if not b.queue_entry.has_been_sent_declined_notification]
+    to_decline_and_notify = [b for b in to_decline if b.queue_entry.will_send_declined_notification]
     for booking in to_decline_and_notify:
         # We only add a 'DECLINED' action when they are notified as well,
         # because "declining" happens implicitly every time they are passed over

@@ -3409,6 +3409,7 @@ def test_add_to_queue_after_camp_full():
     for initial_booking in initial_bookings:
         initial_queue_entry = initial_booking.add_to_queue(by_user=initial_booking.account)
         assert not initial_queue_entry.waiting_list_from_start
+        assert initial_queue_entry.will_send_declined_notification
 
     # Make camp full:
     book_bookings_now(initial_bookings)
@@ -3417,6 +3418,7 @@ def test_add_to_queue_after_camp_full():
     booking = factories.create_booking(camp=camp)
     queue_entry = booking.add_to_queue(by_user=booking.account)
     assert queue_entry.waiting_list_from_start
+    assert not queue_entry.will_send_declined_notification
 
     # If we cancel a place, then add again, and it faces an already full camp,
     # then waiting_list_from_start should be adjusted.
