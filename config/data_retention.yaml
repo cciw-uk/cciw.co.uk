@@ -484,6 +484,7 @@
       - first_timer_allocated
       - declined_notification_sent_at
       - accepted_notification_sent_at
+      - waiting_list_from_start
 
     - name: accounts.User
       columns:

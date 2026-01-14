@@ -101,6 +101,11 @@ class BookingQueueEntry(models.Model):
         db_index=True,
     )
 
+    # A queue entry is marked 'waiting_list_from_start' if it was clear from
+    # the start that it would go into the waiting list, not into the queue
+    # that might be accepted or declined.
+    waiting_list_from_start = models.BooleanField(default=False)
+
     # Internal only:
     declined_notification_sent_at = models.DateTimeField(null=True, blank=True, default=None)
     accepted_notification_sent_at = models.DateTimeField(null=True, blank=True, default=None)
