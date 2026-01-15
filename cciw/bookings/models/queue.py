@@ -666,9 +666,21 @@ def get_booking_queue_problems(*, ranked_queue_bookings: Sequence[Booking], camp
 
 @dataclass(frozen=True)
 class AllocationResult:
-    accepted_booking_count: int
-    accepted_account_count: int
-    declined_and_notified_account_count: int
+    accepted_bookings: Sequence[Booking]
+    accepted_accounts: Sequence[BookingAccount]
+    declined_and_notified_accounts: Sequence[BookingAccount]
+
+    @property
+    def accepted_booking_count(self) -> int:
+        return len(self.accepted_bookings)
+
+    @property
+    def accepted_account_count(self) -> int:
+        return len(self.accepted_accounts)
+
+    @property
+    def declined_and_notified_account_count(self) -> int:
+        return len(self.declined_and_notified_accounts)
 
 
 def allocate_places_and_notify(
@@ -693,6 +705,7 @@ def allocate_places_and_notify(
     to_book_grouped_by_account = [(a, list(g)) for a, g in itertools.groupby(to_book, key=by_account_key)]
     for account, bookings in to_book_grouped_by_account:
         send_places_allocated_email(account, bookings)
+    to_book_accounts: list[BookingAccount] = [a for a, _ in to_book_grouped_by_account]
 
     # Decline:
     to_decline_and_notify = [b for b in to_decline if b.queue_entry.will_send_declined_notification]
@@ -706,14 +719,15 @@ def allocate_places_and_notify(
     to_decline_and_notify_grouped_by_account = [
         (a, list(g)) for a, g in itertools.groupby(to_decline_and_notify, key=by_account_key)
     ]
+    to_decline_and_notify_accounts = [a for a, _ in to_decline_and_notify_grouped_by_account]
 
     for account, bookings in to_decline_and_notify_grouped_by_account:
         send_places_declined_email(account, bookings)
 
     return AllocationResult(
-        accepted_booking_count=len(to_book),
-        accepted_account_count=len(to_book_grouped_by_account),
-        declined_and_notified_account_count=len(to_decline_and_notify_grouped_by_account),
+        accepted_bookings=to_book,
+        accepted_accounts=to_book_accounts,
+        declined_and_notified_accounts=to_decline_and_notify_accounts,
     )
 
 
