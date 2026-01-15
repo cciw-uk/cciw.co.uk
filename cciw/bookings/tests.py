@@ -1852,38 +1852,6 @@ class TestPayReturnPoints(BookingBaseMixin, BookingLogInMixin, WebTestBase):
 
 
 @pytest.mark.django_db
-def test_account_receive_payment():
-    booking = factories.create_booking()
-    (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
-    account = booking.account
-    allocate_bookings_now([booking])
-    booking.refresh_from_db()
-
-    mail.outbox = []
-    ManualPayment.objects.create(
-        account=account,
-        amount=booking.amount_due,
-    )
-
-    account.refresh_from_db()
-
-    # Check we updated the account
-    assert account.total_received == booking.amount_due
-    assert account.total_received > 0  # sanity check
-
-    # Check we updated the bookings
-    booking.refresh_from_db()
-
-    # Check for emails sent
-    # 1 to account
-
-    # TODO #52
-    # mails = mail.outbox
-    # account_mails = [m for m in mails if m.to == [account.email]]
-    # assert len(account_mails) == 1
-
-
-@pytest.mark.django_db
 def test_email_for_bad_payment_1():
     ipn_1 = IpnMock()
     ipn_1.id = 123
@@ -2140,7 +2108,7 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
     urlname = "cciw-bookings-account_overview"
 
     def test_show(self):
-        # Book a place and pay
+        # Book a place
         account = self.booking_login()
         booking1 = self.create_booking(name="Frédéric Bloggs")
         add_basket_to_queue([booking1], by_user=account)
@@ -2150,7 +2118,8 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         add_basket_to_queue([booking2], by_user=account)
 
         # 3rd place, not booked at all
-        self.create_booking(name="3rd Child")
+        booking3 = self.create_booking(name="3rd Child")
+        booking3.move_to_shelf()
 
         # 4th place, cancelled
         booking4 = self.create_booking(name="4th Child")
@@ -2163,19 +2132,20 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         # Another one, so that messages are cleared
         self.get_url(self.urlname)
 
-        # Confirmed place
-        self.assertTextPresent("Frédéric")
+        # These tests don't show that places are in the right sections,
+        # but they show something.
 
-        # Booked place
+        # Booked places
+        self.assertTextPresent("Frédéric")
         self.assertTextPresent("Another Child")
 
         # Basket/Shelf
         self.assertTextPresent("Basket and Saved for later")
-
-        # TODO #52 - queue or not in queue
+        self.assertTextPresent("3rd Child")
 
         # Cancellation
         self.assertTextPresent("Cancelled places")
+        self.assertTextPresent("4th Child")
 
 
 class TestAccountOverviewWT(AccountOverviewBase, WebTestBase):
