@@ -521,14 +521,20 @@ class BookingAdmin(admin.ModelAdmin):
         "camp__camp_name",
         "sex",
         "price_type",
-        "early_bird_discount",
         "serious_illness",
         "state",
         QueueStateFilter,
         "created_online",
         CustomAgreementFilter,
     ]
-    readonly_fields = ["booked_at", "created_online"]
+    readonly_fields = [
+        "booked_at",
+        "created_online",
+        # Old business logic:
+        "south_wales_transport",
+        "early_bird_discount",
+    ]
+
     autocomplete_fields = ["account"]
 
     form = BookingAdminForm
@@ -624,14 +630,13 @@ class BookingAdmin(admin.ModelAdmin):
             {
                 "fields": [
                     "price_type",
-                    "south_wales_transport",
-                    "early_bird_discount",
                     "booked_at",
                     "amount_due",
                 ]
             },
         ),
         ("Internal", {"fields": ["state", "created_at", "shelved", "created_online"]}),
+        ("Old fields", {"fields": ["south_wales_transport", "early_bird_discount"], "classes": ("collapse",)}),
         ("Add a payment for account (optional)", {"fields": ["manual_payment_amount", "manual_payment_payment_type"]}),
     )
 
