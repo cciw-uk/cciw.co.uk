@@ -141,7 +141,7 @@ def send_places_allocated_emails(account: BookingAccount, bookings: Sequence[Boo
             "domain": common.get_current_domain(),
             "account": account,
             "booking": booking,
-            "expires_after_display": settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER_DISPLAY,
+            "booking_expires_after_display": settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER_DISPLAY,
             "accept_place_url": make_accept_place_url(booking),
             "cancel_place_url": make_cancel_place_url(booking),
         }

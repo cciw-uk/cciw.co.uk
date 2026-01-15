@@ -35,13 +35,14 @@
 
     <h2>Status</h2>
     {% if booking.is_in_queue and not booking.is_booked %}
-      {% if booking.queue_entry.will_send_declined_notification %}
-        <p>The booking application is being considered, and we will notify you
-          if it is accepted or not.
+      {% if booking.queue_entry.waiting_list_mode %}
+        <p>The booking application is in the waiting list. We will notify you by
+          email if a place comes up. You will then need to accept the offer
+          within {{ booking_expires_after_display }} or it will expire.
         </p>
       {% else %}
-        <p>The booking application is in the waiting list. We will notify you
-          if a place comes up.
+        <p>The booking application is being considered, and we will notify you
+          by email if it is accepted or not.
         </p>
       {% endif %}
     {% endif %}

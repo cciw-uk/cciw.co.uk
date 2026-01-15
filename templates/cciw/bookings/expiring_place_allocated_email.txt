@@ -9,7 +9,7 @@ Camp: {{ booking.camp }}
 Dates: {{ booking.camp.start_date|date:"d F" }} to {{ booking.camp.end_date|date:"d F Y" }}
 
 If you want to keep this place you MUST accept the place by clicking on the link
-below, within {{ expires_after_display }}, or the place will expire.
+below, within {{ booking_expires_after_display }}, or the place will expire.
 
 ACCEPT PLACE:
 
@@ -21,7 +21,7 @@ CANCEL PLACE:
 
 {{ cancel_place_url }}
 
-If you do nothing, the place will expire after {{ expires_after_display }}.
+If you do nothing, the place will expire after {{ booking_expires_after_display }}.
 
 The camp leaders will be in contact with more details in due time.
 

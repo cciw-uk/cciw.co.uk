@@ -1617,7 +1617,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit("[name=book_now]")
         self.assertUrlsEqual(reverse("cciw-bookings-added_to_queue"))
         self.assertTextPresent("added to the queue")
-        self.assertTextPresent("We will notify you whether or not these places have been allocated.")
+        self.assertTextPresent("We will notify you by email whether or not these places have been allocated.")
         self.assertTextPresent(booking.name)
 
         booking.refresh_from_db()

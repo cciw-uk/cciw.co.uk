@@ -6,24 +6,26 @@
 
   <p>Thank you for booking(s), which have been added to the queue.</p>
 
-  {# simpler messages for common cases of `all_will_send_declined_notification` and `none_will_send_declined_notification` #}
-  {% if all_will_send_declined_notification %}
+  {# simpler messages for common cases of `all_waiting_list_mode` and `none_waiting_list_mode` #}
+  {% if none_waiting_list_mode %}
     <p>You have the following bookings waiting in the queue:</p>
     <ul>
       {% for booking in waiting_in_queue_bookings %}
         <li>{{ booking.name }}</li>
       {% endfor %}
     </ul>
-    <p>We will notify you whether or not these places have been allocated.</p>
+    <p>We will notify you by email whether or not these places have been allocated.</p>
 
-  {% elif none_will_send_declined_notification %}
+  {% elif all_waiting_list_mode %}
     <p>You have the following bookings in the waiting list:</p>
     <ul>
       {% for booking in waiting_in_queue_bookings %}
         <li>{{ booking.name }}</li>
       {% endfor %}
     </ul>
-    <p>We will notify you if places come up.</p>
+    <p>We will notify you by email if places come up. You will then need to accept the offers
+      within {{ booking_expires_after_display }} or they will expire.
+    </p>
 
   {% else %}
     {# mixed #}
@@ -32,9 +34,10 @@
       {% for booking in waiting_in_queue_bookings %}
         <li>{{ booking.name }}:
           {% if booking.queue_entry.will_send_declined_notification %}
-            We will notify you whether or not this place is allocated
+            We will notify you by email whether or not this place is allocated
           {% else %}
-            We will notify you if a place comes up
+            We will notify you by email if a place comes up. You will then need to accept the offer
+            within {{ booking_expires_after_display }} or it will expire.
           {% endif %}
         </li>
       {% endfor %}
