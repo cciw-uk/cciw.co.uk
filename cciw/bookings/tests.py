@@ -3172,13 +3172,17 @@ def test_allocate_places(mailoutbox):
 
     for booking in bookings:
         booking.refresh_from_db()
-        assert (
-            booking.queue_entry.declined_notification_sent_at is not None
-            or booking.queue_entry.accepted_notification_sent_at is not None
-        )
-        assert booking.queue_entry.action_logs.filter(
-            action_type__in=(QueueEntryActionLogType.ALLOCATED, QueueEntryActionLogType.DECLINED)
-        ).exists()
+        if booking in result.accepted_bookings:
+            assert booking.state == BookingState.BOOKED
+            assert booking.booking_expires_at is None
+            assert booking.queue_entry.declined_notification_sent_at is None
+            assert booking.queue_entry.accepted_notification_sent_at is not None
+            assert booking.queue_entry.action_logs.filter(action_type=QueueEntryActionLogType.ALLOCATED).exists()
+        else:
+            assert booking.state == BookingState.INFO_COMPLETE
+            assert booking.queue_entry.declined_notification_sent_at is not None
+            assert booking.queue_entry.accepted_notification_sent_at is None
+            assert booking.queue_entry.action_logs.filter(action_type=QueueEntryActionLogType.DECLINED).exists()
 
     # Second time: do the same thing.
     ranking_result2 = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
