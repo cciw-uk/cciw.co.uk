@@ -187,6 +187,9 @@ def send_places_declined_email(account: BookingAccount, bookings: Sequence[Booki
         "domain": common.get_current_domain(),
         "account": account,
         "bookings": bookings,
+        "account_overview_url": build_url_with_booking_token(
+            view_name="cciw-bookings-account_overview", email=account.email
+        ),
     }
     body = loader.render_to_string("cciw/bookings/places_declined_email.txt", c)
     subject = "[CCIW] Booking - places declined"

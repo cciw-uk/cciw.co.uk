@@ -11,7 +11,10 @@ Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
 {% endfor %}
 
 These bookings will stay in the waiting list, and you will be informed
-if a place becomes available.
+if a place becomes available. You can withdraw from the waiting list
+from your account overview page:
+
+{{ account_overview_url }}
 
 Thank you,
 
