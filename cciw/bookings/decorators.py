@@ -1,6 +1,5 @@
 from functools import wraps
 
-from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
@@ -75,25 +74,6 @@ def account_details_required(view_func):
     def view(request, *args, **kwargs):
         if not (request.booking_account is not None and request.booking_account.has_account_details()):
             return HttpResponseRedirect(reverse("cciw-bookings-account_details"))
-        return view_func(request, *args, **kwargs)
-
-    return view
-
-
-def redirect_if_agreement_fix_required(view_func):
-    """
-    Ensure that any agreements have been fixed before continuing, redirecting to
-    overview otherwise.
-
-    """
-
-    @wraps(view_func)
-    def view(request, *args, **kwargs):
-        if request.booking_account is not None and request.booking_account.bookings.agreement_fix_required().exists():
-            messages.warning(
-                request, "There is an issue with your existing bookings. Please address it before continuing."
-            )
-            return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
         return view_func(request, *args, **kwargs)
 
     return view

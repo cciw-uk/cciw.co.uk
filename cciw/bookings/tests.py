@@ -26,7 +26,6 @@ from cciw.bookings.mailchimp import get_status
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (
     AccountTransferPayment,
-    AgreementFetcher,
     ApprovalNeededType,
     Booking,
     BookingAccount,
@@ -455,42 +454,6 @@ def test_BookingAccount_balance_due(django_assert_num_queries):
     with freeze_time(year_config.payments_due_on):
         assert_account_balance(100)
         assert_account_balance(100, full=True)
-
-
-@pytest.mark.django_db
-def test_Booking_missing_agreements():
-    camp = camps_factories.create_camp(future=True)
-    booking = factories.create_booking(state=BookingState.BOOKED, camp=camp)
-    agreement = factories.create_custom_agreement(year=booking.camp.year, name="test")
-    # Other agreement, different year so should be irrelevant:
-    factories.create_custom_agreement(year=booking.camp.year - 1, name="x")
-    assert booking in Booking.objects.agreement_fix_required()
-    assert booking not in Booking.objects.no_missing_agreements()
-    assert booking.get_missing_agreements() == [agreement]
-
-    booking.custom_agreements_checked = [agreement.id]
-    booking.save()
-
-    assert booking not in Booking.objects.agreement_fix_required()
-    assert booking not in Booking.objects.missing_agreements()
-    assert booking in Booking.objects.no_missing_agreements()
-    assert booking.get_missing_agreements() == []
-
-
-@pytest.mark.django_db
-def test_Booking_get_missing_agreements_performance(django_assert_num_queries):
-    # We can use common AgreementFetcher with get_missing_agreements to get
-    # good performance:
-    bookings = []
-    camp = camps_factories.get_any_camp()
-    for i in range(0, 20):
-        bookings.append(factories.create_booking(camp=camp))
-    agreement = factories.create_custom_agreement(year=camp.year, name="test")
-    agreement_fetcher = AgreementFetcher()
-    with django_assert_num_queries(num=2):
-        bookings = Booking.objects.filter(id__in=[booking.id for booking in bookings]).select_related("camp")
-        for booking in bookings:
-            assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
 
 
 class BookingIndexBase(BookingBaseMixin, FuncBaseMixin):
@@ -924,26 +887,6 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         assert booking.amount_due == self.price_full
         assert booking.created_online
         assert not booking.publicity_photos_agreement
-
-    def test_custom_agreement(self):
-        agreement = factories.create_custom_agreement(
-            name=(agreement_name := "MONEY!!"),
-            year=self.camp.year,
-            text_html=(agreement_text := "Do you agree to give us all your money?"),
-        )
-        account = self.booking_login()
-        self.open_bookings()
-        self.get_url(self.urlname)
-        self.assertTextPresent(agreement_name)
-        self.assertTextPresent(agreement_text)
-
-        self.fill_by_name(self.get_place_details())
-        self.fill({f"#id_custom_agreement_{agreement.id}": True})
-        self.submit()
-        self.assertUrlsEqual(reverse("cciw-bookings-basket_list_bookings"))
-
-        booking = account.bookings.get()
-        assert booking.custom_agreements_checked == [agreement.id]
 
 
 class TestAddPlaceWT(AddPlaceBase, WebTestBase):
@@ -1793,24 +1736,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         assert booking.state == BookingState.INFO_COMPLETE
         self.assertTextPresent("Places were not booked due to modifications made")
 
-    def test_book_disallowed_if_missing_agreement(self):
-        # Test that we cannot book a place if an agreement is missing
-        account = self.booking_login()
-        self.create_booking()
-        self.get_url(self.urlname)
-
-        # Suppose an agreement is added split second later by admin:
-        # (test done this way to ensure we are not just relying
-        # on a disabled book button)
-        factories.create_custom_agreement(year=self.camp.year, name="COVID-19")
-
-        self.submit("[name=book_now]")
-        booking = account.bookings.get()
-        assert booking.state != BookingState.BOOKED
-
-        self.assertTextPresent('You need to confirm your agreement in section "COVID-19"')
-        self.assert_book_button_disabled()
-
 
 class TestListBookingsWT(ListBookingsBase, WebTestBase):
     pass
@@ -1896,16 +1821,6 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # 2 full price
         expected_price = 2 * self.price_full
         self.assertTextPresent(f"£{expected_price}")
-
-    def test_redirect_if_missing_agreements(self):
-        self.booking_login()
-        booking = self.create_booking(shortcut=True)
-        book_bookings_now([booking])
-        factories.create_custom_agreement(year=self.camp.year, name="COVID-19")
-        self.get_url("cciw-bookings-pay")
-        self.assertUrlsEqual(reverse("cciw-bookings-account_overview"))
-        self.assertTextPresent("There is an issue with your existing bookings")
-        self.assertTextPresent("COVID-19")
 
 
 class TestPayWT(PayBase, WebTestBase):
@@ -2285,57 +2200,6 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
 
         # Cancellation
         self.assertTextPresent("Cancelled places")
-
-    def test_bookings_with_missing_agreements(self):
-        account = self.booking_login()
-        booking1 = self.create_booking()
-        booking2 = self.create_booking()
-        booking3 = self.create_booking()
-        book_bookings_now([booking1, booking2, booking3])
-
-        agreement = factories.create_custom_agreement(year=booking1.camp.year, name="COVID-19")
-
-        assert account.bookings.agreement_fix_required().count() == 3
-        self.get_url(self.urlname)
-
-        assert self.is_element_present(f"#id_edit_booking_{booking1.id}")
-        assert self.is_element_present(f"#id_edit_booking_{booking2.id}")
-
-        assert self.is_element_present(f"#id_cancel_booking_{booking1.id}")
-        assert self.is_element_present(f"#id_cancel_booking_{booking2.id}")
-
-        self.assertTextPresent('you need to confirm your agreement in section "COVID-19"')
-
-        # Cancel button for booking1
-        self.submit(f"#id_cancel_booking_{booking1.id}")
-        booking1.refresh_from_db()
-        assert not booking1.is_booked
-        assert booking1.shelved
-
-        assert account.bookings.agreement_fix_required().count() == 2
-
-        # booking1 buttons should now disappear
-        assert not self.is_element_present(f"#id_edit_booking_{booking1.id}")
-        assert not self.is_element_present(f"#id_cancel_booking_{booking1.id}")
-
-        # Edit button for booking2
-        # This is really a test for the edit booking page
-        # - it needs to allow edits in this case, even though the
-        #   place is already booked.
-        self.submit(f"#id_edit_booking_{booking2.id}")
-        self.assertUrlsEqual(reverse("cciw-bookings-edit_place", kwargs={"booking_id": booking2.id}))
-        self.fill({f"#id_custom_agreement_{agreement.id}": True})
-        self.submit(AddPlaceBase.SAVE_BTN)
-
-        assert account.bookings.agreement_fix_required().count() == 1
-        booking2.refresh_from_db()
-
-        # This process should not have unbooked the booking:
-        assert booking2.is_booked
-
-        # We still have booking3 to sort out, we should be back at
-        # account overview
-        self.assertUrlsEqual(reverse("cciw-bookings-account_overview"))
 
 
 class TestAccountOverviewWT(AccountOverviewBase, WebTestBase):
@@ -3324,7 +3188,7 @@ def test_booking_same_person_on_multiple_camps():
     assert len([True for m in messages1 if msg in m]) == 1
 
     # If booking_1 is put on shelf, there is no problem.
-    booking_1.cancel_and_move_to_shelf()
+    booking_1.move_to_shelf()
 
     problems2 = get_booking_problems(booking_2)
     assert len(problems2) == len(problems1) - 1

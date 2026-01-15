@@ -1,7 +1,6 @@
 from cciw.accounts.models import User
 
 from .accounts import BookingAccount
-from .agreements import AgreementFetcher
 from .bookings import Booking, BookingQuerySet
 
 
@@ -12,9 +11,8 @@ def add_basket_to_queue(bookings_qs: BookingQuerySet | list[Booking], *, by_user
     """
     bookings: list[Booking] = list(bookings_qs)
 
-    fetcher = AgreementFetcher()
     for b in bookings:
-        if any(p.blocker for p in b.get_booking_problems(agreement_fetcher=fetcher)):
+        if any(p.blocker for p in b.get_booking_problems()):
             return False
 
     years = {b.camp.year for b in bookings}

@@ -253,28 +253,6 @@
 
         {% cciw_form_field form 'publicity_photos_agreement' %}
 
-        {% for agreement in custom_agreements %}
-          <h3>{{ agreement.name }}</h3>
-
-          <div>
-            {{ agreement.text_html|safe }}
-          </div>
-
-          <div id="div_id_agreement" class="formrow">
-            <div class="field">
-              <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
-              <input type="checkbox"
-                     name="custom_agreement_{{ agreement.id }}"
-                     id="id_custom_agreement_{{ agreement.id }}"
-                     {% if booking and agreement.id in booking.custom_agreements_checked %}
-                       checked="checked"
-                     {% endif %}
-              >
-            </div>
-          </div>
-
-        {% endfor %}
-
         {% if not read_only %}
 
           <h2>Save</h2>

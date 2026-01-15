@@ -10,7 +10,6 @@ from cciw.bookings.models import (
     Booking,
     BookingAccount,
     BookingState,
-    CustomAgreement,
     ManualPayment,
     ManualPaymentType,
     Price,
@@ -210,15 +209,6 @@ def create_ipn(
     ipn = PayPalIPN.objects.create(**defaults)
     ipn.send_signals()
     return ipn
-
-
-def create_custom_agreement(*, year, name, text_html="Text"):
-    return CustomAgreement.objects.create(
-        year=year,
-        name=name,
-        text_html=text_html,
-        active=True,
-    )
 
 
 def create_prices(*, year: int, full_price=Auto):

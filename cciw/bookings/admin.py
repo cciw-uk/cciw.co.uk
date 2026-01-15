@@ -23,7 +23,6 @@ from .models import (
     Booking,
     BookingAccount,
     BookingState,
-    CustomAgreement,
     ManualPayment,
     Payment,
     Price,
@@ -284,26 +283,6 @@ class YearFilter(admin.SimpleListFilter):
         return queryset.for_year(val)
 
 
-class CustomAgreementFilter(admin.SimpleListFilter):
-    title = "custom agreements"
-    parameter_name = "agreements"
-
-    def lookups(self, request, model_admin):
-        return [
-            ("0", "No missing agreements"),
-            ("1", "One or more missing agreements"),
-        ]
-
-    def queryset(self, request, queryset):
-        value = self.value()
-        if value == "0":
-            return queryset.no_missing_agreements()
-        elif value == "1":
-            return queryset.missing_agreements()
-        else:
-            return queryset
-
-
 class QueueStateFilter(admin.SimpleListFilter):
     title = "queue state"
     parameter_name = "queue_state"
@@ -525,7 +504,6 @@ class BookingAdmin(admin.ModelAdmin):
         "state",
         QueueStateFilter,
         "created_online",
-        CustomAgreementFilter,
     ]
     readonly_fields = [
         "booked_at",
@@ -621,7 +599,6 @@ class BookingAdmin(admin.ModelAdmin):
                 "fields": [
                     "agreement",
                     "publicity_photos_agreement",
-                    "custom_agreements_checked",
                 ]
             },
         ),
@@ -752,12 +729,6 @@ class AccountTransferPaymentAdmin(admin.ModelAdmin):
             return self.fieldsets[0][1]["fields"]
         else:
             return []
-
-
-@admin.register(CustomAgreement)
-class CustomAgreementAdmin(admin.ModelAdmin):
-    list_display = ["name", "year", "active", "sort_order"]
-    fieldsets = [(None, {"fields": ["name", "year", "text_html", "active", "sort_order"]})]
 
 
 @admin.register(YearConfig)

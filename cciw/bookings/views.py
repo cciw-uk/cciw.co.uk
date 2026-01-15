@@ -1,6 +1,4 @@
-import contextlib
 import json
-import re
 from datetime import timedelta
 from decimal import Decimal
 
@@ -29,10 +27,8 @@ from cciw.bookings.models import (
     BOOKING_PLACE_CAMPER_DETAILS,
     BOOKING_PLACE_CONTACT_ADDRESS_DETAILS,
     BOOKING_PLACE_GP_DETAILS,
-    AgreementFetcher,
     Booking,
     BookingAccount,
-    CustomAgreement,
     any_bookings_possible,
     build_paypal_custom_field,
     get_booking_open_data,
@@ -50,7 +46,6 @@ from .decorators import (
     account_details_required,
     booking_account_optional,
     booking_account_required,
-    redirect_if_agreement_fix_required,
 )
 
 # utilities
@@ -236,7 +231,6 @@ def add_or_edit_place(
 ):
     context = context or {}
     form_class = AddPlaceForm
-    year = common.get_thisyear()
     booking_account = request.booking_account
     booking_open = get_booking_open_data_thisyear()
 
@@ -261,18 +255,13 @@ def add_or_edit_place(
         state_was_booked = False
         context.update(title="Booking - add new camper details")
 
-    custom_agreements = CustomAgreement.objects.for_year(year)
     if request.method == "POST":
         form = form_class(request.POST, instance=booking)
         if form.is_valid():
             booking = form.instance
-            custom_agreements_checked = [
-                agreement for agreement in custom_agreements if f"custom_agreement_{agreement.id}" in request.POST
-            ]
             booking.save_for_account(
                 account=booking_account,
                 state_was_booked=state_was_booked,
-                custom_agreements=custom_agreements_checked,
             )
             messages.info(request, f'Details for "{booking.name}" were saved successfully')
             return HttpResponseRedirect(reverse("cciw-bookings-basket_list_bookings"))
@@ -285,7 +274,6 @@ def add_or_edit_place(
             "stage": BookingStage.PLACE,
             "form": form,
             "read_only": booking is not None and not booking.is_user_editable(),
-            "custom_agreements": custom_agreements,
             "booking": booking,
             "reuse_data_url": _reuse_data_url(booking.id if booking else None),
             "use_previous_data_modal_url": _use_previous_data_modal_url(booking.id if booking else None),
@@ -295,7 +283,6 @@ def add_or_edit_place(
 
 
 @booking_account_required
-@redirect_if_agreement_fix_required  # Don't allow to add new until booked places fixed
 def add_place(request):
     return add_or_edit_place(request)
 
@@ -392,7 +379,6 @@ def make_state_token(bookings):
 
 
 @booking_account_required
-@redirect_if_agreement_fix_required
 @for_htmx(use_block_from_params=True)
 def basket_list_bookings(request):
     """
@@ -448,12 +434,11 @@ def _basket_list_bookings(request: HttpRequest):
     total = Decimal("0.00")
     all_bookable = True
     all_unbookable = True
-    agreement_fetcher = AgreementFetcher()
     for booking_list in basket_bookings, shelf_bookings:
         b: Booking
         for b in booking_list:
             # decorate object with some attributes to make it easier in template
-            problems = b.get_booking_problems(agreement_fetcher=agreement_fetcher)
+            problems = b.get_booking_problems()
             any_blocker = any(p.blocker for p in problems)
             b.bookable = not any_blocker
             b.problems = problems
@@ -584,7 +569,6 @@ def mk_paypal_form(
 
 
 @booking_account_required
-@redirect_if_agreement_fix_required
 def pay(request, *, installment: bool = False):
     acc: BookingAccount = request.booking_account
     balance_due_now = acc.get_balance_due_now()
@@ -666,16 +650,9 @@ def account_overview(request):
     account: BookingAccount = request.booking_account
     year = common.get_thisyear()
     bookings = account.bookings.for_year(year)
-    agreement_fetcher = AgreementFetcher()
 
-    if request.method == "POST":
-        if response := _handle_overview_booking_actions(request, bookings):
-            return response
-
-    booked_places = bookings.booked().with_prefetch_camp_info().with_prefetch_missing_agreements(agreement_fetcher)
-    waiting_places = (
-        bookings.waiting_in_queue().with_prefetch_camp_info().with_prefetch_missing_agreements(agreement_fetcher)
-    )
+    booked_places = bookings.booked().with_prefetch_camp_info()
+    waiting_places = bookings.waiting_in_queue().with_prefetch_camp_info()
     not_in_queue_places = bookings.not_in_queue()
     basket_or_shelf_places = (
         not_in_queue_places.in_basket() | not_in_queue_places.on_shelf()
@@ -696,31 +673,6 @@ def account_overview(request):
             "pending_payment_total": account.get_pending_payment_total(),
         },
     )
-
-
-def _handle_overview_booking_actions(request, bookings):
-    fixable_bookings = list(bookings.agreement_fix_required())
-
-    def edit(booking):
-        return HttpResponseRedirect(reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(booking.id)}))
-
-    def cancel(booking):
-        booking.cancel_and_move_to_shelf()
-        messages.info(request, f'Place for "{booking.name}" cancelled and put in "Saved for later".')
-        return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
-
-    for key in request.POST.keys():
-        for regex, action in [
-            (r"edit_(\d+)", edit),
-            (r"cancel_(\d+)", cancel),
-        ]:
-            if match := re.match(regex, key):
-                booking = None
-                booking_id = int(match.groups()[0])
-                with contextlib.suppress(IndexError):
-                    booking = [b for b in fixable_bookings if b.id == booking_id][0]
-                if booking:
-                    return action(booking)
 
 
 @booking_account_required

@@ -168,7 +168,6 @@
       # Agreements
       - agreement
       - publicity_photos_agreement
-      - custom_agreements_checked
 
     - name: accounts.User
       # These users are officers/leaders/other CCiW volunteers
@@ -534,8 +533,6 @@
     - name: bookings.WriteOffDebt
       columns: all
     - name: bookings.AccountTransferPayment
-      columns: all
-    - name: bookings.CustomAgreement
       columns: all
     - name: bookings.SupportingInformationType
       columns: all

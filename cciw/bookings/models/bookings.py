@@ -6,7 +6,6 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from dateutil.relativedelta import relativedelta
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, QuerySet, Value, functions
 from django.utils import timezone
@@ -19,7 +18,6 @@ from cciw.cciwmain.models import Camp
 from cciw.utils.models import AfterFetchQuerySetMixin
 
 from .accounts import BookingAccount
-from .agreements import AgreementFetcher, CustomAgreement
 from .constants import DEFAULT_COUNTRY, Sex
 from .prices import BOOKING_PLACE_PRICE_TYPES, Price, PriceType
 from .problems import (
@@ -121,33 +119,6 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
     def future(self):
         return self.filter(camp__start_date__gt=date.today())
 
-    def missing_agreements(self):
-        """
-        Returns bookings that are missing agreements.
-        """
-        # This typically happens if a CustomAgreement was addded after the place
-        # was booked.
-
-        # See also Booking.get_missing_agreements()
-        return self.exclude(self._agreements_complete_Q())
-
-    def no_missing_agreements(self):
-        return self.filter(self._agreements_complete_Q())
-
-    def _agreements_complete_Q(self):
-        return Q(
-            custom_agreements_checked__contains=Array(
-                CustomAgreement.objects.active().for_year(models.OuterRef("camp__year")).values_list("id")
-            )
-        )
-
-    def agreement_fix_required(self):
-        # We need a fix if:
-        # - it is booked
-        # - it is missing an agreement
-        # - it is a future camp. For past camps, there is nothing we can do about it.
-        return self.booked().missing_agreements().future()
-
     # Performance
     def with_prefetch_camp_info(self):
         return self.select_related(
@@ -157,13 +128,6 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         ).prefetch_related(
             "camp__leaders",
         )
-
-    def with_prefetch_missing_agreements(self, agreement_fetcher):
-        def add_missing_agreements(booking_list):
-            for booking in booking_list:
-                booking.missing_agreements = booking.get_missing_agreements(agreement_fetcher=agreement_fetcher)
-
-        return self.register_after_fetch_callback(add_missing_agreements)
 
     def with_queue_info(self) -> BookingQuerySet:
         return self.select_related("queue_entry")
@@ -263,19 +227,6 @@ class Booking(models.Model):
     agreement = models.BooleanField(default=False)
     publicity_photos_agreement = models.BooleanField(default=False, blank=True)
 
-    # Custom agreements: Array of CustomAgreement.id integers, for the
-    # CustomAgreements that the booker has agreed to.
-    # This schema choice is based on:
-    # - need to be able to query for this in missing_agreements()
-    # - we only ever update this as a single field, we never need to
-    #   treat it as a table.
-    custom_agreements_checked = ArrayField(
-        models.IntegerField(),
-        default=list,
-        blank=True,
-        help_text="Comma separated list of IDs of custom agreements the user has agreed to.",
-    )
-
     # Price - partly from user (must fit business rules)
     price_type = models.CharField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])
     booked_at = models.DateTimeField(null=True, blank=True, help_text="Online bookings only")
@@ -353,9 +304,7 @@ class Booking(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
-    def save_for_account(
-        self, *, account: BookingAccount, state_was_booked: bool, custom_agreements: list[CustomAgreement] = None
-    ):
+    def save_for_account(self, *, account: BookingAccount, state_was_booked: bool):
         """
         Saves the booking for an account that is creating/editing online
         """
@@ -365,8 +314,6 @@ class Booking(models.Model):
         self.auto_set_amount_due()
         if self.id is None:
             self.created_online = True
-        if custom_agreements is not None:
-            self.custom_agreements_checked = [agreement.id for agreement in custom_agreements]
         self.save()
         self.update_approvals()
 
@@ -575,7 +522,7 @@ class Booking(models.Model):
         with contextlib.suppress(AttributeError):
             self._prefetched_objects_cache.pop("approvals", None)
 
-    def get_booking_problems(self, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
+    def get_booking_problems(self, booking_sec=False) -> list[BookingProblem]:
         """
         Returns a list of errors and warnings as BookingProblem objects
 
@@ -584,16 +531,12 @@ class Booking(models.Model):
         If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
-        return get_booking_problems(self, booking_sec=booking_sec, agreement_fetcher=agreement_fetcher)
+        return get_booking_problems(self, booking_sec=booking_sec)
 
     def confirm(self):
         # TODO #52 - should involve queue?
         self.state = BookingState.BOOKED
         self.save()
-
-    def cancel_and_move_to_shelf(self) -> None:
-        self._unbook()
-        self.move_to_shelf()
 
     def move_to_shelf(self) -> None:
         self.shelved = True
@@ -603,35 +546,11 @@ class Booking(models.Model):
         self.shelved = False
         self.save()
 
-    def _unbook(self):
-        # TODO #52 - change entry on the queue?
-
-        # Here we don't use BookingState.CANCELLED_FULL_REFUND,
-        # because we assume the user might want to edit and book
-        # again:
-        self.state = BookingState.INFO_COMPLETE
-        self.booked_at = None
-        self.auto_set_amount_due()
-        self.save()
-
     def is_user_editable(self):
-        return self.state == BookingState.INFO_COMPLETE or self.state == BookingState.BOOKED and self.missing_agreements
+        return self.state == BookingState.INFO_COMPLETE
 
     def is_custom_discount(self):
         return self.price_type == PriceType.CUSTOM
-
-    @cached_property
-    def missing_agreements(self):
-        return self.get_missing_agreements()
-
-    def get_missing_agreements(self, *, agreement_fetcher=None):
-        if agreement_fetcher is None:
-            agreement_fetcher = AgreementFetcher()
-        return [
-            agreement
-            for agreement in agreement_fetcher.fetch(year=self.camp.year)
-            if agreement.id not in self.custom_agreements_checked
-        ]
 
     def get_contact_email(self):
         if self.email:

@@ -38,53 +38,5 @@
       {% endif %}
     </tr>
 
-    {# TODO - this possibly isn't needed, or could be moved to the modal dialog #}
-    {% if show_missing_agreements and booking.is_booked and booking.missing_agreements %}
-      <tr>
-        <td colspan="4">
-          <p>The above place is booked, but
-            {% if booking.missing_agreements|length == 1 %}
-              {% with agreement=booking.missing_agreements|first %}
-                you need to confirm your agreement in section "{{ agreement.name }}".
-              {% endwith %}
-            {% else %}
-              you need to confirm your agreement in sections {% for agreement in booking.missing_agreements %}"{{ agreement.name }}"{% if not forloop.last %}, {% endif %}{% endfor %}.
-            {% endif %}
-
-            <b>If you do not confirm agreement, we will have to cancel your place.</b>
-            Please choose from the options:
-          </p>
-
-          <form action="." method="POST">
-            {% csrf_token %}
-            <table class="actiongrid">
-              <tr>
-                <td>
-                  <button
-                    name="edit_{{ booking.id }}"
-                    class="compactButton"
-                    id="id_edit_booking_{{ booking.id }}">Edit booking</button>
-                </td>
-                <td>Update the "Agreements" section at the bottom.</td>
-              </tr>
-              <tr>
-                <td>
-                  <button
-                    name="cancel_{{ booking.id }}"
-                    class="compactButton"
-                    id="id_cancel_booking_{{ booking.id }}">Cancel booking</button>
-                </td>
-                <td>
-                  If you cannot accept the conditions, you may cancel your place
-                  with a full refund. Your booking details will be in "Saved for
-                  later" for later use, in case you change your mind.
-                </td>
-              </tr>
-            </table>
-          </form>
-          <br>
-        </td>
-      </tr>
-    {% endif %}
   {% endfor %}
 </table>

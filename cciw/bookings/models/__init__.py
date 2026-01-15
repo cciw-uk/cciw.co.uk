@@ -3,7 +3,6 @@ Accounts and places for campers coming in camps
 """
 
 from .accounts import BookingAccount
-from .agreements import AgreementFetcher, CustomAgreement
 from .baskets import add_basket_to_queue
 from .bookings import (
     BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS,
@@ -47,7 +46,6 @@ __all__ = [
     "Booking",
     "BookingAccount",
     "BookingState",
-    "CustomAgreement",
     "ManualPayment",
     "ManualPaymentType",
     "PayPalIPN",
@@ -68,7 +66,6 @@ __all__ = [
     "outstanding_bookings_with_fees",
     "parse_paypal_custom_field",
     "credit_account",
-    "AgreementFetcher",
     "any_bookings_possible",
     "BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS",
     "BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS",

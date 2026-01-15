@@ -212,15 +212,13 @@ def incorporate_approvals_granted(booking: Booking, approvals_needed: list[Appro
             app.linked_booking_approval = approvals_dict.get(app.type, None)
 
 
-def get_booking_problems(
-    booking: Booking, *, booking_sec: bool = False, agreement_fetcher=None
-) -> list[BookingProblem]:
-    return list(get_booking_errors(booking, booking_sec=booking_sec, agreement_fetcher=agreement_fetcher)) + list(
+def get_booking_problems(booking: Booking, *, booking_sec: bool = False) -> list[BookingProblem]:
+    return list(get_booking_errors(booking, booking_sec=booking_sec)) + list(
         get_booking_warnings(booking, booking_sec=booking_sec)
     )
 
 
-def get_booking_errors(booking: Booking, *, booking_sec: bool = False, agreement_fetcher=None) -> list[BookingProblem]:
+def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[BookingProblem]:
     errors: list[ApprovalNeeded | Blocker] = []
     camp: Camp = booking.camp
 
@@ -348,10 +346,6 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False, agreement
         else:
             msg = "This camp is closed for bookings."
         errors.append(blocker(msg))
-
-    missing_agreements = booking.get_missing_agreements(agreement_fetcher=agreement_fetcher)
-    for agreement in missing_agreements:
-        errors.append(blocker(f'You need to confirm your agreement in section "{agreement.name}"'))
 
     return errors
 

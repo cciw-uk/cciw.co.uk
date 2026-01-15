@@ -481,7 +481,6 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "friends_for_tent_sharing": similar_length_text,
     "agreement": keep,
     "publicity_photos_agreement": keep,
-    "custom_agreements_checked": keep,
     "price_type": keep,
     "early_bird_discount": keep,
     "booked_at": keep,
@@ -834,7 +833,6 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
         },
     ),
     # Bookings
-    bookings.CustomAgreement: IgnoreTable(),
     bookings.BookingAccount: AnonymiseWithMap(
         bookings.BookingAccount,
         BOOKINGACCOUNT_FIELD_MAP,
