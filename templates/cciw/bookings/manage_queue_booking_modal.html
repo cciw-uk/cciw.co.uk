@@ -71,7 +71,7 @@
             hx-target="#id_manage_queue_booking_modal"
             hx-swap="outerHTML"
           >
-            {% if booking.queue_entry.waiting_list_from_start  %}
+            {% if booking.queue_entry.waiting_list_mode  %}
               Withdraw booking from waiting list
             {% else %}
               Withdraw booking from queue

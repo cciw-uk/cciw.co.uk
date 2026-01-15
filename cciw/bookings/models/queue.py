@@ -58,13 +58,13 @@ class BookingQueueEntryQuerySet(models.QuerySet):
 class BookingQueueEntryManagerBase(models.Manager):
     def create_for_booking(self, booking: Booking, *, by_user: User | BookingAccount) -> BookingQueueEntry:
         # See also: BookingQueueEntry.make_active()
-        waiting_list_from_start = not places_are_available_for_booking(booking)
         queue_entry: BookingQueueEntry = self.create(
             booking=booking,
             is_active=True,
             sibling_surname=booking.last_name,
             sibling_booking_account=booking.account,
-            waiting_list_from_start=waiting_list_from_start,
+            waiting_list_from_start=should_use_waiting_list_from_start(booking),
+            # enqueued_at - auto
         )
         queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, by_user=by_user)
         return queue_entry
@@ -182,11 +182,12 @@ class BookingQueueEntry(models.Model):
 
     def make_active(self, *, by_user: User | BookingAccount) -> None:
         if not self.is_active:
-            # See also: BookingQueueEntryManagerBase.create_for_booking()
             with self.track_changes(by_user=by_user):
+                # We treat this like a new 'add to queue' action,
+                # See also: BookingQueueEntryManagerBase.create_for_booking()
                 self.is_active = True
                 self.enqueued_at = timezone.now()
-                if not places_are_available_for_booking(self.booking):
+                if should_use_waiting_list_from_start(self.booking):
                     self.waiting_list_from_start = True
                 self.save()
 
@@ -202,10 +203,17 @@ class BookingQueueEntry(models.Model):
 
     @property
     def will_send_declined_notification(self) -> bool:
-        # If it they were put directly onto the waiting list, we only send
+        # If they are in "waiting list mode", we only send
         # notifications if it is allocated, not declined.
         # We never send more than one declined.
-        return not self.waiting_list_from_start and not self.has_been_sent_declined_notification
+        return not self.waiting_list_mode and not self.has_been_sent_declined_notification
+
+    @property
+    def waiting_list_mode(self) -> bool:
+        # If someone was sent a 'declined' notification, they will have been
+        # told they are "on a waiting list".
+        # Some bookings are on the waiting list from the start.
+        return self.has_been_sent_declined_notification or self.waiting_list_from_start
 
 
 class QueueCutoff(StrEnum):
@@ -738,7 +746,8 @@ def allocate_places_and_notify(
 
 def allocate_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
     """
-    Allocate a group of bookings, setting their state to `BOOKED`
+    Allocate a group of bookings, setting their state to `BOOKED`,
+    and setting 'booking_expires_now' if applicable.
     """
     bookings: list[Booking] = list(bookings_qs)
 
@@ -749,11 +758,15 @@ def allocate_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
             b.booked_at = now
             b.auto_set_amount_due()
             b.state = BookingState.BOOKED
-            if b.is_in_queue and b.queue_entry.waiting_list_from_start:
+            if b.is_in_queue and b.queue_entry.waiting_list_mode:
                 b.booking_expires_at = now + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER
             b.save()
 
     return True
+
+
+def should_use_waiting_list_from_start(booking: Booking) -> bool:
+    return not places_are_available_for_booking(booking)
 
 
 def places_are_available_for_booking(booking: Booking) -> bool:

@@ -3185,6 +3185,7 @@ def test_allocate_places(mailoutbox):
             assert booking.queue_entry.declined_notification_sent_at is not None
             assert booking.queue_entry.accepted_notification_sent_at is None
             assert booking.queue_entry.action_logs.filter(action_type=QueueEntryActionLogType.DECLINED).exists()
+            assert booking.queue_entry.waiting_list_mode
 
     # Second time: do the same thing.
     ranking_result2 = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
@@ -3217,6 +3218,7 @@ def test_allocate_places_for_waiting_list(mailoutbox, client: Client, action: Li
     booking = factories.create_booking()
     queue_entry = booking.add_to_queue(by_user=booking.account)
     assert queue_entry.waiting_list_from_start
+    assert queue_entry.waiting_list_mode
 
     # A place comes up:
     camp.max_campers = 6
@@ -3331,6 +3333,7 @@ def test_add_to_queue_after_camp_full():
     for initial_booking in initial_bookings:
         initial_queue_entry = initial_booking.add_to_queue(by_user=initial_booking.account)
         assert not initial_queue_entry.waiting_list_from_start
+        assert not initial_queue_entry.waiting_list_mode
         assert initial_queue_entry.will_send_declined_notification
 
     # Make camp full:
@@ -3340,6 +3343,7 @@ def test_add_to_queue_after_camp_full():
     booking = factories.create_booking(camp=camp)
     queue_entry = booking.add_to_queue(by_user=booking.account)
     assert queue_entry.waiting_list_from_start
+    assert queue_entry.waiting_list_mode
     assert not queue_entry.will_send_declined_notification
 
     # If we cancel a place, then add again, and it faces an already full camp,
