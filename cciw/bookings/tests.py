@@ -47,8 +47,8 @@ from cciw.bookings.models.queue import (
     BookingQueueEntry,
     QueueEntryActionLogType,
     add_queue_cutoffs,
+    allocate_bookings_now,
     allocate_places_and_notify,
-    book_bookings_now,
     get_booking_queue_problems,
     get_camp_booking_queue_ranking_result,
     rank_queue_bookings,
@@ -433,7 +433,7 @@ def test_BookingAccount_balance_due(django_assert_num_queries):
 
     # Confirmed by booking secretary
     with freeze_time(year_config.bookings_initial_notifications_on):
-        book_bookings_now([booking])
+        allocate_bookings_now([booking])
         assert_account_balance(0)
 
         # Place should be booked
@@ -654,7 +654,7 @@ class TestBookingVerifySL(BookingVerifyBase, SeleniumBase):
 class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
     def _create_booking(self):
         booking = factories.create_booking()
-        book_bookings_now([booking])
+        allocate_bookings_now([booking])
         booking: Booking = Booking.objects.get(id=booking.id)
         booking.confirm()
         assert len(BookingAccount.objects.payments_due()) == 1
@@ -1809,7 +1809,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         booking1 = self.create_booking()
         booking2 = self.create_booking()
-        book_bookings_now([booking1, booking2])
+        allocate_bookings_now([booking1, booking2])
 
         self.get_url("cciw-bookings-pay")
 
@@ -1854,7 +1854,7 @@ def test_account_receive_payment():
     booking = factories.create_booking()
     (_, leader_1_user), (_, leader_2_user) = camps_factories.create_and_add_leaders(booking.camp, count=2)
     account = booking.account
-    book_bookings_now([booking])
+    allocate_bookings_now([booking])
     booking.refresh_from_db()
 
     mail.outbox = []
@@ -1966,7 +1966,7 @@ def test_receive_payment_signal_handler():
 def test_email_for_good_payment():
     booking = factories.create_booking(state=BookingState.INFO_COMPLETE)
     account = booking.account
-    book_bookings_now([booking])
+    allocate_bookings_now([booking])
 
     mail.outbox = []
     factories.create_ipn(account=account, mc_gross=booking.amount_due)
@@ -1986,7 +1986,7 @@ def test_only_one_email_for_multiple_places():
     account = booking1.account
     booking2 = factories.create_booking(name="Another Child", account=account)
 
-    book_bookings_now([booking1, booking2])
+    allocate_bookings_now([booking1, booking2])
 
     mail.outbox = []
     account.receive_payment(account.get_balance_full())
@@ -2025,7 +2025,7 @@ def test_pending_payment_handling():
     account = booking.account
 
     # Book it
-    book_bookings_now([booking])
+    allocate_bookings_now([booking])
     # Sanity check initial condition:
     mail.outbox = []
     booking.refresh_from_db()
@@ -2880,7 +2880,7 @@ def test_rank_queue_booking_same_camper_multiple_camps():
     assert not b1_q.rank_info.has_other_place_booked
 
     # Then we booked one of them:
-    book_bookings_now([b1])
+    allocate_bookings_now([b1])
 
     # And rank the other:
     ranked_bookings_camp_2 = rank_queue_bookings(camp=camp_2, year_config=year_config)
@@ -3229,7 +3229,7 @@ def test_add_to_queue_after_camp_full():
         assert initial_queue_entry.will_send_declined_notification
 
     # Make camp full:
-    book_bookings_now(initial_bookings)
+    allocate_bookings_now(initial_bookings)
 
     # Another one faces a camp already full
     booking = factories.create_booking(camp=camp)

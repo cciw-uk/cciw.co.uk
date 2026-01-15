@@ -686,7 +686,7 @@ def allocate_places_and_notify(
     )
 
     # Allocate:
-    book_bookings_now(to_book)
+    allocate_bookings_now(to_book)
     for booking in to_book:
         booking.queue_entry.save_action_log(action_type=QueueEntryActionLogType.ALLOCATED, by_user=by_user)
 
@@ -717,13 +717,10 @@ def allocate_places_and_notify(
     )
 
 
-def book_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
+def allocate_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
     """
-    Book a group of bookings.
+    Allocate a group of bookings, setting their state to `BOOKED`
     """
-    # TODO #52 - this is used by tests currently,
-    # we probably want something that operates on BookingQueueEntry objects
-    # and changes the `state` value.
     bookings: list[Booking] = list(bookings_qs)
 
     now = timezone.now()
