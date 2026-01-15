@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -211,12 +211,3 @@ def most_recent_booking_year() -> int | None:
         return booking.camp.year
     else:
         return None
-
-
-def get_early_bird_cutoff_date(year: int) -> datetime:
-    # 1st May
-    return datetime(year, 5, 1, tzinfo=timezone.get_default_timezone())
-
-
-def early_bird_is_available(*, year: int, booked_at: datetime) -> bool:
-    return booked_at < get_early_bird_cutoff_date(year)

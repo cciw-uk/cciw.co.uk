@@ -25,12 +25,7 @@
       </div>
     {% endif %}
 
-    {% if price_info.price_early_bird_discount > 0 and price_info.early_bird_available %}
-      <p><b>Early bird discount of £{{ price_info.price_early_bird_discount }}
-        available if you book online before {{ price_info.early_bird_date|date:"jS F" }}!</b></p>
-    {% endif %}
-
-    {% include "cciw/bookings/price_table.html" with price_info=prices_to_show show_early_bird=True %}
+    {% include "cciw/bookings/price_table.html" with price_info=prices_to_show %}
 
   {% else %}
     <p><strong>Prices for {{ thisyear }} have not been finalised yet.</strong></p>
@@ -39,7 +34,7 @@
       <p>However, you can see last year's prices below for reference. This year's
         prices will usually be the same or similar.</p>
 
-      {% include "cciw/bookings/price_table.html" with price_info=prices_to_show show_early_bird=False %}
+      {% include "cciw/bookings/price_table.html" with price_info=prices_to_show %}
 
     {% endif %}
 

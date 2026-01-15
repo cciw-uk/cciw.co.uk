@@ -42,7 +42,7 @@ from cciw.bookings.models import (
     build_paypal_custom_field,
 )
 from cciw.bookings.models.constants import Sex
-from cciw.bookings.models.prices import PriceInfo, are_prices_set_for_year
+from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval, get_booking_problems
 from cciw.bookings.models.queue import (
     BookingQueueEntry,
@@ -202,7 +202,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             year=year, bookings_open_for_booking_on=time_for_booking, bookings_open_for_entry_on=date_for_data_entry
         )
 
-    def add_prices(self, early_bird_discount=Auto):
+    def add_prices(self):
         if hasattr(self, "price_full"):
             return
         year = self.camp.year
@@ -210,9 +210,8 @@ class CreateBookingWebMixin(BookingLogInMixin):
             self.price_full,
             self.price_2nd_child,
             self.price_3rd_child,
-            self.price_early_bird_discount,
             self.price_booking_fee,
-        ) = factories.create_prices(year=year, early_bird_discount=early_bird_discount)
+        ) = factories.create_prices(year=year)
 
     def create_booking(
         self,
@@ -395,9 +394,8 @@ def test_Camp_open_for_bookings():
     assert not camp.open_for_bookings(today + timedelta(days=1))
 
 
-@mock.patch("cciw.bookings.models.bookings.early_bird_is_available", return_value=False)
 @pytest.mark.django_db
-def test_BookingAccount_balance_due(m, django_assert_num_queries):
+def test_BookingAccount_balance_due(django_assert_num_queries):
     year_config = create_year_config_for_queue_tests()
     year: int = year_config.year
     factories.create_prices(year=year, full_price=100)
@@ -1882,7 +1880,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("£0.00")
 
     def test_balance_after_booking(self):
-        self.add_prices(early_bird_discount=0)
+        self.add_prices()
         self.booking_login()
         booking1 = self.create_booking()
         booking2 = self.create_booking()
@@ -2246,19 +2244,6 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
         j = self._booking_problems_json(data)
         assert any(p.startswith("The 'amount due' is not the expected value of £0.00") for p in j["problems"])
 
-    def test_booking_problems_early_bird_check(self):
-        self.open_bookings()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
-        officer = officers_factories.create_booking_secretary()
-        self.client.force_login(officer)
-        data = self._initial_place_details()
-        data["early_bird_discount"] = "1"
-        data["account"] = str(acc1.id)
-        data["state"] = BookingState.BOOKED
-        data["amount_due"] = "90.00"
-        j = self._booking_problems_json(data)
-        assert "The early bird discount is only allowed for bookings created online." in j["problems"]
-
 
 class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     urlname = "cciw-bookings-account_overview"
@@ -2510,47 +2495,6 @@ def test_cancel_full_refund_account_amount_due():
 
     account.refresh_from_db()
     assert account.get_balance_full() == booking.amount_due
-
-
-@pytest.mark.django_db
-def test_early_bird_expected_amount_due():
-    booking = factories.create_booking()
-    year = booking.camp.year
-    price_info = PriceInfo.get_for_year(year)
-    assert price_info is not None
-    assert booking.expected_amount_due() == price_info.price_full
-
-    booking.early_bird_discount = True
-    assert booking.expected_amount_due() == price_info.price_full - price_info.price_early_bird_discount
-
-
-@pytest.mark.django_db
-def test_early_bird_book_basket_applies_discount():
-    booking = factories.create_booking()
-    year = booking.camp.year
-    with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
-        # Cut off date definitely in the future
-        mock_f.return_value = datetime(year + 10, 1, 1, tzinfo=timezone.get_default_timezone())
-        book_bookings_now([booking])
-    booking.refresh_from_db()
-    assert booking.early_bird_discount
-    price_info = PriceInfo.get_for_year(year)
-    assert price_info is not None
-    assert booking.amount_due == price_info.price_full - price_info.price_early_bird_discount
-
-
-@pytest.mark.django_db
-def test_early_bird_book_basket_doesnt_apply_discount():
-    booking = factories.create_booking()
-    with mock.patch("cciw.bookings.models.yearconfig.get_early_bird_cutoff_date") as mock_f:
-        # Cut off date definitely in the past
-        mock_f.return_value = datetime(booking.camp.year - 10, 1, 1, tzinfo=timezone.get_default_timezone())
-        book_bookings_now([booking])
-    booking.refresh_from_db()
-    assert not booking.early_bird_discount
-    price_info = PriceInfo.get_for_year(booking.camp.year)
-    assert price_info is not None
-    assert booking.amount_due == price_info.price_full
 
 
 @pytest.mark.django_db

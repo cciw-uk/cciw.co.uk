@@ -1,14 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
 from decimal import Decimal
-from functools import cached_property
 
 from django.db import models
-from django.utils import timezone
-
-from cciw.bookings.models.yearconfig import early_bird_is_available, get_early_bird_cutoff_date
 
 
 # Price types that can be selected in a booking or appear in Prices table.
@@ -19,7 +14,6 @@ class PriceType(models.TextChoices):
     CUSTOM = "custom_discount", "Custom discount"
     # Deposit not used from 2025 onwards, kept for historical data.
     DEPOSIT = "deposit", "Deposit"
-    EARLY_BIRD_DISCOUNT = "early_bird_discount", "Early bird discount"
     BOOKING_FEE = "booking_fee", "Booking fee"
 
 
@@ -27,6 +21,8 @@ class PriceType(models.TextChoices):
 # but are in the historical data in the `Price` table.
 # - South Wales transport fee: not used from 2015 onwards, kept for historical data
 #   "south_wales_transport"
+# - Discount for people booking early in the year
+#   "early_bird_discount"
 
 
 BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
@@ -34,7 +30,6 @@ BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.T
 # Price types that are used by Price model
 VALUED_PRICE_TYPES: list[PriceType] = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] + [
     PriceType.DEPOSIT,
-    PriceType.EARLY_BIRD_DISCOUNT,
     PriceType.BOOKING_FEE,
 ]
 
@@ -96,10 +91,6 @@ class PriceInfo:
         return self.prices[PriceType.THIRD_CHILD]
 
     @property
-    def price_early_bird_discount(self) -> Decimal:
-        return self.prices[PriceType.EARLY_BIRD_DISCOUNT]
-
-    @property
     def price_booking_fee(self) -> Decimal:
         return self.prices[PriceType.BOOKING_FEE]
 
@@ -110,19 +101,6 @@ class PriceInfo:
             ("2nd camper from the same family", self.price_second_child),
             ("Subsequent children from the same family", self.price_third_child),
         ]
-
-    @property
-    def price_list_with_discounts(self) -> list[tuple[str, Decimal, Decimal]]:
-        early_bird_discount = self.price_early_bird_discount
-        return [(caption, p, p - early_bird_discount) for caption, p in self.price_list]
-
-    @cached_property
-    def early_bird_is_available(self) -> bool:
-        return early_bird_is_available(year=self.year, booked_at=timezone.now())
-
-    @cached_property
-    def early_bird_date(self) -> datetime:
-        return get_early_bird_cutoff_date(self.year)
 
 
 def are_prices_set_for_year(year: int) -> bool:

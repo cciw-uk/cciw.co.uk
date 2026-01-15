@@ -1,7 +1,6 @@
 import contextlib
 import json
 import re
-from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 
@@ -34,14 +33,10 @@ from cciw.bookings.models import (
     Booking,
     BookingAccount,
     CustomAgreement,
-    Price,
-    PriceType,
     any_bookings_possible,
     build_paypal_custom_field,
-    early_bird_is_available,
     get_booking_open_data,
     get_booking_open_data_thisyear,
-    get_early_bird_cutoff_date,
 )
 from cciw.bookings.models.baskets import add_basket_to_queue
 from cciw.bookings.models.prices import PriceInfo
@@ -242,7 +237,6 @@ def add_or_edit_place(
     context = context or {}
     form_class = AddPlaceForm
     year = common.get_thisyear()
-    now = timezone.now()
     booking_account = request.booking_account
     booking_open = get_booking_open_data_thisyear()
 
@@ -290,11 +284,6 @@ def add_or_edit_place(
             "booking_open_data": get_booking_open_data_thisyear(),
             "stage": BookingStage.PLACE,
             "form": form,
-            "early_bird_available": early_bird_is_available(year=year, booked_at=now),
-            "early_bird_date": get_early_bird_cutoff_date(year),
-            "price_early_bird_discount": lambda: Price.objects.get(
-                year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT
-            ).price,
             "read_only": booking is not None and not booking.is_user_editable(),
             "custom_agreements": custom_agreements,
             "booking": booking,
@@ -415,7 +404,6 @@ def basket_list_bookings(request):
 def _basket_list_bookings(request: HttpRequest):
     year = common.get_thisyear()
     booking_open_data = get_booking_open_data(year)
-    now = timezone.now()
     bookings = (
         request.booking_account.bookings.for_year(year)
         .order_by("id")
@@ -482,17 +470,6 @@ def _basket_list_bookings(request: HttpRequest):
                 else:
                     total = total + b.amount_due_confirmed
 
-    discounts = defaultdict(lambda: Decimal("0.00"))
-    for b in basket_bookings:
-        for name, amount in b.get_available_discounts(now):
-            discounts[name] += amount
-
-    if total is not None:
-        total_discount = sum(discounts.values())
-        grand_total = total - total_discount
-    else:
-        grand_total = None
-
     shelf_bookings_problems_pending_approval = any(
         isinstance(problem, ApprovalNeeded) and problem.is_pending
         for booking in shelf_bookings
@@ -516,8 +493,6 @@ def _basket_list_bookings(request: HttpRequest):
             "all_unbookable": all_unbookable,
             "state_token": make_state_token(basket_bookings),
             "total": total,
-            "grand_total": grand_total,
-            "discounts_available": discounts.items(),
             "booking_open_data": booking_open_data,
             "show_save_for_later_button": show_save_for_later_button,
         },

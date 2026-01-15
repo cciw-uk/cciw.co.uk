@@ -64,11 +64,6 @@
           secretary, and later complete the online booking process if you choose
           this option.</p>
 
-        {% if early_bird_available and price_early_bird_discount > 0 %}
-          <p><b>Please note — there is an early bird discount of £{{ price_early_bird_discount }}
-            off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
-        {% endif %}
-
         {% cciw_form_field form 'price_type' %}
 
         <h2>Use of data</h2>

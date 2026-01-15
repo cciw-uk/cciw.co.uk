@@ -40,24 +40,10 @@
           {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_save_for_later=show_save_for_later_button showproblems=True %}
         {% endfor %}
 
-        {% if discounts_available %}
-          {% for discount_caption, discount_amount in discounts_available %}
-            <tr>
-              <td colspan="2" class="discounts">{{ discount_caption }}:</td>
-              <td class="price">-£{{ discount_amount }}</td>
-              <td></td>
-            </tr>
-          {% endfor %}
-        {% endif %}
-
         <tr>
           <td colspan="2" class="total">Total:</td>
           <td class="price">{% if total|default_if_none:"None" == "None" %}TBA{% else %}
-            {% if grand_total != total %}
-              <strike>£{{ total }}</strike> <b>£{{ grand_total }}</b>
-            {% else %}
-              £{{ total }}
-            {% endif %}
+            £{{ total }}
           {% endif %}
           </td>
           <td></td>

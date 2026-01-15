@@ -336,10 +336,6 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False, agreement
         if booking.amount_due != expected_amount:
             errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
 
-    if booking_sec and not booking.created_online:
-        if booking.early_bird_discount:
-            errors.append(blocker("The early bird discount is only allowed for bookings created online."))
-
     # Don't want warnings for booking sec when a booked place is edited
     # after the cutoff date, so we allow self.booked_at to be used here:
     on_date: date = booking.booked_at if booking.is_booked and booking.booked_at is not None else date.today()

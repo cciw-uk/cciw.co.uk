@@ -32,7 +32,7 @@ from .problems import (
 )
 from .states import BookingState
 from .utils import normalise_booking_name, sql_normalise_booking_name
-from .yearconfig import YearConfigFetcher, early_bird_is_available
+from .yearconfig import YearConfigFetcher
 
 if TYPE_CHECKING:
     from .problems import BookingApproval
@@ -221,7 +221,6 @@ class Booking(models.Model):
     phone_number = models.CharField(blank=True, max_length=22)
     email = models.EmailField(blank=True)
     church = models.CharField("name of church", max_length=100, blank=True)
-    south_wales_transport = models.BooleanField("require transport from South Wales", blank=True, default=False)
 
     # Contact - from user
     contact_name = models.CharField("contact name", max_length=255, blank=True)
@@ -279,9 +278,12 @@ class Booking(models.Model):
 
     # Price - partly from user (must fit business rules)
     price_type = models.CharField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])
-    early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
     booked_at = models.DateTimeField(null=True, blank=True, help_text="Online bookings only")
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
+
+    # Old business logic:
+    south_wales_transport = models.BooleanField("require transport from South Wales", blank=True, default=False)
+    early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
 
     # State - user driven
     shelved = models.BooleanField(default=False, help_text="Used by user to put in 'Saved for later'")
@@ -359,7 +361,6 @@ class Booking(models.Model):
         """
         self.account = account
         if not state_was_booked:
-            self.early_bird_discount = False  # We only allow this to be True when booking
             self.state = BookingState.INFO_COMPLETE
         self.auto_set_amount_due()
         if self.id is None:
@@ -405,6 +406,13 @@ class Booking(models.Model):
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:
             return None
+
+        # This method works only for recent business rules, it doesn't apply old
+        # logic and rules. For older bookings, the saved `amount_due` field is
+        # the only method for knowing what is owed.
+
+        assert self.camp.year >= 2026, "`expected_amount_due` is not accurate for older bookings"
+
         if self.state == BookingState.CANCELLED_DEPOSIT_KEPT:
             try:
                 return Price.objects.get(year=self.camp.year, price_type=PriceType.DEPOSIT).price
@@ -415,9 +423,6 @@ class Booking(models.Model):
             return Decimal("0.00")
         else:
             amount = Price.objects.get(year=self.camp.year, price_type=self.price_type).price
-
-            if self.early_bird_discount:
-                amount -= Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT, year=self.camp.year).price
 
             # For booking 2015 and later, there are no half refunds,
             # but this is kept in in case we need to query the expected amount due for older
@@ -480,22 +485,6 @@ class Booking(models.Model):
                 return full_amount
 
         return full_amount
-
-    def can_have_early_bird_discount(self, booked_at=None):
-        if booked_at is None:
-            booked_at = self.booked_at
-        if self.price_type == PriceType.CUSTOM:
-            return False
-        else:
-            return early_bird_is_available(year=self.camp.year, booked_at=booked_at)
-
-    def early_bird_discount_missed(self):
-        """
-        Returns the discount that was missed due to failing to book early.
-        """
-        if self.early_bird_discount or self.price_type == PriceType.CUSTOM:
-            return Decimal(0)  # Got the discount, or it wasn't available.
-        return Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT, year=self.camp.year).price
 
     def age_on_camp(self):
         return relativedelta(self.age_base_date(), self.birth_date).years
@@ -586,14 +575,6 @@ class Booking(models.Model):
         with contextlib.suppress(AttributeError):
             self._prefetched_objects_cache.pop("approvals", None)
 
-    def get_available_discounts(self, now):
-        retval = []
-        if self.can_have_early_bird_discount(booked_at=now):
-            discount_amount = Price.objects.get(year=self.camp.year, price_type=PriceType.EARLY_BIRD_DISCOUNT).price
-            if discount_amount > 0:
-                retval.append(("Early bird discount if booked now", discount_amount))
-        return retval
-
     def get_booking_problems(self, booking_sec=False, agreement_fetcher=None) -> list[BookingProblem]:
         """
         Returns a list of errors and warnings as BookingProblem objects
@@ -629,7 +610,6 @@ class Booking(models.Model):
         # because we assume the user might want to edit and book
         # again:
         self.state = BookingState.INFO_COMPLETE
-        self.early_bird_discount = False
         self.booked_at = None
         self.auto_set_amount_due()
         self.save()

@@ -37,10 +37,8 @@ from .supporting_information import SupportingInformation, SupportingInformation
 from .yearconfig import (
     YearConfig,
     any_bookings_possible,
-    early_bird_is_available,
     get_booking_open_data,
     get_booking_open_data_thisyear,
-    get_early_bird_cutoff_date,
     most_recent_booking_year,
 )
 
@@ -72,8 +70,6 @@ __all__ = [
     "credit_account",
     "AgreementFetcher",
     "any_bookings_possible",
-    "early_bird_is_available",
-    "get_early_bird_cutoff_date",
     "BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS",
     "BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS",
     "BOOKING_PLACE_CAMPER_ADDRESS_DETAILS",
