@@ -71,7 +71,11 @@
             hx-target="#id_manage_queue_booking_modal"
             hx-swap="outerHTML"
           >
-            Withdraw booking from queue
+            {% if booking.queue_entry.waiting_list_from_start  %}
+              Withdraw booking from waiting list
+            {% else %}
+              Withdraw booking from queue
+            {% endif %}
           </button>
         </div>
       </form>
