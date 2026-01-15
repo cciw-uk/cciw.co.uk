@@ -78,6 +78,7 @@ class CommonMixin:
             self.submit(submit_css_selector)
 
 
+@pytest.mark.webtest
 class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     """
     Base class for integration tests that need more than Django's test Client.
