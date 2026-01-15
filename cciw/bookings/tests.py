@@ -2227,6 +2227,13 @@ class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
 
         assert not self.is_element_present(manage_button_selector)
 
+        # We should have an action log
+        logs = list(booking.queue_entry.action_logs.all())
+        last_log = logs[-1]
+        assert last_log.account_user == account
+        assert last_log.action_type == QueueEntryActionLogType.FIELDS_CHANGED
+        assert last_log.details["fields_changed"] == [{"name": "is_active", "old_value": True, "new_value": False}]
+
 
 class LogOutBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
     def test_logout(self):

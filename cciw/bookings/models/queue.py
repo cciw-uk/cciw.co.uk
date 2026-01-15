@@ -259,6 +259,9 @@ class QueueEntryActionLog(models.Model):
 
     details = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
 
+    class Meta:
+        ordering = ("created_at",)
+
 
 @dataclass
 class RankingResult:
