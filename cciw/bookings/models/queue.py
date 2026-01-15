@@ -16,6 +16,7 @@ from enum import StrEnum
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
+from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Count, OuterRef, Subquery, Value, functions
@@ -130,7 +131,7 @@ class BookingQueueEntry(models.Model):
         return int(self.tiebreaker[0:4], 16)
 
     @contextmanager
-    def track_changes(self, *, by_user: User | BookingAccount) -> Iterator[None]:
+    def track_changes(self, *, by_user: User | BookingAccount | None) -> Iterator[None]:
         old_queue_entry_fields = self.get_current_field_data()
         yield
         self.save_fields_changed_action_log(by_user=by_user, old_fields=old_queue_entry_fields)
@@ -139,7 +140,7 @@ class BookingQueueEntry(models.Model):
         return {key: value for key, value in self.__dict__.items() if not key.startswith("_")}
 
     def save_fields_changed_action_log(
-        self, *, by_user: User | BookingAccount, old_fields: dict
+        self, *, by_user: User | BookingAccount | None, old_fields: dict
     ) -> QueueEntryActionLog:
         new_fields = self.get_current_field_data()
         changed: list[dict] = []
@@ -155,12 +156,16 @@ class BookingQueueEntry(models.Model):
         )
 
     def save_action_log(
-        self, *, action_type: QueueEntryActionLogType, by_user: User | BookingAccount, details: dict | None = None
+        self,
+        *,
+        action_type: QueueEntryActionLogType,
+        by_user: User | BookingAccount | None,
+        details: dict | None = None,
     ) -> QueueEntryActionLog:
+        # by_user == None implies a system action.
         account_user: BookingAccount | None = by_user if isinstance(by_user, BookingAccount) else None
         staff_user: User | None = by_user if isinstance(by_user, User) else None
 
-        assert account_user or staff_user
         details = details or {}
         return self.action_logs.create(
             account_user=account_user, staff_user=staff_user, action_type=action_type, details=details
@@ -185,7 +190,7 @@ class BookingQueueEntry(models.Model):
                     self.waiting_list_from_start = True
                 self.save()
 
-    def make_inactive(self, *, by_user: User | BookingAccount) -> None:
+    def make_inactive(self, *, by_user: User | BookingAccount | None) -> None:
         if self.is_active:
             with self.track_changes(by_user=by_user):
                 self.is_active = False
@@ -686,7 +691,7 @@ class AllocationResult:
 def allocate_places_and_notify(
     ranked_queue_bookings: Sequence[Booking], *, by_user: User | BookingAccount
 ) -> AllocationResult:
-    from cciw.bookings.email import send_places_allocated_email, send_places_declined_email
+    from cciw.bookings.email import send_places_allocated_emails, send_places_declined_email
 
     by_account_key: Callable[[Booking], BookingAccount] = lambda b: b.account
     by_account_id_key: Callable[[Booking], int] = lambda b: b.account_id
@@ -704,7 +709,7 @@ def allocate_places_and_notify(
 
     to_book_grouped_by_account = [(a, list(g)) for a, g in itertools.groupby(to_book, key=by_account_key)]
     for account, bookings in to_book_grouped_by_account:
-        send_places_allocated_email(account, bookings)
+        send_places_allocated_emails(account, bookings)
     to_book_accounts: list[BookingAccount] = [a for a, _ in to_book_grouped_by_account]
 
     # Decline:
@@ -740,10 +745,13 @@ def allocate_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
     now = timezone.now()
 
     for b in bookings:
-        b.booked_at = now
-        b.auto_set_amount_due()
-        b.state = BookingState.BOOKED
-        b.save()
+        if not b.state == BookingState.BOOKED:
+            b.booked_at = now
+            b.auto_set_amount_due()
+            b.state = BookingState.BOOKED
+            if b.is_in_queue and b.queue_entry.waiting_list_from_start:
+                b.booking_expires_at = now + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER
+            b.save()
 
     return True
 

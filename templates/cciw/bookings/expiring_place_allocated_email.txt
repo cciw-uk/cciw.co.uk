@@ -1,0 +1,32 @@
+{% autoescape off %}
+Dear {{ account.name }},
+
+Having been on the waiting list for a place on a CCiW camp,
+you have now been allocated the following place:
+
+Name: {{ booking.name }}
+Camp: {{ booking.camp }}
+Dates: {{ booking.camp.start_date|date:"d F" }} to {{ booking.camp.end_date|date:"d F Y" }}
+
+If you want to keep this place you MUST accept the place by clicking on the link
+below, within {{ expires_after_display }}, or the place will expire.
+
+ACCEPT PLACE:
+
+{{ accept_place_url }}
+
+If you no longer want the place, you may cancel it by using the link below:
+
+CANCEL PLACE:
+
+{{ cancel_place_url }}
+
+If you do nothing, the place will expire after {{ expires_after_display }}.
+
+The camp leaders will be in contact with more details in due time.
+
+Many thanks!
+
+The cciw.co.uk team.
+
+{% endautoescape %}

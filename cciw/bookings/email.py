@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain import common
+from cciw.utils.functional import partition
 
 from .models.accounts import BookingAccount
 from .models.bookings import Booking
@@ -75,8 +76,8 @@ class EmailVerifyTokenGenerator:
         return base64.urlsafe_b64decode(token.encode("utf-8")).decode("utf-8")
 
 
-def build_url(*, view_name: str, domain: str | None = None) -> str:
-    url = reverse(view_name)
+def build_url(*, view_name: str, view_kwargs: dict | None = None, domain: str | None = None) -> str:
+    url = reverse(view_name, kwargs=view_kwargs)
     domain = domain or common.get_current_domain()
     return f"https://{domain}{url}"
 
@@ -87,8 +88,9 @@ def build_url_with_booking_token(
     email: str,
     token_generator: Callable[[], EmailVerifyTokenGenerator] = EmailVerifyTokenGenerator,
     domain: str | None = None,
+    view_kwargs: dict | None = None,
 ) -> str:
-    url = build_url(view_name=view_name, domain=domain)
+    url = build_url(view_name=view_name, view_kwargs=view_kwargs, domain=domain)
     token = token_generator().token_for_email(email)
     return f"{url}?bt={token}"
 
@@ -124,23 +126,54 @@ def send_pending_payment_email(account, ipn_obj):
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
-def send_places_allocated_email(account: BookingAccount, bookings: Sequence[Booking]) -> None:
+def send_places_allocated_emails(account: BookingAccount, bookings: Sequence[Booking]) -> None:
     assert bookings
     assert all(booking.account == account for booking in bookings)
     if not account.email:
         return
 
-    c = {
-        "domain": common.get_current_domain(),
-        "account": account,
-        "bookings": bookings,
-    }
-    body = loader.render_to_string("cciw/bookings/places_allocated_email.txt", c)
-    subject = "[CCIW] Booking - places confirmed"
+    expiring_bookings, non_expiring_bookings = partition(bookings, lambda b: b.will_expire)
 
-    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+    for booking in expiring_bookings:
+        # Send individual emails, because there are actions are we don't
+        # want to confuse things.
+        c = {
+            "domain": common.get_current_domain(),
+            "account": account,
+            "booking": booking,
+            "expires_after_display": settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER_DISPLAY,
+            "accept_place_url": make_accept_place_url(booking),
+            "cancel_place_url": make_cancel_place_url(booking),
+        }
+        body = loader.render_to_string("cciw/bookings/expiring_place_allocated_email.txt", c)
+        subject = f"[CCIW] Booking - place allocated for {booking.name}"
+        mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+
+    if non_expiring_bookings:
+        # We can send these all together, there are no actions to take.
+        c = {
+            "domain": common.get_current_domain(),
+            "account": account,
+            "bookings": bookings,
+        }
+        body = loader.render_to_string("cciw/bookings/places_confirmed_email.txt", c)
+        subject = "[CCIW] Booking - places confirmed"
+        mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+
     BookingQueueEntry.objects.filter(id__in=[b.queue_entry.id for b in bookings]).update(
         accepted_notification_sent_at=timezone.now()
+    )
+
+
+def make_accept_place_url(booking: Booking) -> str:
+    return build_url_with_booking_token(
+        view_name="cciw-bookings-accept_place", email=booking.account.email, view_kwargs={"booking_id": booking.id}
+    )
+
+
+def make_cancel_place_url(booking: Booking) -> str:
+    return build_url_with_booking_token(
+        view_name="cciw-bookings-cancel_place", email=booking.account.email, view_kwargs={"booking_id": booking.id}
     )
 
 
@@ -195,6 +228,17 @@ def send_booking_confirmed_mail(booking: Booking):
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     return True
+
+
+def send_booking_expired_mail(booking: Booking):
+    account = booking.account
+    c = {
+        "account": account,
+        "booking": booking,
+    }
+    body = loader.render_to_string("cciw/bookings/place_expired_email.txt", c)
+    subject = "[CCIW] Booking expired"
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
 def send_payment_reminder_emails():

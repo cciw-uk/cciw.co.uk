@@ -700,3 +700,38 @@ def manage_queue_booking_modal(request: HttpRequest, booking_id: int) -> HttpRes
             "booking_open_data": booking_open_data,
         },
     )
+
+
+@booking_account_required
+def accept_place(request: HttpRequest, booking_id: int) -> HttpResponse:
+    account: BookingAccount = request.booking_account
+    # Need to ensure that this query is tight, to stop people
+    # using this view to change the status of bookings that shouldn't be changed.
+
+    # They can accept only those in this state of "booked but will expire"
+    relevant_bookings = account.bookings.booked_but_will_expire()
+    try:
+        booking: Booking = relevant_bookings.get(id=booking_id)
+    except Booking.DoesNotExist:
+        messages.error(request, "The booking to accept could not be found. Have you already accepted or cancelled it?")
+    else:
+        booking.accept_expiring_place()
+        messages.info(request, "The place has been confirmed, thank you!")
+    return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
+
+
+@booking_account_required
+def cancel_place(request: HttpRequest, booking_id: int) -> HttpResponse:
+    account: BookingAccount = request.booking_account
+    # Similar to above, need to ensure a tight query
+
+    # They can accept only those in this state of "booked but will expire"
+    relevant_bookings = account.bookings.booked_but_will_expire()
+    try:
+        booking: Booking = relevant_bookings.get(id=booking_id)
+    except Booking.DoesNotExist:
+        messages.error(request, "The booking to cancel could not be found. Have you already accepted or cancelled it?")
+    else:
+        booking.cancel_expiring_place(by_user=account)
+        messages.info(request, "The place has been cancelled. Thank you!")
+    return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))

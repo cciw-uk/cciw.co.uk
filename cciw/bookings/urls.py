@@ -52,4 +52,6 @@ urlpatterns = [
         views.manage_queue_booking_modal,
         name="cciw-bookings-manage_queue_booking_modal",
     ),
+    path("accept/<int:booking_id>/", views.accept_place, name="cciw-bookings-accept_place"),
+    path("cancel/<int:booking_id>/", views.cancel_place, name="cciw-bookings-cancel_place"),
 ]

@@ -58,6 +58,13 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
     def booked(self) -> BookingQuerySet:
         return self.filter(state=BookingState.BOOKED)
 
+    def booked_but_will_expire(self) -> BookingQuerySet:
+        # See also `Booked.will_expire`
+        return self.booked().filter(booking_expires_at__isnull=False)
+
+    def expiry_due(self, now: datetime) -> BookingQuerySet:
+        return self.booked_but_will_expire().filter(booking_expires_at__lt=now)
+
     def basket_relevant(self) -> BookingQuerySet:
         """
         Returns bookings that are relevant to "basket" stage in which
@@ -241,6 +248,9 @@ class Booking(models.Model):
 
     # State - internal
     state = models.CharField(choices=BookingState)
+    booking_expires_at = models.DateTimeField(
+        default=None, null=True, blank=True, help_text="If not empty, a 'Booked' booking will expire at this time"
+    )
 
     created_at = models.DateTimeField(default=timezone.now)
     created_online = models.BooleanField(blank=True, default=False)
@@ -346,9 +356,37 @@ class Booking(models.Model):
             self.queue_entry = queue_entry
         return queue_entry
 
-    def withdraw_from_queue(self, *, by_user: User | BookingAccount) -> None:
+    def withdraw_from_queue(self, *, by_user: User | BookingAccount | None) -> None:
         if self.is_in_queue:
             self.queue_entry.make_inactive(by_user=by_user)
+
+    def accept_expiring_place(self) -> None:
+        """
+        Accept a place that is going to expire
+        """
+        assert self.is_booked
+        assert self.will_expire
+
+        self.booking_expires_at = None
+        self.save()
+
+    def cancel_expiring_place(self, *, by_user: BookingAccount | None) -> None:
+        """
+        Cancel a place that is going to expire
+        """
+        assert self.is_booked
+        assert self.will_expire
+
+        self.booking_expires_at = None
+        self.state = BookingState.CANCELLED_FULL_REFUND
+        self.save()
+        self.move_to_shelf()
+        self.withdraw_from_queue(by_user=by_user)
+
+    def expire_expiring_place(self) -> None:
+        # Pass `by_user=None` to indicate a system action i.e.
+        # not initiated by the user. Otherwise it is identical to explicit cancel.
+        self.cancel_expiring_place(by_user=None)
 
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:
@@ -447,6 +485,11 @@ class Booking(models.Model):
     def is_too_old(self):
         return self.age_on_camp() > self.camp.maximum_age
 
+    @property
+    def will_expire(self) -> bool:
+        # See also `BookingQuerySet.booked_but_will_expire()`
+        return self.booking_expires_at is not None
+
     def update_approvals(self) -> None:
         """
         Updates the related BookingApproval objects
@@ -532,11 +575,6 @@ class Booking(models.Model):
         booking secretary.
         """
         return get_booking_problems(self, booking_sec=booking_sec)
-
-    def confirm(self):
-        # TODO #52 - should involve queue?
-        self.state = BookingState.BOOKED
-        self.save()
 
     def move_to_shelf(self) -> None:
         self.shelved = True

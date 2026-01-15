@@ -4,6 +4,7 @@ import io
 import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from typing import Literal, assert_never
 from unittest import mock
 
 import openpyxl
@@ -12,6 +13,7 @@ import vcr
 from django.conf import settings
 from django.core import mail, signing
 from django.db import models
+from django.test.client import Client
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -41,6 +43,7 @@ from cciw.bookings.models import (
     build_paypal_custom_field,
 )
 from cciw.bookings.models.constants import Sex
+from cciw.bookings.models.expiry import expire_bookings
 from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval, get_booking_problems
 from cciw.bookings.models.queue import (
@@ -656,7 +659,6 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         booking = factories.create_booking()
         allocate_bookings_now([booking])
         booking: Booking = Booking.objects.get(id=booking.id)
-        booking.confirm()
         assert len(BookingAccount.objects.payments_due()) == 1
         return booking
 
@@ -3196,6 +3198,85 @@ def test_allocate_places(mailoutbox):
     assert result2.declined_and_notified_account_count == 0
 
     assert len(mailoutbox) == outbox_count_1
+
+
+@pytest.mark.parametrize("action", ["accept", "cancel", "ignore"])
+@pytest.mark.django_db
+def test_allocate_places_for_waiting_list(mailoutbox, client: Client, action: Literal["accept", "cancel", "ignore"]):
+    year_config = create_year_config_for_queue_tests()
+    camp: Camp = camps_factories.create_camp(
+        year=year_config.year, max_campers=5, max_male_campers=10, max_female_campers=10
+    )
+    booking_sec = officers_factories.create_booking_secretary()
+
+    # Enough bookings to fill the camp up:
+    initial_bookings = [factories.create_booking() for n in range(0, 5)]
+    allocate_bookings_now(initial_bookings)
+
+    # New one, for waiting list.
+    booking = factories.create_booking()
+    queue_entry = booking.add_to_queue(by_user=booking.account)
+    assert queue_entry.waiting_list_from_start
+
+    # A place comes up:
+    camp.max_campers = 6
+    camp.save()
+
+    # We allocate it:
+    ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
+    result = allocate_places_and_notify(ranking_result.bookings, by_user=booking_sec)
+
+    assert result.accepted_booking_count == 1
+    assert result.accepted_bookings == [booking]
+
+    # It is booked:
+    booking.refresh_from_db()
+    assert booking.state == BookingState.BOOKED
+
+    # But set to expire:
+    assert booking.will_expire
+    assert booking.booking_expires_at is not None
+
+    # They get emailed:
+    assert len(mailoutbox) == 1
+    email = mailoutbox[0]
+
+    # The email gives a link to cancel and one to accept:
+    accept_url, accept_path, accept_querydata = read_email_url(email, r"https://.*/accept/.*")
+    cancel_url, cancel_path, cancel_querydata = read_email_url(email, r"https://.*/cancel/.*")
+
+    # TODO use django client
+    if action == "accept":
+        response = client.get(accept_path, accept_querydata, follow=True)
+        assert response.status_code == 200
+        assert b"The place has been confirmed" in response.content
+
+        booking.refresh_from_db()
+        assert booking.is_booked
+        assert not booking.will_expire
+
+    elif action == "cancel":
+        response = client.get(cancel_path, cancel_querydata, follow=True)
+        assert response.status_code == 200
+        assert b"The place has been cancelled" in response.content
+
+        booking.refresh_from_db()
+        assert not booking.is_booked
+        assert booking.state == BookingState.CANCELLED_FULL_REFUND
+        assert not booking.is_in_queue
+        assert booking.shelved
+
+    elif action == "ignore":
+        with freeze_time(timezone.now() + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER + timedelta(hours=1)):
+            expire_bookings()
+
+            booking.refresh_from_db()
+            assert not booking.is_booked
+            assert booking.state == BookingState.CANCELLED_FULL_REFUND
+            assert not booking.is_in_queue
+
+    else:
+        assert_never(action)
 
 
 @pytest.mark.django_db

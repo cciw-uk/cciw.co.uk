@@ -1,0 +1,11 @@
+{% autoescape off %}
+Dear {{ account.name }},
+
+Since we didn't receive your confirmation, the booking for {{ booking.name }}
+has now expired.
+
+Thanks,
+
+The cciw.co.uk team.
+
+{% endautoescape %}
