@@ -2141,7 +2141,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
             p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}") for p in j["problems"]
         )
 
-    def test_booking_problems_deposit_check(self):
+    def test_booking_problems_full_refund(self):
         # Test that the price is checked.
         # This is a check that is only run for booking secretary
         self.open_bookings()

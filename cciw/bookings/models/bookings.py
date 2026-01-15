@@ -360,13 +360,7 @@ class Booking(models.Model):
 
         assert self.camp.year >= 2026, "`expected_amount_due` is not accurate for older bookings"
 
-        if self.state == BookingState.CANCELLED_DEPOSIT_KEPT:
-            try:
-                return Price.objects.get(year=self.camp.year, price_type=PriceType.DEPOSIT).price
-            except Price.DoesNotExist:
-                # No deposit, assume same as CANCELLED_FULL_REFUND
-                return Decimal("0.00")
-        elif self.state == BookingState.CANCELLED_FULL_REFUND:
+        if self.state == BookingState.CANCELLED_FULL_REFUND:
             return Decimal("0.00")
         else:
             amount = Price.objects.get(year=self.camp.year, price_type=self.price_type).price
