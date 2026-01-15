@@ -8,3 +8,12 @@ class BookingState(models.TextChoices):
     CANCELLED_BOOKING_FEE_KEPT = "cancelled_booking_fee_kept", "Cancelled - booking fee kept"
     CANCELLED_HALF_REFUND = "cancelled_half_refund", "Cancelled - half refund"
     CANCELLED_FULL_REFUND = "cancelled_full_refund", "Cancelled - full refund"
+
+
+CURRENT_BOOKING_STATES = {
+    BookingState.INFO_COMPLETE,
+    BookingState.BOOKED,
+    BookingState.CANCELLED_BOOKING_FEE_KEPT,
+    BookingState.CANCELLED_HALF_REFUND,
+    BookingState.CANCELLED_FULL_REFUND,
+}

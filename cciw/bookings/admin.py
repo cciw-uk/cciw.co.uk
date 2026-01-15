@@ -12,8 +12,10 @@ from django.utils.html import escape, escapejs, format_html
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
 from cciw.bookings.models.queue import BookingQueueEntry
+from cciw.bookings.models.states import CURRENT_BOOKING_STATES
 from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain import common
+from cciw.cciwmain.models import Camp
 from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
 from cciw.middleware.threadlocals import get_current_user
 from cciw.utils.admin import RerouteResponseAdminMixin
@@ -311,6 +313,14 @@ class BookingAdminForm(forms.ModelForm):
     manual_payment_payment_type = forms.ChoiceField(
         label="Type", choices=ManualPayment._meta.get_field("payment_type").choices, required=False
     )
+
+    def clean(self) -> None:
+        if "camp" in self.cleaned_data and "state" in self.cleaned_data:
+            camp = self.cleaned_data["camp"]
+            if isinstance(camp, Camp) and camp.year == common.get_thisyear():
+                state: BookingState = self.cleaned_data["state"]
+                if state not in CURRENT_BOOKING_STATES:
+                    self.add_error("state", "This state is not allowed for current bookings")
 
     class Meta:
         model = Booking
