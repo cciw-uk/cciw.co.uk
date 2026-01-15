@@ -1,0 +1,10 @@
+{% autoescape off %}
+Dear {{ account.name }},
+
+We have received your payment of £{{ ipn_obj.mc_gross }}, thank you!
+
+Thanks,
+
+The cciw.co.uk team.
+
+{% endautoescape %}

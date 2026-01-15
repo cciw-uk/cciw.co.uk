@@ -1963,43 +1963,17 @@ def test_receive_payment_signal_handler():
     assert account.total_received == Decimal(0)
 
 
-@pytest.mark.xfail  # TODO #52
 @pytest.mark.django_db
-def test_email_for_good_payment():
-    booking = factories.create_booking(state=BookingState.INFO_COMPLETE)
-    account = booking.account
-    allocate_bookings_now([booking])
+def test_email_for_good_payment(mailoutbox):
+    account = factories.create_booking_account()
+    factories.create_ipn(account=account, mc_gross=Decimal(100))
 
-    mail.outbox = []
-    factories.create_ipn(account=account, mc_gross=booking.amount_due)
+    assert len(mailoutbox) == 1
+    email = mailoutbox[0]
 
-    mails = mail.outbox
-    assert len(mails) == 1
-
-    assert mails[0].subject == "[CCIW] Booking - place confirmed"
-    assert mails[0].to == [account.email]
-    assert "Thank you for your payment" in mails[0].body
-
-
-@pytest.mark.xfail  # TODO #52
-@pytest.mark.django_db
-def test_only_one_email_for_multiple_places():
-    booking1 = factories.create_booking(name="Princess Pearl")
-    account = booking1.account
-    booking2 = factories.create_booking(name="Another Child", account=account)
-
-    allocate_bookings_now([booking1, booking2])
-
-    mail.outbox = []
-    account.receive_payment(account.get_balance_full())
-
-    mails = mail.outbox
-    assert len(mails) == 1
-
-    assert mails[0].subject == "[CCIW] Booking - place confirmed"
-    assert mails[0].to == [account.email]
-    assert "Princess Pearl" in mails[0].body
-    assert "Another Child" in mails[0].body
+    assert email.subject == "[CCIW] Payment received"
+    assert email.to == [account.email]
+    assert "We have received your payment of £100" in email.body
 
 
 @pytest.mark.django_db

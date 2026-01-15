@@ -11,6 +11,7 @@ from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
+from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain import common
@@ -116,13 +117,23 @@ def send_unrecognised_payment_email(ipn_obj, reason=None):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, settings.WEBMASTER_EMAILS)
 
 
-def send_pending_payment_email(account, ipn_obj):
+def send_pending_payment_email(account: BookingAccount, ipn_obj: PayPalIPN):
     c = {
         "account": account,
         "ipn_obj": ipn_obj,
     }
     body = loader.render_to_string("cciw/bookings/pending_payment_email.txt", c)
-    subject = "[CCIW] Booking - pending payment"
+    subject = "[CCIW] Pending payment"
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+
+
+def send_payment_received_email(account: BookingAccount, ipn_obj: PayPalIPN):
+    c = {
+        "account": account,
+        "ipn_obj": ipn_obj,
+    }
+    body = loader.render_to_string("cciw/bookings/payment_received_email.txt", c)
+    subject = "[CCIW] Payment received"
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 

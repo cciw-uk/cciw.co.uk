@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
+from paypal.standard.ipn.models import PayPalIPN
 from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
 from cciw.donations.views import DONATION_CUSTOM_VALUE, send_donation_received_email
 
-from .email import send_pending_payment_email, send_unrecognised_payment_email
+from .email import send_payment_received_email, send_pending_payment_email, send_unrecognised_payment_email
 from .models import (
     AccountTransferPayment,
     ManualPayment,
@@ -24,7 +25,7 @@ def unrecognised_payment(sender=None, reason="Invalid IPN", **kwargs):
 
 
 def paypal_payment_received(sender, **kwargs):
-    ipn_obj = sender
+    ipn_obj: PayPalIPN = sender
     if ipn_obj.business != settings.PAYPAL_RECEIVER_EMAIL:
         unrecognised_payment(ipn_obj, "Incorrect receiver email")
         return
@@ -45,6 +46,8 @@ def paypal_payment_received(sender, **kwargs):
     if ipn_obj.payment_status not in ["Completed", "Canceled_Reversal", "Refunded"]:
         unrecognised_payment(ipn_obj, f"Unrecognised payment status {ipn_obj.payment_status}")
         return
+
+    send_payment_received_email(account, ipn_obj)
 
     credit_account(ipn_obj.mc_gross, account, ipn_obj)
 
