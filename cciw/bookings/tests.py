@@ -2357,6 +2357,26 @@ def test_cancel_full_refund_amount_due():
 
 
 @pytest.mark.django_db
+def test_cancel_half_refund_amount_due():
+    booking = factories.create_booking()
+    booking.state = BookingState.CANCELLED_HALF_REFUND
+    assert (
+        booking.expected_amount_due() == Price.objects.get(year=booking.camp.year, price_type=PriceType.FULL).price / 2
+    )
+
+
+@pytest.mark.django_db
+def test_cancel_booking_fee_kept_amount_due():
+    booking = factories.create_booking()
+    booking.state = BookingState.CANCELLED_BOOKING_FEE_KEPT
+
+    assert (
+        booking.expected_amount_due()
+        == Price.objects.get(year=booking.camp.year, price_type=PriceType.BOOKING_FEE).price
+    )
+
+
+@pytest.mark.django_db
 def test_cancel_full_refund_account_amount_due():
     booking = factories.create_booking()
     account = booking.account
