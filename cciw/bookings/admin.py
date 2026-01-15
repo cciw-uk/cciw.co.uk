@@ -638,7 +638,11 @@ class BookingAdmin(admin.ModelAdmin):
             old_state = Booking.objects.get(id=booking.id).state
         else:
             old_state = None
-        if booking.state in [BookingState.CANCELLED_FULL_REFUND]:
+        if booking.state in [
+            BookingState.CANCELLED_FULL_REFUND,
+            BookingState.CANCELLED_BOOKING_FEE_KEPT,
+            BookingState.CANCELLED_HALF_REFUND,
+        ]:
             booking.auto_set_amount_due()
         retval = super().save_model(request, booking, form, change)
 

@@ -28,7 +28,7 @@ from .problems import (
     calculate_approvals_needed,
     get_booking_problems,
 )
-from .states import BookingState
+from .states import BOOKING_STATES_NO_FEE_DUE, BookingState
 from .utils import normalise_booking_name, sql_normalise_booking_name
 from .yearconfig import YearConfigFetcher
 
@@ -94,13 +94,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         #   Booking.is_payable()
 
         # Also booking_secretary_reports has overlapping logic.
-
-        # 'Full refund' cancelled bookings do not have payment expected, but the
-        # others do.
-        return (
-            self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND])
-            | self.booked()
-        )
+        return self.exclude(state__in=BOOKING_STATES_NO_FEE_DUE)
 
     def cancelled(self) -> BookingQuerySet:
         return self.filter(
@@ -329,7 +323,7 @@ class Booking(models.Model):
 
     def is_payable(self) -> bool:
         # See also BookingQuerySet.payable()
-        return self.state in [BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND] or self.is_booked
+        return self.state not in BOOKING_STATES_NO_FEE_DUE
 
     @property
     def is_booked(self) -> bool:
@@ -408,10 +402,6 @@ class Booking(models.Model):
             return Decimal("0.00")
         else:
             amount = Price.objects.get(year=self.camp.year, price_type=self.price_type).price
-
-            # For booking 2015 and later, there are no half refunds,
-            # but this is kept in in case we need to query the expected amount due for older
-            # bookings.
             if self.state == BookingState.CANCELLED_HALF_REFUND:
                 amount = amount / 2
 

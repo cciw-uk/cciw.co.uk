@@ -3191,7 +3191,6 @@ def test_allocate_places_for_waiting_list(mailoutbox, client: Client, action: Li
     accept_url, accept_path, accept_querydata = read_email_url(email, r"https://.*/accept/.*")
     cancel_url, cancel_path, cancel_querydata = read_email_url(email, r"https://.*/cancel/.*")
 
-    # TODO use django client
     if action == "accept":
         response = client.get(accept_path, accept_querydata, follow=True)
         assert response.status_code == 200

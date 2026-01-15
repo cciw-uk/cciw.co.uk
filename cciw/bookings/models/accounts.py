@@ -12,7 +12,7 @@ from paypal.standard.ipn.models import PayPalIPN
 from cciw.bookings.models.yearconfig import YearConfigFetcher
 
 from .constants import DEFAULT_COUNTRY
-from .states import BookingState
+from .states import BOOKING_STATES_NO_FEE_DUE
 
 if TYPE_CHECKING:
     from .bookings import Booking
@@ -63,12 +63,7 @@ class BookingAccountQuerySet(models.QuerySet):
             total_amount_due=functions.Coalesce(
                 models.Sum(
                     "bookings__amount_due",
-                    filter=~Q(
-                        bookings__state__in=[
-                            BookingState.CANCELLED_FULL_REFUND,
-                            BookingState.INFO_COMPLETE,
-                        ]
-                    ),
+                    filter=~Q(bookings__state__in=BOOKING_STATES_NO_FEE_DUE),
                 ),
                 models.Value(Decimal(0)),
             )
@@ -97,6 +92,9 @@ class BookingAccountManagerBase(models.Manager):
         retval = []
         account: BookingAccount
         today = date.today()
+
+        # TODO - we could probably make this more efficient, perhaps
+        # combine some logic with outstanding_bookings_with_fees()?
 
         config_fetcher = YearConfigFetcher()
         for account in potentials:
