@@ -28,7 +28,7 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 # Renew letsencrypt
 51         4    * * *  root          letsencrypt renew --agree-tos
 # nginx won't pick up the new certificate created above until we restart it:
-57         4    * * *  root          /usr/sbin/service nginx restart
+57         4    * * *  root          nginx -t && systemctl reload nginx
 
 
 # Clear out old uWSGI logs which don't rotate proplerly:
