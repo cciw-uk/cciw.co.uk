@@ -3071,6 +3071,30 @@ def test_year_config_fetcher(django_assert_num_queries):
 
 
 @pytest.mark.django_db
+def test_camp_places_left():
+    camp: Camp = camps_factories.create_camp(max_campers=10, max_male_campers=6, max_female_campers=7)
+    places_left = camp.get_places_left()
+    assert places_left.total == 10
+    assert places_left.male == 6
+    assert places_left.female == 7
+    assert places_left.minimum_places_available == 6
+
+    for _ in range(0, 1):
+        booking = factories.create_booking(sex=Sex.MALE)
+        allocate_bookings_now([booking])
+
+    for _ in range(0, 3):
+        booking = factories.create_booking(sex=Sex.FEMALE)
+        allocate_bookings_now([booking])
+
+    places_left2 = camp.get_places_left()
+    assert places_left2.total == 6
+    assert places_left2.male == 5
+    assert places_left2.female == 4
+    assert places_left2.minimum_places_available == 4
+
+
+@pytest.mark.django_db
 def test_allocate_places(mailoutbox):
     year_config = create_year_config_for_queue_tests()
     camp: Camp = camps_factories.create_camp(

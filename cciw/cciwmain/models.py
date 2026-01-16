@@ -99,7 +99,14 @@ class PlacesBooked(Places):
 
 @dataclass(frozen=True)
 class PlacesLeft(Places):
-    pass
+    @property
+    def minimum_places_available(self) -> float:
+        """
+        The minimum number of places that could still be allocated.
+        """
+        # We have to respect all of total/male/female, and depending on how they
+        # are allocated, any of them could be the constraint.
+        return min(self.total, self.male, self.female)
 
 
 class CampManager(models.Manager):
