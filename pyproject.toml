@@ -76,6 +76,7 @@ target-version = 'py313'
 extend-select = [
   "UP",  # enable pyupgrade
   "I",  # enable isort
+  "FLY",  # enably flynt
 ]
 ignore = ["E501","E731"]
 
