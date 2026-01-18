@@ -38,7 +38,7 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     uv python install 3.13
 
-* Make a virtualenv using Python 3.13:
+* Make a virtualenv using Python 3.13::
 
     uv venv --python python3.13 --prompt cciw
 

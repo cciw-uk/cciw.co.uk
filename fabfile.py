@@ -81,7 +81,7 @@ REQS = [
     "postgresql-contrib",
     "memcached",
     # Daemons
-    "supervisor",  # For running gunicorn and php-cgi daemons
+    "supervisor",  # For running gunicorn etc.
     "nginx",
     # Python stuff - currently just for install uv, which then installs everything else.
     "python3.12",
