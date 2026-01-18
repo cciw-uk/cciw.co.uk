@@ -2,9 +2,8 @@ import json
 import os.path
 import re
 from collections import defaultdict
-from collections.abc import Callable
+from contextlib import contextmanager
 from datetime import datetime
-from functools import partial
 from pathlib import Path
 from shlex import quote
 
@@ -232,8 +231,6 @@ def _install_system(c: Connection):
     # Remove some bloat:
     apt.remove(c, ["snapd"])
     disks.add_swap(c, size="1G", swappiness="10")
-    # We will use uv to install everything else
-    c.run("pipx install uv", echo=True)
     ssl.generate_ssl_dhparams(c)
 
 
@@ -305,7 +302,11 @@ class Version:
         c.run(f"find {quote(self.MEDIA_ROOT_SHARED)} -type d -exec chmod ugo+rx {{}} ';'")
 
     def project_run(self, c: Connection, cmd: str, **kwargs):
-        with c.cd(self.SRC_ROOT), c.prefix(f"source {self.VENV_ROOT}/bin/activate"):
+        with (
+            c.cd(self.SRC_ROOT),
+            c.prefix(f"source {self.VENV_ROOT}/bin/activate"),
+            c.prefix("PATH=~/.local/bin:$PATH"),
+        ):
             env = kwargs.pop("env", {})
             env["UV_PROJECT_ENVIRONMENT"] = self.VENV_ROOT
             kwargs["env"] = env
@@ -534,6 +535,12 @@ def push_secrets(c, target):
     )
 
 
+@contextmanager
+def use_local_bin_PATH(c: Connection):
+    with c.prefix("PATH=~/.local/bin:$PATH"):
+        yield
+
+
 def create_venv(c, target):
     """
     Create a Python virtualenv in the target.
@@ -542,20 +549,17 @@ def create_venv(c, target):
     if files.exists(c, venv_root):
         return
 
-    c.run("pipx install uv")
-    c.run("pipx upgrade uv")
-    c.run("pipx ensurepath")
-    c.run(f"uv python install {FULL_PYTHON_VERISON}", echo=True)
-    c.run(f"uv venv --seed --python={FULL_PYTHON_VERISON} {venv_root}", echo=True)
+    with use_local_bin_PATH(c):
+        c.run("pipx install uv")
+        c.run("pipx upgrade uv")
+        c.run("pipx ensurepath")
+        c.run(f"uv python install {FULL_PYTHON_VERISON}", echo=True)
+        c.run(f"uv venv --seed --python={FULL_PYTHON_VERISON} {venv_root}", echo=True)
     c.run(f"echo {target.SRC_ROOT} > {target.VENV_ROOT}/lib/{PYTHON_BIN}/site-packages/projectsource.pth", echo=True)
 
 
 def install_requirements(c: Connection, target: Version):
-    install_requirements_with(partial(target.project_run, c))
-
-
-def install_requirements_with(run_command: Callable):
-    run_command("uv sync --no-progress", echo=True)
+    target.project_run(c, "uv sync --no-progress", echo=True)
 
 
 def build_static(c: Connection, target: Version):
