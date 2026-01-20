@@ -55,6 +55,7 @@ from .leaders import (
     export_officer_data,
     export_sharable_transport_details,
     fill_in_reference_manually,
+    leaders_index,
     manage_applications,
     manage_references,
     nag_by_officer,
@@ -70,7 +71,7 @@ from .leaders import (
     update_officer,
     view_reference,
 )
-from .menus import index, leaders_index
+from .menus import index
 from .referees import create_reference, create_reference_thanks
 from .visitor_book import visitor_book_printout, visitor_book_utilities
 from .webmaster import data_erasure_request_execute, data_erasure_request_plan, data_erasure_request_start

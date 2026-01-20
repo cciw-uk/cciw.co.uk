@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 from django.contrib.admin.views.decorators import staff_member_required
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
@@ -7,14 +5,9 @@ from django.views.decorators.cache import never_cache
 from cciw.accounts.models import User
 from cciw.bookings.models import most_recent_booking_year
 from cciw.cciwmain import common
-from cciw.cciwmain.models import Camp
 from cciw.utils.views import get_redirect_from_request
 
 from .booking_secretary import BOOKING_STATS_PREVIOUS_YEARS
-from .utils.auth import (
-    camp_admin_required,
-)
-from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 
 
 # /officers/
@@ -56,31 +49,3 @@ def index(request):
         context["show_visitor_book_links"] = True
 
     return TemplateResponse(request, "cciw/officers/index.html", context)
-
-
-@staff_member_required
-@camp_admin_required
-@with_breadcrumbs(officers_breadcrumbs)
-def leaders_index(request):
-    """Displays a list of links for actions for leaders"""
-    user = request.user
-    thisyear = common.get_thisyear()
-    show_all = "show_all" in request.GET
-    camps: Iterable[Camp] = Camp.objects.all().include_other_years_info()
-    if not show_all:
-        camps = camps.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
-    last_existing_year = Camp.objects.order_by("-year")[0].year
-
-    return TemplateResponse(
-        request,
-        "cciw/officers/leaders_index.html",
-        {
-            "title": "Leader's tools",
-            "current_camps": [c for c in camps if c.year == thisyear],
-            "old_camps": [c for c in camps if c.year < thisyear],
-            "statsyears": list(range(last_existing_year, last_existing_year - 3, -1)),
-            "stats_end_year": last_existing_year,
-            "stats_start_year": 2006,  # first year this feature existed
-            "show_all": show_all,
-        },
-    )
