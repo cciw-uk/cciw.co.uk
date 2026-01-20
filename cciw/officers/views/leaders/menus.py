@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from django.contrib.admin.views.decorators import staff_member_required
 from django.template.response import TemplateResponse
 
+from cciw.bookings.models.yearconfig import get_booking_open_data
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
@@ -22,6 +23,7 @@ def leaders_index(request):
     if not show_all:
         camps = camps.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
     last_existing_year = Camp.objects.order_by("-year")[0].year
+    booking_open_data = get_booking_open_data(year=thisyear)
 
     return TemplateResponse(
         request,
@@ -34,5 +36,6 @@ def leaders_index(request):
             "stats_end_year": last_existing_year,
             "stats_start_year": 2006,  # first year this feature existed
             "show_all": show_all,
+            "booking_open_data": booking_open_data,
         },
     )

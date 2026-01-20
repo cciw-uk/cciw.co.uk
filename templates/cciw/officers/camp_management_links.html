@@ -14,20 +14,32 @@
         <li><a href="{% url 'cciw-officers-manage_references' camp_id=camp.url_id %}">References</a></li>
         <li><a href="{% url 'cciw-officers-officer_stats' year=camp.year %}">Officer stats {{ camp.year }}</a></li>
         <li>Campers:
-          <a
-            href="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}"
-            hx-get="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}"
-            hx-target="#modal-dialog-container"
-          >XLS</a> |
-          <a href="{% url 'cciw-officers-booking_progress_stats_custom' camp_ids=camp.camp_ids_for_stats %}">Booking progress chart</a> |
-          <a href="{% url 'cciw-officers-booking_ages_stats_custom' camp_ids=camp.camp_ids_for_stats %}">Camper ages chart</a>
-        </li>
-        <li>Sharable transport details:
-          <a
-            href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}"
-            hx-get="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}"
-            hx-target="#modal-dialog-container"
-          >XLS</a>
+          <ul>
+            {% if camp.year == thisyear and booking_open_data.is_open_for_booking %}
+              <li>
+                <a href="{% url 'cciw-officers-booking_queue' camp_id=camp.url_id %}">Booking queue</a>
+              </li>
+            {% endif %}
+            <li>
+              <a
+                href="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}"
+                hx-get="{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}"
+                hx-target="#modal-dialog-container"
+              >Camper data spreadsheet</a>
+            </li>
+            <li><a
+              href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}"
+              hx-get="{% url 'cciw-officers-export_sharable_transport_details' camp_id=camp.url_id %}"
+              hx-target="#modal-dialog-container"
+            >Sharable camper transport details spreadsheet</a>
+            </li>
+            <li><a href="{% url 'cciw-officers-booking_progress_stats_custom' camp_ids=camp.camp_ids_for_stats %}">Booking progress chart</a>
+            </li>
+            <li>
+              <a href="{% url 'cciw-officers-booking_ages_stats_custom' camp_ids=camp.camp_ids_for_stats %}">Camper ages chart</a>
+            </li>
+
+          </ul>
         </li>
         <li>Leaders list email: <a href="mailto:{{ camp.leaders_email_list_address }}">{{ camp.leaders_email_list_address }}</a>
           <br />&nbsp;(you can only send to it from your registered email address: <b>{{ request.user.email }}</b>)
