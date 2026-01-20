@@ -388,3 +388,10 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         # Check it is pre-filled as we expect
         assert self.get_element_attribute("#id_referee_name", "value") == "Referee1 Name"
         assert self.get_element_attribute("#id_how_long_known", "value") == "A long time"
+
+        self.submit("input[type=submit]")
+        app2.refresh_from_db()
+        assert app2.referees[0].reference_is_received()
+        reference = app2.referees[0].reference
+        assert reference.referee_name == app1.referees[0].reference.referee_name
+        assert reference.previous_reference == app1.referees[0].reference

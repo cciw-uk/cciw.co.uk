@@ -360,6 +360,15 @@ class Reference(models.Model):
     created_on = models.DateField("date created")
     referee = models.OneToOneField(Referee, on_delete=models.CASCADE)
 
+    previous_reference = models.ForeignKey(
+        "Reference",
+        null=True,
+        blank=True,
+        default=None,
+        related_name="following_references",
+        on_delete=models.PROTECT,
+    )
+
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
     # table should exclude these records.

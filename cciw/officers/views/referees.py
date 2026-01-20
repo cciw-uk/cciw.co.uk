@@ -35,7 +35,7 @@ def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | Non
         context["incorrect_url"] = True
     else:
         referee: Referee = get_object_or_404(Referee.objects.filter(id=referee_id))
-        prev_reference = None
+        prev_reference: Reference | None = None
         if prev_ref_id is not None:
             prev_reference = get_object_or_404(Reference.objects.filter(id=prev_ref_id))
 
@@ -57,7 +57,7 @@ def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | Non
             if request.method == "POST":
                 form = ReferenceForm(request.POST, instance=reference)
                 if form.is_valid():
-                    form.save(referee)
+                    form.save(referee, previous_reference=prev_reference)
                     return HttpResponseRedirect(reverse("cciw-officers-create_reference_thanks"))
             else:
                 form = get_initial_reference_form(reference, referee, prev_reference, ReferenceForm)

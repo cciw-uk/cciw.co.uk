@@ -180,15 +180,16 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
             )
             self.fields["concerns"].label += contact_message
 
-    def save(self, referee, user=None):
+    def save(self, referee, *, previous_reference: Reference | None, user: User | None = None):
         obj = super().save(commit=False)
         obj.referee = referee
         obj.created_on = date.today()
+        obj.previous_reference = previous_reference
         obj.save()
         self.log_reference_received(referee, user=user)
         self.send_emails(obj)
 
-    def log_reference_received(self, referee, user=None):
+    def log_reference_received(self, referee, *, user: User | None = None):
         referee.log_reference_received(timezone.now())
 
     def send_emails(self, reference):
@@ -196,7 +197,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
 
 
 class AdminReferenceForm(ReferenceForm):
-    def log_reference_received(self, referee, user=None):
+    def log_reference_received(self, referee, user: User | None = None):
         referee.log_reference_filled_in(user, timezone.now())
 
 

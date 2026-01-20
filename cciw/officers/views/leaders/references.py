@@ -243,7 +243,7 @@ def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id
         if "save" in request.POST:
             form = AdminReferenceForm(request.POST, instance=reference)
             if form.is_valid():
-                form.save(referee, user=request.user)
+                form.save(referee, previous_reference=prev_reference, user=request.user)
                 return htmx_reference_events_response(closeModal=True, refreshReferee=referee)
         else:
             # Cancel
