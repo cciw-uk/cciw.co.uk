@@ -2,9 +2,38 @@
 
 {% block content %}
   <div id="content-main">
+
+    <details>
+      <summary>Summary help for leaders</summary>
+
+      <p>For leaders, or those helping leaders with admin tasks, you have a
+        number of responsibilities that need to be attended to:</p>
+
+      <ul>
+        <li>First, you need to create your <b>officer list</b></li>
+        <li>Once you have created this, you should email your team (using the addresses provided)
+          to ask them to fill in their application forms.</li>
+        <li>Officer lists and application forms should be done <b>as early as possible</b>, so that:
+          <ul>
+            <li>You can start collecting references</li>
+            <li>We can ensure that we have valid DBS checks done before camp</li>
+            <li>We can reserve places for children of officers who are coming on camp</li>
+          </ul>
+        </li>
+        <li>Ensure that your officers with children on camp have completed their bookings. This must be done using <a href="{% url 'cciw-bookings-index' %}" target="_blank">the normal bookings system</a> and <b>in time for the end of the initial booking period</b>.</li>
+        <li>Once the initial booking period is done, you will need to use the <b>booking queue</b> page to
+          add some extra information (such as indicating which places are for the children of officers). This must be done as soon as possible to allow the booking secretary time to finish this process.</li>
+        <li>Once applications start to be completed, you can request <b>references</b> for each officer.</li>
+        <li>Near to camp, you will need to download spreadsheets containing officer and camper data</li>
+      </ul>
+
+      <p>The pages and information needed for these different tasks are all found below.</p>
+
+    </details>
+
     {% if current_camps %}
       <h2>Current camps:</h2>
-      {% include "cciw/officers/camp_management_links.html" with camps=current_camps %}
+      {% include "cciw/officers/camp_management_links.html" with camps=current_camps booking_open_data=booking_open_data %}
     {% endif %}
 
     {% if old_camps %}
