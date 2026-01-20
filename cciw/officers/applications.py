@@ -115,25 +115,25 @@ def applications_for_camps(camps, officer_ids=None):
     return apps
 
 
-def application_to_text(app):
+def application_to_text(app: Application) -> str:
     t = loader.get_template("cciw/officers/application_email.txt")
     return t.render({"app": app})
 
 
-def application_to_rtf(app):
+def application_to_rtf(app: Application) -> str:
     t = loader.get_template("cciw/officers/application.rtf")
     return t.render({"app": app})
 
 
-def application_rtf_filename(app):
+def application_rtf_filename(app: Application) -> str:
     return _application_filename_stem(app) + ".rtf"
 
 
-def application_txt_filename(app):
+def application_txt_filename(app: Application) -> str:
     return _application_filename_stem(app) + ".txt"
 
 
-def _application_filename_stem(app):
+def _application_filename_stem(app: Application) -> str:
     if app.saved_on is None:
         submitted = ""
     else:

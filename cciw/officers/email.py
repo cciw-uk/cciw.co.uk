@@ -53,14 +53,14 @@ def send_application_emails(application: Application, notice_callback: Callable[
         if camp.is_past():
             continue
         if len(leader_emails) > 0:
-            send_leader_email(leader_emails, application)
+            send_leaders_email_about_application(leader_emails, application)
             notice_callback(
                 f"The leaders ({camp.leaders_formatted}) have been notified of the completed application form by"
                 " email.",
             )
 
     if len(leader_email_groups) == 0:
-        send_leader_email(settings.SECRETARY_EMAILS, application)
+        send_leaders_email_about_application(settings.SECRETARY_EMAILS, application)
         notice_callback(
             "The application form has been sent to the CCiW secretary, "
             "because you are not on any camp's officer list this year.",
@@ -71,20 +71,20 @@ def send_application_emails(application: Application, notice_callback: Callable[
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, "text/rtf")
 
-    send_officer_email(application.officer, application, application_text, rtf_attachment)
+    send_officer_email_about_application(application.officer, application_text, rtf_attachment)
     notice_callback("A copy of the application form has been sent to you via email.")
 
     if application.officer.email.lower() != application.address_email.lower():
         send_email_change_emails(application.officer, application)
 
 
-def send_officer_email(officer, application, application_text, rtf_attachment):
+def send_officer_email_about_application(officer: User, application_text: str, rtf_attachment: tuple):
     subject = "[CCIW] Application form submitted"
 
     # Email to the officer
-    user_email = formatted_email(application.officer)
+    user_email = formatted_email(officer)
     user_msg = (
-        f"""{application.officer.first_name},
+        f"""{officer.first_name},
 
 For your records, here is a copy of the application you have submitted
 to CCiW. It is also attached to this email as an RTF file.
@@ -96,7 +96,7 @@ to CCiW. It is also attached to this email as an RTF file.
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL, [user_email], attachments=[rtf_attachment])
 
 
-def send_leader_email(leader_emails: list[str], application: Application):
+def send_leaders_email_about_application(leader_emails: list[str], application: Application):
     subject = f"[CCIW] Application form from {application.full_name}"
     url = "https://{domain}{path}".format(
         domain=common.get_current_domain(),
