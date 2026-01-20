@@ -487,6 +487,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     ]
     date_hierarchy = "created_on"
     raw_id_fields = ["referee"]
+    readonly_fields = ["referee"]
 
     fieldsets = [
         (

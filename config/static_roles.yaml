@@ -125,7 +125,7 @@ Roles:
       - officers.CampRole/add
       - officers.CampRole/change
       # View references
-      - officers.Reference/change
+      - officers.Reference/view
   Chairperson:
     # This person will be a member of Committee as well
     Permissions:
