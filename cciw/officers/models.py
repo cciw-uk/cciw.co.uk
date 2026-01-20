@@ -172,8 +172,8 @@ class Application(ClearCachedPropertyMixin, models.Model):
 
     def _referee(self, num):
         if hasattr(self, "_prefetched_objects_cache"):
-            if "referee" in self._prefetched_objects_cache:
-                vals = [v for v in self._prefetched_objects_cache["referee"] if v.referee_number == num]
+            if "referee_set" in self._prefetched_objects_cache:
+                vals = [v for v in self._prefetched_objects_cache["referee_set"] if v.referee_number == num]
                 if len(vals) == 1:
                     return vals[0]
         return self.referee_set.get_or_create(referee_number=num)[0]
