@@ -488,6 +488,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     date_hierarchy = "created_on"
     raw_id_fields = ["referee"]
     readonly_fields = ["referee"]
+    autocomplete_fields = ["previous_reference"]
 
     fieldsets = [
         (
@@ -506,6 +507,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                     "given_in_confidence",
                     "created_on",
                     "referee",
+                    "previous_reference",
                 ],
                 "classes": ["wide"],
             },

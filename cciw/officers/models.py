@@ -386,7 +386,7 @@ class Reference(models.Model):
 
     def __str__(self):
         officer = self.referee.application.officer
-        return f"Reference form for {officer.full_name} by {self.referee_name}"
+        return f"Reference for {officer.full_name} by {self.referee_name} {self.created_on.year}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
