@@ -336,12 +336,7 @@ def htmx_reference_events_response(
 @cache_control(max_age=3600)
 def officer_history(request, officer_id: int):
     officer = get_object_or_404(User.objects.filter(id=officer_id))
-    referee_pairs = [
-        app.referees
-        for app in (
-            officer.applications.all().prefetch_related("referee_set", "referee_set__reference").order_by("-saved_on")
-        )
-    ]
+    referee_pairs = [app.referees for app in (officer.applications.all().with_references().order_by("-saved_on"))]
 
     return TemplateResponse(
         request,
