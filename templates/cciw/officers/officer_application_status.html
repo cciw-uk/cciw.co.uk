@@ -6,13 +6,17 @@
 {% block content %}
   <div id="content-main">
 
-    <div id="id_noapplicationform">
-      {% include "cciw/officers/officer_list_noapplicationform.html" %}
-    </div>
+    <p>You can view all applications at <a href="{% url 'cciw-officers-manage_applications' camp_id=camp.url_id %}">applications for {{ camp.nice_name }}</a>
+    </p>
 
-    <h2>Using email lists</h2>
+    {% if officers_noapplicationform %}
 
-    {% include "cciw/officers/email_list_note.html" %}
+      <div id="id_noapplicationform">
+        {% include "cciw/officers/officer_list_noapplicationform.html" %}
+      </div>
+    {% else %}
+      <p>All officers on the list have completed their form.</p>
+    {% endif %}
 
     {% if officers_serious_slackers %}
 
@@ -83,6 +87,13 @@
           {% endfor %}
         </table>
       </div>
+    {% endif %}
+
+
+    {% if officers_noapplicationform or officers_serious_slackers %}
+      <h2>Using email lists</h2>
+
+      {% include "cciw/officers/email_list_note.html" %}
     {% endif %}
 
 
