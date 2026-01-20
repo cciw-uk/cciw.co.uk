@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Value
+from django.db.models import Prefetch, Value
 from django.db.models.enums import TextChoices
 from django.db.models.functions import Concat
 from django.utils import timezone
@@ -36,6 +36,9 @@ class ApplicationQuerySet(models.QuerySet):
 
     def not_in_use(self, now: datetime):
         return self.exclude(officer__id__in=User.objects.in_use(now))
+
+    def with_references(self) -> models.QuerySet:
+        return self.prefetch_related(Prefetch("referee_set", queryset=Referee.objects.select_related("reference")))
 
 
 class ApplicationManagerBase(models.Manager):

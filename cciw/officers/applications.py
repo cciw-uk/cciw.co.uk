@@ -1,5 +1,7 @@
+from collections.abc import Sequence
 from datetime import timedelta
 
+from django.db.models import QuerySet
 from django.template import loader
 
 from cciw.cciwmain import common
@@ -71,7 +73,7 @@ def invitations_for_application(application: Application) -> list[Invitation]:
     return invitations
 
 
-def camps_for_application(application: Application):
+def camps_for_application(application: Application) -> Sequence[Camp]:
     """
     For an Application, returns the camps it is relevant to, in terms of
     notifying people.
@@ -82,14 +84,14 @@ def camps_for_application(application: Application):
     return [i.camp for i in invites]
 
 
-def applications_for_camp(camp, officer_ids=None):
+def applications_for_camp(camp, officer_ids=None) -> QuerySet[Application]:
     """
     Returns the applications that are relevant for a camp.
     """
     return applications_for_camps([camp], officer_ids=officer_ids)
 
 
-def applications_for_camps(camps, officer_ids=None):
+def applications_for_camps(camps, officer_ids=None) -> QuerySet[Application]:
     """
     Returns the applications that are relevant for a list of camps.
     """

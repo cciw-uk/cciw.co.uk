@@ -26,13 +26,16 @@ from ..utils.campid import get_camp_or_404
 @with_breadcrumbs(leaders_breadcrumbs)
 def manage_applications(request, camp_id: CampId):
     camp = get_camp_or_404(camp_id)
+    finished_applications = (
+        applications_for_camp(camp).order_by("officer__first_name", "officer__last_name").with_references()
+    )
     return TemplateResponse(
         request,
         "cciw/officers/manage_applications.html",
         {
             "title": f"Manage applications: {camp.nice_name}",
             "camp": camp,
-            "finished_applications": applications_for_camp(camp).order_by("officer__first_name", "officer__last_name"),
+            "finished_applications": finished_applications,
         },
     )
 

@@ -5,8 +5,7 @@
 
     <p>This page allows you to view submitted applications. Normally the leaders
       of the camps (and any 'admins' defined for the camp) will be automatically
-      emailed links to any submitted application forms and you will not need this
-      page.
+      emailed links to any submitted application forms.
     </p>
 
 
@@ -18,21 +17,34 @@
 
     {% if finished_applications %}
 
-      <form action="{% url 'cciw-officers-view_application_redirect' %}" method="get">
-        <div class="aligned">
-          <div class="form-row">
-            <label for="application">Choose application</label>
-            <select name="application_id" id="application">
-              {% for app in finished_applications %}
-                <option value="{{ app.id }}">{{ app.officer.full_name }}, submitted {{ app.saved_on|date:"Y-m-d" }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-row">
-            <input type="submit" name="view" value="View" />
-          </div>
-        </div>
-      </form>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Application</th>
+          <th>Reference 1</th>
+          <th>Reference 2</th>
+        </tr>
+        {% for app in finished_applications %}
+          <tr>
+            <td>{{ app.officer.full_name }}</td>
+            <td><a id="id_view_application_{{ app.id }}" href="{% url 'cciw-officers-view_application' application_id=app.id %}" target="_blank">View application</a></td>
+            <td>
+              {% with reference=app.referees.0.reference %}
+                {% if reference %}
+                  <a href="{% url 'cciw-officers-view_reference' reference_id=reference.id %}"  target="_blank">{{ reference.referee_name}}</a>
+                {% endif  %}
+              {% endwith %}
+            </td>
+            <td>
+              {% with reference=app.referees.1.reference %}
+                {% if reference %}
+                  <a href="{% url 'cciw-officers-view_reference' reference_id=reference.id %}"  target="_blank">{{ reference.referee_name}}</a>
+                {% endif  %}
+              {% endwith %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
 
     {% else %}
 

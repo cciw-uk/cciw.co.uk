@@ -15,8 +15,7 @@ class ManageApplicationsPage(WebTestBase):
         self.officer_login(leader)
         self.get_url("cciw-officers-manage_applications", camp_id=camp.url_id)
         self.assertCode(200)
-        self.fill({"#application": str(application.id)})
-        self.submit('input[name="view"]')
+        self.follow_link(f"#id_view_application_{application.id}")
         self.assertUrlsEqual(reverse("cciw-officers-view_application", kwargs=dict(application_id=application.id)))
         self.assertTextPresent(application.full_name)
 
