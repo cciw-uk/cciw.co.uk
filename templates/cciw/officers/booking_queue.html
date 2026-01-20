@@ -61,9 +61,14 @@
           It can applied a limited number of times - up to {{ FIRST_TIMER_PERCENTAGE }}%
           of the total places for a camp.</li>
       </ul>
+      <h2>Sorting</h2>
+      <p>The places are sorted according to our priority rules. After the names,
+        the information used for determining priority is shown, starting from
+        the highest priority criterion. Hover the headers for more information.
+      </p>
 
       {% if ranked_queue_bookings %}
-        <table class="stickyheaders">
+        <table class="stickyheaders" id="id_queue_table">
           <thead>
             <tr>
               <th>
@@ -193,7 +198,7 @@
   {% endpartialdef %}
 
   <style>
-    table {
+    table#id_queue_table {
       span[title] {
         text-decoration: underline dotted;
         cursor: help;
@@ -204,6 +209,11 @@
       }
       td.to-accept {
         background-color: #00ff00;
+      }
+
+      th:nth-child(3),
+      td:nth-child(3) {
+        border-right: 1px solid var(--hairline-color)
       }
     }
 
