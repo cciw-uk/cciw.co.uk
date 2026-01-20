@@ -36,6 +36,7 @@ from cciw.utils.views import for_htmx2
 from .utils.auth import (
     booking_secretary_or_treasurer_required,
     booking_secretary_required,
+    camp_admin_required,
     cciw_secretary_or_booking_secretary_required,
     secretary_or_committee_required,
 )
@@ -230,7 +231,7 @@ def brochure_mailing_list(request, year: int):
     )
 
 
-@cciw_secretary_or_booking_secretary_required
+@camp_admin_required
 def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
     camps = Camp.objects.filter(year=int(year))
     context = {
@@ -240,7 +241,7 @@ def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
     return TemplateResponse(request, "cciw/officers/booking_queues.html", context)
 
 
-@cciw_secretary_or_booking_secretary_required
+@camp_admin_required
 @for_htmx2(use_partial_from_params=True)
 def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
@@ -287,7 +288,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     return TemplateResponse(request, "cciw/officers/booking_queue.html", context)
 
 
-@cciw_secretary_or_booking_secretary_required
+@camp_admin_required
 def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     assert request.method == "POST"
     assert "Hx-Request" in request.headers
