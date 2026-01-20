@@ -6,4 +6,11 @@
   <h1>Reference for {{ officer.full_name }} from {{ referee.name }}</h1>
   {% include "cciw/officers/officer_ref_inc.html" %}
 
+  <h2>Related</h2>
+  <ul>
+    <li>
+      <a href="{% url 'cciw-officers-view_application' application_id=referee.application_id %}">Application for {{ officer.full_name }}</a>
+    </li>
+  </ul>
+
 {% endblock %}

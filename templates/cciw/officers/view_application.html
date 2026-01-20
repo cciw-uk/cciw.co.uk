@@ -114,59 +114,49 @@
 
   <h2>References</h2>
 
-  <table>
-    <tr>
-      <th>Referee 1:</th>
-      <td>{{ application.referees.0.name }}</td>
-    </tr>
-    <tr>
-      <th>Capacity known:</th>
-      <td>{{ application.referees.0.capacity_known }}</td>
-    </tr>
-    <tr>
-      <th>Address:</th>
-      <td>{{ application.referees.0.address }}</td>
-    </tr>
-    <tr>
-      <th>Tel:</th>
-      <td>{{ application.referees.0.tel }}</td>
-    </tr>
-    <tr>
-      <th>Mobile:</th>
-      <td>{{ application.referees.0.mobile }}</td>
-    </tr>
-    <tr>
-      <th>Email:</th>
-      <td>{{ application.referees.0.email }}</td>
-    </tr>
-  </table>
+  {% partialdef referee-table %}
+    <table>
+      <tr>
+        <th>Referee {{ referee.number }}:</th>
+        <td>{{ referee.name }}</td>
+        {% if referee.reference_is_received %}
+          <td>
+            <a href="{% url 'cciw-officers-view_reference' reference_id=referee.reference.id %}">View reference from {{ referee.reference.referee_name }}</a>
+          </td>
+        {% endif %}
 
-  <table>
-    <tr>
-      <th>Referee 2:</th>
-      <td>{{ application.referees.1.name }}</td>
-    </tr>
-    <tr>
-      <th>Capacity known:</th>
-      <td>{{ application.referees.1.capacity_known }}</td>
-    </tr>
-    <tr>
-      <th>Address:</th>
-      <td>{{ application.referees.1.address }}</td>
-    </tr>
-    <tr>
-      <th>Tel:</th>
-      <td>{{ application.referees.1.tel }}</td>
-    </tr>
-    <tr>
-      <th>Mobile:</th>
-      <td>{{ application.referees.1.mobile }}</td>
-    </tr>
-    <tr>
-      <th>Email:</th>
-      <td>{{ application.referees.1.email }}</td>
-    </tr>
-  </table>
+      </tr>
+      <tr>
+        <th>Capacity known:</th>
+        <td>{{ referee.capacity_known }}</td>
+      </tr>
+      <tr>
+        <th>Address:</th>
+        <td>{{ referee.address }}</td>
+      </tr>
+      <tr>
+        <th>Tel:</th>
+        <td>{{ referee.tel }}</td>
+      </tr>
+      <tr>
+        <th>Mobile:</th>
+        <td>{{ referee.mobile }}</td>
+      </tr>
+      <tr>
+        <th>Email:</th>
+        <td>{{ referee.email }}</td>
+      </tr>
+    </table>
+  {% endpartialdef %}
+
+  {% with referee=application.referees.0 %}
+    {% partial referee-table %}
+  {% endwith %}
+
+  {% with referee=application.referees.1 %}
+    {% partial referee-table %}
+  {% endwith %}
+
 
   <h2>Declarations</h2>
 
@@ -234,6 +224,21 @@
   <div class="application-statement">
     {{ application.dbs_check_consent|yesno:"YES,NO,-" }}
   </div>
+
+  <h2>Related</h2>
+  <p>References:</p>
+
+  <ul>
+    {% for ref in application.referees %}
+      <li>
+        {% if ref.reference_is_received %}
+          <a href="{% url 'cciw-officers-view_reference' reference_id=ref.reference.id %}">{{ ref.reference.referee_name }}</a>
+        {% else %}
+          {{ ref.name }} (not received yet)
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
 
 
 {% endblock %}
