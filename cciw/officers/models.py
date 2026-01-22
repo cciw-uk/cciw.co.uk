@@ -339,6 +339,15 @@ class ReferenceAction(models.Model):
     def __repr__(self):
         return f"<ReferenceAction {self.action_type} {self.created_at} | {self.referee}>"
 
+    @cached_property
+    def extra_info(self) -> str:
+        """
+        Extra info for the action table
+        """
+        if self.action_type == ReferenceAction.ActionType.EMAIL_TO_REFEREE_BOUNCED:
+            return f"Email: {self.bounced_email}"
+        return ""
+
 
 def empty_reference(reference):
     return reference is None or reference.how_long_known.strip() == ""

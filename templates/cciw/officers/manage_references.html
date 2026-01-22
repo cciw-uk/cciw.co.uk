@@ -267,6 +267,9 @@
                           <td>{{ action.created_at|timesince }} ago</td>
                           <td>{{ action.get_action_type_display }}</td>
                           <td>{% if action.user %}by {{ action.user.username }}{% endif %}</td>
+                          {% if action.extra_info %}
+                            <td>{{ action.extra_info }}</td>
+                          {% endif %}
                         </tr>
                       {% endfor %}
                     </table>
