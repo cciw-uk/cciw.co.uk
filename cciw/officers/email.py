@@ -262,20 +262,22 @@ def send_request_for_dbs_form_email(message, officer, sending_officer):
     ).send()
 
 
-def handle_reference_bounce(bounced_email_address, reply_to, original_message, camp_name):
+def handle_reference_bounce(bounced_email_address: str, reply_to: str, original_message, camp_name):
     admin_emails = [e for name, e in settings.ADMINS]
 
     if reply_to == "":
-        reply_to = admin_emails
+        forward_to = admin_emails
+    else:
+        forward_to = [reply_to]
     camp = None
     if camp_name is not None:
         with contextlib.suppress(ValueError, Camp.DoesNotExist):
             camp_year, camp_slug = camp_name.split("-")
             camp = Camp.objects.get(year=int(camp_year), camp_name__slug=camp_slug)
-    forward_bounce_to([reply_to], bounced_email_address, original_message, camp)
+    forward_bounce_to(forward_to, bounced_email_address, original_message, camp)
 
 
-def forward_with_text(email_addresses, subject, text, original_message):
+def forward_with_text(email_addresses: list[str], subject: str, text: str, original_message):
     if original_message is not None:
         rfcmessage = MIMEBase("message", "rfc822")
         rfcmessage.attach(original_message)
@@ -289,7 +291,7 @@ def forward_with_text(email_addresses, subject, text, original_message):
     forward.send()
 
 
-def forward_bounce_to(email_addresses, bounced_email_address, original_message, camp):
+def forward_bounce_to(email_addresses: list[str], bounced_email_address: str, original_message, camp: Camp | None):
     forward_body = f"""
 A reference request (see attached), sent to {bounced_email_address} was not received.
 This usually means the email address is incorrect.

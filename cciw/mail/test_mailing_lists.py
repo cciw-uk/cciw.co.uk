@@ -485,7 +485,7 @@ Content-Transfer-Encoding: quoted-printable
 """.replace(b"\n", b"\r\n")
 
 
-def make_plain_text_request(path, body, headers):
+def make_plain_text_request(path: str, body: str, headers: dict):
     mangled_headers = {"HTTP_" + name.replace("-", "_").upper(): value for name, value in headers.items()}
     return RequestFactory().generic(
         "POST", path, data=body, content_type="text/plain; charset=UTF-8", **mangled_headers
