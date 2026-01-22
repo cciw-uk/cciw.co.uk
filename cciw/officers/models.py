@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
@@ -146,7 +148,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
         base_manager_name = "objects"
 
     @cached_property
-    def referees(self):
+    def referees(self) -> tuple[Referee, Referee]:
         """A cached version of 2 items that can exist in 'references_set', which
         are created if they don't exist. Read only"""
         return (self._referee(1), self._referee(2))
@@ -280,6 +282,11 @@ class Referee(models.Model):
     def log_details_corrected(self, user, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.DETAILS_CORRECTED, created_at=dt, user=user)
 
+    def log_email_bounced(self, dt: datetime, *, bounced_email: str):
+        self.actions.create(
+            action_type=ReferenceAction.ActionType.EMAIL_TO_REFEREE_BOUNCED, created_at=dt, bounced_email=bounced_email
+        )
+
     class Meta:
         ordering = (
             "application__saved_on",
@@ -297,11 +304,17 @@ class ReferenceAction(models.Model):
         FILLED_IN = "filledin", "Reference filled in manually"
         NAG = "nag", "Applicant nagged"
         DETAILS_CORRECTED = "detailscorrected", "Referee details corrected"
+        EMAIL_TO_REFEREE_BOUNCED = "requestbounced", "Email to referee bounced"
 
     referee = models.ForeignKey(Referee, on_delete=models.CASCADE, related_name="actions")
     created_at = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ActionType.choices)
+
+    # user is user who triggered action, this can be null.
     user = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+
+    # For EMAIL_TO_REFEREE_BOUNCED only:
+    bounced_email = models.CharField(default="", blank="")
 
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this

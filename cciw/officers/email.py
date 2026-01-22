@@ -2,12 +2,12 @@
 import contextlib
 import logging
 from collections.abc import Callable, Sequence
-from email.mime.base import MIMEBase
 from urllib.parse import quote as urlquote
 
 from django.conf import settings
 from django.core import signing
 from django.core.mail import EmailMessage, send_mail
+from django.forms.utils import timezone
 from django.urls import reverse
 from django.utils.crypto import salted_hmac
 
@@ -263,7 +263,7 @@ def send_request_for_dbs_form_email(message: str, officer: User, sending_officer
     ).send()
 
 
-def handle_reference_bounce(bounced_email_address: str, reply_to: str, original_message, camp_name: str):
+def handle_reference_bounce(*, bounced_email_address: str, reply_to: str, camp_name: str, referee_id: str):
     admin_emails = [e for name, e in settings.ADMINS]
 
     if reply_to == "":
@@ -271,28 +271,27 @@ def handle_reference_bounce(bounced_email_address: str, reply_to: str, original_
     else:
         forward_to = [reply_to]
     camp = None
+    referee: Referee | None = None
     if camp_name is not None:
         with contextlib.suppress(ValueError, Camp.DoesNotExist):
             camp_year, camp_slug = camp_name.split("-")
             camp = Camp.objects.get(year=int(camp_year), camp_name__slug=camp_slug)
-    forward_bounce_to(forward_to, bounced_email_address, original_message, camp)
+
+    forward_bounce_to(email_addresses=forward_to, bounced_email_address=bounced_email_address, camp=camp)
+
+    if referee_id:
+        with contextlib.suppress(ValueError, Referee.DoesNotExist):
+            referee = Referee.objects.get(id=int(referee_id))
+        if referee is not None:
+            referee.log_email_bounced(timezone.now(), bounced_email=bounced_email_address)
 
 
-def forward_with_text(email_addresses: list[str], subject: str, text: str, original_message):
-    if original_message is not None:
-        rfcmessage = MIMEBase("message", "rfc822")
-        rfcmessage.attach(original_message)
-        attachments = [rfcmessage]
-    else:
-        attachments = None
-
-    forward = EmailMessage(
-        subject=subject, body=text, from_email=settings.DEFAULT_FROM_EMAIL, to=email_addresses, attachments=attachments
-    )
+def forward_with_text(*, email_addresses: list[str], subject: str, message: str):
+    forward = EmailMessage(subject=subject, body=message, from_email=settings.DEFAULT_FROM_EMAIL, to=email_addresses)
     forward.send()
 
 
-def forward_bounce_to(email_addresses: list[str], bounced_email_address: str, original_message, camp: Camp | None):
+def forward_bounce_to(*, email_addresses: list[str], bounced_email_address: str, camp: Camp | None):
     forward_body = f"""
 A reference request (see attached), sent to {bounced_email_address} was not received.
 This usually means the email address is incorrect.
@@ -317,5 +316,7 @@ Use the following link to manage this reference:
         "Sending 'Reference request bounced' for email %s to addresses %s", bounced_email_address, email_addresses
     )
     forward_with_text(
-        email_addresses, f"[CCIW] Reference request to {bounced_email_address} bounced.", forward_body, original_message
+        email_addresses=email_addresses,
+        subject=f"[CCIW] Reference request to {bounced_email_address} bounced.",
+        message=forward_body,
     )

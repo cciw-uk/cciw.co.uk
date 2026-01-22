@@ -7,7 +7,7 @@ from requests.structures import CaseInsensitiveDict
 from cciw.aws import confirm_sns_subscriptions, ensure_from_aws_sns
 from cciw.officers.email import X_REFERENCE_REQUEST, handle_reference_bounce
 
-from . import X_CCIW_ACTION, X_CCIW_CAMP
+from . import X_CCIW_ACTION, X_CCIW_CAMP, X_CCIW_REFEREE
 from .lists import handle_mail_from_s3_async
 
 
@@ -38,6 +38,12 @@ def ses_bounce_notification(request):
 
     if cciw_action == X_REFERENCE_REQUEST:
         camp_name = message_headers.get(X_CCIW_CAMP, "")
-        handle_reference_bounce(recipient, reply_to, None, camp_name)
+        referee_id = message_headers.get(X_CCIW_REFEREE, "")
+        handle_reference_bounce(
+            bounced_email_address=recipient,
+            reply_to=reply_to,
+            camp_name=camp_name,
+            referee_id=referee_id,
+        )
 
     return HttpResponse("OK!")

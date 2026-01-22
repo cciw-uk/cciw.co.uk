@@ -18,7 +18,7 @@ from cciw.utils.tests.factories import Auto
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 
-def create_camp_leader_officer(year=Auto, future=Auto, officer_role: str = Auto):
+def create_camp_with_leader_and_officer(year=Auto, future=Auto, officer_role: str = Auto):
     """
     Creates a camp with a leader and officer for testing reference requests
     """
@@ -35,7 +35,7 @@ def create_camp_leader_officer(year=Auto, future=Auto, officer_role: str = Auto)
 class ManageReferencesPageWT(WebTestBase):
     # Basic tests that can be done with WebTest
     def test_page_ok(self):
-        camp, leader, officer = create_camp_leader_officer()
+        camp, leader, officer = create_camp_with_leader_and_officer()
         application = factories.create_application(officer=officer, year=camp.year)
         factories.create_complete_reference(application.referees[0])  # Just one
 
@@ -59,7 +59,7 @@ class ManageReferencesPageWT(WebTestBase):
         self.assertTextAbsent("For camp {camp.year}")
 
     def test_page_officers_denied(self):
-        camp, leader, officer = create_camp_leader_officer()
+        camp, leader, officer = create_camp_with_leader_and_officer()
         self.officer_login(officer)
         self.get_literal_url(
             reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id)), expect_errors=[403]
@@ -76,7 +76,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         self.wait_until(lambda _: not self.is_element_displayed("dialog"))
 
     def start_manage_reference(self, referee_email: str = Auto) -> tuple[Camp, User, User, Referee]:
-        camp, leader, officer = create_camp_leader_officer(future=True)
+        camp, leader, officer = create_camp_with_leader_and_officer(future=True)
         app = factories.create_application(officer=officer, year=camp.year, referee1_email=referee_email)
         referee = app.referees[0]
         return camp, leader, officer, referee
@@ -159,7 +159,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         # First year setup
         with travel(date(2010, 1, 1)):
-            camp1, leader, officer = create_camp_leader_officer(year=2010)
+            camp1, leader, officer = create_camp_with_leader_and_officer(year=2010)
             app1 = factories.create_application(officer=officer)
             factories.create_complete_reference(app1.referees[0])
         # Second year setup
@@ -186,7 +186,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         # First year setup
         with travel(date(2010, 1, 1)):
-            camp, leader, officer = create_camp_leader_officer(year=2010)
+            camp, leader, officer = create_camp_with_leader_and_officer(year=2010)
         with travel(date(2010, 2, 1)):
             app1 = factories.create_application(
                 officer=officer,
@@ -309,7 +309,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         self.assertTextPresent(f"{officer.full_name} has requested we collect a reference from you")
 
     def test_role_name_present(self):
-        camp, leader, officer = create_camp_leader_officer(officer_role="Tent Officer")
+        camp, leader, officer = create_camp_with_leader_and_officer(officer_role="Tent Officer")
         application = factories.create_application(officer=officer, year=camp.year, referee1_name="Mr Referee Name")
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
         self.get_literal_url(url)
@@ -332,7 +332,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         Check that a reference can be created using the page,
         and that the name on the application form is updated.
         """
-        camp, leader, officer = create_camp_leader_officer()
+        camp, leader, officer = create_camp_with_leader_and_officer()
         application = factories.create_application(officer=officer, year=camp.year, referee1_name="Mr Referee Name")
         assert not application.referees[0].reference_is_received()
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
