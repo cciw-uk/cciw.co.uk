@@ -28,3 +28,11 @@ def cciw_all():
     # To get our custom email backend to be used, we have to patch settings
     # at this point, due to how Django's test runner also sets this value:
     settings.EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
+
+
+@pytest.fixture
+@pytest.mark.django_db
+def cciw_require_auth_roles():
+    from cciw.accounts.models import setup_auth_roles
+
+    setup_auth_roles()
