@@ -1,7 +1,7 @@
 # ruff: noqa: UP032
 import contextlib
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from email.mime.base import MIMEBase
 from urllib.parse import quote as urlquote
 
@@ -14,7 +14,7 @@ from django.utils.crypto import salted_hmac
 from cciw.accounts.models import User
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
-from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP
+from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP, X_CCIW_REFEREE
 from cciw.officers.applications import (
     application_rtf_filename,
     application_to_rtf,
@@ -22,7 +22,7 @@ from cciw.officers.applications import (
     camps_for_application,
 )
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
-from cciw.officers.models import Application
+from cciw.officers.models import Application, Referee
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +185,7 @@ def make_ref_form_url(referee_id: int, prev_ref_id: int | None):
     )
 
 
-def send_reference_request_email(message, referee, sending_officer, camp):
+def send_reference_request_email(message: str, referee: Referee, sending_officer: User, camp: Camp):
     officer = referee.application.officer
     EmailMessage(
         subject=f"[CCIW] Reference for {officer.full_name}",
@@ -196,6 +196,7 @@ def send_reference_request_email(message, referee, sending_officer, camp):
             "Reply-To": sending_officer.email,
             X_CCIW_CAMP: str(camp.url_id),
             X_CCIW_ACTION: X_REFERENCE_REQUEST,
+            X_CCIW_REFEREE: str(referee.id),
         },
     ).send()
 
@@ -225,7 +226,7 @@ CCiW website for officer {officer.full_name}.
         send_mail(subject, body, settings.SERVER_EMAIL, leader_emails, fail_silently=False)
 
 
-def send_nag_by_officer(message, officer, referee, sending_officer):
+def send_nag_by_officer(message: str, officer: User, referee: Referee, sending_officer: User):
     EmailMessage(
         subject=f"[CCIW] Need reference from {referee.name}",
         body=message,
@@ -235,7 +236,7 @@ def send_nag_by_officer(message, officer, referee, sending_officer):
     ).send()
 
 
-def send_dbs_consent_alert_leaders_email(message, officer, camps):
+def send_dbs_consent_alert_leaders_email(message: str, officer: User, camps: Sequence[Camp]):
     # If more than one camp involved, we deliberately put all camp leaders
     # together on a single email, so that they can see that more than one camp
     # is involved
@@ -252,7 +253,7 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
         )
 
 
-def send_request_for_dbs_form_email(message, officer, sending_officer):
+def send_request_for_dbs_form_email(message: str, officer: User, sending_officer: User):
     EmailMessage(
         subject=f"[CCIW] DBS form needed for {officer.full_name}",
         body=message,
@@ -262,7 +263,7 @@ def send_request_for_dbs_form_email(message, officer, sending_officer):
     ).send()
 
 
-def handle_reference_bounce(bounced_email_address: str, reply_to: str, original_message, camp_name):
+def handle_reference_bounce(bounced_email_address: str, reply_to: str, original_message, camp_name: str):
     admin_emails = [e for name, e in settings.ADMINS]
 
     if reply_to == "":

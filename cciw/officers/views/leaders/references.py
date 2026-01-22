@@ -167,7 +167,7 @@ def _get_previous_reference(referee: Referee, prev_ref_id: int) -> tuple[bool, R
 @for_htmx(use_block_from_params=True)
 def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
     camp = get_camp_or_404(camp_id)
-    referee = get_object_or_404(Referee.objects.filter(id=referee_id))
+    referee: Referee = get_object_or_404(Referee.objects.filter(id=referee_id))
     app = referee.application
 
     context = {}
