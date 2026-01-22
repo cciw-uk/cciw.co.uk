@@ -458,7 +458,7 @@ class QueuedMailTestMailBackend(CheckSubjectMixin, BaseEmailBackend):
 
 def _is_forwarded_message(raw_message):
     message = email.message_from_bytes(raw_message.message().as_bytes(), policy=policy.SMTP)
-    return "<noreply@cciw.co.uk>" in message["From"]
+    return "X-Original-From" in message
 
 
 def make_message(
@@ -543,3 +543,27 @@ def make_plain_text_request(path, body, headers):
     return RequestFactory().generic(
         "POST", path, data=body, content_type="text/plain; charset=UTF-8", **mangled_headers
     )
+
+
+# Check that our TestMailBackend stuff is actually working
+@pytest.mark.django_db
+def test_TestMailBackend_check_messages():
+    with pytest.raises(EmailSubjectAssertionError):
+        mail.send_mail(
+            subject="This doesn't start with the right prefix",
+            message="test",
+            from_email="f@example.com",
+            recipient_list=["to@example.com"],
+        )
+
+
+# And in a class:
+class TestTestMailBackend:
+    def test_check_messages(self):
+        with pytest.raises(EmailSubjectAssertionError):
+            mail.send_mail(
+                subject="This doesn't start with the right prefix",
+                message="test",
+                from_email="f@example.com",
+                recipient_list=["to@example.com"],
+            )
