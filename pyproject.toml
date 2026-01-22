@@ -110,7 +110,6 @@ dev = [
     "pytest-sugar>=1.0.0",
     "locust>=2.39.1",
     "ruff>=0.14.9",
-    "freezegun>=1.5.5",
     "ruff>=0.14.9",
 ]
 

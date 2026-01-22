@@ -317,7 +317,6 @@ dev = [
     { name = "django-find-view", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-functest", marker = "platform_python_implementation != 'PyPy'" },
     { name = "faker", marker = "platform_python_implementation != 'PyPy'" },
-    { name = "freezegun", marker = "platform_python_implementation != 'PyPy'" },
     { name = "hypothesis", marker = "platform_python_implementation != 'PyPy'" },
     { name = "ipdb", marker = "platform_python_implementation != 'PyPy'" },
     { name = "ipython", marker = "platform_python_implementation != 'PyPy'" },
@@ -399,7 +398,6 @@ dev = [
     { name = "django-find-view", specifier = ">=0.1.0" },
     { name = "django-functest", specifier = "==1.6.2" },
     { name = "faker", specifier = ">=33.0.0" },
-    { name = "freezegun", specifier = ">=1.5.5" },
     { name = "hypothesis", specifier = ">=6.54.6" },
     { name = "ipdb", specifier = ">=0.13.13" },
     { name = "ipython", specifier = ">=8.5.0" },
@@ -1072,18 +1070,6 @@ woff = [
     { name = "brotli", marker = "platform_python_implementation == 'CPython'" },
     { name = "brotlicffi", marker = "platform_python_implementation != 'CPython' and platform_python_implementation != 'PyPy'" },
     { name = "zopfli", marker = "platform_python_implementation != 'PyPy'" },
-]
-
-[[package]]
-name = "freezegun"
-version = "1.5.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "python-dateutil", marker = "platform_python_implementation != 'PyPy'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/95/dd/23e2f4e357f8fd3bdff613c1fe4466d21bfb00a6177f238079b17f7b1c84/freezegun-1.5.5.tar.gz", hash = "sha256:ac7742a6cc6c25a2c35e9292dfd554b897b517d2dec26891a2e8debf205cb94a", size = 35914, upload-time = "2025-08-09T10:39:08.338Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/2e/b41d8a1a917d6581fc27a35d05561037b048e47df50f27f8ac9c7e27a710/freezegun-1.5.5-py3-none-any.whl", hash = "sha256:cd557f4a75cf074e84bc374249b9dd491eaeacd61376b9eb3c423282211619d2", size = 19266, upload-time = "2025-08-09T10:39:06.636Z" },
 ]
 
 [[package]]

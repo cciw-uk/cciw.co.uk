@@ -9,6 +9,7 @@ from unittest import mock
 
 import openpyxl
 import pytest
+import time_machine
 import vcr
 from django.conf import settings
 from django.core import mail, signing
@@ -18,7 +19,6 @@ from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django_functest import FuncBaseMixin, Upload
-from freezegun import freeze_time
 from hypothesis import example, given
 from hypothesis import strategies as st
 
@@ -134,27 +134,16 @@ class CreateBookingWebMixin(BookingLogInMixin):
     # For other, model level tests, we prefer explicit use of factories
     # for the things under test.
 
+    # For most tests it is easier to assume a fixed date for booking,
+    # before the summer. Camp dates are then created relative to that.
+    today = date(2026, 2, 1)
+
     def setUp(self):
         super().setUp()
-        # We have to control freeze_time usage here for this mixin,
-        # to avoid some issues if the monkey patching runs too early.
-        # (specifically:
-        #   fontTools/misc/loggingTools.py:292: in __init__
-        #    TypeError: fake_perf_counter() takes 0 positional arguments but 1 was given)
 
-        import cciw.officers.views  # noqa - trigger some imports
-
-        # For most tests it is easier to assume a fixed date for booking,
-        # before the summer. Camp dates are then created relative to that.
-        freezer = freeze_time("2026-02-01")
-        freezer.start()
-        self.freezer = freezer
-        self.today = date.today()
+        # create_camps() must run after time traveller started
+        assert self.traveller is not None
         self.create_camps()
-
-    def tearDown(self):
-        super().tearDown()
-        self.freezer.stop()
 
     camp_minimum_age = 11
     camp_maximum_age = 17
@@ -424,18 +413,18 @@ def test_BookingAccount_balance_due(django_assert_num_queries):
                 assert account.get_balance(today=today, config_fetcher=config_fetcher) == expected
 
     # Data entry
-    with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+    with time_machine.travel(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         booking = factories.create_booking(camp=camp)
         booking_account_id: int = booking.account.id
         assert_account_balance(0)
 
     # "Book" button
-    with freeze_time(year_config.bookings_open_for_booking_on):
+    with time_machine.travel(year_config.bookings_open_for_booking_on):
         booking.add_to_queue(by_user=booking.account)
         assert_account_balance(0)
 
     # Confirmed by booking secretary
-    with freeze_time(year_config.bookings_initial_notifications_on):
+    with time_machine.travel(year_config.bookings_initial_notifications_on):
         allocate_bookings_now([booking])
         assert_account_balance(0)
 
@@ -444,7 +433,7 @@ def test_BookingAccount_balance_due(django_assert_num_queries):
         assert booking.state == BookingState.BOOKED
 
     # Before full payment due:
-    with freeze_time(year_config.payments_due_on - timedelta(days=1)):
+    with time_machine.travel(year_config.payments_due_on - timedelta(days=1)):
         # balance should be zero
         assert_account_balance(0)
 
@@ -454,7 +443,7 @@ def test_BookingAccount_balance_due(django_assert_num_queries):
         # Test some model methods:
         assert len(booking.account.bookings.payable()) == 1
 
-    with freeze_time(year_config.payments_due_on):
+    with time_machine.travel(year_config.payments_due_on):
         assert_account_balance(100)
         assert_account_balance(100, full=True)
 
@@ -2778,22 +2767,22 @@ def create_year_config_for_queue_tests(year: int = 2026) -> YearConfig:
 @pytest.mark.django_db
 def test_rank_queue_booking():
     year_config = create_year_config_for_queue_tests(year=2026)
-    with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+    with time_machine.travel(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         b1 = factories.create_booking(first_name="Amy")
         b2 = factories.create_booking(first_name="Bob")
         b3 = factories.create_booking(first_name="Carla")
         b4 = factories.create_booking(first_name="Dave")
         b5 = factories.create_booking(first_name="Ed")
-    with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=1)):
+    with time_machine.travel(year_config.bookings_open_for_booking_on + timedelta(days=1)):
         b1.add_to_queue(by_user=b1.account)
-    with freeze_time(year_config.bookings_open_for_booking_on + timedelta(days=2)):
+    with time_machine.travel(year_config.bookings_open_for_booking_on + timedelta(days=2)):
         b2.add_to_queue(by_user=b2.account)
         assert date.today() < year_config.bookings_close_for_initial_period_on
-    with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
+    with time_machine.travel(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
         assert date.today() > year_config.bookings_close_for_initial_period_on
         b3.add_to_queue(by_user=b3.account)
 
-    with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=2)):
+    with time_machine.travel(year_config.bookings_close_for_initial_period_on + timedelta(days=2)):
         b4.add_to_queue(by_user=b4.account)
 
     ranked_bookings = rank_queue_bookings(camp=b1.camp, year_config=year_config)
@@ -2829,12 +2818,12 @@ def test_rank_queue_booking_same_camper_multiple_camps():
     year_config = create_year_config_for_queue_tests(year=year)
     camp_1 = camps_factories.create_camp(year=year)
     camp_2 = camps_factories.create_camp(year=year)
-    with freeze_time(year_config.bookings_open_for_entry_on + timedelta(days=1)):
+    with time_machine.travel(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         b1 = factories.create_booking(camp=camp_1, first_name="Amy")
         b2 = factories.create_booking(camp=camp_2, first_name=b1.first_name, last_name=b1.last_name, account=b1.account)
         b1.add_to_queue(by_user=b1.account)
         b2.add_to_queue(by_user=b2.account)
-    with freeze_time(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
+    with time_machine.travel(year_config.bookings_close_for_initial_period_on + timedelta(days=1)):
         b3 = factories.create_booking(camp=camp_2, first_name="Bob")
         assert date.today() > year_config.bookings_close_for_initial_period_on
         b3.add_to_queue(by_user=b3.account)
@@ -2870,16 +2859,16 @@ def test_rank_queue_booking_same_camper_multiple_camps():
 
 @pytest.mark.django_db
 def test_Booking_withdraw_from_queue_and_add_again():
-    with freeze_time("2026-01-01"):
+    with time_machine.travel("2026-01-01"):
         booking = factories.create_booking()
         booking.add_to_queue(by_user=booking.account)
         booking.refresh_from_db()
         queue_entry_id = booking.queue_entry.id
-    with freeze_time("2026-01-02"):
+    with time_machine.travel("2026-01-02"):
         booking.withdraw_from_queue(by_user=booking.account)
         booking.refresh_from_db()
         assert not booking.queue_entry.is_active
-    with freeze_time("2026-01-03"):
+    with time_machine.travel("2026-01-03"):
         booking.add_to_queue(by_user=booking.account)
         booking.refresh_from_db()
         queue_entry_id2 = booking.queue_entry.id
@@ -3123,7 +3112,7 @@ def test_allocate_places(mailoutbox):
         # in ranking based on the time
         start = year_config.bookings_close_for_initial_period_on + timedelta(days=1)
         start_dt = datetime(start.year, start.month, start.day)
-        with freeze_time(start_dt + timedelta(hours=1 + idx)):
+        with time_machine.travel(start_dt + timedelta(hours=1 + idx)):
             booking.add_to_queue(by_user=booking.account)
 
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
@@ -3236,7 +3225,9 @@ def test_allocate_places_for_waiting_list(mailoutbox, client: Client, action: Li
         assert booking.shelved
 
     elif action == "ignore":
-        with freeze_time(timezone.now() + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER + timedelta(hours=1)):
+        with time_machine.travel(
+            timezone.now() + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER + timedelta(hours=1)
+        ):
             expire_bookings()
 
             booking.refresh_from_db()
