@@ -22,8 +22,7 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 
 # Backups once a day
-35      6 * * * %(PROJECT_USER)s  $PYTHON %(SRC_ROOT)s/scripts/backup_s3.py
-
+35      6 * * * %(PROJECT_USER)s  $PYTHON $DJANGO_MANAGE backup_db_to_s3
 
 # Renew letsencrypt
 51         4    * * *  root          letsencrypt renew --agree-tos

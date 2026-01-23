@@ -1,28 +1,31 @@
 #!/usr/bin/env python
 
-import json
 import os
-import os.path
 import subprocess
 from datetime import datetime
 from pathlib import Path
 
 import boto3
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
-THISDIR = Path(os.path.dirname(os.path.abspath(__file__)))
-PROJECTDIR = THISDIR.parent
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        backup_db()
 
 
-def main():
-    secrets = json.load(open(PROJECTDIR / "config" / "secrets.json"))
+def backup_db():
+    SECRETS = settings.SECRETS
 
     # Database credentials
     DB_HOST = "localhost"
 
-    DB_NAME = secrets["PRODUCTION_DB_NAME"]
-    DB_USER = secrets["PRODUCTION_DB_USER"]
-    DB_PASSWORD = secrets["PRODUCTION_DB_PASSWORD"]
-    AWS_BACKUPS = secrets["AWS"]["BACKUPS"]
+    DB_NAME = SECRETS["PRODUCTION_DB_NAME"]
+    DB_USER = SECRETS["PRODUCTION_DB_USER"]
+    DB_PASSWORD = SECRETS["PRODUCTION_DB_PASSWORD"]
+
+    AWS_BACKUPS = SECRETS["AWS"]["BACKUPS"]
 
     session = boto3.Session(
         aws_access_key_id=AWS_BACKUPS["ACCESS_KEY_ID"],
@@ -57,7 +60,3 @@ def main():
     s3.Bucket(AWS_BACKUPS["BUCKET_NAME"]).put_object(Key="db/" + filename, Body=open(full_path, "rb"))
 
     full_path.unlink()
-
-
-if __name__ == "__main__":
-    main()
