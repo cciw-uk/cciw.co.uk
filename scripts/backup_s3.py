@@ -5,14 +5,16 @@ import os
 import os.path
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 import boto3
 
-THISDIR = os.path.dirname(os.path.abspath(__file__))
+THISDIR = Path(os.path.dirname(os.path.abspath(__file__)))
+PROJECTDIR = THISDIR.parent
 
 
 def main():
-    secrets = json.load(open(os.path.join(THISDIR, "config", "secrets.json")))
+    secrets = json.load(open(PROJECTDIR / "config" / "secrets.json"))
 
     # Database credentials
     DB_HOST = "localhost"
@@ -32,9 +34,9 @@ def main():
     ENV["PGPASSWORD"] = DB_PASSWORD
     ENV["PGHOST"] = DB_HOST
 
-    OUTPUT_DIR = "/tmp"
+    OUTPUT_DIR = Path("/tmp")
     filename = f"db-cciw.django.{datetime.now().strftime('%Y-%m-%d_%H.%M.%S')}.pgdump"
-    full_path = os.path.join(OUTPUT_DIR, filename)
+    full_path = OUTPUT_DIR / filename
 
     cmd = [
         "pg_dump",
@@ -45,7 +47,7 @@ def main():
         DB_NAME,
         "-O",
         "-f",
-        full_path,
+        str(full_path),
     ]
     print(" ".join(cmd))
     subprocess.check_call(cmd, env=ENV)
@@ -54,7 +56,7 @@ def main():
     print("Uploading to S3")
     s3.Bucket(AWS_BACKUPS["BUCKET_NAME"]).put_object(Key="db/" + filename, Body=open(full_path, "rb"))
 
-    os.unlink(full_path)
+    full_path.unlink()
 
 
 if __name__ == "__main__":
