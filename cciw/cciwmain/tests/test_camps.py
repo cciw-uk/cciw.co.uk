@@ -1,3 +1,4 @@
+import pytest
 from django.urls import reverse
 
 from cciw.cciwmain.models import Camp
@@ -7,31 +8,33 @@ from cciw.utils.tests.base import TestBase
 
 from . import factories
 
+pytestmark = pytest.mark.django_db
 
-class CampModel(TestBase):
-    def test_names(self):
-        camp = factories.create_camp(
-            year=2013,
-            camp_name="Blue",
-            leaders=[
-                factories.create_person(name="John"),
-                factories.create_person(name="Mary"),
-            ],
-            chaplain=factories.create_person(name="Gregory"),
-        )
-        assert str(camp) == "2013-blue (John, Mary, Gregory)"
-        assert camp.name == "Blue"
-        assert camp.slug_name == "blue"
-        assert str(camp.url_id) == "2013-blue"
 
-    def test_previous_and_next(self):
-        camp = factories.create_camp(year=2013, camp_name="Blue")
-        camp_2 = factories.create_camp(year=2014, camp_name="Blue")
+def test_camp_names():
+    camp = factories.create_camp(
+        year=2013,
+        camp_name="Blue",
+        leaders=[
+            factories.create_person(name="John"),
+            factories.create_person(name="Mary"),
+        ],
+        chaplain=factories.create_person(name="Gregory"),
+    )
+    assert str(camp) == "2013-blue (John, Mary, Gregory)"
+    assert camp.name == "Blue"
+    assert camp.slug_name == "blue"
+    assert str(camp.url_id) == "2013-blue"
 
-        assert camp.next_camp == camp_2
-        assert camp.previous_camp is None
-        assert camp_2.next_camp is None
-        assert camp_2.previous_camp == camp
+
+def test_camp_previous_and_next():
+    camp = factories.create_camp(year=2013, camp_name="Blue")
+    camp_2 = factories.create_camp(year=2014, camp_name="Blue")
+
+    assert camp.next_camp == camp_2
+    assert camp.previous_camp is None
+    assert camp_2.next_camp is None
+    assert camp_2.previous_camp == camp
 
 
 class ThisyearPage(TestBase):

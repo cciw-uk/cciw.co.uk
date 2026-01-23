@@ -15,61 +15,67 @@ from cciw.accounts.utils import merge_users
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.models import add_officer_to_camp
 from cciw.officers.tests import factories
-from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
 
+pytestmark = pytest.mark.django_db
 
-class TestUserModel(TestBase):
-    def test_user_in_group_true(self):
-        booking_secretary = factories.create_booking_secretary()
-        with self.assertNumQueries(1):
-            assert user_has_role(booking_secretary, [BOOKING_SECRETARY_ROLE_NAME])
 
-    def test_user_in_group_true_for_one_item(self):
-        booking_secretary = factories.create_booking_secretary()
-        with self.assertNumQueries(1):
-            assert user_has_role(booking_secretary, CAMP_MANAGER_ROLES)
+def test_User_in_group_true(django_assert_num_queries):
+    booking_secretary = factories.create_booking_secretary()
+    with django_assert_num_queries(num=1):
+        assert user_has_role(booking_secretary, [BOOKING_SECRETARY_ROLE_NAME])
 
-    def test_user_in_group_false(self):
-        officer_user = factories.create_officer()
-        with self.assertNumQueries(1):
-            assert not user_has_role(officer_user, [BOOKING_SECRETARY_ROLE_NAME])
 
-    def test_user_in_group_multiple_performance(self):
-        officer_user = factories.create_officer()
-        with self.assertNumQueries(1):
-            # 1 query
-            assert not user_has_role(officer_user, [BOOKING_SECRETARY_ROLE_NAME])
-        with self.assertNumQueries(0):
-            # 0 query
-            assert not user_has_role(officer_user, [SECRETARY_ROLE_NAME])
-            assert not officer_user.is_booking_secretary
+def test_User_in_group_true_for_one_item(django_assert_num_queries):
+    booking_secretary = factories.create_booking_secretary()
+    with django_assert_num_queries(num=1):
+        assert user_has_role(booking_secretary, CAMP_MANAGER_ROLES)
 
-    def test_user_role_performance(self):
-        officer_user = factories.create_officer()
-        with self.assertNumQueries(1):
-            assert not officer_user.is_booking_secretary
 
-        # Delete the cache established by 'cached_property;
-        del officer_user.is_booking_secretary
-        # and it should still require zero queries, because it uses
-        # user_has_role
-        with self.assertNumQueries(0):
-            assert not officer_user.is_booking_secretary
+def test_User_in_group_false(django_assert_num_queries):
+    officer_user = factories.create_officer()
+    with django_assert_num_queries(num=1):
+        assert not user_has_role(officer_user, [BOOKING_SECRETARY_ROLE_NAME])
 
-    def test_user_role_performance_2(self):
-        officer_user = factories.create_officer()
-        with self.assertNumQueries(1):
-            # Testing multiple different roles requires just one query
-            assert not officer_user.is_booking_secretary
-            assert not officer_user.is_committee_member
 
-    def test_has_perm(self):
-        # Depends on static_roles.yaml
-        booking_secretary = factories.create_booking_secretary()
-        officer_user = factories.create_officer()
-        assert booking_secretary.has_perm("bookings.add_booking")
-        assert not officer_user.has_perm("bookings.add_booking")
+def test_User_in_group_multiple_performance(django_assert_num_queries):
+    officer_user = factories.create_officer()
+    with django_assert_num_queries(num=1):
+        # 1 query
+        assert not user_has_role(officer_user, [BOOKING_SECRETARY_ROLE_NAME])
+    with django_assert_num_queries(num=0):
+        # 0 query
+        assert not user_has_role(officer_user, [SECRETARY_ROLE_NAME])
+        assert not officer_user.is_booking_secretary
+
+
+def test_User_role_performance(django_assert_num_queries):
+    officer_user = factories.create_officer()
+    with django_assert_num_queries(num=1):
+        assert not officer_user.is_booking_secretary
+
+    # Delete the cache established by 'cached_property;
+    del officer_user.is_booking_secretary
+    # and it should still require zero queries, because it uses
+    # user_has_role
+    with django_assert_num_queries(num=0):
+        assert not officer_user.is_booking_secretary
+
+
+def test_User_role_performance_2(django_assert_num_queries):
+    officer_user = factories.create_officer()
+    with django_assert_num_queries(num=1):
+        # Testing multiple different roles requires just one query
+        assert not officer_user.is_booking_secretary
+        assert not officer_user.is_committee_member
+
+
+def test_User_has_perm():
+    # Depends on static_roles.yaml
+    booking_secretary = factories.create_booking_secretary()
+    officer_user = factories.create_officer()
+    assert booking_secretary.has_perm("bookings.add_booking")
+    assert not officer_user.has_perm("bookings.add_booking")
 
 
 class PwnedPasswordPatcherMixin:
@@ -216,8 +222,7 @@ class TestSetPassword(PwnedPasswordPatcherMixin, WebTestBase):
         assert not user.password_validation_needs_checking()
 
 
-@pytest.mark.django_db
-def test_merge_user():
+def test_merge_users():
     user1 = factories.create_officer()
     user2 = factories.create_officer()
     camp = camp_factories.create_camp(leader=user1)

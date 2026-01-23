@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+import pytest
 from django.core import mail
 
 from cciw.accounts.models import User
@@ -9,29 +10,28 @@ from cciw.officers.models import Application, Qualification
 from cciw.officers.templatetags.rtf import unicode_to_rtf
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RequireQualificationTypesMixin
-from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
 
 
-class ApplicationModel(TestBase):
-    def test_referees(self):
-        app1 = factories.create_application()
-        app2 = factories.create_application()
-        app3 = factories.create_application()
+@pytest.mark.django_db
+def test_Application_referees():
+    app1 = factories.create_application()
+    app2 = factories.create_application()
+    app3 = factories.create_application()
 
-        assert app1.referee_set.count() == 2
-        app3.referee_set.all().delete()
-        assert app3.referee_set.count() == 0
+    assert app1.referee_set.count() == 2
+    app3.referee_set.all().delete()
+    assert app3.referee_set.count() == 0
 
-        # Test that 'referees' property works with and without prefetch,
-        # and with no referees existing
-        app1 = Application.objects.prefetch_related("referee_set").get(id=app1.id)
-        app2 = Application.objects.get(id=app2.id)
-        app3 = Application.objects.get(id=app3.id)
+    # Test that 'referees' property works with and without prefetch,
+    # and with no referees existing
+    app1 = Application.objects.prefetch_related("referee_set").get(id=app1.id)
+    app2 = Application.objects.get(id=app2.id)
+    app3 = Application.objects.get(id=app3.id)
 
-        for app in [app1, app2, app3]:
-            assert app.referees[0] == app.referee_set.get(referee_number=1)
-            assert app.referees[1] == app.referee_set.get(referee_number=2)
+    for app in [app1, app2, app3]:
+        assert app.referees[0] == app.referee_set.get(referee_number=1)
+        assert app.referees[1] == app.referee_set.get(referee_number=2)
 
 
 class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
@@ -178,56 +178,56 @@ class PersonalApplicationView(WebTestBase):
         assert ftype == "text/rtf"
 
 
-class ApplicationUtils(TestBase):
-    def test_saved_on_logic(self):
-        # Setup::
-        # * two camps, different years, but within 12 months of each
-        #   other.
-        # * An application form that is submitted just before the first.
-        #   This should not appear in the following years applications.
-        # * An application form for the second year, that is submitted
-        #   just after the last camp for the first year
+@pytest.mark.django_db
+def test_Application_saved_on_logic():
+    # Setup:
+    # * two camps, different years, but within 12 months of each
+    #   other.
+    # * An application form that is submitted just before the first.
+    #   This should not appear in the following years applications.
+    # * An application form for the second year, that is submitted
+    #   just after the last camp for the first year
 
-        # We have to use date.today(), because this is used by
-        # thisyears_applications.
+    # We have to use date.today(), because this is used by
+    # thisyears_applications.
 
-        future_camp_start = date(date.today().year + 1, 8, 1)
-        past_camp_start = future_camp_start - timedelta(30 * 11)
+    future_camp_start = date(date.today().year + 1, 8, 1)
+    past_camp_start = future_camp_start - timedelta(30 * 11)
 
-        c1 = camps_factories.create_camp(
-            year=past_camp_start.year,
-            start_date=past_camp_start,
-        )
-        c2 = camps_factories.create_camp(
-            year=future_camp_start.year,
-            start_date=future_camp_start,
-        )
-        u = User.objects.create(username="test")
-        u.invitations.create(camp=c1)
-        u.invitations.create(camp=c2)
+    c1 = camps_factories.create_camp(
+        year=past_camp_start.year,
+        start_date=past_camp_start,
+    )
+    c2 = camps_factories.create_camp(
+        year=future_camp_start.year,
+        start_date=future_camp_start,
+    )
+    u = User.objects.create(username="test")
+    u.invitations.create(camp=c1)
+    u.invitations.create(camp=c2)
 
-        app1 = Application.objects.create(officer=u, finished=True, saved_on=past_camp_start - timedelta(1))
+    app1 = Application.objects.create(officer=u, finished=True, saved_on=past_camp_start - timedelta(1))
 
-        # First, check we don't have any apps that are counted as 'this years'
-        assert not applications.thisyears_applications(u).exists()
+    # First, check we don't have any apps that are counted as 'this years'
+    assert not applications.thisyears_applications(u).exists()
 
-        # Create an application for this year
-        app2 = Application.objects.create(officer=u, finished=True, saved_on=past_camp_start + timedelta(10))
+    # Create an application for this year
+    app2 = Application.objects.create(officer=u, finished=True, saved_on=past_camp_start + timedelta(10))
 
-        # Now we should have one
-        assert applications.thisyears_applications(u).exists()
+    # Now we should have one
+    assert applications.thisyears_applications(u).exists()
 
-        # Check that applications_for_camp agrees
-        assert [app1] == list(applications.applications_for_camp(c1))
-        assert [app2] == list(applications.applications_for_camp(c2))
+    # Check that applications_for_camp agrees
+    assert [app1] == list(applications.applications_for_camp(c1))
+    assert [app2] == list(applications.applications_for_camp(c2))
 
-        # Check that camps_for_application agrees
-        assert [c1] == list(applications.camps_for_application(app1))
-        assert [c2] == list(applications.camps_for_application(app2))
+    # Check that camps_for_application agrees
+    assert [c1] == list(applications.camps_for_application(app1))
+    assert [c2] == list(applications.camps_for_application(app2))
 
-        # Check that thisyears_applications works if there are no future camps
-        c2.delete()
-        assert applications.thisyears_applications(u).exists()
+    # Check that thisyears_applications works if there are no future camps
+    c2.delete()
+    assert applications.thisyears_applications(u).exists()
 
 
 def test_unicode_to_rtf():

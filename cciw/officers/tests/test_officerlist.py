@@ -2,6 +2,7 @@ import io
 from datetime import date, timedelta
 
 import openpyxl
+import pytest
 from django.conf import settings
 from django.core import mail
 from openpyxl.utils import get_column_letter
@@ -14,102 +15,101 @@ from cciw.officers.create import create_officer
 from cciw.officers.models import Application
 from cciw.officers.tests import factories
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
-from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 
-class TestCreate(TestBase):
-    def test_create(self):
-        user = create_officer("Joe", "Bloggs", "joebloggs@example.com")
+@pytest.mark.django_db
+def test_create_officer():
+    user = create_officer("Joe", "Bloggs", "joebloggs@example.com")
 
-        user = User.objects.get(id=user.id)
-        assert user.is_staff
-        assert len(mail.outbox) == 1
-        assert user.last_login is None
-
-
-class TestExport(TestBase):
-    def test_export_no_application(self):
-        """
-        Test that the export data view generates an Excel file with all the data
-        we expect if there is no application form.
-        """
-        camp = camp_factories.create_camp(
-            officers=[officer := factories.create_officer()], officers_role="Tent Officer"
-        )
-        first_names = [o.first_name for o in [officer]]
-
-        assert Application.objects.all().count() == 0
-
-        workbook = officer_data_to_spreadsheet(camp).to_bytes()
-
-        assert workbook is not None
-        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
-        wksh = wkbk.worksheets[0]
-
-        # Spot checks on different types of data
-        # From User model
-        assert wksh.cell(1, 1).value == "First name"
-        assert wksh.cell(2, 1).value in first_names
-
-        # From Invitation model
-        assert wksh.cell(1, 4).value == "Role"
-        assert wksh.cell(2, 4).value == "Tent Officer"
-
-    def test_export_with_application(self):
-        """
-        Test that the export data view generates an Excel file with all the data
-        we expect if there are application forms.
-        """
-        camp = camp_factories.create_camp(officers=[officer := factories.create_officer()])
-        factories.create_application(year=camp.year, officer=officer, address_firstline="123 The Way")
-
-        workbook = officer_data_to_spreadsheet(camp).to_bytes()
-
-        wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
-        wksh = wkbk.worksheets[0]
-
-        # Check data from Application model
-        assert wksh.cell(1, 5).value == "Address"
-        assert "123 The Way" in [c.value for c in wksh[get_column_letter(5)]]
+    user = User.objects.get(id=user.id)
+    assert user.is_staff
+    assert len(mail.outbox) == 1
+    assert user.last_login is None
 
 
-class TestSlackers(TestBase):
-    def test_serious_slackers(self):
-        officer1 = factories.create_officer()
-        officer2 = factories.create_officer()
-        camp1 = camp_factories.create_camp(year=date.today().year - 2, officers=[officer1, officer2])
-        camp2 = camp_factories.create_camp(year=date.today().year - 1, officers=[officer1, officer2])
+@pytest.mark.django_db
+def test_export_no_application():
+    """
+    Test that the export data view generates an Excel file with all the data
+    we expect if there is no application form.
+    """
+    camp = camp_factories.create_camp(officers=[officer := factories.create_officer()], officers_role="Tent Officer")
+    first_names = [o.first_name for o in [officer]]
 
-        # Officer 1 submitted an Application, but officer 2 did not
-        app = officer1.applications.create(
-            saved_on=camp1.start_date - timedelta(days=10),
-            finished=True,
-        )
+    assert Application.objects.all().count() == 0
 
-        # Officer 1 submitted references, but officer 2 did not
-        factories.create_complete_reference(app.referees[0])
-        factories.create_complete_reference(app.referees[1])
+    workbook = officer_data_to_spreadsheet(camp).to_bytes()
 
-        # Officer 1 got a DBS done, but officer 2 did not
-        officer1.dbs_checks.create(
-            dbs_number="123456",
-            completed_on=camp1.start_date - timedelta(days=5),
-        )
+    assert workbook is not None
+    wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+    wksh = wkbk.worksheets[0]
 
-        serious_slackers = camp_serious_slacker_list(camp2)
+    # Spot checks on different types of data
+    # From User model
+    assert wksh.cell(1, 1).value == "First name"
+    assert wksh.cell(2, 1).value in first_names
 
-        assert serious_slackers == [
-            {
-                "officer": officer2,
-                "missing_application_forms": [camp1],
-                "missing_references": [camp1],
-                "missing_dbss": [camp1],
-                "last_good_apps_year": None,
-                "last_good_refs_year": None,
-                "last_good_dbss_year": None,
-            }
-        ]
+    # From Invitation model
+    assert wksh.cell(1, 4).value == "Role"
+    assert wksh.cell(2, 4).value == "Tent Officer"
+
+
+@pytest.mark.django_db
+def test_export_with_application():
+    """
+    Test that the export data view generates an Excel file with all the data
+    we expect if there are application forms.
+    """
+    camp = camp_factories.create_camp(officers=[officer := factories.create_officer()])
+    factories.create_application(year=camp.year, officer=officer, address_firstline="123 The Way")
+
+    workbook = officer_data_to_spreadsheet(camp).to_bytes()
+
+    wkbk: openpyxl.Workbook = openpyxl.load_workbook(io.BytesIO(workbook))
+    wksh = wkbk.worksheets[0]
+
+    # Check data from Application model
+    assert wksh.cell(1, 5).value == "Address"
+    assert "123 The Way" in [c.value for c in wksh[get_column_letter(5)]]
+
+
+@pytest.mark.django_db
+def test_serious_slackers():
+    officer1 = factories.create_officer()
+    officer2 = factories.create_officer()
+    camp1 = camp_factories.create_camp(year=date.today().year - 2, officers=[officer1, officer2])
+    camp2 = camp_factories.create_camp(year=date.today().year - 1, officers=[officer1, officer2])
+
+    # Officer 1 submitted an Application, but officer 2 did not
+    app = officer1.applications.create(
+        saved_on=camp1.start_date - timedelta(days=10),
+        finished=True,
+    )
+
+    # Officer 1 submitted references, but officer 2 did not
+    factories.create_complete_reference(app.referees[0])
+    factories.create_complete_reference(app.referees[1])
+
+    # Officer 1 got a DBS done, but officer 2 did not
+    officer1.dbs_checks.create(
+        dbs_number="123456",
+        completed_on=camp1.start_date - timedelta(days=5),
+    )
+
+    serious_slackers = camp_serious_slacker_list(camp2)
+
+    assert serious_slackers == [
+        {
+            "officer": officer2,
+            "missing_application_forms": [camp1],
+            "missing_references": [camp1],
+            "missing_dbss": [camp1],
+            "last_good_apps_year": None,
+            "last_good_refs_year": None,
+            "last_good_dbss_year": None,
+        }
+    ]
 
 
 class TestApplicationFormStatusPAge(SiteSetupMixin, WebTestBase):

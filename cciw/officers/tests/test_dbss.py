@@ -1,174 +1,199 @@
 from datetime import date, timedelta
 
+import pytest
 from django.core import mail
 from django.utils import timezone
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
-from cciw.officers.dbs import get_officers_with_dbs_info_for_camps
+from cciw.officers.dbs import DBSInfo, get_officers_with_dbs_info_for_camps
 from cciw.officers.models import DBSActionLog, DBSActionLogType, DBSCheck
-from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase
 
 from . import factories
 
+pytestmark = pytest.mark.django_db
 
-class DbsInfoTests(TestBase):
-    def setUp(self):
-        super().setUp()
-        self.camp = camp_factories.create_camp()
-        self.year = self.camp.year
-        self.officer_user = factories.create_officer()
-        self.camp.invitations.create(officer=self.officer_user)
 
-    def get_officer_with_dbs_info(self):
-        camps = Camp.objects.filter(year=self.year)
-        officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, camps)
-        relevant = [(o, c) for o, c in officers_and_dbs_info if o == self.officer_user]
-        assert len(relevant) == 1
-        return relevant[0]
+def setup_dbs_info_tests() -> tuple[Camp, User]:
+    camp = camp_factories.create_camp()
+    officer_user = factories.create_officer()
+    camp.invitations.create(officer=officer_user)
+    return camp, officer_user
 
-    def test_requires_action_no_application_form(self):
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert not dbs_info.requires_action
 
-    def test_requires_action_with_application_form(self):
-        factories.create_application(self.officer_user, year=self.year)
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.requires_action
+def get_officer_with_dbs_info(camp: Camp) -> tuple[User, DBSInfo]:
+    camps = Camp.objects.filter(year=camp.year)
+    officer = camp.invitations.all()[0].officer
+    officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, camps)
+    relevant = [(o, c) for o, c in officers_and_dbs_info if o == officer]
+    assert len(relevant) == 1
+    return relevant[0]
 
-    def test_can_register_received_dbs_form(self):
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert not dbs_info.can_register_received_dbs_form
-        factories.create_application(self.officer_user, year=self.year)
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.can_register_received_dbs_form
 
-    def test_last_action_attributes(self):
-        factories.create_application(self.officer_user, year=self.year)
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.last_dbs_form_sent is None
-        assert dbs_info.last_leader_alert_sent is None
+def test_DBSInfo_requires_action_no_application_form():
+    camp, officer = setup_dbs_info_tests()
+    _, dbs_info = get_officer_with_dbs_info(camp)
+    assert not dbs_info.requires_action
 
-        # Now create an 'form sent' action log
-        t1 = timezone.now()
-        DBSActionLog.objects.create(officer=self.officer_user, created_at=t1, action_type=DBSActionLogType.FORM_SENT)
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.last_dbs_form_sent is not None
-        assert dbs_info.last_dbs_form_sent == t1
 
-        # A leader alert action should not change last_dbs_form_sent
-        t2 = timezone.now()
-        DBSActionLog.objects.create(
-            officer=self.officer_user, created_at=t2, action_type=DBSActionLogType.LEADER_ALERT_SENT
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.last_dbs_form_sent == t1
+def test_DBSInfo_requires_action_with_application_form():
+    camp, officer = setup_dbs_info_tests()
+    factories.create_application(officer, year=camp.year)
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.requires_action
 
-        # But we should now have last_leader_alert_sent
-        assert dbs_info.last_leader_alert_sent == t2
 
-    def test_can_check_dbs_online_default(self):
-        factories.create_application(self.officer_user, year=self.year)
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert not dbs_info.can_check_dbs_online
+def test_DBSInfo_can_register_received_dbs_form():
+    camp, officer = setup_dbs_info_tests()
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert not dbs_info.can_register_received_dbs_form
+    factories.create_application(officer, year=camp.year)
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.can_register_received_dbs_form
 
-    def test_can_check_dbs_online_application_form_dbs_number(self):
-        # If we only have a DBS number from application form, we can't do online
-        # check.
-        factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.update_enabled_dbs_number.number == "00123"
-        assert dbs_info.update_enabled_dbs_number.previous_check_good is None
-        assert not dbs_info.can_check_dbs_online
 
-    def test_can_check_dbs_online_previous_check_dbs_number(self):
-        application = factories.create_application(self.officer_user, year=self.year)
-        self.officer_user.dbs_checks.create(
-            completed_on=application.saved_on - timedelta(365 * 10),
-            dbs_number="001234",
-            check_type=DBSCheck.CheckType.FORM,
-            registered_with_dbs_update=True,
-            applicant_accepted=True,
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert dbs_info.can_check_dbs_online
-        assert dbs_info.update_enabled_dbs_number.number == "001234"
-        assert dbs_info.update_enabled_dbs_number.previous_check_good
+def test_DBSInfo_last_action_attributes():
+    camp, officer = setup_dbs_info_tests()
+    factories.create_application(officer, year=camp.year)
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.last_dbs_form_sent is None
+    assert dbs_info.last_leader_alert_sent is None
 
-    def test_can_check_dbs_online_combined_info(self):
-        # Application form indicates update-enabled DBS
-        application = factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
+    # Now create an 'form sent' action log
+    t1 = timezone.now()
+    DBSActionLog.objects.create(officer=officer, created_at=t1, action_type=DBSActionLogType.FORM_SENT)
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.last_dbs_form_sent is not None
+    assert dbs_info.last_dbs_form_sent == t1
 
-        # DBS check indicates good DBS, but don't know if it is
-        # registered as update-enabled
-        self.officer_user.dbs_checks.create(
-            completed_on=application.saved_on - timedelta(365 * 10),
-            dbs_number="00123",
-            check_type=DBSCheck.CheckType.FORM,
-            registered_with_dbs_update=None,
-            applicant_accepted=True,
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
+    # A leader alert action should not change last_dbs_form_sent
+    t2 = timezone.now()
+    DBSActionLog.objects.create(officer=officer, created_at=t2, action_type=DBSActionLogType.LEADER_ALERT_SENT)
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.last_dbs_form_sent == t1
 
-        # We should be able to combine the above info:
-        assert dbs_info.can_check_dbs_online
-        assert dbs_info.update_enabled_dbs_number.number == "00123"
-        assert dbs_info.update_enabled_dbs_number.previous_check_good
+    # But we should now have last_leader_alert_sent
+    assert dbs_info.last_leader_alert_sent == t2
 
-    def test_applicant_rejected_recent(self):
-        application = factories.create_application(self.officer_user, year=self.year)
-        self.officer_user.dbs_checks.create(
-            completed_on=application.saved_on - timedelta(days=10),
-            dbs_number="00123",
-            check_type=DBSCheck.CheckType.FORM,
-            registered_with_dbs_update=True,
-            applicant_accepted=False,
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert not dbs_info.can_check_dbs_online
-        assert dbs_info.applicant_rejected
 
-    def test_applicant_rejected_old(self):
-        application = factories.create_application(self.officer_user, year=self.year)
-        self.officer_user.dbs_checks.create(
-            completed_on=application.saved_on - timedelta(days=365 * 10),
-            dbs_number="00123",
-            check_type=DBSCheck.CheckType.FORM,
-            registered_with_dbs_update=True,
-            applicant_accepted=False,
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert not dbs_info.can_check_dbs_online
-        assert dbs_info.applicant_rejected
+def test_DBSInfo_can_check_dbs_online_default():
+    camp, officer = setup_dbs_info_tests()
+    factories.create_application(officer, year=camp.year)
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert not dbs_info.can_check_dbs_online
 
-    def test_can_check_dbs_online_previous_check_bad(self):
-        application = factories.create_application(self.officer_user, year=self.year)
-        self.officer_user.dbs_checks.create(
-            completed_on=application.saved_on - timedelta(365 * 10),
-            dbs_number="00123",
-            check_type=DBSCheck.CheckType.FORM,
-            registered_with_dbs_update=True,
-            applicant_accepted=False,
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        assert not dbs_info.can_check_dbs_online
-        assert dbs_info.update_enabled_dbs_number.number == "00123"
-        assert not dbs_info.update_enabled_dbs_number.previous_check_good
 
-    def test_update_enabled_dbs_number(self):
-        # Test that data from Application/DBSCheck is prioritised by date
-        application = factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
-        self.officer_user.dbs_checks.create(
-            completed_on=application.saved_on - timedelta(365 * 10),
-            dbs_number="00456",
-            check_type=DBSCheck.CheckType.FORM,
-            registered_with_dbs_update=True,
-        )
-        officer, dbs_info = self.get_officer_with_dbs_info()
-        # Application form data should win because it is more recent
-        assert dbs_info.update_enabled_dbs_number.number == "00123"
-        assert dbs_info.update_enabled_dbs_number.previous_check_good is None
+def test_DBSInfo_can_check_dbs_online_application_form_dbs_number():
+    # If we only have a DBS number from application form, we can't do online
+    # check.
+    camp, officer = setup_dbs_info_tests()
+    factories.create_application(officer, year=camp.year, dbs_number="00123")
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.update_enabled_dbs_number.number == "00123"
+    assert dbs_info.update_enabled_dbs_number.previous_check_good is None
+    assert not dbs_info.can_check_dbs_online
+
+
+def test_DBSInfo_can_check_dbs_online_previous_check_dbs_number():
+    camp, officer = setup_dbs_info_tests()
+    application = factories.create_application(officer, year=camp.year)
+    officer.dbs_checks.create(
+        completed_on=application.saved_on - timedelta(365 * 10),
+        dbs_number="001234",
+        check_type=DBSCheck.CheckType.FORM,
+        registered_with_dbs_update=True,
+        applicant_accepted=True,
+    )
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert dbs_info.can_check_dbs_online
+    assert dbs_info.update_enabled_dbs_number.number == "001234"
+    assert dbs_info.update_enabled_dbs_number.previous_check_good
+
+
+def test_DBSInfo_can_check_dbs_online_combined_info():
+    # Application form indicates update-enabled DBS
+    camp, officer = setup_dbs_info_tests()
+    application = factories.create_application(officer, year=camp.year, dbs_number="00123")
+
+    # DBS check indicates good DBS, but don't know if it is
+    # registered as update-enabled
+    officer.dbs_checks.create(
+        completed_on=application.saved_on - timedelta(365 * 10),
+        dbs_number="00123",
+        check_type=DBSCheck.CheckType.FORM,
+        registered_with_dbs_update=None,
+        applicant_accepted=True,
+    )
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+
+    # We should be able to combine the above info:
+    assert dbs_info.can_check_dbs_online
+    assert dbs_info.update_enabled_dbs_number.number == "00123"
+    assert dbs_info.update_enabled_dbs_number.previous_check_good
+
+
+def test_DBSInfo_applicant_rejected_recent():
+    camp, officer = setup_dbs_info_tests()
+    application = factories.create_application(officer, year=camp.year)
+    officer.dbs_checks.create(
+        completed_on=application.saved_on - timedelta(days=10),
+        dbs_number="00123",
+        check_type=DBSCheck.CheckType.FORM,
+        registered_with_dbs_update=True,
+        applicant_accepted=False,
+    )
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert not dbs_info.can_check_dbs_online
+    assert dbs_info.applicant_rejected
+
+
+def test_DBSInfo_applicant_rejected_old():
+    camp, officer = setup_dbs_info_tests()
+    application = factories.create_application(officer, year=camp.year)
+    officer.dbs_checks.create(
+        completed_on=application.saved_on - timedelta(days=365 * 10),
+        dbs_number="00123",
+        check_type=DBSCheck.CheckType.FORM,
+        registered_with_dbs_update=True,
+        applicant_accepted=False,
+    )
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert not dbs_info.can_check_dbs_online
+    assert dbs_info.applicant_rejected
+
+
+def test_DBSInfo_can_check_dbs_online_previous_check_bad():
+    camp, officer = setup_dbs_info_tests()
+    application = factories.create_application(officer, year=camp.year)
+    officer.dbs_checks.create(
+        completed_on=application.saved_on - timedelta(365 * 10),
+        dbs_number="00123",
+        check_type=DBSCheck.CheckType.FORM,
+        registered_with_dbs_update=True,
+        applicant_accepted=False,
+    )
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    assert not dbs_info.can_check_dbs_online
+    assert dbs_info.update_enabled_dbs_number.number == "00123"
+    assert not dbs_info.update_enabled_dbs_number.previous_check_good
+
+
+def test_DBSInfo_update_enabled_dbs_number():
+    # Test that data from Application/DBSCheck is prioritised by date
+    camp, officer = setup_dbs_info_tests()
+    application = factories.create_application(officer, year=camp.year, dbs_number="00123")
+    officer.dbs_checks.create(
+        completed_on=application.saved_on - timedelta(365 * 10),
+        dbs_number="00456",
+        check_type=DBSCheck.CheckType.FORM,
+        registered_with_dbs_update=True,
+    )
+    officer, dbs_info = get_officer_with_dbs_info(camp)
+    # Application form data should win because it is more recent
+    assert dbs_info.update_enabled_dbs_number.number == "00123"
+    assert dbs_info.update_enabled_dbs_number.previous_check_good is None
 
 
 class ManageDbsPageSL(SeleniumBase):
