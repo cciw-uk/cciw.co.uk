@@ -665,12 +665,16 @@ if DEPLOYED:
     )
 
 # Captcha
-CAPTCHA_FONT_PATH = str(BASE_PATH / "cciw" / "cciwmain" / "static" / "fonts" / "Monoton-Regular.ttf")
 
-if not os.path.exists(CAPTCHA_FONT_PATH):
-    raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
-CAPTCHA_FONT_SIZE = 45
+# Disabled - the font is not very readable because the captcha cuts
+# it off horizontally
+# CAPTCHA_FONT_PATH = str(BASE_PATH / "cciw" / "cciwmain" / "static" / "fonts" / "Monoton-Regular.ttf")
+
+# if not os.path.exists(CAPTCHA_FONT_PATH):
+#     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
+CAPTCHA_FONT_SIZE = 30
 CAPTCHA_LETTER_ROTATION = (-30, 30)
+CAPTCHA_IMAGE_SIZE = (120, 50)
 
 # django-q2
 Q_CLUSTER = {
