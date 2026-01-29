@@ -7,6 +7,7 @@ from django.db.models.functions import Concat
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.safestring import SafeString
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.accounts.models import User
@@ -32,7 +33,7 @@ class SearchResult[M]:
     # Possibly add other optional fields like phone, address?
 
     @property
-    def model_name(self):
+    def model_name(self) -> str:
         return self.model._meta.label
 
     @property
@@ -47,12 +48,12 @@ class SearchResult[M]:
         return self.model_name + ((" - " + doc) if doc else "")
 
     @property
-    def admin_link(self):
+    def admin_link(self) -> SafeString:
         url_name = admin_urlname(self.model._meta, "change")
         admin_change_url = reverse(url_name, args=[self.pk])
         return format_html('<a href="{0}" target="_new">{1}</a>', admin_change_url, self.result_id)
 
-    def as_json(self):
+    def as_json(self) -> dict[str, int | str]:
         return {
             "type": "SearchResult",
             "model": self.model_name,
@@ -60,7 +61,7 @@ class SearchResult[M]:
         }
 
 
-def create_filter(field: str, query_term: str):
+def create_filter(field: str, query_term: str) -> Q:
     # TODO support multiple email addresses
     if "@" in query_term:
         return Q(**{f"{field}__iexact": query_term})
@@ -167,7 +168,7 @@ class ErasurePlanItem:
     execute.alters_data = True  # Stop it being used in the template
 
     @property
-    def result_id(self):
+    def result_id(self) -> str:
         return self.result.result_id
 
     @property
@@ -175,14 +176,14 @@ class ErasurePlanItem:
         return self.result.email
 
     @property
-    def result_type_description(self):
+    def result_type_description(self) -> str:
         return self.result.type_description
 
     @property
     def admin_link(self):
         return self.result.admin_link
 
-    def as_json(self):
+    def as_json(self) -> dict[str, object]:
         return {
             "type": "ErasurePlanItem",
             "result": self.result.as_json(),
@@ -200,7 +201,7 @@ class ErasurePlan:
 
     execute.alters_data = True  # Stop it being used in the template
 
-    def as_json(self):
+    def as_json(self) -> dict[str, object]:
         return {
             "type": "ErasurePlan",
             "items": [item.as_json() for item in self.items],

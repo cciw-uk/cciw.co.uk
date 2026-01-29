@@ -31,7 +31,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
 
     do_htmx_validation = True
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> BookingAccount:
         old_subscription = BookingAccount.objects.get(id=self.instance.id).subscribe_to_newsletter
         retval = super().save(*args, **kwargs)
         if old_subscription != self.instance.subscribe_to_newsletter:
@@ -166,7 +166,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             "publicity_photos_agreement",
         ]
 
-    def clean_camp(self):
+    def clean_camp(self) -> Camp:
         camp_id = self.cleaned_data["camp"]
         return Camp.objects.get(id=int(camp_id))
 

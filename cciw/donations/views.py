@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core import mail
+from django.http import HttpRequest
 from django.template import loader
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -26,7 +27,7 @@ class DonateForm(CciwFormMixin, forms.Form):
 DONATION_CUSTOM_VALUE = "donation"
 
 
-def donate(request):
+def donate(request: HttpRequest) -> TemplateResponse:
     domain = get_current_domain()
     protocol = "https" if request.is_secure() else "http"
 

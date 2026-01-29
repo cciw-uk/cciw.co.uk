@@ -4,9 +4,11 @@ from datetime import timedelta
 from django.db.models import QuerySet
 from django.template import loader
 
+import cciw.cciwmain.models
+from cciw.accounts.models import User
 from cciw.cciwmain import common
-from cciw.cciwmain.models import Camp
-from cciw.officers.models import Application, Invitation
+from cciw.cciwmain.models import Camp, CampQuerySet
+from cciw.officers.models import Application, ApplicationQuerySet, Invitation
 
 # To enable Applications to be shared between camps, and in some cases to belong
 # to no camps, there is no direct connection between a Camp and an Application.
@@ -24,7 +26,7 @@ from cciw.officers.models import Application, Invitation
 # submitted in the period leading up to that cluster.
 
 
-def thisyears_applications(user):
+def thisyears_applications(user: User) -> ApplicationQuerySet:
     """
     Returns a QuerySet containing the applications a user has that
     apply to 'this year', i.e. to camps still in the future.
@@ -84,14 +86,14 @@ def camps_for_application(application: Application) -> Sequence[Camp]:
     return [i.camp for i in invites]
 
 
-def applications_for_camp(camp, officer_ids=None) -> QuerySet[Application]:
+def applications_for_camp(camp: cciw.cciwmain.models.Camp, officer_ids: None = None) -> QuerySet[Application]:
     """
     Returns the applications that are relevant for a camp.
     """
     return applications_for_camps([camp], officer_ids=officer_ids)
 
 
-def applications_for_camps(camps, officer_ids=None) -> QuerySet[Application]:
+def applications_for_camps(camps: CampQuerySet | list[Camp], officer_ids: None = None) -> QuerySet[Application]:
     """
     Returns the applications that are relevant for a list of camps.
     """

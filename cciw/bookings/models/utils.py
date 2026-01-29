@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from django.db.models import Value, functions
+from django.db.models import Func, Value, functions
 
 if TYPE_CHECKING:
     from .bookings import Booking
 
 
-def sql_normalise_booking_name():
+def sql_normalise_booking_name() -> Func:
     return sql_normalise_human_name_for_match(
         "first_name",
         Value(" "),
@@ -16,7 +16,7 @@ def sql_normalise_booking_name():
     )
 
 
-def sql_normalise_human_name_for_match(*fields_or_values):
+def sql_normalise_human_name_for_match(*fields_or_values) -> Func:
     """
     Applies normalisation to a human name for matching purposes
     """

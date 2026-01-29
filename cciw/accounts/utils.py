@@ -1,10 +1,11 @@
+from django.db import models
 from django.db.transaction import atomic
 
 from cciw.accounts.models import User
 
 
 @atomic
-def merge_model_instances(from_instances: list, to_instance):
+def merge_model_instances(from_instances: list, to_instance: models.Model):
     if not from_instances:
         return
     for from_instance in from_instances:

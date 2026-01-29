@@ -9,7 +9,7 @@ from cciw.officers.models import DBSCheck, Reference
 from cciw.utils.stats import accumulate_dates
 
 
-def get_camp_officer_stats(camp) -> pd.DataFrame:
+def get_camp_officer_stats(camp: Camp) -> pd.DataFrame:
     # For efficiency, we are careful about what DB queries we do and what is
     # done in Python. Some logic from DBSCheck.get_for_camp duplicated here
 
@@ -75,7 +75,7 @@ def get_camp_officer_stats(camp) -> pd.DataFrame:
     return df
 
 
-def get_camp_officer_stats_trend(start_year, end_year) -> pd.DataFrame:
+def get_camp_officer_stats_trend(start_year: int, end_year: int) -> pd.DataFrame:
     years = list(range(start_year, end_year + 1))
     officer_counts = []
     application_counts = []
@@ -130,14 +130,14 @@ def get_camp_officer_stats_trend(start_year, end_year) -> pd.DataFrame:
     return df
 
 
-def get_first(date_officer_list):
+def get_first(date_officer_list: list[tuple[date, int]]) -> list[date]:
     """
     Given a list of (date, officer id) pairs,
     where there may be duplicate officer ids,
     returns a sorted list of dates, using the first
     date for each officer.
     """
-    d = {}
+    d: dict[int, date] = {}
     for completed_on, off_id in sorted(date_officer_list):
         if off_id not in d:
             d[off_id] = completed_on

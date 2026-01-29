@@ -7,7 +7,7 @@ register = template.Library()
 
 
 @stringfilter
-def rtflinebreaks(value):
+def rtflinebreaks(value: str) -> str:
     "Converts newlines into RTF \\lines"
     return value.replace("\n", "{\\line}")
 
@@ -17,7 +17,7 @@ register.filter(rtflinebreaks)
 encoder = encodings.codecs.getencoder("1252")
 
 
-def unicode_to_rtf(u):
+def unicode_to_rtf(u: str) -> str:
     """Replaces all high characters with \\u escape sequences,
     assuming a Windows 1252 code page"""
     # We will assume Windows code page for now (for maxiumum
@@ -46,7 +46,7 @@ def unicode_to_rtf(u):
 
 
 @stringfilter
-def rtfescape(value):
+def rtfescape(value: str) -> str:
     "Escapes RTF control characters"
 
     return unicode_to_rtf(value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}"))

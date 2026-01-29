@@ -52,7 +52,7 @@ BOOKING_STATS_PREVIOUS_YEARS = 4
 @staff_member_required
 @booking_secretary_required
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
-def export_camper_data_for_year(request, year: int):
+def export_camper_data_for_year(request: HttpRequest, year: int):
     return spreadsheet_response(
         year_bookings_to_spreadsheet(year),
         f"CCIW-bookings-{year}",
@@ -64,7 +64,7 @@ def export_camper_data_for_year(request, year: int):
 # to transfer to camp leaders.
 @booking_secretary_or_treasurer_required
 @with_breadcrumbs(officers_breadcrumbs)
-def booking_secretary_reports(request, year: int):
+def booking_secretary_reports(request: HttpRequest, year: int):
     from cciw.bookings.models import Booking, booking_report_by_camp, outstanding_bookings_with_fees
 
     # 1. Camps and their booking levels.
@@ -101,7 +101,7 @@ def booking_secretary_reports(request, year: int):
 
 
 @booking_secretary_required
-def export_payment_data(request):
+def export_payment_data(request: HttpRequest):
     date_start = request.GET["start"]
     date_end = request.GET["end"]
     date_start = datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT).replace(
@@ -118,7 +118,7 @@ def export_payment_data(request):
 @staff_member_required
 @secretary_or_committee_required
 @with_breadcrumbs(officers_breadcrumbs)
-def booking_summary_stats(request, start_year: int, end_year: int):
+def booking_summary_stats(request: HttpRequest, start_year: int, end_year: int):
     chart_data = get_booking_summary_stats(start_year, end_year)
     chart_data.pop("Total")
     return TemplateResponse(
@@ -135,7 +135,7 @@ def booking_summary_stats(request, start_year: int, end_year: int):
 
 @staff_member_required
 @secretary_or_committee_required
-def booking_summary_stats_download(request, start_year: int, end_year: int):
+def booking_summary_stats_download(request: HttpRequest, start_year: int, end_year: int):
     data = get_booking_summary_stats(start_year, end_year)
     builder = ExcelFromDataFrameBuilder()
     builder.add_sheet_from_dataframe("Bookings", data)
@@ -144,7 +144,7 @@ def booking_summary_stats_download(request, start_year: int, end_year: int):
 
 @booking_secretary_required
 @json_response
-def place_availability_json(request):
+def place_availability_json(request: HttpRequest):
     retval: dict[str, object] = {"status": "success"}
     camp_id = int(request.GET["camp_id"])
     camp: Camp = Camp.objects.get(id=camp_id)
@@ -155,7 +155,7 @@ def place_availability_json(request):
 
 @booking_secretary_required
 @json_response
-def booking_problems_json(request):
+def booking_problems_json(request: HttpRequest) -> dict[str, object]:
     """
     Get the booking problems associated with the data POSTed.
     """
@@ -197,7 +197,7 @@ def booking_problems_json(request):
 @json_response
 @staff_member_required
 @booking_secretary_required
-def get_booking_expected_amount_due(request):
+def get_booking_expected_amount_due(request: HttpRequest):
     fail = {"status": "success", "amount": None}
     try:
         # If we use a form to construct an object, we won't get pass
@@ -225,7 +225,7 @@ def get_booking_expected_amount_due(request):
 
 
 @cciw_secretary_or_booking_secretary_required
-def brochure_mailing_list(request, year: int):
+def brochure_mailing_list(request: HttpRequest, year: int):
     return spreadsheet_response(
         addresses_for_mailing_list(year), f"CCIW-mailing-list-{year}", notice=DataRetentionNotice.CAMPERS
     )

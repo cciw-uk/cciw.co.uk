@@ -1,4 +1,6 @@
 from django import template
+from django.template.base import Parser, Token
+from django.template.context import RequestContext
 
 register = template.Library()
 
@@ -6,7 +8,7 @@ register = template.Library()
 # Used to override part of normal 'submit row' for application forms
 # UGLY HACK!
 class FixPermissions(template.Node):
-    def render(self, context):
+    def render(self, context: RequestContext):
         for d in context.dicts:
             if "has_change_permission" in d:
                 # We don't want 'Save and add another' to appear
@@ -15,7 +17,7 @@ class FixPermissions(template.Node):
         return ""
 
 
-def fix_permissions(parser, token):
+def fix_permissions(parser: Parser, token: Token) -> FixPermissions:
     return FixPermissions()
 
 

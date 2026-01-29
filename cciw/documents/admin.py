@@ -2,6 +2,9 @@ import copy
 
 from django.contrib import admin
 from django.contrib.admin import widgets as admin_widgets
+from django.db.models.fields import Field
+from django.forms.fields import Field as FormField
+from django.http import HttpRequest
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import format_html
 
@@ -17,7 +20,7 @@ class DocumentRelatedModelAdminMixin:
         DocumentField: {"widget": admin_widgets.AdminFileWidget},
     }
 
-    def formfield_for_dbfield(self, db_field, request, **kwargs):
+    def formfield_for_dbfield(self, db_field: Field, request: HttpRequest, **kwargs) -> FormField:
         # This stops BaseModelAdmin from doing its custom ForeignKey handling,
         # which breaks for us because we are returning very different
         # form fields and widgets.

@@ -204,7 +204,7 @@ class ManageDbsPageSL(SeleniumBase):
         self.year = self.camp.year
         self.dbs_officer = factories.create_dbs_officer()
 
-    def assertElementText(self, css_selector, text):
+    def assertElementText(self, css_selector: str, text: str):
         assert self.get_element_inner_text(css_selector).strip().replace("\u00a0", " ") == text
 
     def test_view_no_application_forms(self):
@@ -360,32 +360,32 @@ class ManageDbsPageSL(SeleniumBase):
         # Check done - no need for any action buttons
         assert not self.is_element_present(self.dbs_checked_online_button_selector(self.officer_user))
 
-    def register_received_button_selector(self, officer):
+    def register_received_button_selector(self, officer: User) -> str:
         return f'tr[data-officer-id="{officer.id}"] button[name="register_received_dbs"]'
 
-    def dbs_checked_online_button_selector(self, officer):
+    def dbs_checked_online_button_selector(self, officer: User) -> str:
         return f'tr[data-officer-id="{officer.id}"] button[name="dbs_checked_online"]'
 
-    def click_dbs_sent_button(self, officer):
+    def click_dbs_sent_button(self, officer: User):
         self.click(f'tr[data-officer-id="{officer.id}"] button[name="mark_sent"]')
         self.wait_for_ajax()
 
-    def click_dbs_sent_undo_button(self, officer):
+    def click_dbs_sent_undo_button(self, officer: User):
         self.click(f'tr[data-officer-id="{officer.id}"] button[name="undo_last_mark_sent"]')
         self.wait_for_ajax()
 
-    def click_alert_leaders_button(self, officer):
+    def click_alert_leaders_button(self, officer: User):
         self.click(f'tr[data-officer-id="{officer.id}"] button[name="alert_leaders"]')
         self.wait_for_ajax()
 
-    def click_request_dbs_form_button(self, officer):
+    def click_request_dbs_form_button(self, officer: User):
         self.click(f'tr[data-officer-id="{officer.id}"] button[name="request_form_to_be_sent"]')
         self.wait_for_ajax()
 
-    def click_register_received_button(self, officer):
+    def click_register_received_button(self, officer: User):
         self.click(self.register_received_button_selector(officer))
         self.wait_for_ajax()
 
-    def click_dbs_checked_online_button(self, officer):
+    def click_dbs_checked_online_button(self, officer: User):
         self.click(self.dbs_checked_online_button_selector(officer))
         self.wait_for_ajax()

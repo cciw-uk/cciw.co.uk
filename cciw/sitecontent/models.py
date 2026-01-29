@@ -1,8 +1,9 @@
 from django.contrib.admin.utils import quote
 from django.db import models
+from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.safestring import SafeString, mark_safe
 
 import cciw.middleware.threadlocals as threadlocals
 from cciw.cciwmain.common import standard_subs
@@ -49,7 +50,7 @@ class HtmlChunk(models.Model):
     def __str__(self):
         return self.name
 
-    def render(self, request):
+    def render(self, request: HttpRequest) -> SafeString:
         """Render the HTML chunk as HTML, with replacements
         made and any member specific adjustments."""
         html = mark_safe(standard_subs(self.html))

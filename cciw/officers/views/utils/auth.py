@@ -1,8 +1,10 @@
+from collections.abc import Callable
+
 from cciw.utils.views import user_passes_test_improved
 
 
-def any_passes(*funcs):
-    def func(*args, **kwargs):
+def any_passes[**P](*funcs: Callable[P, bool]) -> Callable[P, bool]:
+    def func(*args: P.args, **kwargs: P.kwargs) -> bool:
         for f in funcs:
             if f(*args, **kwargs):
                 return True

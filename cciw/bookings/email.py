@@ -8,17 +8,18 @@ from dataclasses import dataclass
 from django.conf import settings
 from django.core import mail
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+from django.http import HttpRequest
 from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
 from paypal.standard.ipn.models import PayPalIPN
 
-from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.cciwmain import common
 from cciw.utils.functional import partition
 
 from .models.accounts import BookingAccount
 from .models.bookings import Booking
+from .models.queue import BookingQueueEntry
 
 
 class VerifyFailed:
@@ -39,13 +40,13 @@ class EmailVerifyTokenGenerator:
     def __init__(self, key: str | None = None):
         self.signer = TimestampSigner(salt="cciw.bookings.EmailVerifyTokenGenerator", key=key)
 
-    def token_for_email(self, email):
+    def token_for_email(self, email: str) -> str:
         """
         Returns a verification token for the provided email address
         """
         return self.url_safe_encode(self.signer.sign(email))
 
-    def email_from_token(self, token, max_age=None) -> str | VerifyFailed | VerifyExpired:
+    def email_from_token(self, token: str, *, max_age: int | None = None) -> str | VerifyFailed | VerifyExpired:
         """
         Extracts the verified email address from the token, or a VerifyFailed
         constant if verification failed, or VerifyExpired if the link expired.
@@ -69,10 +70,10 @@ class EmailVerifyTokenGenerator:
     # and add them on decoding.
     # See also TestEmailVerifyTokenGenerator.
 
-    def url_safe_encode(self, value):
+    def url_safe_encode(self, value: str) -> str:
         return base64.urlsafe_b64encode(value.encode("utf-8")).decode("utf-8").rstrip("=")
 
-    def url_safe_decode(self, token):
+    def url_safe_decode(self, token: str) -> str:
         token = token + "=="
         return base64.urlsafe_b64decode(token.encode("utf-8")).decode("utf-8")
 
@@ -96,7 +97,7 @@ def build_url_with_booking_token(
     return f"{url}?bt={token}"
 
 
-def send_verify_email(request, booking_account_email, target_view_name=None):
+def send_verify_email(request: HttpRequest, booking_account_email: str, target_view_name: str | None = None):
     if target_view_name is None:
         target_view_name = "cciw-bookings-verify_and_continue"
     c = {"verify_url": build_url_with_booking_token(view_name=target_view_name, email=booking_account_email)}
@@ -105,7 +106,7 @@ def send_verify_email(request, booking_account_email, target_view_name=None):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
 
 
-def send_unrecognised_payment_email(ipn_obj, reason=None):
+def send_unrecognised_payment_email(ipn_obj: PayPalIPN, reason: str | None = None):
     c = {
         "domain": common.get_current_domain(),
         "ipn_obj": ipn_obj,
@@ -211,7 +212,7 @@ def send_places_declined_email(account: BookingAccount, bookings: Sequence[Booki
     )
 
 
-def send_booking_approved_mail(booking):
+def send_booking_approved_mail(booking: Booking):
     account = booking.account
     if not account.email:
         return False

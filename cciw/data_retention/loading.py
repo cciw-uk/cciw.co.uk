@@ -116,7 +116,7 @@ def build_ModelDetail(
     erasure_method_names: dict[str, str] | None = None,
     delete_row: bool = False,
     available_erasure_methods: Mapping[str, ErasureMethod],
-):
+) -> ModelDetail:
     model = apps.get_model(name)
     field_list = model._meta.get_fields()
     field_dict = {f.name: f for f in field_list}

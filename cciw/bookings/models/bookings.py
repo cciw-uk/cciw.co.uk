@@ -108,7 +108,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
     def with_approvals(self) -> QuerySet[Booking]:
         return self.prefetch_related("approvals")
 
-    def need_approving(self):
+    def need_approving(self) -> BookingQuerySet:
         """
         Returns Bookings that need approving
         """
@@ -121,7 +121,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(camp__start_date__gt=date.today())
 
     # Performance
-    def with_prefetch_camp_info(self):
+    def with_prefetch_camp_info(self) -> BookingQuerySet:
         return self.select_related(
             "camp",
             "camp__camp_name",
@@ -135,19 +135,19 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     # Data retention
 
-    def not_in_use(self, now: datetime):
+    def not_in_use(self, now: datetime) -> BookingQuerySet:
         return self.exclude(self._in_use_q(now))
 
-    def in_use(self, now: datetime):
+    def in_use(self, now: datetime) -> BookingQuerySet:
         return self.filter(self._in_use_q(now))
 
-    def _in_use_q(self, now: datetime):
+    def _in_use_q(self, now: datetime) -> models.Q:
         # See also BookingQueueEntryQuerySet.not_in_use()
         return Q(
             camp__end_date__gte=now.date(),
         )
 
-    def older_than(self, before_datetime: datetime):
+    def older_than(self, before_datetime: datetime) -> BookingQuerySet:
         # See also BookingQueueEntryQuerySet.older_than()
         return self.filter(created_at__lt=before_datetime, camp__end_date__lt=before_datetime)
 
@@ -300,11 +300,11 @@ class Booking(models.Model):
 
     # Methods
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name}, {self.camp.url_id}, {self.account}"
 
     @property
-    def name(self):
+    def name(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
@@ -461,18 +461,18 @@ class Booking(models.Model):
 
         return full_amount
 
-    def age_on_camp(self):
+    def age_on_camp(self) -> int:
         return relativedelta(self.age_base_date(), self.birth_date).years
 
-    def age_base_date(self):
+    def age_base_date(self) -> date:
         # Age is calculated based on school years, i.e. age on 31st August
         # See also PreserveAgeOnCamp.build_update_dict()
         return date(self.camp.year, 8, 31)
 
-    def is_too_young(self):
+    def is_too_young(self) -> bool:
         return self.age_on_camp() < self.camp.minimum_age
 
-    def is_too_old(self):
+    def is_too_old(self) -> bool:
         return self.age_on_camp() > self.camp.maximum_age
 
     @property
@@ -555,7 +555,7 @@ class Booking(models.Model):
         with contextlib.suppress(AttributeError):
             self._prefetched_objects_cache.pop("approvals", None)
 
-    def get_booking_problems(self, booking_sec=False) -> list[BookingProblem]:
+    def get_booking_problems(self, *, booking_sec: bool = False) -> list[BookingProblem]:
         """
         Returns a list of errors and warnings as BookingProblem objects
 
@@ -574,10 +574,10 @@ class Booking(models.Model):
         self.shelved = False
         self.save()
 
-    def is_user_editable(self):
+    def is_user_editable(self) -> bool:
         return self.state == BookingState.INFO_COMPLETE
 
-    def is_custom_discount(self):
+    def is_custom_discount(self) -> bool:
         return self.price_type == PriceType.CUSTOM
 
     def get_contact_email(self):
@@ -586,7 +586,7 @@ class Booking(models.Model):
         elif self.account_id is not None:
             return self.account.email
 
-    def get_address_display(self):
+    def get_address_display(self) -> str:
         return "\n".join(
             v
             for v in [
@@ -600,7 +600,7 @@ class Booking(models.Model):
             if v
         )
 
-    def get_contact_address_display(self):
+    def get_contact_address_display(self) -> str:
         return "\n".join(
             v
             for v in [
@@ -615,7 +615,7 @@ class Booking(models.Model):
             if v
         )
 
-    def get_gp_address_display(self):
+    def get_gp_address_display(self) -> str:
         return "\n".join(
             v
             for v in [

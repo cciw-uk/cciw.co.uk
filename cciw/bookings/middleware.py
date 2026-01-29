@@ -5,9 +5,7 @@ from typing import assert_never
 import furl
 from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_verify_email
@@ -19,13 +17,13 @@ BOOKING_COOKIE_SALT = "cciw.bookings.BookingAccount cookie"
 logger = logging.getLogger(__name__)
 
 
-def set_booking_account_cookie(response, account):
+def set_booking_account_cookie(response: HttpResponse, account: BookingAccount):
     response.set_signed_cookie(
         "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT.total_seconds()
     )
 
 
-def get_booking_account_from_request(request):
+def get_booking_account_from_request(request: HttpRequest) -> BookingAccount:
     cookie = request.get_signed_cookie(
         "bookingaccount",
         salt=BOOKING_COOKIE_SALT,
@@ -40,7 +38,7 @@ def get_booking_account_from_request(request):
         return None
 
 
-def unset_booking_account_cookie(response):
+def unset_booking_account_cookie(response: HttpResponse):
     response.delete_cookie("bookingaccount")
 
 

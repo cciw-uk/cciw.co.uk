@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 from django.conf import settings
 from django.core import mail
+from django.core.mail.message import EmailMessage
 from django.urls import reverse
 
 from cciw.accounts.models import User
@@ -13,10 +14,10 @@ from cciw.utils.tests.webtest import WebTestBase
 
 
 class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
-    def _application_edit_url(self, app_id):
+    def _application_edit_url(self, app_id: int) -> str:
         return reverse("admin:officers_application_change", args=[app_id])
 
-    def _setup(self, invitation=True) -> User:
+    def _setup(self, *, invitation: bool = True) -> User:
         """
         Initial setup for application form
         """
@@ -40,7 +41,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         self.submit("input[name=new]")
         self.assertCode(200)
 
-    def _finish_application_form(self, enter_dbs_number=False, override=None):
+    def _finish_application_form(self, *, enter_dbs_number: bool = False, override: None = None) -> None:
         # A full set of values that pass validation.
         values = {
             "full_name": "x",
@@ -94,10 +95,10 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
                     values[k] = v
         return self.fill_by_name(values)
 
-    def _get_application_form_emails(self):
+    def _get_application_form_emails(self) -> list[EmailMessage]:
         return [e for e in mail.outbox if "Application form" in e.subject]
 
-    def _get_email_change_emails(self):
+    def _get_email_change_emails(self) -> list[EmailMessage]:
         return [e for e in mail.outbox if "Email change" in e.subject]
 
     def _assert_finished_successful(self):
@@ -148,7 +149,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         assert user.applications.count() == 1
         assert user.applications.all()[0].full_name == "Changed full name"
 
-    def _change_email_setup(self):
+    def _change_email_setup(self) -> tuple[User, str, str, list[EmailMessage]]:
         user = self._setup()
         assert len(mail.outbox) == 0
         application = factories.create_application(finished=False)

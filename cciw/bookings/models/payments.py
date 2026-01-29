@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import re
 from datetime import datetime
 from decimal import Decimal
 
 from django.db import models, transaction
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from paypal.standard.ipn.models import PayPalIPN
 
@@ -18,7 +21,7 @@ class ManualPaymentType(models.IntegerChoices):
 
 
 class PaymentManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return (
             super()
             .get_queryset()
@@ -36,7 +39,7 @@ class PaymentManager(models.Manager):
     def received_since(self, since: datetime):
         return self.filter(created_at__gt=since)
 
-    def create(self, source_instance=None, **kwargs):
+    def create(self, source_instance: PaymentModel | None = None, **kwargs) -> Payment:
         if source_instance is not None:
             source = PaymentSource.from_source_instance(source_instance)
             kwargs["source"] = source
@@ -50,6 +53,8 @@ class PaymentManager(models.Manager):
 # because of an entry error, a new (negative) Payment object is created.
 
 
+# TODO maybe a better name for `Payment` would be `Transaction` / `Record` /
+# `Debit`, to distinguish it from all the concrete PaymentModels
 class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount, related_name="payments", on_delete=models.PROTECT)
@@ -62,7 +67,7 @@ class Payment(NoEditMixin, models.Model):
     class Meta:
         base_manager_name = "objects"
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.source_id is not None and hasattr(self.source.model_source, "payment_description"):
             retval = self.source.model_source.payment_description
         else:
@@ -76,7 +81,7 @@ class Payment(NoEditMixin, models.Model):
         return retval
 
     @property
-    def payment_type(self):
+    def payment_type(self) -> str:
         if self.source_id is None:
             return "[deleted]"
 
@@ -84,7 +89,7 @@ class Payment(NoEditMixin, models.Model):
 
 
 class ManualPaymentManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return super().get_queryset().select_related("account")
 
 
@@ -106,7 +111,7 @@ class ManualPayment(ManualPaymentBase):
     class Meta:
         base_manager_name = "objects"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Manual payment of £{self.amount} from {self.account}"
 
 
@@ -123,7 +128,7 @@ class RefundPayment(ManualPaymentBase):
 
 
 class WriteOffDebtManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return super().get_queryset().select_related("account")
 
 
@@ -153,7 +158,7 @@ class AccountTransferPayment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(default=timezone.now)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.amount} from {self.from_account} to {self.to_account} on {self.created_at}"
 
     @property
@@ -198,7 +203,7 @@ class PaymentSource(models.Model):
         super().save()
 
     @property
-    def payment_type(self):
+    def payment_type(self) -> str:
         if self.manual_payment_id is not None:
             return self.manual_payment.get_payment_type_display()
         elif self.refund_payment_id is not None:
@@ -225,7 +230,7 @@ class PaymentSource(models.Model):
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
     @classmethod
-    def from_source_instance(cls, source_instance: PaymentModel):
+    def from_source_instance(cls, source_instance: PaymentModel) -> PaymentSource:
         """
         Create a PaymentSource from a real payment model
         """
@@ -243,7 +248,7 @@ def credit_account(amount: Decimal, to_account: BookingAccount, from_obj: Paymen
     process_all_payments()
 
 
-def build_paypal_custom_field(account):
+def build_paypal_custom_field(account: BookingAccount) -> str:
     return f"account:{account.id};"
 
 

@@ -1,4 +1,5 @@
 from django import template
+from django.template.context import RequestContext
 from django.urls import reverse
 
 from cciw.bookings.views import BookingStage
@@ -7,7 +8,7 @@ register = template.Library()
 
 
 @register.inclusion_tag("cciw/bookings/bookingbar.html", takes_context=True)
-def bookingbar(context):
+def bookingbar(context: RequestContext) -> dict[str, object]:
     request = context["request"]
     booking_account = request.booking_account
     logged_in = booking_account is not None

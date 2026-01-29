@@ -1,4 +1,5 @@
 from django import template
+from django.template.context import RequestContext
 from django.urls import reverse
 
 from cciw.officers.views.utils.breadcrumbs import BreadCrumb
@@ -7,7 +8,7 @@ register = template.Library()
 
 
 @register.inclusion_tag(filename="cciw/officers/officers_breadcrumbs.html", takes_context=True)
-def officers_breadcrumbs(context):
+def officers_breadcrumbs(context: RequestContext) -> dict[str, object]:
     breadcrumbs: list[BreadCrumb] = list(context.get("breadcrumbs", []))
     if "title" in context and breadcrumbs:
         breadcrumbs.append((None, context["title"]))
@@ -16,7 +17,7 @@ def officers_breadcrumbs(context):
 
 
 @register.filter
-def pretty_join(values: list[str]):
+def pretty_join(values: list[str]) -> str:
     if not values:
         return ""
     if len(values) == 1:

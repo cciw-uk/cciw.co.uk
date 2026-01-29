@@ -47,7 +47,7 @@ def make_policy(
     keep: Keep,
     delete_row=False,
     custom_erasure_methods: dict[str, ErasureMethod] = None,
-):
+) -> Policy:
     model_field_list = model._meta.get_fields()
     field_dict = {f.name: f for f in model_field_list}
     if fields is None:
@@ -70,11 +70,11 @@ def make_policy(
     )
 
 
-def apply_partial_policy(policy):
+def apply_partial_policy(policy: Policy) -> None:
     return apply_data_retention(policy, ignore_missing_models=True)
 
 
-def test_delete_row(db):
+def test_delete_row(db: None):
     policy = make_policy(
         model=Message,
         delete_row=True,
@@ -104,7 +104,7 @@ def test_delete_row(db):
         assert Message.objects.count() == 0
 
 
-def test_blank_data(db):
+def test_blank_data(db: None):
     policy = make_policy(
         model=Application,
         fields=[
@@ -144,7 +144,7 @@ def test_blank_data(db):
         assert application.erased_at.date() == erased_date
 
 
-def test_erase_contact_us_Message(db):
+def test_erase_contact_us_Message(db: None):
     policy = make_policy(
         model=Message,
         delete_row=True,
@@ -155,7 +155,7 @@ def test_erase_contact_us_Message(db):
     _assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
 
 
-def test_erase_mailer_Message(db):
+def test_erase_mailer_Message(db: None):
     policy = make_policy(
         model=mailer_models.Message,
         delete_row=True,
@@ -172,7 +172,7 @@ def test_erase_mailer_Message(db):
     _assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
 
 
-def test_erase_mailer_MessageLog(db):
+def test_erase_mailer_MessageLog(db: None):
     policy = make_policy(
         model=mailer_models.MessageLog,
         delete_row=True,
@@ -186,7 +186,7 @@ def test_erase_mailer_MessageLog(db):
     _assert_instance_deleted_after(instance=message_log, start=start, policy=policy, days=365)
 
 
-def test_erase_Booking(db):
+def test_erase_Booking(db: None):
     policy = make_policy(
         model=Booking,
         delete_row=False,
@@ -210,7 +210,7 @@ def test_erase_Booking(db):
         assert booking.address_line1 == "[deleted]"
 
 
-def test_erase_Booking_PreserveAgeOnCamp(db):
+def test_erase_Booking_PreserveAgeOnCamp(db: None):
     policy = make_policy(
         model=Booking,
         delete_row=False,
@@ -239,7 +239,7 @@ def test_erase_Booking_PreserveAgeOnCamp(db):
             assert booking.birth_date != birth_date
 
 
-def test_erase_BookingAccount(db):
+def test_erase_BookingAccount(db: None):
     """
     Test erasing BookingAccount works
     """
@@ -267,7 +267,7 @@ def test_erase_BookingAccount(db):
         assert account.address_line1 == "[deleted]"
 
 
-def test_BookingAccount_older_than_respects_last_login_at(db):
+def test_BookingAccount_older_than_respects_last_login_at(db: None):
     # Use of `travel()` is not necessary here because `older_than()` takes
     # explicit datetime object, but it helps keep all the tests consistent
     # in style.
@@ -288,7 +288,7 @@ def test_BookingAccount_older_than_respects_last_login_at(db):
         )
 
 
-def test_BookingAccount_not_in_use_respects_payment_outstanding(db):
+def test_BookingAccount_not_in_use_respects_payment_outstanding(db: None):
     policy = make_policy(
         model=BookingAccount,
         delete_row=False,
@@ -315,7 +315,7 @@ def test_BookingAccount_not_in_use_respects_payment_outstanding(db):
         assert account.address_line1 == "123 Main St"
 
 
-def test_BookingAccount_not_in_use_respects_current_booking(db):
+def test_BookingAccount_not_in_use_respects_current_booking(db: None):
     account = bookings_factories.create_booking_account()
     assert account in BookingAccount.objects.not_in_use(timezone.now())
     camp = camps_factories.create_camp(start_date=date.today())
@@ -345,7 +345,7 @@ def test_BookingAccount_not_in_use_respects_current_booking(db):
         assert account in BookingAccount.objects.not_in_use(timezone.now())
 
 
-def test_BookingAccount_not_in_use_query_issue(db):
+def test_BookingAccount_not_in_use_query_issue(db: None):
     # Had some issues with not_in_use() and older_than() combinations with
     # more implementations of them. The error
     # "django.db.utils.ProgrammingError: more than one row returned by a
@@ -381,7 +381,7 @@ def test_BookingAccount_not_in_use_query_issue(db):
         )
 
 
-def test_BookingAccount_older_than_respects_last_payment_date(db):
+def test_BookingAccount_older_than_respects_last_payment_date(db: None):
     """
     BookingAccount 'older than' should consider payment as similar
     to a login in terms of regarding the account as recent.
@@ -403,7 +403,7 @@ def test_BookingAccount_older_than_respects_last_payment_date(db):
         assert account in BookingAccount.objects.not_in_use(timezone.now()).older_than(make_datetime(2001, 2, 2))
 
 
-def test_BookingAccount_older_than_respects_last_booking_camp_date(db):
+def test_BookingAccount_older_than_respects_last_booking_camp_date(db: None):
     """
     BookingAccount 'older than' should consider a booking as similar
     to a login in terms of regarding the account as recent.
@@ -425,7 +425,7 @@ def test_BookingAccount_older_than_respects_last_booking_camp_date(db):
         )
 
 
-def test_erase_User(db):
+def test_erase_User(db: None):
     policy = make_policy(
         model=User,
         delete_row=False,
@@ -446,7 +446,7 @@ def test_erase_User(db):
         assert user.contact_phone_number == "[deleted]"
 
 
-def test_erase_PayPalIPN(db):
+def test_erase_PayPalIPN(db: None):
     policy = make_policy(
         model=PayPalIPN,
         delete_row=False,
@@ -478,7 +478,7 @@ def test_erase_PayPalIPN(db):
         assert ipn.payer_business_name == "[deleted]"
 
 
-def test_keep_forever(django_assert_num_queries, db):
+def test_keep_forever(django_assert_num_queries, db: None):
     policy = make_policy(
         model=Booking,
         delete_row=False,

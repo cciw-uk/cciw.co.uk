@@ -1,8 +1,10 @@
 from django import http
+from django.http import HttpRequest
+from django.http.response import Http404, HttpResponseNotFound
 from django.template import loader
 
 
-def handler404(request, exception, template_name="404.html"):
+def handler404(request: HttpRequest, exception: Http404, template_name: str = "404.html") -> HttpResponseNotFound:
     t = loader.get_template(template_name)
     return http.HttpResponseNotFound(t.render({}, request=request))
 

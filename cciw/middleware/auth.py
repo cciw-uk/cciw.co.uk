@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from urllib.parse import quote as urlquote
 
 from django.conf import settings
@@ -7,7 +8,7 @@ from django.utils.html import escape
 from ..utils.views import redirect_to_password_change_with_next
 
 
-def private_wiki(get_response):
+def private_wiki(get_response: Callable) -> Callable:
     # Make the wiki restricted to logged in users only.  Djiki does not provide
     # this feature yet.
     def middleware(request):
@@ -27,7 +28,7 @@ def private_wiki(get_response):
     return middleware
 
 
-def bad_password_checks(get_response):
+def bad_password_checks(get_response: Callable) -> Callable:
     def middleware(request):
         user = request.user
         if (

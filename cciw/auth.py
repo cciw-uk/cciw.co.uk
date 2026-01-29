@@ -1,6 +1,7 @@
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
+from django.http import HttpRequest
 
 from cciw.accounts.models import User
 
@@ -13,7 +14,9 @@ class CciwAuthBackend:
     # so that adding new validators causes people to change their
     # password after they login, if their password needs it.
 
-    def authenticate(self, request, username=None, password=None, **kwargs):
+    def authenticate(
+        self, request: HttpRequest, username: str | None = None, password: str | None = None, **kwargs
+    ) -> User:
         if username is None or password is None:
             return
         try:
@@ -27,21 +30,21 @@ class CciwAuthBackend:
                 self.check_password_validation(user, password)
                 return user
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: int) -> User:
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return None
         return user if self.user_can_authenticate(user) else None
 
-    def user_can_authenticate(self, user):
+    def user_can_authenticate(self, user: User) -> bool:
         """
         Reject users with is_active=False. Custom user models that don't have
         that attribute are allowed.
         """
         return user.is_active
 
-    def _get_all_permissions(self, user_obj):
+    def _get_all_permissions(self, user_obj: User) -> set[str]:
         # In contrast to django.contrib.auth.backends.ModelBackend, we
         # deliberarely don't have user level permissions, everything must be
         # defined on Role.
@@ -52,21 +55,21 @@ class CciwAuthBackend:
         perms = perms.values_list("content_type__app_label", "codename").order_by()
         return {f"{ct}.{name}" for ct, name in perms}
 
-    def get_all_permissions(self, user_obj, obj=None):
+    def get_all_permissions(self, user_obj: User, obj: None = None) -> set[str]:
         if not user_obj.is_active or user_obj.is_anonymous or obj is not None:
             return set()
         if not hasattr(user_obj, "_perm_cache"):
             user_obj._perm_cache = self._get_all_permissions(user_obj)
         return user_obj._perm_cache
 
-    def has_perm(self, user_obj, perm, obj=None):
+    def has_perm(self, user_obj: User, perm: str, obj: None = None) -> bool:
         if not user_obj.is_active:
             return False
         if perm == "accounts.view_user" and user_obj.can_manage_application_forms:
             return True
         return perm in self.get_all_permissions(user_obj, obj=obj)
 
-    def has_module_perms(self, user_obj: User, app_label: str):
+    def has_module_perms(self, user_obj: User, app_label: str) -> bool:
         """
         Returns True if user_obj has any permissions in the given app_label.
         """
@@ -105,7 +108,7 @@ class CciwAuthBackend:
             perm[: perm.index(".")] == app_label for perm in self.get_all_permissions(user_obj)
         )
 
-    def check_password_validation(self, user, password):
+    def check_password_validation(self, user: User, password: str):
         if not user.password_validation_needs_checking():
             return
 

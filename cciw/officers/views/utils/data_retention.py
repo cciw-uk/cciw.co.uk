@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from enum import StrEnum
 from functools import wraps
 
@@ -49,7 +50,7 @@ for val in DataRetentionNotice:
     assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
 
-def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title):
+def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title: str) -> Callable:
     """
     Decorator for downloads to show a prompt to ensure
     user knows about data retention

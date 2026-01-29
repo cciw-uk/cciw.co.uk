@@ -1,10 +1,11 @@
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 
 from cciw.cciwmain.models import Site
 
 
-def index(request):
+def index(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/sites/index.html",
@@ -15,7 +16,7 @@ def index(request):
     )
 
 
-def detail(request, slug: str):
+def detail(request: HttpRequest, slug: str) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/sites/detail.html",

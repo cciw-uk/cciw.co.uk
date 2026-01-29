@@ -22,10 +22,10 @@ class Site(models.Model):
     long_name = models.CharField("Long name", max_length=50, blank=False)
     info = models.TextField("Description (HTML)")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.short_name
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("cciw-cciwmain-sites_detail", kwargs=dict(slug=self.slug_name))
 
     def save(self, **kwargs):
@@ -41,7 +41,7 @@ class Person(models.Model):
     info = models.TextField("Information (Plain text)", blank=True)
     users = models.ManyToManyField(User, verbose_name="Associated admin users", related_name="people", blank=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     class Meta:
@@ -70,7 +70,7 @@ class CampName(models.Model):
     class Meta:
         ordering = ("name",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     def natural_key(self):
@@ -118,10 +118,10 @@ class CampManager(models.Manager):
 
 
 class CampQuerySet(models.QuerySet):
-    def include_other_years_info(self):
+    def include_other_years_info(self) -> "CampQuerySet":
         return self.prefetch_related("camp_name__camps")
 
-    def by_camp_id(self, camp_id: CampId):
+    def by_camp_id(self, camp_id: CampId) -> "CampQuerySet":
         return self.filter(year=camp_id.year, camp_name__slug=camp_id.slug)
 
 
@@ -180,8 +180,8 @@ class Camp(models.Model):
     def natural_key(self):
         return (self.year, self.slug_name)
 
-    def __str__(self):
-        leaders = list(self.leaders.all())
+    def __str__(self) -> str:
+        leaders: list[Person] = list(self.leaders.all())
         chaplain = None
         try:
             chaplain = self.chaplain
@@ -215,7 +215,7 @@ class Camp(models.Model):
     def next_camp(self) -> "Camp | None":
         return Camp.objects.filter(year__gt=self.year, camp_name=self.camp_name).order_by("year").first()
 
-    def _format_leaders(self, leaders):
+    def _format_leaders(self, leaders: list[Person]) -> str:
         if len(leaders) > 0:
             return ", ".join(str(leader) for leader in leaders)
         else:
@@ -273,7 +273,7 @@ class Camp(models.Model):
     def get_link(self):
         return format_html("<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("cciw-cciwmain-camps_detail", kwargs=dict(year=self.year, slug=self.slug_name))
 
     def is_past(self) -> bool:

@@ -16,7 +16,7 @@ class PlainPasswordHasher(BasePasswordHasher):
         """
         return ""
 
-    def encode(self, password, salt):
+    def encode(self, password: str, salt: str) -> str:
         """Return ``password`` encoded with noop algorithm; whatever ``salt``.
         >>> hasher = PlainPasswordHasher()
         >>> hasher.encode('secret', 'fake salt')
@@ -24,7 +24,7 @@ class PlainPasswordHasher(BasePasswordHasher):
         """
         return f"{self.algorithm}$${password}"
 
-    def verify(self, password, encoded):
+    def verify(self, password: str, encoded: str) -> bool:
         """Return ``True`` if ``password`` matches ``encoded``.
         >>> hasher = PlainPasswordHasher()
         >>> hasher.verify('right', 'plain$$right')

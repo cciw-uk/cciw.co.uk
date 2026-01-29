@@ -159,7 +159,7 @@ def camp_serious_slacker_list(camp: Camp) -> list[User]:
     ]
 
 
-def officer_data_to_spreadsheet(camp: Camp):
+def officer_data_to_spreadsheet(camp: Camp) -> ExcelSimpleBuilder:
     spreadsheet = ExcelSimpleBuilder()
     # Import here to avoid import cycle
     from cciw.officers.applications import applications_for_camp

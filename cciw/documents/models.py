@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import io
 
 from django.core.files.base import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -104,7 +107,7 @@ class Document(models.Model):
         abstract = True
 
     @classmethod
-    def from_upload(cls, uploaded_file):
+    def from_upload(cls, uploaded_file: InMemoryUploadedFile) -> Document:
         """
         Build a document from an UploadedFile object
         """
@@ -116,14 +119,14 @@ class Document(models.Model):
             content=content,
         )
 
-    def as_field_file(self):
+    def as_field_file(self) -> DocumentModelFile:
         """
         Returns FieldFile (compatible) instance for the document.
         """
         return DocumentModelFile(self)
 
     @property
-    def url(self):
+    def url(self) -> str:
         return self.as_field_file().url
 
     @property
@@ -140,7 +143,7 @@ class DocumentModelFile(File):
     File subclass that handles instances of Document (subclass)
     """
 
-    def __init__(self, document):
+    def __init__(self, document: Document):
         self.document = document
 
     @property
@@ -152,11 +155,11 @@ class DocumentModelFile(File):
         return io.BytesIO(self.document.content)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.document.filename
 
     @property
-    def url(self):
+    def url(self) -> str:
         # This is used by FileInput, and by other download links via Document.url
         model = self.document.__class__
         return reverse(

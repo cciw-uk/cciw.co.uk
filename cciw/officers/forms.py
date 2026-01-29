@@ -19,7 +19,7 @@ from .widgets import ExplicitBooleanFieldSelect
 
 
 class StripStringsMixin:
-    def clean(self):
+    def clean(self) -> dict[str, str | bool]:
         for field, value in self.cleaned_data.items():
             if isinstance(value, str):
                 self.cleaned_data[field] = value.strip()
@@ -39,7 +39,7 @@ class CreateOfficerForm(BaseForm):
     last_name = forms.CharField()
     email = forms.EmailField()
 
-    def save(self):
+    def save(self) -> User:
         return create_officer(
             self.cleaned_data["first_name"], self.cleaned_data["last_name"], self.cleaned_data["email"]
         )
@@ -180,7 +180,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
             )
             self.fields["concerns"].label += contact_message
 
-    def save(self, referee, *, previous_reference: Reference | None, user: User | None = None):
+    def save(self, referee: Referee, *, previous_reference: Reference | None, user: User | None = None):
         obj = super().save(commit=False)
         obj.referee = referee
         obj.created_on = date.today()
@@ -189,10 +189,10 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
         self.log_reference_received(referee, user=user)
         self.send_emails(obj)
 
-    def log_reference_received(self, referee, *, user: User | None = None):
+    def log_reference_received(self, referee: Referee, *, user: User | None = None):
         referee.log_reference_received(timezone.now())
 
-    def send_emails(self, reference):
+    def send_emails(self, reference: Reference):
         send_leaders_reference_email(reference)
 
 
@@ -205,7 +205,7 @@ normal_textarea = forms.Textarea(attrs={"cols": 40, "rows": 10})
 small_textarea = forms.Textarea(attrs={"cols": 40, "rows": 5})
 
 
-def fix_ref_form(form_class):
+def fix_ref_form(form_class: type[ReferenceForm] | type[AdminReferenceForm]):
     form_class.base_fields["capacity_known"].widget = small_textarea
     form_class.base_fields["known_offences"].widget = ExplicitBooleanFieldSelect()
     form_class.base_fields["known_offences_details"].widget = normal_textarea

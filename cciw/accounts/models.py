@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 import yaml
@@ -20,10 +21,9 @@ from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.functional import cached_property
 
 if TYPE_CHECKING:
-    from cciw.cciwmain.models import Camp
+    from cciw.cciwmain.models import Camp, CampQuerySet
 
 # These names need to be synced with /config/static_roles.yaml
 WIKI_USERS_ROLE_NAME = "Wiki users"
@@ -50,7 +50,7 @@ WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_
 logger = logging.getLogger(__name__)
 
 
-def user_has_role(user, role_names):
+def user_has_role(user: User, role_names: list[str]) -> bool:
     if len(role_names) == 0:
         return False
     # We generally use this multiple times, so it is usually going to be much
@@ -70,22 +70,22 @@ def user_has_role(user, role_names):
     return any(role.name == name for name in role_names for role in roles)
 
 
-def get_camp_manager_role_users():
+def get_camp_manager_role_users() -> UserQuerySet:
     """
     Returns all users who are in the 'camp admin' roles
     """
     return User.objects.filter(roles__in=Role.objects.filter(name__in=CAMP_MANAGER_ROLES))
 
 
-def get_role_users(role_name):
+def get_role_users(role_name: str) -> UserQuerySet:
     return Role.objects.get(name=role_name).members.all()
 
 
-def get_role_email_recipients(role_name):
+def get_role_email_recipients(role_name: str) -> UserQuerySet:
     return Role.objects.get(name=role_name).email_recipients.all()
 
 
-def get_reference_contact_users():
+def get_reference_contact_users() -> UserQuerySet:
     users = get_role_users(REFERENCE_CONTACT_ROLE_NAME)
     for user in users:
         if not user.contact_phone_number:
@@ -94,12 +94,12 @@ def get_reference_contact_users():
 
 
 class UserQuerySet(models.QuerySet):
-    def older_than(self, before_datetime):
+    def older_than(self, before_datetime: datetime) -> UserQuerySet:
         return self.filter(
             Q(joined_at__lt=before_datetime) & (Q(last_login__isnull=True) | (Q(last_login__lt=before_datetime)))
         )
 
-    def not_in_use(self, now: datetime):
+    def not_in_use(self, now: datetime) -> UserQuerySet:
         # User can be considered not in use if the officer is not
         # invited to any future camps. In other words, removing the officer from
         # future camp list will free up User records for manual erasure
@@ -107,10 +107,10 @@ class UserQuerySet(models.QuerySet):
 
         return self.exclude(self._in_use_q(now))
 
-    def in_use(self, now: datetime):
+    def in_use(self, now: datetime) -> UserQuerySet:
         return self.filter(self._in_use_q(now))
 
-    def _in_use_q(self, now: datetime):
+    def _in_use_q(self, now: datetime) -> models.Q:
         from cciw.officers.models import Invitation
 
         # TODO other ways an officer might be in use?
@@ -191,15 +191,15 @@ class User(AbstractBaseUser):
     class Meta:
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.full_name} <{self.email}>"
 
     @property
-    def is_active_staff(self):
+    def is_active_staff(self) -> bool:
         return self.is_staff and self.is_active
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
 
     # Methods copied from AbstractUser
@@ -213,7 +213,7 @@ class User(AbstractBaseUser):
         """
         return self.full_name
 
-    def get_short_name(self):
+    def get_short_name(self) -> str:
         """Return the short name for the user."""
         return self.first_name
 
@@ -228,7 +228,7 @@ class User(AbstractBaseUser):
             permissions.update(backend.get_all_permissions(self, obj))
         return permissions
 
-    def has_perm(self, perm, obj=None):
+    def has_perm(self, perm: str, obj: models.Model | None = None):
         """
         Return True if the user has the specified permission. Query all
         available auth backends, but return immediately if any backend returns
@@ -269,7 +269,7 @@ class User(AbstractBaseUser):
         """
         return all(self.has_perm(perm, obj) for perm in perm_list)
 
-    def has_module_perms(self, app_label):
+    def has_module_perms(self, app_label: str):
         """
         Return True if the user has any permissions in the given app label.
         Use similar logic as has_perm(), above.
@@ -296,10 +296,10 @@ class User(AbstractBaseUser):
     def mark_password_validation_not_done(self):
         self.password_validators_used = ""
 
-    def password_validation_needs_checking(self):
+    def password_validation_needs_checking(self) -> bool:
         return self.password_validators_used != _current_password_validators_as_string()
 
-    def set_password(self, password):
+    def set_password(self, password: str) -> None:
         retval = super().set_password(password)
         # To avoid getting stuck on set password page,
         # we have to clear this flag
@@ -316,15 +316,15 @@ class User(AbstractBaseUser):
 
     # Helpers for roles
     @cached_property
-    def is_booking_secretary(self):
+    def is_booking_secretary(self) -> bool:
         return self.is_active_staff and user_has_role(self, [BOOKING_SECRETARY_ROLE_NAME])
 
     @cached_property
-    def is_treasurer(self):
+    def is_treasurer(self) -> bool:
         return self.is_active_staff and user_has_role(self, [TREASURER_ROLE_NAME])
 
     @cached_property
-    def is_camp_admin(self):
+    def is_camp_admin(self) -> bool:
         """
         Returns True if the user is an admin for any camp, or has rights
         for editing camp/officer/reference/DBS information
@@ -334,19 +334,19 @@ class User(AbstractBaseUser):
         )
 
     @cached_property
-    def is_potential_camp_officer(self):
+    def is_potential_camp_officer(self) -> bool:
         return self.is_active_staff
 
     @cached_property
-    def is_cciw_secretary(self):
+    def is_cciw_secretary(self) -> bool:
         return self.is_active_staff and user_has_role(self, [SECRETARY_ROLE_NAME])
 
     @cached_property
-    def is_committee_member(self):
+    def is_committee_member(self) -> bool:
         return self.is_active_staff and user_has_role(self, [COMMITTEE_ROLE_NAME])
 
     @cached_property
-    def is_dbs_officer(self):
+    def is_dbs_officer(self) -> bool:
         return self.is_active_staff and user_has_role(self, [DBS_OFFICER_ROLE_NAME])
 
     @cached_property
@@ -354,7 +354,7 @@ class User(AbstractBaseUser):
         return self.is_active_staff and user_has_role(self, WIKI_ROLES)
 
     @cached_property
-    def can_manage_application_forms(self):
+    def can_manage_application_forms(self) -> bool:
         return self.has_perm("officers.change_application") or self.is_camp_admin or self.is_dbs_officer
 
     # These methods control permissions in admin
@@ -368,7 +368,7 @@ class User(AbstractBaseUser):
             return True
         return False
 
-    def can_view_camp(self, camp):
+    def can_view_camp(self, camp: Camp):
         # NB also viewable_camps
         if self.has_perm("cciwmain.view_camp"):
             return True
@@ -378,7 +378,7 @@ class User(AbstractBaseUser):
         return False
 
     @cached_property
-    def viewable_camps(self):
+    def viewable_camps(self) -> CampQuerySet:
         return self.camps_as_admin_or_leader
 
     @cached_property
@@ -389,7 +389,7 @@ class User(AbstractBaseUser):
             return True
         return False
 
-    def can_edit_camp(self, camp):
+    def can_edit_camp(self, camp: Camp):
         if self.has_perm("cciwmain.change_camp"):
             return True
 
@@ -398,7 +398,7 @@ class User(AbstractBaseUser):
         return False
 
     @cached_property
-    def editable_camps(self):
+    def editable_camps(self) -> list[Camp]:
         # We only allow current camps to be edited by
         # camp leaders, to avoid confusion and mistakes,
         # and avoid old leaders having access indefinitely
@@ -437,7 +437,7 @@ class User(AbstractBaseUser):
 
 
 class RoleQuerySet(models.QuerySet):
-    def with_address(self):
+    def with_address(self) -> RoleQuerySet:
         return self.exclude(email="")
 
 
@@ -505,7 +505,7 @@ class Role(models.Model):
         return (self.name,)
 
 
-def get_or_create_perm(app_label, model, codename, create_if_missing=True):
+def get_or_create_perm(*, app_label: str, model: str, codename: str, create_if_missing: bool = True) -> Permission:
     content_type = ContentType.objects.get_by_natural_key(app_label, model)
     try:
         return Permission.objects.get(codename=codename, content_type=content_type)
@@ -517,7 +517,7 @@ def get_or_create_perm(app_label, model, codename, create_if_missing=True):
             raise RuntimeError(f"Permission matching {codename=}, {content_type=} does not exist")
 
 
-def setup_auth_roles(check_only=False):
+def setup_auth_roles(*, check_only: bool = False):
     permissions_conf = yaml.load(open(settings.ROLES_CONFIG_FILE), Loader=yaml.SafeLoader)
     roles = permissions_conf["Roles"]
     for role_name, role_details in roles.items():
@@ -531,13 +531,15 @@ def setup_auth_roles(check_only=False):
             app_and_model, perm = p.split("/")
             app_name, model = app_and_model.lower().split(".")
             perm = f"{perm}_{model}"
-            perms.append(get_or_create_perm(app_name, model, perm, create_if_missing=not check_only))
+            perms.append(
+                get_or_create_perm(app_label=app_name, model=model, codename=perm, create_if_missing=not check_only)
+            )
         with transaction.atomic():
             if role is not None and not check_only:
                 role.permissions.set(perms)
 
 
-def _current_password_validators_as_string():
+def _current_password_validators_as_string() -> str:
     # Simple stringification that can handle AUTH_PASSWORD_VALIDATORS including
     # options. Applies canoninical ordering of dict keys for determinism.
     def val_to_str(val):

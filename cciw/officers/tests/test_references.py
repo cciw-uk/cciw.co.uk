@@ -14,11 +14,13 @@ from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Referee, ReferenceAction, close_enough_referee_match, get_previous_references
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RolesSetupMixin
-from cciw.utils.tests.factories import Auto
+from cciw.utils.tests.factories import Auto, _Auto
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 
-def create_camp_with_leader_and_officer(year=Auto, future=Auto, officer_role: str = Auto):
+def create_camp_with_leader_and_officer(
+    year: _Auto | int = Auto, future: bool | _Auto = Auto, officer_role: str = Auto
+) -> tuple[Camp, User, User]:
     """
     Creates a camp with a leader and officer for testing reference requests
     """
@@ -280,7 +282,7 @@ def test_exact_match_with_title():
     )
 
 
-def make_local_url(url):
+def make_local_url(url: str) -> str:
     url = url.replace("https://" + settings.PRODUCTION_DOMAIN, "")
     assert settings.PRODUCTION_DOMAIN not in url
     return url

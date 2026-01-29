@@ -40,7 +40,7 @@ FIRST_TIMER_PERCENTAGE = 10
 
 
 class BookingQueueEntryQuerySet(models.QuerySet):
-    def active(self):
+    def active(self) -> BookingQueueEntryQuerySet:
         return self.exclude(is_active=False)
 
     def not_in_use(self, now: datetime):
@@ -51,7 +51,7 @@ class BookingQueueEntryQuerySet(models.QuerySet):
         # See also BookingQuerySet.older_than()
         return self.filter(created_at__lt=before_datetime, booking__camp__end_date__lt=before_datetime)
 
-    def for_camp(self, camp: Camp):
+    def for_camp(self, camp: Camp) -> BookingQueueEntryQuerySet:
         return self.filter(booking__camp=camp)
 
 
@@ -392,7 +392,7 @@ def add_rank_info(bookings: list[Booking], year_config: YearConfig, camp: Camp):
         )
 
 
-def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig):
+def get_queue_position_ranks(bookings: list[Booking], year_config: YearConfig) -> dict[BookingId, int]:
     """
     Define 'queue_position_ranks', based on 'queue_position' and the initial booking period.
     """

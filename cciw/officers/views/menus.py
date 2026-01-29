@@ -1,4 +1,5 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpRequest
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
 
@@ -13,7 +14,7 @@ from .booking_secretary import BOOKING_STATS_PREVIOUS_YEARS
 # /officers/
 @staff_member_required
 @never_cache
-def index(request):
+def index(request: HttpRequest) -> TemplateResponse:
     """Displays a list of links/buttons for various actions."""
 
     # Handle redirects, since this page is LOGIN_URL

@@ -3,13 +3,14 @@ Utility functions and base classes that are common to all views etc.
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import wraps
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.html import format_html_join
 
@@ -21,13 +22,13 @@ class CampId:
     year: int
     slug: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         # This has to be the inverse of CampIdConverter.to_python and match
         # CampIdConverter.regex
         return f"{self.year}-{self.slug}"
 
 
-def htmx_form_validate(*, form_class: type):
+def htmx_form_validate(*, form_class: type) -> Callable:
     """
     Instead of a normal view, just do htmx validation using the given form class,
     for a single field and return the single div that needs to be replaced.
@@ -80,7 +81,7 @@ def get_thisyear() -> int:
     return _thisyear
 
 
-def standard_subs(value):
+def standard_subs(value: str) -> str:
     """Standard substitutions made on HTML content"""
     return (
         value.replace("{{thisyear}}", str(get_thisyear()))
@@ -97,12 +98,12 @@ def create_breadcrumb(links):
     return format_html_join(" :: ", "{0}", ((link,) for link in links))
 
 
-def standard_processor(request):
+def standard_processor(request: HttpRequest) -> dict[str, object]:
     """
     Processor that does standard processing of request that we need for all
     pages.
     """
-    context = {}
+    context: dict[str, object] = {}
     format = request.GET.get("format")
     if format is not None:
         # json or atom - we are not rendering typical pages, and don't want the
@@ -150,5 +151,5 @@ def standard_processor(request):
     return context
 
 
-def get_current_domain():
+def get_current_domain() -> str:
     return Site.objects.get_current().domain

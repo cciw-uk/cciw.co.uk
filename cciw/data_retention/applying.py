@@ -21,7 +21,7 @@ from typing import Protocol
 
 from django.db import models, transaction
 from django.db.models.expressions import RawSQL
-from django.db.models.fields import Field
+from django.db.models.fields import CharField, DateField, Field
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django_countries.fields import CountryField
@@ -38,18 +38,19 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.queue import BookingQueueEntry
 from cciw.contact_us.models import Message
+from cciw.data_retention.datatypes import Policy
 from cciw.officers.models import Application
 
 from .datatypes import ErasureMethod, ForeverType, Group, ModelDetail
 
 
-def load_actual_data_retention_policy():
+def load_actual_data_retention_policy() -> Policy:
     from .loading import load_data_retention_policy
 
     return load_data_retention_policy(available_erasure_methods=CUSTOM_ERASURE_METHODS)
 
 
-def apply_data_retention(policy=None, ignore_missing_models=False):
+def apply_data_retention(policy: Policy | None = None, *, ignore_missing_models: bool = False):
     from .checking import get_data_retention_policy_issues
 
     if policy is None:
@@ -133,7 +134,7 @@ class DeleteCommand:
     def record_count(self) -> int:
         return self.records.count()
 
-    def as_json(self):
+    def as_json(self) -> dict[str, object]:
         return {
             "type": "DeleteCommand",
             "group": {"name": self.group.name},
@@ -176,7 +177,7 @@ class UpdateCommand:
     def record_count(self) -> int:
         return self.records.count()
 
-    def as_json(self):
+    def as_json(self) -> dict[str, object]:
         return {
             "type": "UpdateCommand",
             "group": {"name": self.group.name},
@@ -193,7 +194,7 @@ class UpdateCommand:
         }
 
 
-def get_not_in_use_records(now: datetime, model: type):
+def get_not_in_use_records(now: datetime, model: type) -> QuerySet:
     """
     For a model, returns records that are not in business use
     """
@@ -202,7 +203,7 @@ def get_not_in_use_records(now: datetime, model: type):
     return NOT_IN_USE_METHODS[model](now)
 
 
-def get_automatically_erasable_records(now: datetime, before_datetime: date, model: type):
+def get_automatically_erasable_records(now: datetime, before_datetime: date, model: type) -> QuerySet:
     not_in_use_qs = get_not_in_use_records(now, model)
     qs = OLDER_THAN_METHODS[model](not_in_use_qs, before_datetime)
     assert qs.model == model
@@ -232,7 +233,7 @@ def build_single_model_erase_command(
         return UpdateCommand(group=group, records=records, update_dict=update_dict)
 
 
-def update_erased_at_field(now: datetime):
+def update_erased_at_field(now: datetime) -> RawSQL:
     return RawSQL(
         """
         CASE WHEN erased_at IS NULL THEN %s
@@ -255,7 +256,7 @@ DELETED_BYTES = b"[deleted]"
 
 
 class EmailFieldErasure(ErasureMethod):
-    def allowed_for_field(self, field: Field):
+    def allowed_for_field(self, field: Field) -> bool:
         return isinstance(field, models.EmailField)
 
     def build_update_dict(self, field: Field):
@@ -267,7 +268,7 @@ class EmailFieldErasure(ErasureMethod):
 
 
 class CountryFieldErasure(ErasureMethod):
-    def allowed_for_field(self, field: Field):
+    def allowed_for_field(self, field: Field) -> bool:
         return isinstance(field, CountryField)
 
     def build_update_dict(self, field: Field):
@@ -279,10 +280,10 @@ class CountryFieldErasure(ErasureMethod):
 
 
 class CharFieldErasure(ErasureMethod):
-    def allowed_for_field(self, field: Field):
+    def allowed_for_field(self, field: Field) -> bool:
         return isinstance(field, models.CharField)
 
-    def build_update_dict(self, field: Field):
+    def build_update_dict(self, field: Field) -> dict[str, str]:
         key = field.name
         if field.null:
             return {key: None}
@@ -354,7 +355,7 @@ DEFAULT_ERASURE_METHODS: list[ErasureMethod] = [
 ]
 
 
-def find_erasure_method(field):
+def find_erasure_method(field: CharField) -> CharFieldErasure:
     for method in DEFAULT_ERASURE_METHODS:
         if method.allowed_for_field(field):
             return method
@@ -410,10 +411,10 @@ ERASED_AT_EXCEPTIONS = [
 
 
 class PreserveAgeOnCamp(ErasureMethod):
-    def allowed_for_field(self, field):
+    def allowed_for_field(self, field: DateField) -> bool:
         return field.model == Booking and field.name == "birth_date"
 
-    def build_update_dict(self, field: Field):
+    def build_update_dict(self, field: Field) -> dict[str, RawSQL]:
         return {
             "birth_date":
             # Birthdates after YYYY-08-31 get counted as next school year,

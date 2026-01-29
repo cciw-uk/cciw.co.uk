@@ -7,7 +7,7 @@ For CCiW specific utilities see cciw.cciwmain.common
 import json
 import re
 import unicodedata
-from datetime import date
+from datetime import date, datetime
 from typing import TypeGuard
 
 from django.conf import settings
@@ -34,7 +34,7 @@ class LazyEncoder(json.JSONEncoder):
 json_encoder = LazyEncoder(ensure_ascii=False)
 
 
-def python_to_json(obj):
+def python_to_json(obj: dict[str, object]) -> str:
     return json_encoder.encode(obj)
 
 
@@ -78,7 +78,7 @@ def get_protected_download(folder, filename):
     return response
 
 
-def ensure_timezone_aware(datetime_obj):
+def ensure_timezone_aware(datetime_obj: datetime) -> datetime:
     if timezone.is_aware(datetime_obj):
         return datetime_obj
     else:

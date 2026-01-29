@@ -19,7 +19,7 @@ class Color:
         assert 0 <= self.blue <= 255
 
     @classmethod
-    def from_rgb_string(cls, rgb_string) -> Color:
+    def from_rgb_string(cls, rgb_string: str) -> Color:
         assert rgb_string[0] == "#"
         rgb = rgb_string[1:]
         red, green, blue = rgb[0:2], rgb[2:4], rgb[4:6]

@@ -5,7 +5,7 @@
 # 'verbose=True'.  A bit icky...
 
 from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -16,7 +16,7 @@ from cciw.accounts.models import User
 from cciw.cciwmain import common
 
 
-def make_username(first_name, last_name, guess_number=1):
+def make_username(first_name: str, last_name: str, guess_number: int = 1) -> str:
     """
     Makes a username for an officer, based on 'first_name' and 'last_name',
     checking in the DB for existing usernames.
@@ -32,7 +32,7 @@ def make_username(first_name, last_name, guess_number=1):
         return guess
 
 
-def create_officer(first_name, last_name, email):
+def create_officer(first_name: str, last_name: str, email: str) -> User:
     """
     Create an officer with the specified first_name, last_name, email.
     Officer will be emailed.  Returns the created User object.
@@ -43,7 +43,7 @@ def create_officer(first_name, last_name, email):
     return officer
 
 
-def _create_officer(username, first_name, last_name, email):
+def _create_officer(username: str, first_name: str, last_name: str, email: str) -> User:
     officer = User(username=username)
     officer.joined_at = timezone.now()
     officer.last_login = None
@@ -57,7 +57,9 @@ def _create_officer(username, first_name, last_name, email):
     return officer
 
 
-def email_officer(user, update=False, token_generator=default_token_generator):
+def email_officer(
+    user: User, *, update: bool = False, token_generator: PasswordResetTokenGenerator = default_token_generator
+):
     subject = "[CCIW] Application form system"
     msg = render_to_string(
         "cciw/officers/add_officer_email.txt",

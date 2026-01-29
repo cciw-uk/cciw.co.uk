@@ -121,10 +121,10 @@ class Warning:
 
 
 class BookingApprovalQuerySet(models.QuerySet):
-    def need_approving(self):
+    def need_approving(self) -> BookingApprovalQuerySet:
         return self.current().filter(status=ApprovalStatus.PENDING)
 
-    def current(self):
+    def current(self) -> BookingApprovalQuerySet:
         return self.filter(is_current=True)
 
 
@@ -154,7 +154,7 @@ class BookingApproval(models.Model):
     def is_pending(self) -> bool:
         return self.status == ApprovalStatus.PENDING
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.get_type_display()}: {self.get_status_display()} for {self.booking.name}"
 
     @property

@@ -45,7 +45,7 @@ class DBSInfo:
         return self.requires_alert_leaders or self.requires_send_dbs_form_or_request or self.applicant_rejected
 
     @property
-    def _action_possible(self):
+    def _action_possible(self) -> bool:
         return not self.has_recent_dbs and self.has_application_form
 
     @property
@@ -65,7 +65,7 @@ class DBSInfo:
         return not self.applicant_rejected and self._action_possible
 
     @property
-    def can_check_dbs_online(self):
+    def can_check_dbs_online(self) -> bool:
         return (
             self._action_possible
             and not self.applicant_rejected
@@ -181,7 +181,7 @@ def get_officers_with_dbs_info_for_camps(
     return retval
 
 
-def get_update_service_dbs_numbers(officers):
+def get_update_service_dbs_numbers(officers: list[User]) -> dict[int, DBSNumber]:
     # Find DBS numbers than can be used with the update service.
     # Two sources:
     # 1) DBSCheck

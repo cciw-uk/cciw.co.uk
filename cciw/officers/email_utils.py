@@ -3,20 +3,22 @@ Utilities for sending email with attachments
 """
 
 from django.core.mail import EmailMessage, get_connection
+from django.utils.safestring import SafeString
 
 from cciw.accounts.models import User
 
 
 def send_mail_with_attachments(
-    subject,
-    message,
-    from_email,
-    recipient_list,
-    fail_silently=False,
-    auth_user=None,
-    auth_password=None,
-    attachments=None,
-):
+    subject: str,
+    message: str,
+    from_email: str,
+    recipient_list: list[str],
+    *,
+    fail_silently: bool = False,
+    auth_user: None = None,
+    auth_password: None = None,
+    attachments: list[tuple[str, SafeString, str]] | None = None,
+) -> int:
     connection = get_connection(username=auth_user, password=auth_password, fail_silently=fail_silently)
     return EmailMessage(
         subject=subject,

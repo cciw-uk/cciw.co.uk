@@ -1,11 +1,12 @@
 from django.conf import settings
+from django.http import HttpRequest
 from django.template.response import TemplateResponse
 
 from cciw.utils.literate_yaml import literate_yaml_to_rst
 from cciw.utils.rst import remove_rst_title, rst_to_html
 
 
-def data_retention_policy(request):
+def data_retention_policy(request: HttpRequest) -> TemplateResponse:
     policy = open(settings.DATA_RETENTION_CONFIG_FILE).read()
     return TemplateResponse(
         request,

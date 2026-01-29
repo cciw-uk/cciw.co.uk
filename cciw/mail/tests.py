@@ -6,6 +6,7 @@ import pytest
 from django.core import mail
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
+from django.core.mail.message import EmailMessage
 from django.test.utils import override_settings
 
 
@@ -20,7 +21,7 @@ class EmailSubjectAssertionError(AssertionError):
 
 
 class CheckSubjectMixin:
-    def check_messages(self, messages):
+    def check_messages(self, messages: list[EmailMessage]):
         # Subject check
         for m in messages:
             if not m.subject.startswith("[CCIW]"):
@@ -31,7 +32,7 @@ class CheckSubjectMixin:
 class TestMailBackend(CheckSubjectMixin, LocMemEmailBackend):
     __test__ = False
 
-    def send_messages(self, messages):
+    def send_messages(self, messages: list[EmailMessage]) -> int:
         self.check_messages(messages)
 
         return super().send_messages(messages)
@@ -46,7 +47,7 @@ class QueuedMailTestMailBackend(CheckSubjectMixin, BaseEmailBackend):
         if not hasattr(mail, "outbox"):
             mail.outbox = []
 
-    def send_messages(self, messages):
+    def send_messages(self, messages: list[EmailMessage]) -> int:
         self.check_messages(messages)
         msg_count = 0
         for message in messages:
@@ -56,7 +57,7 @@ class QueuedMailTestMailBackend(CheckSubjectMixin, BaseEmailBackend):
         return msg_count
 
 
-def _is_forwarded_message(raw_message):
+def _is_forwarded_message(raw_message: EmailMessage) -> bool:
     message = email.message_from_bytes(raw_message.message().as_bytes(), policy=policy.SMTP)
     return "X-Original-From" in message
 

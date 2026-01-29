@@ -1,6 +1,4 @@
-from typing import Any
-
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -11,7 +9,9 @@ from cciw.officers.forms import ReferenceForm
 from cciw.officers.models import Referee, Reference, empty_reference
 
 
-def get_initial_reference_form(reference: Reference, referee: Referee, prev_reference: Reference | None, form_class):
+def get_initial_reference_form(
+    reference: Reference | None, referee: Referee, prev_reference: Reference | None, form_class: type[ReferenceForm]
+) -> ReferenceForm:
     initial_data = initial_reference_form_data(referee, prev_reference)
     if reference is not None:
         # For the case where a Reference has been created (accidentally)
@@ -26,11 +26,11 @@ def get_initial_reference_form(reference: Reference, referee: Referee, prev_refe
     return form
 
 
-def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | None = None):
+def create_reference(request: HttpRequest, referee_id: int, hash: str, prev_ref_id: int | None = None) -> HttpResponse:
     """
     View for allowing referee to submit reference (create the Reference object)
     """
-    context: dict[str, Any] = {}
+    context: dict[str, object] = {}
     if hash != make_ref_form_url_hash(referee_id, prev_ref_id):
         context["incorrect_url"] = True
     else:
@@ -66,16 +66,16 @@ def create_reference(request, referee_id: int, hash: str, prev_ref_id: int | Non
     return TemplateResponse(request, "cciw/officers/create_reference.html", context)
 
 
-def create_reference_thanks(request):
+def create_reference_thanks(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(request, "cciw/officers/create_reference_thanks.html", {})
 
 
-def initial_reference_form_data(referee: Referee, prev_reference: Reference | None):
+def initial_reference_form_data(referee: Referee, prev_reference: Reference | None) -> dict[str, object]:
     """
     Return the initial data to be used for Reference, given the current
     Referee object and the Reference object with data to be copied.
     """
-    retval = {}
+    retval: dict[str, object] = {}
     if prev_reference is not None:
         # Copy data over
         for f in Reference._meta.fields:

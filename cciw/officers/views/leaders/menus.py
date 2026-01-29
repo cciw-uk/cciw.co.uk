@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpRequest
 from django.template.response import TemplateResponse
 
 from cciw.bookings.models.yearconfig import get_booking_open_data
@@ -14,7 +15,7 @@ from ..utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 @staff_member_required
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
-def leaders_index(request):
+def leaders_index(request: HttpRequest) -> TemplateResponse:
     """Displays a list of links for actions for leaders"""
     user = request.user
     thisyear = common.get_thisyear()

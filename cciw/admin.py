@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from furl import furl
 
@@ -11,7 +12,7 @@ class CciwAdminSite(admin.AdminSite):
 
     # Override both password_change and password_change_done to add our next/redirect behaviour.
     # Also disable nav sidebar
-    def password_change(self, request, extra_context=None):
+    def password_change(self, request: HttpRequest, extra_context: dict | None = None) -> HttpResponse:
         """
         Handle the "change password" task -- both form display and validation.
         """
@@ -33,7 +34,7 @@ class CciwAdminSite(admin.AdminSite):
         request.current_app = self.name
         return PasswordChangeView.as_view(**defaults)(request)
 
-    def password_change_done(self, request, extra_context=None):
+    def password_change_done(self, request: HttpRequest, extra_context: dict | None = None) -> HttpResponse:
         redirect_resp = get_redirect_from_request(request)
         if redirect_resp:
             messages.info(request, "Your password has been changed.")

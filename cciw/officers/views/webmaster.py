@@ -17,7 +17,7 @@ class SearchForm(forms.Form):
 
 
 @webmaster_required
-def data_erasure_request_start(request: HttpRequest):
+def data_erasure_request_start(request: HttpRequest) -> TemplateResponse:
     if "query" in request.GET:
         search_form = SearchForm(request.GET)
         if search_form.is_valid():
@@ -44,7 +44,7 @@ def data_erasure_request_start(request: HttpRequest):
 
 
 @webmaster_required
-def data_erasure_request_plan(request: HttpRequest):
+def data_erasure_request_plan(request: HttpRequest) -> TemplateResponse:
     # Inputs here can come from previous page
     # (data_erasure_request_start)
     selected_result_ids: list[str] = request.GET.getlist("selected", [])
@@ -72,7 +72,7 @@ def data_erasure_request_plan(request: HttpRequest):
 
 @webmaster_required
 @require_POST
-def data_erasure_request_execute(request: HttpRequest):
+def data_erasure_request_execute(request: HttpRequest) -> TemplateResponse:
     selected_result_ids: list[str] = request.POST.getlist("selected", [])
     search_query: str = request.POST.get("search_query", "")
     selected_results = [r for r in data_erasure_request_search(search_query) if r.result_id in selected_result_ids]

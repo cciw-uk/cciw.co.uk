@@ -1,8 +1,7 @@
 import furl
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse, HttpResponseRedirect
-from django.http.request import HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls.resolvers import ResolverMatch, get_resolver
 from django.views.decorators.http import require_POST
@@ -169,7 +168,7 @@ def update_officer(request):
 @staff_member_required
 @camp_admin_required
 @with_breadcrumbs(leaders_breadcrumbs)
-def create_officer(request):
+def create_officer(request: HttpRequest) -> HttpResponse:
     duplicate_message, allow_confirm, existing_users = "", True, []
     message = ""
     if request.method == "POST":

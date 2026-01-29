@@ -13,7 +13,7 @@ from .constants import KEEP_FINANCIAL_RECORDS_FOR
 class SupportingInformationType(models.Model):
     name = models.CharField(max_length=255)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     class Meta:
@@ -96,7 +96,7 @@ class SupportingInformation(models.Model):
 
     objects = SupportingInformationManager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.information_type.name} for {self.booking}"
 
     def save(self, **kwargs):

@@ -1,10 +1,11 @@
 import docutils.core
 from django.utils.encoding import force_str, smart_str
 from django.utils.safestring import mark_safe
+from docutils.nodes import document as rst_document
 from docutils.writers import html4css1
 
 
-def rst_to_html(text: str, initial_header_level=1, strict=False) -> str:
+def rst_to_html(text: str, *, initial_header_level: int = 1, strict: bool = False) -> str:
     settings = RST_SETTINGS | {"initial_header_level": initial_header_level}
     if strict:
         settings.update({"strict": strict, "halt_level": 2})
@@ -44,7 +45,7 @@ class TextutilsHTMLWriter(html4css1.Writer):
 
 
 class TextutilsHTMLTranslator(html4css1.HTMLTranslator):
-    def __init__(self, document):
+    def __init__(self, document: rst_document):
         html4css1.HTMLTranslator.__init__(self, document)
 
     def visit_admonition(self, node, name=""):

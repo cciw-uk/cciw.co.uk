@@ -131,19 +131,19 @@ class CampRoleSetupMixin:
 
 
 class TestOfficerListPage(SiteSetupMixin, CampRoleSetupMixin, SeleniumBase):
-    def remove_button_selector(self, officer):
+    def remove_button_selector(self, officer: User) -> str:
         return f'[data-officer-id="{officer.id}"] [name="remove"]'
 
-    def edit_button_selector(self, officer):
+    def edit_button_selector(self, officer: User) -> str:
         return f'[data-officer-id="{officer.id}"] [name="edit"]'
 
-    def save_button_selector(self, officer):
+    def save_button_selector(self, officer: User) -> str:
         return f'[data-officer-id="{officer.id}"] [name="save"]'
 
-    def cancel_button_selector(self, officer):
+    def cancel_button_selector(self, officer: User) -> str:
         return f'[data-officer-id="{officer.id}"] [name="cancel"]'
 
-    def resend_email_button_selector(self, officer):
+    def resend_email_button_selector(self, officer: User) -> str:
         return f'[data-officer-id="{officer.id}"] [name="resend_email"]'
 
     def test_add_with_new_role(self):

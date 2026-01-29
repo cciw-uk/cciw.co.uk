@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from datetime import datetime
 
@@ -17,14 +19,14 @@ logger = logging.getLogger(__name__)
 
 
 class MessageQuerySet(models.QuerySet):
-    def not_in_use(self, now: datetime):
+    def not_in_use(self, now: datetime) -> MessageQuerySet:
         # The time period we put here is only relevant for manual erasure
         # requests. We therefore include all records, so that if requests for
         # erasure that come through the contact us page, we delete that request
         # message as well.
         return self.all()
 
-    def older_than(self, before_datetime: datetime):
+    def older_than(self, before_datetime: datetime) -> MessageQuerySet:
         return self.filter(created_at__lt=before_datetime)
 
 
@@ -110,7 +112,7 @@ class Message(models.Model):
             self.bogosity = score
         self.save()
 
-    def _make_bogofilter_email_message(self):
+    def _make_bogofilter_email_message(self) -> bytes:
         return make_email_msg(
             self.email,
             self.get_subject_display(),

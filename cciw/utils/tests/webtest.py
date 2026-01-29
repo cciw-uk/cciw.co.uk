@@ -6,6 +6,7 @@ import pytest
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, MultiThreadedLiveServerMixin, ShortcutLoginMixin
+from django_webtest.response import DjangoWebtestResponse
 from pyquery import PyQuery
 
 import conftest
@@ -15,7 +16,7 @@ from cciw.utils.tests.base import TestBase, TestBaseMixin
 
 
 class CommonMixin:
-    def officer_login(self, user_or_creds: User | Person | tuple[str, str] | None = None):
+    def officer_login(self, user_or_creds: User | Person | tuple[str, str] | None = None) -> User:
         """
         Log in an officer, using the given User, Person, or (username, password) combo,
         or None for any officer.
@@ -45,7 +46,7 @@ class CommonMixin:
     def officer_logout(self):
         self.shortcut_logout()
 
-    def assertNamedUrl(self, urlname):
+    def assertNamedUrl(self, urlname: str):
         url = reverse(urlname)
         path = urlparse(self.current_url).path
         assert path == url
@@ -53,7 +54,7 @@ class CommonMixin:
     def assertElementText(self, css_selector, text):
         assert self.get_element_inner_text(css_selector) == text
 
-    def submit_expecting_html5_validation_errors(self, submit_css_selector=None):
+    def submit_expecting_html5_validation_errors(self, submit_css_selector: None = None):
         """
         Submit a form, checking for and clearing HTML5 validation
         errors
@@ -88,12 +89,12 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     # backend:
     setup_auth = False
 
-    def assertCode(self, status_code):
+    def assertCode(self, status_code: int):
         assert self.last_response.status_code == status_code, (
             f"Expected {status_code}, got {self.last_response.status_code}"
         )
 
-    def auto_follow(self):
+    def auto_follow(self) -> DjangoWebtestResponse:
         if str(self.last_response.status_code).startswith("3"):
             self.last_responses.append(self.last_response.follow())
         return self.last_response
@@ -101,7 +102,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     def assertHtmlPresent(self, html):
         self.assertContains(self.last_response, html, html=True)
 
-    def add_admin_inline_form_to_page(self, inline_name, count=1):
+    def add_admin_inline_form_to_page(self, inline_name: str, count: int = 1):
         """
         For Django admin pages that have a hidden form template for an inline,
         converts it to a real form that can be used.  Needed for WebTest
@@ -140,8 +141,8 @@ class SeleniumBase(
     page_load_timeout = 40
 
     @classmethod
-    def get_webdriver_options(cls):
-        kwargs = {}
+    def get_webdriver_options(cls) -> dict[str, object]:
+        kwargs: dict[str, object] = {}
         if cls.driver_name == "Firefox":
             firefox_binary = os.environ.get("TEST_SELENIUM_FIREFOX_BINARY", None)
             if firefox_binary is not None:
@@ -150,7 +151,7 @@ class SeleniumBase(
                 kwargs["firefox_binary"] = FirefoxBinary(firefox_path=firefox_binary)
         return kwargs
 
-    def assertCode(self, status_code):
+    def assertCode(self, status_code: int):
         pass
 
     def assertHtmlPresent(self, html):

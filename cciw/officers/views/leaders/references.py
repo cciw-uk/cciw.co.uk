@@ -1,7 +1,6 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse
-from django.http.request import HttpRequest
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
@@ -47,7 +46,7 @@ from ..utils.htmx import add_hx_trigger_header
 @never_cache
 @with_breadcrumbs(leaders_breadcrumbs)
 @for_htmx(use_block_from_params=True)
-def manage_references(request, camp_id: CampId):
+def manage_references(request: HttpRequest, camp_id: CampId) -> TemplateResponse:
     # If referee_id is set, we just want to update part of the page.
     referee_id = request.GET.get("referee_id")
     officer = None
@@ -228,7 +227,7 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
 @for_htmx(use_block_from_params=True)
 def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id: int):
     referee = get_object_or_404(Referee.objects.filter(id=referee_id))
-    reference = referee.reference if hasattr(referee, "reference") else None
+    reference: Reference | None = referee.reference if hasattr(referee, "reference") else None
 
     try:
         prev_ref_id = int(request.GET["prev_ref_id"])

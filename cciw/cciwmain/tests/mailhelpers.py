@@ -1,8 +1,10 @@
 import re
 from urllib.parse import parse_qs, urlencode, urlparse, urlunsplit
 
+from django.core.mail import EmailMessage
 
-def url_to_path_and_query(url):
+
+def url_to_path_and_query(url: str) -> tuple[str, dict[str, str]]:
     scheme, netloc, path, params, query, fragment = urlparse(url)
     querydata_t = parse_qs(query)
     querydata = {}
@@ -11,7 +13,7 @@ def url_to_path_and_query(url):
     return (path, querydata)
 
 
-def read_email_url(email, regex):
+def read_email_url(email: EmailMessage, regex: str) -> tuple[str, str, dict[str, str]]:
     """
     Reads and parses a URL from an email
     """
@@ -22,5 +24,5 @@ def read_email_url(email, regex):
     return url, path, querydata
 
 
-def path_and_query_to_url(path, querydata):
+def path_and_query_to_url(path: str, querydata: dict[str, str]) -> str:
     return urlunsplit(("", "", path, urlencode(querydata), ""))

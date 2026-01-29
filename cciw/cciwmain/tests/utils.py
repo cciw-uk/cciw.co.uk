@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime, time
 
 from django.contrib.sites.models import Site
@@ -17,24 +19,26 @@ def init_query_caches():
 
 
 class FuzzyInt(int):
-    def __new__(cls, lowest, highest):
+    def __new__(cls: type[FuzzyInt], lowest: int, highest: int) -> FuzzyInt:
         obj = super().__new__(cls, highest)
         obj.lowest = lowest
         obj.highest = highest
         return obj
 
-    def __eq__(self, other):
+    def __eq__(self, other: int) -> bool:
         return other >= self.lowest and other <= self.highest
 
     def __repr__(self):
         return f"[{self.lowest}, {self.highest}]"
 
 
-def make_datetime(year, month, day, hour=0, minute=0, second=0):
+def make_datetime(
+    year: int, month: int, day: int, hour: int = 0, minute: int = 0, second: int = 0
+) -> datetime.datetime:
     return ensure_timezone_aware(datetime(year, month, day, hour, minute, second))
 
 
-def date_to_datetime(date_value):
+def date_to_datetime(date_value: datetime.date) -> datetime.datetime:
     if date_value is None:
         return None
     return ensure_timezone_aware(datetime.combine(date_value, time(0, 0, 0)))

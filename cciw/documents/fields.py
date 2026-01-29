@@ -1,4 +1,5 @@
 from django import forms
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 
 from .models import Document, DocumentModelFile
@@ -13,7 +14,7 @@ class DocumentField(models.OneToOneField):
     model is the `Document` subclass where we will store the file.
     """
 
-    def formfield(self, **kwargs):
+    def formfield(self, **kwargs) -> "DocumentFormField":
         document_model = self.related_model
         max_length = document_model._meta.get_field("filename").max_length
         return super().formfield(
@@ -25,7 +26,7 @@ class DocumentField(models.OneToOneField):
             }
         )
 
-    def value_from_object(self, obj):
+    def value_from_object(self, obj: models.Model) -> DocumentModelFile:
         # This is called by model_to_dict, which is used by
         # ModelForm to create the initial data, which will be
         # used by DocumentFormField. So we have to return something
@@ -57,7 +58,7 @@ class DocumentFormField(forms.FileField):
         kwargs.pop("blank")
         super().__init__(**kwargs)
 
-    def to_python(self, data):
+    def to_python(self, data: InMemoryUploadedFile | None) -> Document | None:
         # Need to convert incoming file upload into a Python value
         # i.e. convert to Document (subclass) instance in our case
         data = super().to_python(data)
@@ -67,7 +68,9 @@ class DocumentFormField(forms.FileField):
         document_instance.save()
         return document_instance
 
-    def clean(self, data, initial=None):
+    def clean(
+        self, data: InMemoryUploadedFile | bool | None, initial: DocumentModelFile | None = None
+    ) -> Document | None:
         cleaned = super().clean(data, initial=initial)
         if isinstance(cleaned, DocumentModelFile):
             # We get this if we have an initial value, from the saved data. Need

@@ -1,3 +1,7 @@
+"""
+Factory functions for tests
+"""
+
 from datetime import date, timedelta
 from decimal import Decimal
 from typing import Literal
@@ -22,6 +26,7 @@ from cciw.bookings.models import (
     build_paypal_custom_field,
 )
 from cciw.bookings.models.constants import Sex
+from cciw.bookings.models.payments import Payment
 from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -139,7 +144,7 @@ def create_processed_payment(
     *,
     account: BookingAccount = Auto,
     amount=1,
-):
+) -> Payment:
     manual_payment = create_manual_payment(account=account, amount=amount)
     payment = manual_payment.paymentsource.payment
     payment.refresh_from_db()
@@ -151,7 +156,7 @@ def create_manual_payment(
     *,
     account: BookingAccount = Auto,
     amount=1,
-):
+) -> ManualPayment:
     return ManualPayment.objects.create(
         account=account or create_booking_account(),
         amount=amount,
@@ -163,7 +168,7 @@ def create_refund_payment(
     *,
     account: BookingAccount = Auto,
     amount=1,
-):
+) -> RefundPayment:
     return RefundPayment.objects.create(
         account=account or create_booking_account(),
         amount=amount,
@@ -175,7 +180,7 @@ def create_write_off_debt_payment(
     *,
     account: BookingAccount = Auto,
     amount=0,
-):
+) -> WriteOffDebt:
     return WriteOffDebt.objects.create(
         account=account or create_booking_account(),
         amount=amount,
@@ -189,7 +194,7 @@ def create_ipn(
     payer_email: str = Auto,
     amount: Decimal | int = Auto,
     **kwargs,
-):
+) -> PayPalIPN:
     if account:
         assert custom is Auto
         custom = build_paypal_custom_field(account)
@@ -211,7 +216,7 @@ def create_ipn(
     return ipn
 
 
-def create_prices(*, year: int, full_price=Auto):
+def create_prices(*, year: int, full_price=Auto) -> tuple[Decimal, Decimal, Decimal, Decimal]:
     if full_price is Auto:
         full_price = Decimal(100)
     else:
@@ -229,11 +234,11 @@ def create_prices(*, year: int, full_price=Auto):
     return price_full, price_2nd_child, price_3rd_child, price_booking_fee
 
 
-def create_supporting_information_type(*, name="Test"):
+def create_supporting_information_type(*, name="Test") -> SupportingInformationType:
     return SupportingInformationType.objects.create(name=name)
 
 
-def get_or_create_supporting_information_type():
+def get_or_create_supporting_information_type() -> SupportingInformationType:
     return SupportingInformationType.objects.first() or create_supporting_information_type()
 
 
@@ -245,7 +250,7 @@ def create_supporting_information(
     document_filename: str = Auto,
     document_content: bytes = Auto,
     document_mimetype: str = Auto,
-):
+) -> SupportingInformation:
     if booking is Auto:
         booking = create_booking()
     if any([document_content, document_filename, document_mimetype]):

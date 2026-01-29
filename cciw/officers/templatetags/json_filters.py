@@ -8,10 +8,10 @@ from django.template import Library
 register = Library()
 
 
-def jsonify(object):
-    if isinstance(object, QuerySet):
-        return serialize("json", object)
-    return json.dumps(object)
+def jsonify(obj: object) -> str:
+    if isinstance(obj, QuerySet):
+        return serialize("json", obj)
+    return json.dumps(obj)
 
 
 register.filter("jsonify", jsonify)

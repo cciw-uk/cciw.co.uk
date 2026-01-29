@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING
@@ -9,24 +11,23 @@ from django.utils import timezone
 from django_countries.fields import CountryField
 from paypal.standard.ipn.models import PayPalIPN
 
-from cciw.bookings.models.yearconfig import YearConfigFetcher
-
 from .constants import DEFAULT_COUNTRY
 from .states import BOOKING_STATES_NO_FEE_DUE
+from .yearconfig import YearConfigFetcher
 
 if TYPE_CHECKING:
     from .bookings import Booking
 
 
 class BookingAccountQuerySet(models.QuerySet):
-    def not_in_use(self, now: datetime):
+    def not_in_use(self, now: datetime) -> BookingAccountQuerySet:
         from .bookings import Booking
 
         return self.zero_final_balance().exclude(
             id__in=Booking.objects.in_use(now).values_list("account_id", flat=True)
         )
 
-    def older_than(self, before_datetime):
+    def older_than(self, before_datetime: datetime) -> BookingAccountQuerySet:
         """
         Returns BookingAccounts that are considered 'older than' before_datetime
         in terms of when they were last 'used'
@@ -58,7 +59,7 @@ class BookingAccountQuerySet(models.QuerySet):
             .filter(Q(last_booking_camp_end_date__isnull=True) | Q(last_booking_camp_end_date__lt=before_datetime))
         )
 
-    def _with_total_amount_due(self):
+    def _with_total_amount_due(self) -> BookingAccountQuerySet:
         return self.alias(
             total_amount_due=functions.Coalesce(
                 models.Sum(
@@ -69,11 +70,11 @@ class BookingAccountQuerySet(models.QuerySet):
             )
         )
 
-    def zero_final_balance(self):
+    def zero_final_balance(self) -> BookingAccountQuerySet:
         # See also below
         return self._with_total_amount_due().filter(total_amount_due=models.F("total_received"))
 
-    def non_zero_final_balance(self):
+    def non_zero_final_balance(self) -> BookingAccountQuerySet:
         # See also above
         return self._with_total_amount_due().exclude(total_amount_due=models.F("total_received"))
 
@@ -162,13 +163,13 @@ class BookingAccount(models.Model):
 
     objects = BookingAccountManager()
 
-    def has_account_details(self):
+    def has_account_details(self) -> bool:
         return not any(
             att == ""
             for att in [self.name, self.address_line1, self.address_city, self.address_country, self.address_post_code]
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         out = []
         if self.name:
             out.append(self.name)
@@ -180,7 +181,7 @@ class BookingAccount(models.Model):
             out.append("(empty)")
         return ", ".join(out)
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         # We have to ensure that only receive_payment touches the total_received
         # field when doing updates
         if self.id is None:
@@ -192,7 +193,7 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, *, today: date | None, config_fetcher: YearConfigFetcher | None = None):
+    def get_balance(self, *, today: date | None, config_fetcher: YearConfigFetcher | None = None) -> Decimal:
         """
         Gets the balance to pay on the account.
         If today is None, then the final balance is returned,
@@ -217,20 +218,20 @@ class BookingAccount(models.Model):
 
         return total - self.total_received
 
-    def get_balance_full(self):
+    def get_balance_full(self) -> Decimal:
         return self.get_balance(today=None)
 
-    def get_balance_due_now(self):
+    def get_balance_due_now(self) -> Decimal:
         today = date.today()
         return self.get_balance(today=today)
 
-    def admin_balance(self):
+    def admin_balance(self) -> Decimal:
         return self.get_balance_full()
 
     admin_balance.short_description = "balance"
     admin_balance = property(admin_balance)
 
-    def receive_payment(self, amount):
+    def receive_payment(self, amount: Decimal):
         """
         Adds the amount to the account's total_received field.  This should only
         ever be called by the 'process_all_payments' function. Client code
@@ -255,7 +256,7 @@ class BookingAccount(models.Model):
         acc = BookingAccount.objects.get(id=self.id)
         self.total_received = acc.total_received
 
-    def get_pending_payment_total(self, now=None):
+    def get_pending_payment_total(self, now: datetime | None = None) -> Decimal:
         from .payments import build_paypal_custom_field
 
         if now is None:
@@ -279,7 +280,7 @@ class BookingAccount(models.Model):
             return Decimal("0.00")
         return total
 
-    def get_address_display(self):
+    def get_address_display(self) -> str:
         return "\n".join(
             v
             for v in [
@@ -293,7 +294,7 @@ class BookingAccount(models.Model):
         )
 
     @property
-    def include_in_mailings(self):
+    def include_in_mailings(self) -> bool:
         if self.subscribe_to_mailings is None:
             # GDPR. We have not obtained an answer to this question.
             # For postal mailings, by legitimate interest we

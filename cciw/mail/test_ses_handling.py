@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 from django.core import mail
+from django.http import HttpRequest
 from django.test.client import RequestFactory
 
 from cciw.cciwmain.tests import factories as camp_factories
@@ -71,7 +72,7 @@ def test_ses_bounce_for_reference():
     assert actions[0].bounced_email == "a.referrer@example.com"
 
 
-def make_plain_text_request(path: str, body: str, headers: dict):
+def make_plain_text_request(path: str, body: str, headers: dict) -> HttpRequest:
     mangled_headers = {"HTTP_" + name.replace("-", "_").upper(): value for name, value in headers.items()}
     return RequestFactory().generic(
         "POST", path, data=body, content_type="text/plain; charset=UTF-8", **mangled_headers

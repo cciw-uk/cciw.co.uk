@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 
 
 class NoEditMixin:
-    def clean(self):
+    def clean(self) -> None:
         retval = super().clean()
         if self.id is not None:
             raise ValidationError(
@@ -12,7 +12,7 @@ class NoEditMixin:
             )
         return retval
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         if self.id is not None:
             raise Exception(f"{self.__class__.__name__} cannot be edited after it has been saved to DB")
         else:

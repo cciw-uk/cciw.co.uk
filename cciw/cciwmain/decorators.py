@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from functools import wraps
 
 from django.core.exceptions import ValidationError
@@ -6,7 +7,7 @@ from django.http import HttpResponse
 from cciw.cciwmain.utils import python_to_json
 
 
-def json_response(view_func):
+def json_response(view_func: Callable) -> Callable:
     def _inner(request, *args, **kwargs):
         try:
             data = view_func(request, *args, **kwargs)

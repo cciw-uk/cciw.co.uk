@@ -13,7 +13,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 from pytz import UTC
 
 
-def empty_workbook():
+def empty_workbook() -> Workbook:
     wkbk: Workbook = Workbook()
     wkbk.remove(wkbk.worksheets[0])
     return wkbk
@@ -81,7 +81,7 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
             wksh.row_dimensions[r_idx].height = row_height
 
 
-def looks_like_url(val):
+def looks_like_url(val: object) -> bool:
     return (
         isinstance(val, str)
         and " " not in val

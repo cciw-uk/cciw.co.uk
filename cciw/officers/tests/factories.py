@@ -57,7 +57,7 @@ def create_officer(
     return user
 
 
-def create_current_camp_leader():
+def create_current_camp_leader() -> User:
     from cciw.cciwmain.tests import factories as camps_factories
 
     leader = create_officer()

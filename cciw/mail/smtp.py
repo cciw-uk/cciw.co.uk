@@ -11,21 +11,21 @@ logger = logging.getLogger("cciw.mail.smtp")
 
 
 class RawEmailMessage(EmailMessage):
-    def __init__(self, mime_data=b"", **kwargs):
+    def __init__(self, mime_data: bytes = b"", **kwargs):
         super().__init__(**kwargs)
         self.mime_data = mime_data
 
-    def message(self, *, policy=email.policy.default):
+    def message(self, *, policy=email.policy.default) -> "RawBytes":
         # The main thing is that we return an object with an `as_bytes()`
         # method, that's all that Django uses.
         return RawBytes(self.mime_data)
 
 
 class RawBytes:
-    def __init__(self, bytes_data):
+    def __init__(self, bytes_data: bytes):
         self.bytes_data = bytes_data
 
-    def as_bytes(self, **kwargs):
+    def as_bytes(self, **kwargs) -> bytes:
         return self.bytes_data
 
     # To enable printing on console

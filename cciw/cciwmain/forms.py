@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.forms import Form, renderers
+from django.utils.safestring import SafeString
 
 
 class CciwFormMixin:
@@ -21,17 +24,17 @@ class CciwFormMixin:
     # Dictionary from field name to label to override normal labels easily
     label_overrides: dict = {}
 
-    def should_do_htmx_validation(self):
+    def should_do_htmx_validation(self) -> bool:
         return self.do_htmx_validation
 
-    def get_context(self, *args, **kwargs):
+    def get_context(self, *args, **kwargs) -> dict[str, Any]:
         return super().get_context(*args, **kwargs) | {
             "formrow_template": self.template_name_p_formrow,
             "do_htmx_validation": self.should_do_htmx_validation(),
         }
 
 
-def render_single_form_field(form: Form, field_name: str):
+def render_single_form_field(form: Form, field_name: str) -> SafeString:
     # Assumes form has CciwFormMixin as a base
     bound_field = form[field_name]
     label_text = form.label_overrides.get(field_name, None)

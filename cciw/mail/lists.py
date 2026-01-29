@@ -15,6 +15,7 @@ import re
 import tempfile
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
+from email.message import EmailMessage
 
 from django.conf import settings
 from django.core.mail import make_msgid, send_mail
@@ -24,6 +25,7 @@ from cciw.accounts.models import (
     DBS_OFFICER_ROLE_NAME,
     Role,
     User,
+    UserQuerySet,
     get_camp_manager_role_users,
     get_role_email_recipients,
     get_role_users,
@@ -70,14 +72,14 @@ class EmailList:
     list_reply: bool
 
     @property
-    def address(self):
+    def address(self) -> str:
         return self.local_address + "@" + self.domain
 
     @property
-    def domain(self):
+    def domain(self) -> str:
         return settings.INCOMING_MAIL_DOMAIN
 
-    def matches(self, address, from_address):
+    def matches(self, address: str, from_address: str):
         """
         Returns a True if `address` matches
         this group list, and the `from_address` matches
@@ -96,7 +98,7 @@ class EmailList:
 
 
 # Externally used functions:
-def find_list(address, from_addr) -> EmailList:
+def find_list(address: str, from_addr: str) -> EmailList:
     for email_list in get_all_lists():
         if email_list.matches(address, from_addr):
             return email_list
@@ -168,7 +170,7 @@ def camp_slackers_list_generator(current_camps: Sequence[Camp]) -> Iterable[Emai
         yield make_camp_slackers_list(camp)
 
 
-def make_camp_slackers_list(camp):
+def make_camp_slackers_list(camp: Camp) -> EmailList:
     def get_members() -> list[User]:
         return camp_slacker_list(camp)
 
@@ -188,7 +190,7 @@ def camp_leaders_list_generator(current_camps: Sequence[Camp]) -> Iterable[Email
         yield make_camp_leaders_list(camp)
 
 
-def make_camp_leaders_list(camp):
+def make_camp_leaders_list(camp: Camp) -> EmailList:
     def get_members() -> set[User]:
         return get_leaders_for_camp(camp)
 
@@ -210,7 +212,7 @@ def camp_leaders_for_year_list_generator(current_camps: Sequence[Camp]) -> Itera
         yield make_camp_leaders_for_year_list(year, camps2)
 
 
-def make_camp_leaders_for_year_list(year, camps) -> EmailList:
+def make_camp_leaders_for_year_list(year: int, camps: list[Camp]) -> EmailList:
     def get_members() -> list[User]:
         s = set()
         for c in camps:
@@ -264,7 +266,7 @@ GENERATORS: list[Generator] = [
 # Helper functions for lists:
 
 
-def get_leaders_for_camp(camp) -> set[User]:
+def get_leaders_for_camp(camp: Camp) -> set[User]:
     retval = set()
     for p in camp.leaders.all().prefetch_related("users"):
         for u in p.users.all():
@@ -272,11 +274,11 @@ def get_leaders_for_camp(camp) -> set[User]:
     return retval
 
 
-def email_match(email_address, users):
+def email_match(email_address: str, users: UserQuerySet | set[User]) -> bool:
     return any(user.email.lower() == email_address.lower() for user in users)
 
 
-def is_camp_leader_or_admin(email_address, camps):
+def is_camp_leader_or_admin(email_address: str, camps: list[Camp]) -> bool:
     all_users = set()
     for camp in camps:
         all_users.update(get_leaders_for_camp(camp))
@@ -284,7 +286,7 @@ def is_camp_leader_or_admin(email_address, camps):
     return email_match(email_address, all_users)
 
 
-def is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, camps):
+def is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address: str, camps: list[Camp]):
     if is_camp_leader_or_admin(email_address, camps):
         return True
 
@@ -300,14 +302,14 @@ def is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, camps):
     return False
 
 
-def is_superuser(email_address):
+def is_superuser(email_address: str) -> bool:
     return User.objects.filter(email__iexact=email_address, is_superuser=True).exists()
 
 
 # Handling incoming mail
 
 
-def _set_mail_header(mail, header, value):
+def _set_mail_header(mail: EmailMessage, header: str, value: str):
     """
     Overwrite a header in the email
     """
@@ -321,7 +323,7 @@ def _set_mail_header(mail, header, value):
     mail[header] = value
 
 
-def forward_email_to_list(mail, email_list: EmailList):
+def forward_email_to_list(mail: EmailMessage, email_list: EmailList):
     orig_from_addr = mail["From"]
     orig_msg_id = mail.get("Message-ID", "unknown")
     # Use 'reply-to' header for reply-to, if it exists, falling back to 'From'
@@ -457,7 +459,7 @@ There were problems with the following addresses:
         )
 
 
-def mangle_from_address(address):
+def mangle_from_address(address: str) -> str:
     address = address.replace("@", "(at)").replace("<", "").replace(">", "").replace('"', "")
     address = f'"{address}" <noreply@cciw.co.uk>'
     return address
@@ -574,7 +576,7 @@ def handle_mail(data: bytes):
             pass
 
 
-def known_officer_email_address(address):
+def known_officer_email_address(address: str):
     if User.objects.filter(email__iexact=address).exists():
         return True
     if Application.objects.filter(address_email__iexact=address).exists():

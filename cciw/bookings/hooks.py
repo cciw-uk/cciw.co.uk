@@ -20,11 +20,11 @@ from .models import (
 # == Payments ==
 
 
-def unrecognised_payment(sender=None, reason="Invalid IPN", **kwargs):
+def unrecognised_payment(sender: PayPalIPN | None = None, reason: str = "Invalid IPN", **kwargs):
     send_unrecognised_payment_email(sender, reason=reason)
 
 
-def paypal_payment_received(sender, **kwargs):
+def paypal_payment_received(sender: PayPalIPN, **kwargs):
     ipn_obj: PayPalIPN = sender
     if ipn_obj.business != settings.PAYPAL_RECEIVER_EMAIL:
         unrecognised_payment(ipn_obj, "Incorrect receiver email")
@@ -52,44 +52,44 @@ def paypal_payment_received(sender, **kwargs):
     credit_account(ipn_obj.mc_gross, account, ipn_obj)
 
 
-def manual_payment_received(sender, **kwargs):
-    instance = kwargs["instance"]
+def manual_payment_received(sender: type[ManualPayment], **kwargs):
+    instance: ManualPayment = kwargs["instance"]
     credit_account(instance.amount, instance.account, instance)
 
 
-def manual_payment_deleted(sender, **kwargs):
-    instance = kwargs["instance"]
+def manual_payment_deleted(sender: type[ManualPayment], **kwargs):
+    instance: ManualPayment = kwargs["instance"]
     credit_account(-instance.amount, instance.account, None)
 
 
-def refund_payment_sent(sender, **kwargs):
-    instance = kwargs["instance"]
+def refund_payment_sent(sender: type[RefundPayment], **kwargs):
+    instance: RefundPayment = kwargs["instance"]
     credit_account(-instance.amount, instance.account, instance)
 
 
-def refund_payment_deleted(sender, **kwargs):
-    instance = kwargs["instance"]
+def refund_payment_deleted(sender: type[RefundPayment], **kwargs):
+    instance: RefundPayment = kwargs["instance"]
     credit_account(instance.amount, instance.account, None)
 
 
-def write_off_debt_created(sender, **kwargs):
-    instance = kwargs["instance"]
+def write_off_debt_created(sender: type[WriteOffDebt], **kwargs):
+    instance: WriteOffDebt = kwargs["instance"]
     credit_account(instance.amount, instance.account, instance)
 
 
 def write_off_debt_deleted(sender, **kwargs):
-    instance = kwargs["instance"]
+    instance: WriteOffDebt = kwargs["instance"]
     credit_account(-instance.amount, instance.account, None)
 
 
-def account_transfer_payment_received(sender, **kwargs):
-    instance = kwargs["instance"]
+def account_transfer_payment_received(sender: type[AccountTransferPayment], **kwargs):
+    instance: AccountTransferPayment = kwargs["instance"]
     credit_account(-instance.amount, instance.from_account, instance)
     credit_account(instance.amount, instance.to_account, instance)
 
 
-def account_transfer_payment_deleted(sender, **kwargs):
-    instance = kwargs["instance"]
+def account_transfer_payment_deleted(sender: type[AccountTransferPayment], **kwargs):
+    instance: AccountTransferPayment = kwargs["instance"]
     credit_account(instance.amount, instance.from_account, None)
     credit_account(-instance.amount, instance.to_account, None)
 

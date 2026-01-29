@@ -3,6 +3,7 @@ Views relating to leaders managing application forms
 """
 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpRequest
 from django.template.response import TemplateResponse
 from django.views.decorators.cache import never_cache
 
@@ -24,7 +25,7 @@ from ..utils.campid import get_camp_or_404
 @camp_admin_required
 @never_cache
 @with_breadcrumbs(leaders_breadcrumbs)
-def manage_applications(request, camp_id: CampId):
+def manage_applications(request: HttpRequest, camp_id: CampId) -> TemplateResponse:
     camp = get_camp_or_404(camp_id)
     finished_applications = (
         applications_for_camp(camp).order_by("officer__first_name", "officer__last_name").with_references()
@@ -43,7 +44,7 @@ def manage_applications(request, camp_id: CampId):
 @staff_member_required
 @camp_admin_required
 @with_breadcrumbs(leaders_breadcrumbs)
-def officer_application_status(request, camp_id: CampId):
+def officer_application_status(request: HttpRequest, camp_id: CampId) -> TemplateResponse:
     camp = get_camp_or_404(camp_id)
     return TemplateResponse(
         request,

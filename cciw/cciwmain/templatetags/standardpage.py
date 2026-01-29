@@ -1,4 +1,6 @@
 from django import template
+from django.template.context import RequestContext
+from django.utils.safestring import SafeString
 
 from cciw.cciwmain.common import standard_subs
 from cciw.sitecontent.models import HtmlChunk
@@ -8,7 +10,7 @@ register.filter(standard_subs)
 
 
 @register.simple_tag(takes_context=True)
-def htmlchunk(context, name, ignore_missing=False):
+def htmlchunk(context: RequestContext, name: SafeString, *, ignore_missing: bool = False) -> SafeString:
     try:
         chunk = HtmlChunk.objects.get(name=name)
     except HtmlChunk.DoesNotExist:

@@ -1,6 +1,6 @@
 import json
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from requests.structures import CaseInsensitiveDict
 
@@ -14,7 +14,7 @@ from .lists import handle_mail_from_s3_async
 @csrf_exempt
 @ensure_from_aws_sns
 @confirm_sns_subscriptions
-def ses_incoming_notification(request):
+def ses_incoming_notification(request: HttpRequest) -> HttpResponse:
     # @confirm_sns_subscriptions has handled other message types
     data = json.loads(request.body)
     message_id = json.loads(data["Message"])["mail"]["messageId"]
@@ -28,7 +28,7 @@ def ses_incoming_notification(request):
 @csrf_exempt
 @ensure_from_aws_sns
 @confirm_sns_subscriptions
-def ses_bounce_notification(request):
+def ses_bounce_notification(request: HttpRequest) -> HttpResponse:
     message = json.loads(json.loads(request.body)["Message"])
     message_headers = CaseInsensitiveDict({h["name"]: h["value"] for h in message["mail"]["headers"]})
 

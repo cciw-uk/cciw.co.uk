@@ -26,7 +26,7 @@ class TimeTravelMixin:
         else:
             self.traveller = None
 
-    def get_today(self):
+    def get_today(self) -> date:
         return self.today
 
     def tearDown(self):

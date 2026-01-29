@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core import signing
 from django.core.exceptions import PermissionDenied
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -34,7 +34,7 @@ from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 @staff_member_required
 @never_cache
 @with_breadcrumbs(officers_breadcrumbs)
-def applications(request):
+def applications(request: HttpRequest) -> HttpResponse:
     """Displays a list of tasks related to applications."""
     user = request.user
     finished_applications = user.applications.filter(finished=True).order_by("-saved_on")
@@ -72,7 +72,7 @@ def applications(request):
     return TemplateResponse(request, "cciw/officers/applications.html", context)
 
 
-def _copy_application(application):
+def _copy_application(application: Application) -> Application:
     new_obj = Application(id=None)
     for field in Application._meta.fields:
         if field.attname != "id":
@@ -101,7 +101,7 @@ def _copy_application(application):
 
 
 @staff_member_required
-def get_application(request):
+def get_application(request: HttpRequest) -> HttpResponse:
     try:
         application_id = int(request.POST["application"])
     except (KeyError, ValueError):
@@ -165,7 +165,7 @@ def view_application_redirect(request):
 @staff_member_required
 @cache_control(max_age=3600)
 @with_breadcrumbs(officers_breadcrumbs)
-def view_application(request, application_id: int):
+def view_application(request: HttpRequest, application_id: int) -> TemplateResponse:
     application = get_object_or_404(Application, id=application_id)
 
     if application.officer_id != request.user.id and not request.user.can_manage_application_forms:
@@ -185,7 +185,7 @@ def view_application(request, application_id: int):
     )
 
 
-def correct_email(request):
+def correct_email(request: HttpRequest) -> TemplateResponse:
     context = {}
     try:
         username, new_email = signing.loads(
@@ -206,7 +206,7 @@ def correct_email(request):
     return TemplateResponse(request, "cciw/officers/email_update.html", context)
 
 
-def correct_application(request):
+def correct_application(request: HttpRequest) -> TemplateResponse:
     context = {}
     try:
         application_id, email = signing.loads(

@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -10,7 +10,7 @@ from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
 
-def index(request, year: int | None = None):
+def index(request: HttpRequest, year: int | None = None) -> TemplateResponse:
     """
     Displays a list of all camps, or all camps in a given year.
     """
@@ -30,7 +30,7 @@ def index(request, year: int | None = None):
     )
 
 
-def detail(request, year: int, slug: str):
+def detail(request: HttpRequest, year: int, slug: str) -> TemplateResponse:
     """
     Shows details of a specific camp.
     """
@@ -57,7 +57,7 @@ def detail(request, year: int, slug: str):
     )
 
 
-def thisyear(request):
+def thisyear(request: HttpRequest) -> TemplateResponse:
     year = common.get_thisyear()
     return TemplateResponse(
         request,

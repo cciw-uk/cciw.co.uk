@@ -1,3 +1,4 @@
+from functools import partial
 from unittest.mock import patch
 
 import pytest
@@ -26,7 +27,7 @@ def test_User_in_group_true(django_assert_num_queries):
         assert user_has_role(booking_secretary, [BOOKING_SECRETARY_ROLE_NAME])
 
 
-def test_User_in_group_true_for_one_item(django_assert_num_queries):
+def test_User_in_group_true_for_one_item(django_assert_num_queries: partial):
     booking_secretary = factories.create_booking_secretary()
     with django_assert_num_queries(num=1):
         assert user_has_role(booking_secretary, CAMP_MANAGER_ROLES)
@@ -93,7 +94,7 @@ class PwnedPasswordPatcherMixin:
         self.pwned_password_patcher.stop()
         super().tearDown()
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         self.pwned_password_call_count += 1
         return password in self.PWNED_PASSWORDS
 

@@ -6,7 +6,7 @@ from django_q.tasks import async_task
 from cciw.cciwmain.models import Camp, CampName, generate_colors_css
 
 
-def generate_colors_css_w(sender, **kwargs):
+def generate_colors_css_w(sender: type[CampName], **kwargs):
     async_task(generate_colors_css, update_existing=True)
 
 
@@ -16,7 +16,7 @@ post_save.connect(generate_colors_css_w, CampName)
 _FIRST_REQUEST_HANDLED = False
 
 
-def server_startup(sender, **kwargs):
+def server_startup(sender: type, **kwargs):
     global _FIRST_REQUEST_HANDLED
     if _FIRST_REQUEST_HANDLED:
         return
@@ -35,7 +35,7 @@ def server_startup(sender, **kwargs):
 request_started.connect(server_startup)
 
 
-def recreate_ses_routes_for_camp_creation(sender, created=None, **kwargs):
+def recreate_ses_routes_for_camp_creation(sender: type[Camp], created: bool | None = None, **kwargs):
     if not settings.RECREATE_ROUTES_AUTOMATICALLY:
         return
     if created:

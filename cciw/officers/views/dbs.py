@@ -4,8 +4,7 @@ from datetime import date
 from django.conf import settings
 from django.contrib.admin import site as admin_site
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import Http404, HttpResponse
-from django.http.request import HttpRequest
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
@@ -47,7 +46,7 @@ from .utils.htmx import add_hx_trigger_header
 @ensure_csrf_cookie
 @with_breadcrumbs(officers_breadcrumbs)
 @for_htmx(use_block_from_params=True)
-def manage_dbss(request, year: int) -> HttpResponse:
+def manage_dbss(request: HttpRequest, year: int) -> HttpResponse:
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
     if len(camps) == 0:

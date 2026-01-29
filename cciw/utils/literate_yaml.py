@@ -7,6 +7,8 @@ that are also machine readable.
 This module provides functionality for formatting them.
 """
 
+from __future__ import annotations
+
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 
@@ -47,7 +49,7 @@ from dataclasses import dataclass
 class RstBlock:
     text: str
 
-    def as_rst(self):
+    def as_rst(self) -> str:
         return self.text
 
 
@@ -55,11 +57,11 @@ class RstBlock:
 class YamlBlock:
     text: str
 
-    def as_rst(self):
+    def as_rst(self) -> str:
         return ".. code-block:: yaml\n\n" + "\n".join("   " + line for line in self.text.strip().split("\n")) + "\n"
 
 
-def literate_yaml_to_rst(yaml_source):
+def literate_yaml_to_rst(yaml_source: str) -> str:
     blocks = parse_literate_yaml(yaml_source)
     return "\n".join(block.as_rst() for block in blocks)
 

@@ -1,5 +1,6 @@
 import email
 import re
+from collections.abc import Sequence
 from email import policy
 from unittest import mock
 
@@ -52,7 +53,7 @@ def test_officer_list():
         assert list(officer_list.get_members()) == [officer]
 
 
-def test_leader_lists(cciw_require_auth_roles):
+def test_leader_lists(cciw_require_auth_roles: None):
     camp = camp_factories.create_camp(year=2020, camp_name="Blue")
     (_, leader_1_user), (_, leader_2_user) = camp_factories.create_and_add_leaders(
         camp, count=2, email_template="leader{n}@example.com"
@@ -97,7 +98,7 @@ def test_leader_lists(cciw_require_auth_roles):
     assert members == [leader_1_user, leader_2_user, leader_3_user]
 
 
-def _setup_role_for_email(*, name="Test", email, allow_emails_from_public, recipients):
+def _setup_role_for_email(*, name="Test", email, allow_emails_from_public, recipients) -> Role:
     role, _ = Role.objects.get_or_create(name=name)
     role.allow_emails_from_public = allow_emails_from_public
     role.email = email
@@ -364,7 +365,7 @@ def test_invalid_characters():
     assert rejections == []
 
 
-def emailify(msg):
+def emailify(msg: str) -> bytes:
     return msg.strip().replace("\n", "\r\n").encode("utf-8")
 
 
@@ -375,7 +376,7 @@ def make_message(
     other_to_emails=None,
     subject="Test",
     additional_headers=None,
-):
+) -> bytes:
     if other_to_emails is None:
         # This exists to check mail is handled properly in cases like this:
         # To: someone@example.com, mylist@cciw.co.uk
@@ -407,7 +408,7 @@ Test message
     )
 
 
-def encode_email_header(header_value):
+def encode_email_header(header_value: str) -> str:
     if any(ord(c) > 127 for c in header_value):
         return email.header.Header(header_value, "utf-8").encode()
     return header_value
@@ -445,5 +446,7 @@ Content-Transfer-Encoding: quoted-printable
 """.replace(b"\n", b"\r\n")
 
 
-def partition_mailing_list_rejections(messages):
-    return partition(messages, lambda m: re.match(r"\[CCIW\] Access to mailing list .* denied", m.subject))
+def partition_mailing_list_rejections(
+    messages: Sequence[mail.EmailMessage],
+) -> tuple[list[mail.EmailMessage], list[mail.EmailMessage]]:
+    return partition(messages, lambda m: bool(re.match(r"\[CCIW\] Access to mailing list .* denied", m.subject)))

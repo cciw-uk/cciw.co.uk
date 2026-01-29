@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Literal, assert_never
 from unittest import mock
+from unittest.mock import MagicMock
 
 import openpyxl
 import pytest
@@ -84,7 +85,7 @@ class IpnMock:
 class BookingLogInMixin:
     booker_email = "booker@bookers.com"
 
-    def booking_login(self, add_account_details=True, shortcut=None) -> BookingAccount:
+    def booking_login(self, *, add_account_details: bool = True, shortcut: None = None) -> BookingAccount:
         account: BookingAccount | None = getattr(self, "_logged_in_account", None)
         if account is not None:
             return account
@@ -115,7 +116,7 @@ class BookingLogInMixin:
         self._logged_in_account = account
         return account
 
-    def _set_signed_cookie(self, key, value, salt=""):
+    def _set_signed_cookie(self, key: str, value: int, salt: str = "") -> None:
         value = signing.get_cookie_signer(salt=key + salt).sign(value)
         if self.is_full_browser_test:
             if not self._have_visited_page():
@@ -317,7 +318,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
             "agreement": True,
         }
 
-    def fill(self, data, scroll=True):
+    def fill(self, data: dict[str, object], *, scroll: bool = True) -> None:
         # Accept more things than super().fill()
         # This allows us to write `get_place_details()` above in a way
         # that means that data can be easily passed to Factory.create_booking()
@@ -483,7 +484,7 @@ class TestBookingIndexWT(BookingIndexBase, WebTestBase):
 class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     urlname = "cciw-bookings-start"
 
-    def submit(self, css_selector="[type=submit]"):
+    def submit(self, css_selector: str = "[type=submit]") -> None:
         return super().submit(css_selector)
 
     def test_show_form(self):
@@ -546,13 +547,13 @@ class TestBookingStartSL(BookingStartBase, SeleniumBase):
 
 
 class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
-    def submit(self, css_selector="[type=submit]"):
+    def submit(self, css_selector: str = "[type=submit]") -> None:
         return super().submit(css_selector)
 
-    def _read_email_verify_email(self, email):
+    def _read_email_verify_email(self, email: mail.EmailMessage) -> tuple[str, str, dict[str, str]]:
         return read_email_url(email, "https://.*/booking/v/.*")
 
-    def _start(self, email="booker@bookers.com"):
+    def _start(self, email: str = "booker@bookers.com"):
         # Assumes booking_start works:
         self.get_url("cciw-bookings-start")
         self.fill_by_name({"email": email})
@@ -571,7 +572,7 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         assert account.last_login_at is not None
         assert account.first_login_at is not None
 
-    def _add_booking_account_address(self, email="booker@bookers.com"):
+    def _add_booking_account_address(self, email: str = "booker@bookers.com"):
         account, _ = BookingAccount.objects.get_or_create(email=email)
         account.name = "Joe"
         account.address_line1 = "Home"
@@ -644,7 +645,7 @@ class TestBookingVerifySL(BookingVerifyBase, SeleniumBase):
 
 
 class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
-    def _create_booking(self):
+    def _create_booking(self) -> Booking:
         booking = factories.create_booking()
         allocate_bookings_now([booking])
         booking: Booking = Booking.objects.get(id=booking.id)
@@ -688,7 +689,7 @@ class AccountDetailsBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
     urlname = "cciw-bookings-account_details"
     submit_css_selector = "[type=submit]"
 
-    def submit(self, css_selector=submit_css_selector):
+    def submit(self, css_selector: str = submit_css_selector) -> None:
         return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
@@ -707,7 +708,7 @@ class AccountDetailsBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
         self.assertTextPresent("This field is required")
 
     @mock.patch("cciw.bookings.mailchimp.update_newsletter_subscription")
-    def test_complete(self, UNS_func):
+    def test_complete(self, UNS_func: MagicMock):
         """
         Test that we can complete the account details page
         """
@@ -720,7 +721,7 @@ class AccountDetailsBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
         assert UNS_func.call_count == 0
 
     @mock.patch("cciw.bookings.mailchimp.update_newsletter_subscription")
-    def test_news_letter_subscribe(self, UNS_func):
+    def test_news_letter_subscribe(self, UNS_func: MagicMock):
         account = self.booking_login(add_account_details=False)
         self.get_url(self.urlname)
         self._fill_in_account_details()
@@ -809,7 +810,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     submit_css_selector = SAVE_BTN
 
-    def submit(self, css_selector=submit_css_selector):
+    def submit(self, css_selector: str = submit_css_selector) -> None:
         return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
@@ -890,7 +891,7 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
         self.create_booking(shortcut=True)
         self.get_url(self.urlname)
 
-    def assertValues(self, data):
+    def assertValues(self, data: dict[str, str]):
         for k, v in data.items():
             assert self.value(k) == v
 
@@ -990,7 +991,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     submit_css_selector = "#id_save_btn"
 
-    def edit_place(self, booking, expect_code=None):
+    def edit_place(self, booking: Booking, expect_code: int | None = None):
         url = reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(booking.id)})
         expect_errors = expect_code is not None and str(expect_code).startswith("4")
         action = lambda: self.get_literal_url(url, expect_errors=expect_errors)
@@ -1002,7 +1003,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         if expect_code is not None:
             self.assertCode(expect_code)
 
-    def submit(self, css_selector=submit_css_selector):
+    def submit(self, css_selector: str = submit_css_selector) -> None:
         return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
@@ -1921,7 +1922,7 @@ def test_receive_payment_signal_handler():
 
 
 @pytest.mark.django_db
-def test_email_for_good_payment(mailoutbox):
+def test_email_for_good_payment(mailoutbox: list[mail.EmailMessage]):
     account = factories.create_booking_account()
     factories.create_ipn(account=account, mc_gross=Decimal(100))
 
@@ -2022,7 +2023,7 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
 
     # NB use a mixture of WebTest and Django client tests
 
-    def _booking_problems_json(self, place_details):
+    def _booking_problems_json(self, place_details: dict[str, object]) -> dict[str, object]:
         data = {}
         for k, v in place_details.items():
             data[k] = v.id if isinstance(v, models.Model) else v
@@ -2030,7 +2031,9 @@ class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
         resp = self.client.post(reverse("cciw-officers-booking_problems_json"), data)
         return json.loads(resp.content.decode("utf-8"))
 
-    def _initial_place_details(self):
+    def _initial_place_details(
+        self,
+    ) -> dict[str, object]:
         data = self.get_place_details()
         data["created_at_0"] = "1970-01-01"  # Simulate form, which doesn't supply created
         data["created_at_1"] = "00:00:00"
@@ -3084,7 +3087,7 @@ def test_camp_places_left():
 
 
 @pytest.mark.django_db
-def test_allocate_places(mailoutbox):
+def test_allocate_places(mailoutbox: list[mail.EmailMessage]):
     year_config = create_year_config_for_queue_tests()
     camp: Camp = camps_factories.create_camp(
         year=year_config.year, max_campers=5, max_male_campers=5, max_female_campers=5
@@ -3160,7 +3163,9 @@ def test_allocate_places(mailoutbox):
 
 @pytest.mark.parametrize("action", ["accept", "cancel", "ignore"])
 @pytest.mark.django_db
-def test_allocate_places_for_waiting_list(mailoutbox, client: Client, action: Literal["accept", "cancel", "ignore"]):
+def test_allocate_places_for_waiting_list(
+    mailoutbox: list[mail.EmailMessage], client: Client, action: Literal["accept", "cancel", "ignore"]
+):
     year_config = create_year_config_for_queue_tests()
     camp: Camp = camps_factories.create_camp(
         year=year_config.year, max_campers=5, max_male_campers=10, max_female_campers=10

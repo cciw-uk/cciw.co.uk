@@ -3,9 +3,12 @@ import hashlib
 import requests
 from django.conf import settings
 from requests.auth import HTTPBasicAuth
+from requests.models import Response
+
+from cciw.bookings.models.accounts import BookingAccount
 
 
-def update_newsletter_subscription(booking_account):
+def update_newsletter_subscription(booking_account: BookingAccount) -> Response:
     status = get_status(booking_account)
     if booking_account.subscribe_to_newsletter:
         if status is None or status != "subscribed":
@@ -16,7 +19,7 @@ def update_newsletter_subscription(booking_account):
     return None
 
 
-def _update(booking_account, current_status, desired_status):
+def _update(booking_account: BookingAccount, current_status: str, desired_status: str) -> Response:
     if current_status is None:
         return mailchimp_request(
             "POST",
@@ -37,11 +40,11 @@ def _update(booking_account, current_status, desired_status):
         )
 
 
-def email_to_mailchimp_id(email):
+def email_to_mailchimp_id(email: str) -> str:
     return hashlib.md5(email.lower().encode("utf-8")).hexdigest()
 
 
-def get_status(booking_account):
+def get_status(booking_account: BookingAccount) -> str:
     mailchimp_id = email_to_mailchimp_id(booking_account.email)
     response = mailchimp_request_unchecked(
         "GET", f"/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}"
@@ -52,13 +55,13 @@ def get_status(booking_account):
     return response.json()["status"]
 
 
-def mailchimp_request_unchecked(method, path, **kwargs):
+def mailchimp_request_unchecked(method: str, path: str, **kwargs) -> Response:
     url = settings.MAILCHIMP_URL_BASE + path
     auth = HTTPBasicAuth("user", settings.MAILCHIMP_API_KEY)
     return requests.request(method, url, auth=auth, **kwargs)
 
 
-def mailchimp_request(*args, **kwargs):
+def mailchimp_request(*args, **kwargs) -> Response:
     response = mailchimp_request_unchecked(*args, **kwargs)
     if response.status_code != 200:
         raise Exception(f"Mailchimp returned {response.status_code}: {response.json()['detail']}")

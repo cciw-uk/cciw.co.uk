@@ -5,8 +5,7 @@ from decimal import Decimal
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponseRedirect
-from django.http.request import HttpRequest
+from django.http import Http404, HttpRequest, HttpResponseRedirect
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -63,7 +62,7 @@ class BookingStage:
 
 
 @booking_account_optional
-def index(request):
+def index(request: HttpRequest) -> TemplateResponse:
     year = common.get_thisyear()
     context: dict = {
         "title": "Booking",
@@ -89,7 +88,7 @@ def index(request):
     return TemplateResponse(request, "cciw/bookings/index.html", context)
 
 
-def next_step(account):
+def next_step(account: BookingAccount) -> HttpResponseRedirect:
     """
     Returns a redirect to the next obvious step for this account.
     """
@@ -104,7 +103,7 @@ def next_step(account):
 
 
 @booking_account_optional
-def start(request):
+def start(request: HttpRequest) -> HttpResponse:
     form_class = EmailForm
     account = request.booking_account
     if account is not None:
@@ -131,7 +130,7 @@ def start(request):
 
 
 @booking_account_optional
-def email_sent(request):
+def email_sent(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/bookings/email_sent.html",
@@ -142,7 +141,7 @@ def email_sent(request):
 
 
 @booking_account_optional
-def link_expired_email_sent(request):
+def link_expired_email_sent(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/bookings/email_sent.html",
@@ -154,7 +153,7 @@ def link_expired_email_sent(request):
 
 
 @booking_account_required
-def verify_and_continue(request):
+def verify_and_continue(request: HttpRequest) -> HttpResponseRedirect:
     # Verification and login already done by the middleware,
     # checking already done by booking_account_required.
     account = request.booking_account
@@ -175,7 +174,7 @@ def verify_and_continue(request):
 
 
 @booking_account_optional
-def verify_email_failed(request):
+def verify_email_failed(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/bookings/email_verification_failed.html",
@@ -186,7 +185,7 @@ def verify_email_failed(request):
 
 
 @booking_account_optional
-def not_logged_in(request):
+def not_logged_in(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/bookings/not_logged_in.html",
@@ -198,7 +197,7 @@ def not_logged_in(request):
 
 @booking_account_required
 @htmx_form_validate(form_class=AccountDetailsForm)
-def account_details(request):
+def account_details(request: HttpRequest) -> HttpResponse:
     form_class = AccountDetailsForm
 
     if request.method == "POST":
@@ -222,13 +221,13 @@ def account_details(request):
 
 @account_details_required
 def add_or_edit_place(
-    request,
-    booking_id: int | None = None,
+    request: HttpRequest,
     *,
+    booking_id: int | None = None,
     context: dict | None = None,
     form_input_data: dict | None = None,
     extra_response_headers: dict | None = None,
-):
+) -> HttpResponse:
     context = context or {}
     form_class = AddPlaceForm
     booking_account = request.booking_account
@@ -283,12 +282,12 @@ def add_or_edit_place(
 
 
 @booking_account_required
-def add_place(request):
+def add_place(request: HttpRequest) -> HttpResponse:
     return add_or_edit_place(request)
 
 
 @booking_account_required
-def edit_place(request, booking_id: int):
+def edit_place(request: HttpRequest, *, booking_id: int) -> HttpResponse:
     return add_or_edit_place(request, booking_id=booking_id)
 
 
@@ -349,21 +348,21 @@ def use_previous_data_modal(request: HttpRequest, booking_id: int | None = None)
     )
 
 
-def _reuse_data_url(booking_id: int | None):
+def _reuse_data_url(booking_id: int | None) -> str:
     if booking_id:
         return reverse("cciw-bookings-add_place_reuse_data", kwargs=dict(booking_id=booking_id))
     else:
         return reverse("cciw-bookings-add_place_reuse_data")
 
 
-def _use_previous_data_modal_url(booking_id: int | None):
+def _use_previous_data_modal_url(booking_id: int | None) -> str:
     if booking_id:
         return reverse("cciw-bookings-use_previous_data_modal", kwargs=dict(booking_id=booking_id))
     else:
         return reverse("cciw-bookings-use_previous_data_modal")
 
 
-def make_state_token(bookings):
+def make_state_token(bookings: list[Booking]) -> str:
     # Hash some key data about booking, without which the booking isn't valid.
     # This is a protection mechanism for the user's benefit, to ensure they
     # don't accidentally book something significantly different from what they
@@ -380,14 +379,14 @@ def make_state_token(bookings):
 
 @booking_account_required
 @for_htmx(use_block_from_params=True)
-def basket_list_bookings(request):
+def basket_list_bookings(request: HttpRequest) -> HttpResponse:
     """
     List bookings ready to book
     """
     return _basket_list_bookings(request)
 
 
-def _basket_list_bookings(request: HttpRequest):
+def _basket_list_bookings(request: HttpRequest) -> HttpResponse:
     year = common.get_thisyear()
     booking_open_data = get_booking_open_data(year)
     bookings = (
@@ -534,8 +533,14 @@ class CustomAmountPayPalForm(PayPalPaymentsForm):
 
 
 def mk_paypal_form(
-    account, balance, protocol, domain, min_amount=None, max_amount=None, item_name="Camp place booking"
-):
+    account: BookingAccount,
+    balance: int | Decimal,
+    protocol: str,
+    domain: str,
+    min_amount: int | Decimal | None = None,
+    max_amount: Decimal | None = None,
+    item_name: str = "Camp place booking",
+) -> CustomAmountPayPalForm | PayPalPaymentsForm:
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": str(balance),
@@ -566,7 +571,7 @@ def mk_paypal_form(
 
 
 @booking_account_required
-def pay(request, *, installment: bool = False):
+def pay(request: HttpRequest, *, installment: bool = False) -> TemplateResponse:
     acc: BookingAccount = request.booking_account
     balance_due_now = acc.get_balance_due_now()
     balance_full = acc.get_balance_full()
@@ -612,7 +617,7 @@ def pay(request, *, installment: bool = False):
 
 @csrf_exempt  # PayPal will post to this
 @booking_account_optional
-def pay_done(request):
+def pay_done(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/bookings/pay_done.html",
@@ -625,7 +630,7 @@ def pay_done(request):
 
 @csrf_exempt  # PayPal will post to this
 @booking_account_optional
-def pay_cancelled(request):
+def pay_cancelled(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/bookings/pay_cancelled.html",
@@ -638,7 +643,7 @@ def pay_cancelled(request):
 
 @booking_account_required
 @for_htmx2(use_partial_from_params=True)
-def account_overview(request):
+def account_overview(request: HttpRequest) -> HttpResponse:
     if "logout" in request.POST:
         response = HttpResponseRedirect(reverse("cciw-bookings-index"))
         unset_booking_account_cookie(response)

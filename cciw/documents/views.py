@@ -1,14 +1,14 @@
 from django.apps import apps
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 
 from .models import Document
 
 
-def not_found():
+def not_found() -> Http404:
     return Http404("Document not found, or insufficient privileges to view it.")
 
 
-def download(request, app_label: str, model_name: str, id: int):
+def download(request: HttpRequest, app_label: str, model_name: str, id: int) -> HttpResponse:
     try:
         model = apps.get_model(app_label, model_name)
     except LookupError:

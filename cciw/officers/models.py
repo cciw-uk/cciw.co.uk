@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Prefetch, Value
 from django.db.models.enums import TextChoices
 from django.db.models.functions import Concat
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -33,10 +34,10 @@ REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS = REFEREE_DATA_FIELDS
 
 
 class ApplicationQuerySet(models.QuerySet):
-    def older_than(self, before_datetime):
+    def older_than(self, before_datetime: datetime) -> ApplicationQuerySet:
         return self.filter(saved_on__lt=before_datetime.date())
 
-    def not_in_use(self, now: datetime):
+    def not_in_use(self, now: datetime) -> ApplicationQuerySet:
         return self.exclude(officer__id__in=User.objects.in_use(now))
 
     def with_references(self) -> models.QuerySet:
@@ -154,7 +155,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
         return (self._referee(1), self._referee(2))
 
     @property
-    def one_line_address(self):
+    def one_line_address(self) -> str:
         return ", ".join(
             filter(
                 bool,
@@ -168,14 +169,14 @@ class Application(ClearCachedPropertyMixin, models.Model):
             )
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.saved_on is not None:
             submitted = ("submitted " if self.finished else "saved ") + self.saved_on.strftime("%Y-%m-%d")
         else:
             submitted = "incomplete"
         return f"Application from {self.full_name} ({submitted})"
 
-    def _referee(self, num):
+    def _referee(self, num: int) -> Referee:
         if hasattr(self, "_prefetched_objects_cache"):
             if "referee_set" in self._prefetched_objects_cache:
                 vals = [v for v in self._prefetched_objects_cache["referee_set"] if v.referee_number == num]
@@ -183,7 +184,7 @@ class Application(ClearCachedPropertyMixin, models.Model):
                     return vals[0]
         return self.referee_set.get_or_create(referee_number=num)[0]
 
-    def could_be_for_camp(self, camp):
+    def could_be_for_camp(self, camp: Camp) -> bool:
         # An application is 'for' a camp if it is submitted in the year before
         # the camp start date. Logic duplicated in applications_for_camp
         return self.saved_on <= camp.start_date and self.saved_on > camp.start_date - timedelta(days=365)
@@ -234,13 +235,13 @@ class Referee(models.Model):
 
     log_datetime_format = "%Y-%m-%d %H:%M:%S"
 
-    def reference_is_received(self):
+    def reference_is_received(self) -> bool:
         try:
             return not empty_reference(self.reference)
         except Reference.DoesNotExist:
             return False
 
-    def reference_was_requested(self):
+    def reference_was_requested(self) -> bool:
         return self.last_requested is not None
 
     @cached_property
@@ -267,13 +268,13 @@ class Referee(models.Model):
         else:
             return None
 
-    def log_reference_received(self, dt):
+    def log_reference_received(self, dt: datetime):
         self.actions.create(action_type=ReferenceAction.ActionType.RECEIVED, created_at=dt)
 
     def log_reference_filled_in(self, user, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.FILLED_IN, created_at=dt, user=user)
 
-    def log_request_made(self, user, dt):
+    def log_request_made(self, user: User, dt: datetime):
         self.actions.create(action_type=ReferenceAction.ActionType.REQUESTED, created_at=dt, user=user)
 
     def log_nag_made(self, user, dt):
@@ -349,12 +350,12 @@ class ReferenceAction(models.Model):
         return ""
 
 
-def empty_reference(reference):
+def empty_reference(reference: Reference) -> bool:
     return reference is None or reference.how_long_known.strip() == ""
 
 
 class ReferenceManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return super().get_queryset().select_related("referee__application__officer")
 
 
@@ -436,7 +437,7 @@ class Reference(models.Model):
 class QualificationType(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     class Meta:
@@ -448,10 +449,10 @@ class Qualification(models.Model):
     type = models.ForeignKey(QualificationType, related_name="qualifications", on_delete=models.PROTECT)
     issued_on = models.DateField("date issued")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.type} qualification for {self.application.officer}"
 
-    def copy(self, **kwargs):
+    def copy(self, **kwargs) -> Qualification:
         q = Qualification()
         q.application = self.application
         q.type = self.type
@@ -479,12 +480,12 @@ class InvitationQuerySet(models.QuerySet):
     def name_order(self):
         return self.order_by("officer__first_name", "officer__last_name", "officer__email")
 
-    def for_future_camps(self, now: datetime):
+    def for_future_camps(self, now: datetime) -> InvitationQuerySet:
         return self.filter(camp__end_date__gte=now)
 
 
 class InvitationManager(models.Manager.from_queryset(InvitationQuerySet)):
-    def get_queryset(self):
+    def get_queryset(self) -> InvitationQuerySet:
         # TODO we should work out if we really need to select all this always...
         return super().get_queryset().select_related("officer", "camp", "camp__chaplain")
 
@@ -625,10 +626,10 @@ def remove_officer_from_camp(camp, officer: User) -> None:
 
 
 class DBSCheckManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return super().get_queryset().select_related("officer")
 
-    def get_for_camp(self, camp, include_late=False):
+    def get_for_camp(self, camp: Camp, *, include_late: bool = False) -> QuerySet:
         """
         Returns the DBSs that might be valid for a camp (ignoring the camp
         officer list)
@@ -692,7 +693,7 @@ class DBSCheck(models.Model):
                 {"other_organisation": "This field is required if 'Requested by' is 'Other organisation'."}
             )
 
-    def could_be_for_camp(self, camp):
+    def could_be_for_camp(self, camp: Camp) -> bool:
         return (
             self.completed_on >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)
             and self.completed_on <= camp.start_date
@@ -706,10 +707,10 @@ class DBSActionLogType(TextChoices):
 
 
 class DBSActionLogManager(models.Manager):
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return super().get_queryset().select_related("officer")
 
-    def create(self, *args, **kwargs):
+    def create(self, *args, **kwargs) -> DBSActionLog:
         if "action_type" not in kwargs:
             raise TypeError("action_type is a required field")
         return super().create(*args, **kwargs)
@@ -752,7 +753,7 @@ class DBSActionLog(models.Model):
 TITLES = ["dr", "rev", "reverend", "pastor", "mr", "ms", "mrs", "prof"]
 
 
-def normalized_name(name):
+def normalized_name(name: str) -> str:
     # See also application_form.js
     first_word = name.strip().split(" ")[0].lower().replace(".", "")
     if first_word in TITLES:

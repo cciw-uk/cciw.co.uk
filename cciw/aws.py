@@ -8,6 +8,7 @@
 import json
 import logging
 from base64 import b64decode
+from collections.abc import Callable
 from functools import lru_cache, wraps
 
 import furl
@@ -16,7 +17,7 @@ from cryptography import x509
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -90,14 +91,14 @@ def load_resource_cached(url):
     return requests.get(url).content
 
 
-def ensure_from_aws_sns(view_func):
+def ensure_from_aws_sns[T: Callable](view_func: T) -> T:
     """
     Checks the signature on the request to ensure it is genuinely
     from Amazon SNS
     """
 
     @wraps(view_func)
-    def wrapper(request):
+    def wrapper(request: HttpRequest):
         if not verify_sns_notification(request):
             return HttpResponse("Invalid or missing signature", status=400)
         return view_func(request)
@@ -105,7 +106,7 @@ def ensure_from_aws_sns(view_func):
     return wrapper
 
 
-def confirm_sns_subscriptions(view_func):
+def confirm_sns_subscriptions[T: Callable](view_func: T) -> T:
     """
     Wraps a view in a handler that will automatically respond to 'confirmation'
     requests that Amazon will send to any webhook we attempt to set up
@@ -113,7 +114,7 @@ def confirm_sns_subscriptions(view_func):
     """
 
     @wraps(view_func)
-    def wrapper(request):
+    def wrapper(request: HttpRequest):
         msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
         if msg_type == SNS_MESSAGE_TYPE_SUB_NOTIFICATION:
             subscribe_url = json.loads(request.body)["SubscribeURL"]

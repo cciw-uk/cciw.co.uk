@@ -17,7 +17,7 @@ from .applying import (
 from .loading import Forever, Policy, field_requires_privacy_policy
 
 
-def get_data_retention_policy_issues(policy: Policy | None = None):
+def get_data_retention_policy_issues(policy: Policy | None = None) -> list[Error]:
     if policy is None:
         policy = load_actual_data_retention_policy()
     return _check_exhaustiveness(policy) + _check_erasable_records(policy)

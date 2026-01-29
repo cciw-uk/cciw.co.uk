@@ -1,10 +1,10 @@
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.template.response import TemplateResponse
 
 from cciw.sitecontent.models import MenuLink
 
 
-def find(request, path: str, template_name="cciw/chunk_page.html"):
+def find(request: HttpRequest, path: str, template_name: str = "cciw/chunk_page.html") -> TemplateResponse:
     if path in ("", "/"):
         url = "/"
     else:
@@ -30,5 +30,5 @@ def find(request, path: str, template_name="cciw/chunk_page.html"):
     )
 
 
-def home(request):
+def home(request: HttpRequest) -> TemplateResponse:
     return find(request, "", template_name="cciw/home.html")

@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from functools import wraps
 
 from django.http import HttpResponse
@@ -7,7 +8,7 @@ type NamedUrl = str
 type BreadCrumb = tuple[NamedUrl | None, str]
 
 
-def with_breadcrumbs(breadcrumbs: list[BreadCrumb]):
+def with_breadcrumbs(breadcrumbs: list[BreadCrumb]) -> Callable:
     def decorator(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs) -> HttpResponse:

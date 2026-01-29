@@ -22,7 +22,7 @@ from cciw.officers.applications import (
     camps_for_application,
 )
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
-from cciw.officers.models import Application, Referee
+from cciw.officers.models import Application, Referee, Reference
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ CCiW website:
     send_mail(subject, body, settings.SERVER_EMAIL, leader_emails)
 
 
-def make_update_email_url(application: Application):
+def make_update_email_url(application: Application) -> str:
     return "https://{domain}{path}?t={token}".format(
         domain=common.get_current_domain(),
         path=reverse("cciw-officers-correct_email"),
@@ -122,7 +122,7 @@ def make_update_email_url(application: Application):
     )
 
 
-def make_update_application_url(application: Application, email: str):
+def make_update_application_url(application: Application, email: str) -> str:
     return "https://{domain}{path}?t={token}".format(
         domain=common.get_current_domain(),
         path=reverse("cciw-officers-correct_application"),
@@ -168,12 +168,12 @@ This was an automated response by the CCiW website.
     send_mail(subject, user_msg, settings.SERVER_EMAIL, [user_email, application.address_email], fail_silently=True)
 
 
-def make_ref_form_url_hash(referee_id: int, prev_ref_id: int | None):
+def make_ref_form_url_hash(referee_id: int, prev_ref_id: int | None) -> str:
     prev_ref_id_str = "" if prev_ref_id is None else str(int)
     return salted_hmac("cciw.officers.create_reference", f"{referee_id}:{prev_ref_id_str}").hexdigest()[::2]
 
 
-def make_ref_form_url(referee_id: int, prev_ref_id: int | None):
+def make_ref_form_url(referee_id: int, prev_ref_id: int | None) -> str:
     return "https://{domain}{path}".format(
         domain=common.get_current_domain(),
         path=reverse(
@@ -201,7 +201,7 @@ def send_reference_request_email(message: str, referee: Referee, sending_officer
     ).send()
 
 
-def send_leaders_reference_email(reference):
+def send_leaders_reference_email(reference: Reference):
     """
     Send the leaders/admins an email with contents of submitted reference form.
     Fails silently.

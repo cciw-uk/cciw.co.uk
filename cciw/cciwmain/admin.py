@@ -1,12 +1,14 @@
+from collections.abc import Callable
 from functools import wraps
 
 from django.contrib import admin
+from django.http import HttpRequest
 from django.utils.html import format_html
 
-from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.cciwmain.models import Camp, CampName, CampQuerySet, Person, Site
 
 
-def rename_app_list(func):
+def rename_app_list[T: Callable](func: T) -> T:
     m = {"Cciwmain": "Camp info", "Sitecontent": "Site content", "Sites": "Web sites"}
 
     @wraps(func)
@@ -119,14 +121,14 @@ class CampAdmin(admin.ModelAdmin):
     filter_horizontal = ("leaders", "admins")
     date_hierarchy = "start_date"
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> CampQuerySet:
         qs = super().get_queryset(request).select_related("site", "chaplain")
         if request.user.has_perm("cciwmain.change_camp"):
             return qs
         else:
             return qs.filter(id__in=[c.id for c in request.user.viewable_camps])
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: HttpRequest, obj: Camp | None = None) -> list[str]:
         readonly_fields = list(super().get_readonly_fields(request, obj))
         # Some users (Camp leaders) have permissions to edit their own camp for
         # some purposes, which is enabled via custom logic in
@@ -140,7 +142,7 @@ class CampAdmin(admin.ModelAdmin):
             readonly_fields += ["max_male_campers", "max_female_campers", "max_campers", "last_booking_date"]
         return readonly_fields
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(self, request: HttpRequest, obj: Camp | None = None) -> bool:
         if obj is None:
             if request.user.can_edit_some_camps:
                 return True
@@ -149,7 +151,7 @@ class CampAdmin(admin.ModelAdmin):
                 return True
         return super().has_change_permission(request, obj=obj)
 
-    def has_view_permission(self, request, obj=None):
+    def has_view_permission(self, request: HttpRequest, obj: Camp | None = None) -> bool:
         if obj is None:
             if request.user.can_edit_some_camps:
                 return True

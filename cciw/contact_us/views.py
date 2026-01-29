@@ -2,7 +2,7 @@ import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @htmx_form_validate(form_class=ValidationContactUsForm)
-def contact_us(request):
+def contact_us(request: HttpRequest) -> HttpResponse:
     form_class = ContactUsForm
     booking_account = get_booking_account_from_request(request)
 
@@ -55,7 +55,7 @@ def contact_us(request):
     )
 
 
-def contact_us_done(request):
+def contact_us_done(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(
         request,
         "cciw/contact_us_done.html",
@@ -67,7 +67,7 @@ def contact_us_done(request):
 
 @cciw_secretary_or_booking_secretary_required
 @staff_member_required
-def view_message(request, *, message_id: int):
+def view_message(request: HttpRequest, *, message_id: int) -> TemplateResponse:
     msg: Message = get_object_or_404(Message.objects.filter(id=int(message_id)))
 
     reclassify_form = None

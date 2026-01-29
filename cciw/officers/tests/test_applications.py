@@ -38,7 +38,14 @@ class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
 
-    def _start(self, old=False, finished=False, unfinished=False, qualifications=None):
+    def _start(
+        self,
+        *,
+        old: bool = False,
+        finished: bool = False,
+        unfinished: bool = False,
+        qualifications: list[Qualification] | None = None,
+    ) -> User:
         """
         Create camp and officer, optionally with:
         - a recent *finished* Application

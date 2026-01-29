@@ -9,6 +9,7 @@ import sys
 import time
 import traceback
 import types
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import texttable
@@ -49,7 +50,7 @@ EXTRA_INFO = [
 SCREEN_WIDTH = shutil.get_terminal_size(fallback=(200, 50)).columns
 
 
-def db_debug_middleware(get_response):
+def db_debug_middleware(get_response: Callable) -> Callable:
     def middleware(request):
         db_logging = os.environ.get("DB_LOGGING", "")
         is_detailed = db_logging.lower() == "detailed"

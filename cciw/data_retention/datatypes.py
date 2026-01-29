@@ -43,7 +43,7 @@ class Group:
     models: list[ModelDetail]
 
     @property
-    def web_url(self):
+    def web_url(self) -> str:
         # This works only if we keep the section title in the
         # data_retention.yaml file the same as the group name,
         # which is fragile but fine for our purposes.

@@ -1,20 +1,22 @@
 import copy
+from collections.abc import Callable
 from functools import wraps
 from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.http.request import HttpRequest, QueryDict
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, QueryDict
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
 from render_block import render_block_to_string
 
+from cciw.accounts.models import User
 
-def close_window_response(request: HttpRequest, *, clear_messages=False):
+
+def close_window_response(request: HttpRequest, *, clear_messages=False) -> HttpResponse:
     # First we clear any messages, because, due to the closed window, these will
     # otherwise appear in another window at an unrelated moment, confusing the
     # user.
@@ -28,7 +30,7 @@ def close_window_response(request: HttpRequest, *, clear_messages=False):
     )
 
 
-def reroute_response(request: HttpRequest, default_to_close=True):
+def reroute_response(request: HttpRequest, *, default_to_close: bool = True) -> HttpResponse | None:
     """
     Utility for rerouting (or closing window) at the end of a page being used.
     """
@@ -50,15 +52,23 @@ def reroute_response(request: HttpRequest, default_to_close=True):
         return None
 
 
-def user_passes_test_improved(test_func):
+def user_passes_test_improved[F: Callable[..., HttpResponse]](
+    test_func: Callable[[User], bool],
+) -> Callable[[F], F]:
     """
     Like user_passes_test, but doesn't redirect user to login screen if they are
     already logged in.
     """
 
-    def decorator(view_func):
+    # Can't work out how to correct the type sigs for this yet.
+    # We want the decorated view function to:
+    # - take a HttpRequest
+    # - and any number of other params
+    # - and return a HttpResponse
+
+    def decorator[F2: Callable[..., HttpResponse]](view_func: F2) -> F2:
         @wraps(view_func)
-        def _wrapped_view(request: HttpRequest, *args, **kwargs):
+        def _wrapped_view(request: HttpRequest, *args, **kwargs) -> HttpResponse:
             user = request.user
             if user.is_authenticated:
                 if user.is_superuser or test_func(user):
@@ -89,7 +99,7 @@ def redirect_to_password_change_with_next(request: HttpRequest) -> HttpResponseR
     return redirect_to_url_with_next(path, password_change_url, REDIRECT_FIELD_NAME)
 
 
-def get_current_url_for_redirection(request, redirect_url):
+def get_current_url_for_redirection(request: HttpRequest, redirect_url: str) -> str:
     url = request.build_absolute_uri()
     # If the url is the same scheme and net location then just
     # use the path as the "next" url.
@@ -101,7 +111,7 @@ def get_current_url_for_redirection(request, redirect_url):
     return url
 
 
-def get_redirect_from_request(request):
+def get_redirect_from_request(request: HttpRequest) -> HttpResponse:
     redirect_to = request.GET.get(REDIRECT_FIELD_NAME, "")
     if redirect_to:
         url_is_safe = url_has_allowed_host_and_scheme(
@@ -114,7 +124,7 @@ def get_redirect_from_request(request):
     return None
 
 
-def redirect_to_url_with_next(next_url, url, redirect_field_name) -> HttpResponseRedirect:
+def redirect_to_url_with_next(next_url: str, url: str, redirect_field_name: str) -> HttpResponseRedirect:
     f = furl(url)
     f.args[redirect_field_name] = next_url
     return HttpResponseRedirect(f.url)
@@ -126,7 +136,7 @@ def for_htmx(
     use_template: str | None = None,
     use_block: str | list[str] | None = None,
     use_block_from_params: bool = False,
-):
+) -> Callable:
     """
     If the request is from htmx, then render a partial page, using either:
     - the template specified in `use_template` param
@@ -219,7 +229,7 @@ def htmx_redirect(url):
 def for_htmx2(
     *,
     use_partial_from_params: bool = False,
-):
+) -> Callable:
     """
     If the request is from htmx, then render a partial page, using either:
     - the partial specified in GET/POST parameter "use_partial", if `use_partial_from_params=True` is passed

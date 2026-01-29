@@ -1,19 +1,17 @@
-from collections.abc import Sequence
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
 
 from django import forms
 from django.contrib import admin, messages
 from django.db.models import GeneratedField, ManyToOneRel, Value
 from django.db.models.functions import Concat
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models.problems import ApprovalStatus, BookingApproval
-from cciw.bookings.models.queue import BookingQueueEntry
-from cciw.bookings.models.states import CURRENT_BOOKING_STATES
-from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
@@ -34,6 +32,13 @@ from .models import (
     SupportingInformationType,
     WriteOffDebt,
 )
+from .models.accounts import BookingAccountQuerySet
+from .models.bookings import BookingQuerySet
+from .models.problems import ApprovalStatus, BookingApproval, BookingApprovalQuerySet
+from .models.queue import BookingQueueEntry
+from .models.states import CURRENT_BOOKING_STATES
+from .models.supporting_information import SupportingInformationQuerySet
+from .models.yearconfig import YearConfig
 
 FIRST_BOOKING_YEAR = 2012
 
@@ -100,37 +105,39 @@ class ReadOnlyInline:
         return ReadOnlyFormset
 
 
+def payment_link(payment: Payment) -> str:
+    source = payment.source.model_source
+    return format_html(
+        '<a href="{0}" target="_blank">{1}</a>',
+        reverse(f"admin:{source._meta.app_label}_{source._meta.model_name}_change", args=(source.pk,)),
+        f"{source._meta.label}:{source.pk}",
+    )
+
+
 # These inlines are used to display some info on BookingAccount admin
 class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
     model = Payment
 
-    def link(self, payment: Payment) -> str:
-        source = payment.source.model_source
-        return format_html(
-            '<a href="{0}" target="_blank">{1}</a>',
-            reverse(f"admin:{source._meta.app_label}_{source._meta.model_name}_change", args=(source.pk,)),
-            f"{source._meta.label}:{source.pk}",
-        )
-
-    fields = ["amount", "payment_type", "created_at", "link"]
+    fields = ["amount", "payment_type", "created_at", payment_link]
     readonly_fields = fields
+
+
+def booking_name(booking: Booking) -> str:
+    return format_html(
+        '<a href="{0}" target="_blank">{1}</a>',
+        reverse("admin:bookings_booking_change", args=[booking.id]),
+        booking.name,
+    )
 
 
 class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
     model = Booking
     label = "Confirmed bookings"
 
-    def name(booking):
-        return format_html(
-            '<a href="{0}" target="_blank">{1}</a>',
-            reverse("admin:bookings_booking_change", args=[booking.id]),
-            booking.name,
-        )
-
-    fields = [name, "camp", "amount_due", "state"]
+    fields = [booking_name, "camp", "amount_due", "state"]
     readonly_fields = fields
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs) -> BookingQuerySet:
         return (
             super()
             .get_queryset(*args, **kwargs)
@@ -150,13 +157,13 @@ class LoggedInFilter(admin.SimpleListFilter):
     title = "Ever logged in"
     parameter_name = "logged_in"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin: BookingAccountAdmin) -> list[tuple[int, str]]:
         return [
             (1, "Yes"),
             (0, "No"),
         ]
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: BookingAccountQuerySet) -> BookingAccountQuerySet:
         val = self.value()
         if val is None:
             return queryset
@@ -170,11 +177,11 @@ class BookingsYearFilter(admin.SimpleListFilter):
     title = "bookings year"
     parameter_name = "bookings_year"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin: BookingAccountAdmin) -> list[tuple[str, str]]:
         vals = range(common.get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
         return [(str(v), str(v)) for v in vals]
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: BookingAccountQuerySet) -> BookingAccountQuerySet:
         val = self.value()
         if val is None:
             return queryset
@@ -185,13 +192,13 @@ class FinalBalanceFilter(admin.SimpleListFilter):
     title = "Final balance"
     parameter_name = "final_balance"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin: BookingAccountAdmin) -> list[tuple[str, str]]:
         return [
             ("zero", "Zero"),
             ("non-zero", "Non zero"),
         ]
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: BookingAccountQuerySet) -> BookingAccountQuerySet:
         val = self.value()
         if val == "zero":
             return queryset.zero_final_balance()
@@ -214,7 +221,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
         BookingAccountBookingInline,
     ]
 
-    def get_fieldsets(self, request, obj=None):
+    def get_fieldsets(self, request: HttpRequest, obj: BookingAccount | None = None) -> list:
         fieldsets = [
             (
                 None,
@@ -253,11 +260,11 @@ class BookingAccountAdmin(admin.ModelAdmin):
             )
         return fieldsets
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> BookingAccountQuerySet:
         # Distinct needed because of BookingsYearFilter
         return super().get_queryset(request).distinct()
 
-    def response_change(self, request, obj):
+    def response_change(self, request: HttpRequest, obj: BookingAccount) -> HttpResponse:
         # Little hack to allow popups for changing BookingAccount
         if "_popup" in request.POST:
             return HttpResponse(
@@ -272,13 +279,13 @@ class YearFilter(admin.SimpleListFilter):
     title = "camp year"
     parameter_name = "year"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin: BookingAdmin) -> list[tuple[str, str]]:
         # No easy way to create efficient query with Django's ORM,
         # so hard code first year we did bookings online:
         vals = range(common.get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
         return [(str(v), str(v)) for v in vals]
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: BookingQuerySet) -> BookingQuerySet:
         val = self.value()
         if val is None:
             return queryset
@@ -289,14 +296,14 @@ class QueueStateFilter(admin.SimpleListFilter):
     title = "queue state"
     parameter_name = "queue_state"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request: HttpRequest, model_admin: BookingAdmin) -> list[tuple[str, str]]:
         return [
             ("n", "Not in queue"),
             ("w", "In queue - waiting"),
             ("a", "In queue - accepted"),
         ]
 
-    def queryset(self, request, queryset):
+    def queryset(self, request: HttpRequest, queryset: BookingQuerySet) -> BookingQuerySet:
         val = self.value()
         if val is None:
             return queryset
@@ -332,7 +339,7 @@ class BookingAdminForm(forms.ModelForm):
         ]
 
 
-def make_change_state_action(state: BookingState, display_name):
+def make_change_state_action(state: BookingState, display_name: str) -> Callable:
     def change_state(modeladmin, request, queryset):
         bookings: list[Booking] = list(queryset)
         count = 0
@@ -378,7 +385,7 @@ class SupportingInformationAdmin(DocumentRelatedModelAdminMixin, admin.ModelAdmi
     ]
     readonly_fields = ["erased_at"]
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs) -> SupportingInformationQuerySet:
         return super().get_queryset(*args, **kwargs).defer("document__content")
 
 
@@ -433,7 +440,7 @@ class SupportingInformationInline(DocumentRelatedModelAdminMixin, admin.StackedI
         "document",
     ]
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs) -> SupportingInformationQuerySet:
         return (
             super()
             .get_queryset(*args, **kwargs)
@@ -471,14 +478,14 @@ class ApprovalsInline(admin.TabularInline):
     fields = ApprovalsInlineForm._meta.fields
     readonly_fields = ["type", "description", "checked_at", "checked_by"]
 
-    def get_queryset(self, request):
+    def get_queryset(self, request: HttpRequest) -> BookingApprovalQuerySet:
         return super().get_queryset(request).current()
 
-    def has_add_permission(self, request, obj) -> bool:
+    def has_add_permission(self, request: HttpRequest, obj: Booking | None) -> bool:
         # Disable add another for approvals, it doesn't make sense
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request: HttpRequest, obj: Booking | None = None):
         # Admin shouldn't delete, should only set the state.
         return False
 
@@ -489,7 +496,7 @@ class QueueStateInline(admin.TabularInline):
     fields = ["is_active", "created_at"]
     readonly_fields = ["is_active", "created_at"]
 
-    def has_add_permission(self, request, obj) -> bool:
+    def has_add_permission(self, request: HttpRequest, obj: Booking | None) -> bool:
         # Disable "add another", doesn't make sense
         return False
 
@@ -629,7 +636,7 @@ class BookingAdmin(admin.ModelAdmin):
 
     actions = [make_change_state_action(bs, lbl) for bs, lbl in BookingState.choices]
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs) -> BookingQuerySet:
         return super().get_queryset(*args, **kwargs).select_related("camp__camp_name")
 
     def save_model(self, request, obj, form, change):
@@ -698,7 +705,7 @@ class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):
     fieldsets = [(None, {"fields": ["account", "amount", "created_at", "payment_type"]})]
     autocomplete_fields = ["account"]
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: HttpRequest, obj: None = None) -> list | tuple:
         if obj is not None:
             return self.fieldsets[0][1]["fields"]
         else:
@@ -738,7 +745,7 @@ class AccountTransferPaymentAdmin(admin.ModelAdmin):
     fieldsets = [(None, {"fields": ["from_account", "to_account", "amount", "created_at"]})]
     autocomplete_fields = ["from_account", "to_account"]
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, request: HttpRequest, obj: None = None) -> list | tuple:
         if obj is not None:
             return self.fieldsets[0][1]["fields"]
         else:
