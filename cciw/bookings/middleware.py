@@ -60,7 +60,7 @@ def booking_token_login(get_response: Middleware) -> Middleware:
                 for view_name in EXPECTED_VIEWS:
                     if reverse(view_name) == request.path:
                         target_view_name = view_name
-                send_verify_email(request, verified_email.email, target_view_name=target_view_name)
+                send_verify_email(booking_account_email=verified_email.email, target_view_name=target_view_name)
                 return HttpResponseRedirect(reverse("cciw-bookings-link_expired_email_sent"))
             elif isinstance(verified_email, str):
                 try:

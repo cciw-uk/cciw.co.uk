@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from django.conf import settings
 from django.core import mail
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
-from django.http import HttpRequest
 from django.template import loader
 from django.urls import reverse
 from django.utils import timezone
@@ -97,9 +96,7 @@ def build_url_with_booking_token(
     return f"{url}?bt={token}"
 
 
-def send_verify_email(request: HttpRequest, booking_account_email: str, target_view_name: str | None = None):
-    if target_view_name is None:
-        target_view_name = "cciw-bookings-verify_and_continue"
+def send_verify_email(*, booking_account_email: str, target_view_name: str):
     c = {"verify_url": build_url_with_booking_token(view_name=target_view_name, email=booking_account_email)}
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "[CCIW] Booking account"

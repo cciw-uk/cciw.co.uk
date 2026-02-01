@@ -112,7 +112,7 @@ def start(request: HttpRequest) -> HttpResponse:
         form = form_class(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
-            send_verify_email(request, email)
+            send_verify_email(booking_account_email=email, target_view_name="cciw-bookings-verify_and_continue")
             return HttpResponseRedirect(reverse("cciw-bookings-email_sent"))
     else:
         form = form_class()
