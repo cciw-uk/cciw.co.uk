@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from django.utils import timezone
 
-from ..email import send_booking_expired_mail
+from ..email import send_booking_expired_mail_to_booker, send_booking_expired_notification_to_booking_secretary
 from .bookings import Booking
 
 
@@ -13,4 +13,5 @@ def expire_bookings():
 
     for booking in will_expire:
         booking.expire_expiring_place()
-        send_booking_expired_mail(booking)
+        send_booking_expired_mail_to_booker(booking)
+        send_booking_expired_notification_to_booking_secretary(booking)

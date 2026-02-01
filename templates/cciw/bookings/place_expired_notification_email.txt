@@ -1,0 +1,9 @@
+{% autoescape off %}
+The place for {{ booking.name }} has not been accepted and has
+now expired, and therefore can be offered to someone else.
+
+You can manage the queue here:
+
+{{ queue_url }}
+
+{% endautoescape %}

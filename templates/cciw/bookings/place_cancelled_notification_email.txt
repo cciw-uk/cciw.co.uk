@@ -1,0 +1,10 @@
+{% autoescape off %}
+
+The place for {{ booking.name }} has been declined and cancelled,
+and therefore can be offered to someone else.
+
+You can manage the queue here:
+
+{{ queue_url }}
+
+{% endautoescape %}

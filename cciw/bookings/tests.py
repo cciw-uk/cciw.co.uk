@@ -3228,12 +3228,18 @@ def test_allocate_places_for_waiting_list(
         assert booking.state == BookingState.CANCELLED_FULL_REFUND
         assert not booking.is_in_queue
         assert booking.shelved
+        last_email = mailoutbox[-1]
+        assert last_email.subject.startswith(f"[CCIW] Place cancelled - {booking.name}")
+        assert last_email.to == settings.BOOKING_SECRETARY_EMAILS
 
     elif action == "ignore":
         with time_machine.travel(
             timezone.now() + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER + timedelta(hours=1)
         ):
             expire_bookings()
+            last_email = mailoutbox[-1]
+            assert last_email.subject.startswith(f"[CCIW] Place expired - {booking.name}")
+            assert last_email.to == settings.BOOKING_SECRETARY_EMAILS
 
             booking.refresh_from_db()
             assert not booking.is_booked

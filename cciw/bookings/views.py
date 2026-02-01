@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from paypal.standard.forms import PayPalPaymentsForm
 
-from cciw.bookings.email import send_verify_email
+from cciw.bookings.email import send_place_cancelled_notification_to_booking_secretary, send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm, UsePreviousData
 from cciw.bookings.middleware import unset_booking_account_cookie
 from cciw.bookings.models import (
@@ -736,5 +736,6 @@ def cancel_place(request: HttpRequest, booking_id: int) -> HttpResponse:
         messages.error(request, "The booking to cancel could not be found. Have you already accepted or cancelled it?")
     else:
         booking.cancel_expiring_place(by_user=account)
+        send_place_cancelled_notification_to_booking_secretary(booking)
         messages.info(request, "The place has been cancelled. Thank you!")
     return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))

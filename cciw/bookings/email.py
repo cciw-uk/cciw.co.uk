@@ -245,7 +245,7 @@ def send_booking_confirmed_mail(booking: Booking):
     return True
 
 
-def send_booking_expired_mail(booking: Booking):
+def send_booking_expired_mail_to_booker(booking: Booking):
     account = booking.account
     c = {
         "account": account,
@@ -283,3 +283,23 @@ def send_payment_reminder_emails():
         }
         body = loader.render_to_string("cciw/bookings/payments_due_email.txt", c)
         mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+
+
+def send_place_cancelled_notification_to_booking_secretary(booking: Booking):
+    subject = f"[CCIW] Place cancelled - {booking.name}"
+    c = {
+        "booking": booking,
+        "queue_url": build_url(view_name="cciw-officers-booking_queue", view_kwargs={"camp_id": booking.camp.url_id}),
+    }
+    body = loader.render_to_string("cciw/bookings/place_cancelled_notification_email.txt", c)
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, settings.BOOKING_SECRETARY_EMAILS)
+
+
+def send_booking_expired_notification_to_booking_secretary(booking: Booking):
+    subject = f"[CCIW] Place expired - {booking.name}"
+    c = {
+        "booking": booking,
+        "queue_url": build_url(view_name="cciw-officers-booking_queue", view_kwargs={"camp_id": booking.camp.url_id}),
+    }
+    body = loader.render_to_string("cciw/bookings/place_expired_notification_email.txt", c)
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, settings.BOOKING_SECRETARY_EMAILS)
