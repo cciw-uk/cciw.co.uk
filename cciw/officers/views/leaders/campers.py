@@ -1,4 +1,5 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpRequest, HttpResponse
 
 from cciw.bookings.utils import (
     camp_bookings_to_spreadsheet,
@@ -17,7 +18,7 @@ from ..utils.spreadsheets import spreadsheet_response
 @staff_member_required
 @camp_admin_required
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
-def export_camper_data(request, camp_id: CampId):
+def export_camper_data(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
         camp_bookings_to_spreadsheet(camp),
@@ -29,7 +30,7 @@ def export_camper_data(request, camp_id: CampId):
 @staff_member_required
 @camp_admin_required
 @show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper sharable transport details")
-def export_sharable_transport_details(request, camp_id: CampId):
+def export_sharable_transport_details(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
         camp_sharable_transport_details_to_spreadsheet(camp),

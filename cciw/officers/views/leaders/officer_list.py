@@ -136,7 +136,7 @@ def _officer_list(
 
 @staff_member_required
 @camp_admin_required
-def update_officer(request):
+def update_officer(request: HttpRequest) -> HttpResponse:
     # Partial page, via htmx
     invitation = Invitation.objects.select_related("role", "officer").get(id=int(request.GET["invitation_id"]))
     officer = invitation.officer
@@ -224,7 +224,7 @@ def create_officer(request: HttpRequest) -> HttpResponse:
 @staff_member_required
 @camp_admin_required
 @require_POST
-def resend_email(request):
+def resend_email(request: HttpRequest) -> HttpResponse:
     officer_id = int(request.POST["officer_id"])
     user = User.objects.get(pk=officer_id)
     email_officer(user, update=True)
@@ -241,7 +241,7 @@ def resend_email(request):
 @staff_member_required
 @camp_admin_required
 @show_data_retention_notice(DataRetentionNotice.OFFICERS, "Officer data")
-def export_officer_data(request, camp_id: CampId):
+def export_officer_data(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
         officer_data_to_spreadsheet(camp),

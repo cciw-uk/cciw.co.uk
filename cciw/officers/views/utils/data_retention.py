@@ -3,6 +3,7 @@ from enum import StrEnum
 from functools import wraps
 
 import furl
+from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 
 
@@ -50,15 +51,15 @@ for val in DataRetentionNotice:
     assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
 
-def show_data_retention_notice(notice_type: DataRetentionNotice, brief_title: str) -> Callable:
+def show_data_retention_notice[F: Callable](notice_type: DataRetentionNotice, brief_title: str) -> Callable[[F], F]:
     """
     Decorator for downloads to show a prompt to ensure
     user knows about data retention
     """
 
-    def decorator(func):
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(request, *args, **kwargs):
+        def wrapper(request: HttpRequest, *args, **kwargs) -> HttpResponse:
             htmx = "HX-Request" in request.headers
             if "data_retention_notice_seen" in request.GET:
                 return func(request, *args, **kwargs)
