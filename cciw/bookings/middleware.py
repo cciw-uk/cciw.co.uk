@@ -44,6 +44,13 @@ def unset_booking_account_cookie(response: HttpResponse):
 
 Middleware = Callable[[HttpRequest], HttpResponse]
 
+EXPECTED_BOOKING_LOGIN_VIEWS = [
+    "cciw-bookings-pay",
+    "cciw-bookings-account_overview",
+    "cciw-bookings-basket_list_bookings",
+    "cciw-bookings-verify_and_continue",
+]
+
 
 def booking_token_login(get_response: Middleware) -> Middleware:
     def middleware(request: HttpRequest) -> HttpResponse:
@@ -55,11 +62,15 @@ def booking_token_login(get_response: Middleware) -> Middleware:
                 return HttpResponseRedirect(reverse("cciw-bookings-verify_email_failed"))
             elif isinstance(verified_email, VerifyExpired):
                 logger.warning("Booking login verification token expired, token=%s", token)
-                EXPECTED_VIEWS = ["cciw-bookings-pay"]
+                # Re-send email, to the same view as before.
+                # We whitelist here to stop open redirect vulnerability
                 target_view_name = None
-                for view_name in EXPECTED_VIEWS:
+                for view_name in EXPECTED_BOOKING_LOGIN_VIEWS:
                     if reverse(view_name) == request.path:
                         target_view_name = view_name
+                if target_view_name is None:
+                    # Fallback
+                    target_view_name = "cciw-bookings-verify_and_continue"
                 send_verify_email(booking_account_email=verified_email.email, target_view_name=target_view_name)
                 return HttpResponseRedirect(reverse("cciw-bookings-link_expired_email_sent"))
             elif isinstance(verified_email, str):
