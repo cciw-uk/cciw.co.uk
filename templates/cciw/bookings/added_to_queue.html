@@ -14,7 +14,9 @@
         <li>{{ booking.name }}</li>
       {% endfor %}
     </ul>
-    <p>We will notify you by email whether or not these places have been allocated.</p>
+    <p>
+      We will notify you by email whether or not your application for these places has been successful.
+    </p>
 
   {% elif all_waiting_list_mode %}
     <p>You have the following bookings in the waiting list:</p>
@@ -34,7 +36,7 @@
       {% for booking in waiting_in_queue_bookings %}
         <li>{{ booking.name }}:
           {% if booking.queue_entry.will_send_declined_notification %}
-            We will notify you by email whether or not this place is allocated
+            We will notify you by email whether or not your application for this place has been successful.
           {% else %}
             We will notify you by email if a place comes up. You will then need to accept the offer
             within {{ booking_expires_after_display }} or it will expire.

@@ -16,7 +16,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from paypal.standard.forms import PayPalPaymentsForm
 
-from cciw.bookings.email import send_place_cancelled_notification_to_booking_secretary, send_verify_email
+from cciw.bookings.email import (
+    send_added_to_queue_confirmation,
+    send_place_cancelled_notification_to_booking_secretary,
+    send_verify_email,
+)
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm, UsePreviousData
 from cciw.bookings.middleware import unset_booking_account_cookie
 from cciw.bookings.models import (
@@ -423,6 +427,7 @@ def _basket_list_bookings(request: HttpRequest) -> HttpResponse:
             else:
                 if add_basket_to_queue(basket_bookings, by_user=request.booking_account):
                     messages.info(request, "Places added to queue!")
+                    send_added_to_queue_confirmation(basket_bookings)
                     return HttpResponseRedirect(reverse("cciw-bookings-added_to_queue"))
                 else:
                     messages.error(request, "These places cannot be booked for the reasons given below.")

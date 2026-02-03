@@ -1,0 +1,18 @@
+{% autoescape off %}Dear {{ account.name }},
+
+Thank you for your booking request. The following places have been added to the queue:
+
+{% for booking in bookings %}
+- {{ booking.name }} for {{ booking.camp.name }} {{ booking.camp.year }}
+{% endfor %}
+
+We will notify you by email whether or not your application for these
+places has been successful.
+
+You can view the status of your bookings at any time by visiting:
+{{ account_overview_url }}
+
+Thank you,
+cciw.co.uk team
+
+{% endautoescape %}

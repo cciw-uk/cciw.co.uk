@@ -1608,7 +1608,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit("[name=book_now]")
         self.assertUrlsEqual(reverse("cciw-bookings-added_to_queue"))
         self.assertTextPresent("added to the queue")
-        self.assertTextPresent("We will notify you by email whether or not these places have been allocated.")
+        self.assertTextPresent(
+            "We will notify you by email whether or not your application for these places has been successful."
+        )
+
         self.assertTextPresent(booking.name)
 
         booking.refresh_from_db()
@@ -1616,6 +1619,13 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Should be on queue, but not booked yet.
         assert booking.is_in_queue
         assert booking.state != BookingState.BOOKED
+
+        # Check confirmation email was sent
+        assert len(mail.outbox) == 1
+        email = mail.outbox[0]
+        assert email.to == [booking.account.email]
+        assert "added to the queue" in email.body
+        assert booking.name in email.body
 
     def test_book_one_unbookable(self):
         """

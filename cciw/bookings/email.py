@@ -300,3 +300,27 @@ def send_booking_expired_notification_to_booking_secretary(booking: Booking):
     }
     body = loader.render_to_string("cciw/bookings/place_expired_notification_email.txt", c)
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, settings.BOOKING_SECRETARY_EMAILS)
+
+
+def send_added_to_queue_confirmation(bookings: Sequence[Booking]) -> None:
+    """
+    Send a confirmation email to the account holder when places are added to the queue.
+    """
+    if not bookings:
+        return
+
+    account = bookings[0].account
+    if not account.email:
+        return
+
+    c = {
+        "domain": common.get_current_domain(),
+        "account": account,
+        "bookings": bookings,
+        "account_overview_url": build_url_with_booking_token(
+            view_name="cciw-bookings-account_overview", email=account.email
+        ),
+    }
+    body = loader.render_to_string("cciw/bookings/added_to_queue_email.txt", c)
+    subject = "[CCIW] Places added to queue"
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
