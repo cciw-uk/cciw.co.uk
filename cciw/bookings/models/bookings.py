@@ -13,7 +13,7 @@ from django.utils.functional import cached_property
 from django_countries.fields import CountryField
 
 from cciw.accounts.models import User
-from cciw.bookings.models.queue import BookingQueueEntry
+from cciw.bookings.models.queue import BookingQueueEntry, QueueEntryActionLogType
 from cciw.cciwmain.models import Camp
 from cciw.utils.models import AfterFetchQuerySetMixin
 
@@ -354,7 +354,7 @@ class Booking(models.Model):
         if self.is_in_queue:
             self.queue_entry.make_inactive(by_user=by_user)
 
-    def accept_expiring_place(self) -> None:
+    def accept_expiring_place(self, *, by_user: BookingAccount) -> None:
         """
         Accept a place that is going to expire
         """
@@ -363,8 +363,10 @@ class Booking(models.Model):
 
         self.booking_expires_at = None
         self.save()
+        if self.queue_entry_or_none is not None:
+            self.queue_entry_or_none.save_action_log(action_type=QueueEntryActionLogType.ACCEPTED, by_user=by_user)
 
-    def cancel_expiring_place(self, *, by_user: BookingAccount | None) -> None:
+    def cancel_expiring_place(self, *, by_user: BookingAccount | None, action_type: QueueEntryActionLogType) -> None:
         """
         Cancel a place that is going to expire
         """
@@ -376,11 +378,16 @@ class Booking(models.Model):
         self.save()
         self.move_to_shelf()
         self.withdraw_from_queue(by_user=by_user)
+        if self.queue_entry_or_none is not None:
+            self.queue_entry_or_none.save_action_log(action_type=action_type, by_user=by_user)
+
+    def reject_offered_place(self, *, by_user: BookingAccount) -> None:
+        self.cancel_expiring_place(by_user=by_user, action_type=QueueEntryActionLogType.REJECTED_OFFERED_PLACE)
 
     def expire_expiring_place(self) -> None:
         # Pass `by_user=None` to indicate a system action i.e.
         # not initiated by the user. Otherwise it is identical to explicit cancel.
-        self.cancel_expiring_place(by_user=None)
+        self.cancel_expiring_place(by_user=None, action_type=QueueEntryActionLogType.EXPIRED)
 
     def expected_amount_due(self) -> Decimal | None:
         if self.price_type == PriceType.CUSTOM:

@@ -19,7 +19,7 @@ If you no longer want the place, you may cancel it by using the link below:
 
 CANCEL PLACE:
 
-{{ cancel_place_url }}
+{{ reject_place_url }}
 
 If you do nothing, the place will expire after {{ booking_expires_after_display }}.
 

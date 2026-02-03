@@ -152,7 +152,7 @@ def send_places_allocated_emails(account: BookingAccount, bookings: Sequence[Boo
             "booking": booking,
             "booking_expires_after_display": settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER_DISPLAY,
             "accept_place_url": make_accept_place_url(booking),
-            "cancel_place_url": make_cancel_place_url(booking),
+            "reject_place_url": make_reject_place_url(booking),
         }
         body = loader.render_to_string("cciw/bookings/expiring_place_allocated_email.txt", c)
         subject = f"[CCIW] Booking - place allocated for {booking.name}"
@@ -180,9 +180,9 @@ def make_accept_place_url(booking: Booking) -> str:
     )
 
 
-def make_cancel_place_url(booking: Booking) -> str:
+def make_reject_place_url(booking: Booking) -> str:
     return build_url_with_booking_token(
-        view_name="cciw-bookings-cancel_place", email=booking.account.email, view_kwargs={"booking_id": booking.id}
+        view_name="cciw-bookings-reject_place", email=booking.account.email, view_kwargs={"booking_id": booking.id}
     )
 
 

@@ -718,13 +718,13 @@ def accept_place(request: HttpRequest, booking_id: int) -> HttpResponse:
     except Booking.DoesNotExist:
         messages.error(request, "The booking to accept could not be found. Have you already accepted or cancelled it?")
     else:
-        booking.accept_expiring_place()
+        booking.accept_expiring_place(by_user=account)
         messages.info(request, "The place has been confirmed, thank you!")
     return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
 
 
 @booking_account_required
-def cancel_place(request: HttpRequest, booking_id: int) -> HttpResponse:
+def reject_place(request: HttpRequest, booking_id: int) -> HttpResponse:
     account: BookingAccount = request.booking_account
     # Similar to above, need to ensure a tight query
 
@@ -735,7 +735,7 @@ def cancel_place(request: HttpRequest, booking_id: int) -> HttpResponse:
     except Booking.DoesNotExist:
         messages.error(request, "The booking to cancel could not be found. Have you already accepted or cancelled it?")
     else:
-        booking.cancel_expiring_place(by_user=account)
+        booking.reject_offered_place(by_user=account)
         send_place_cancelled_notification_to_booking_secretary(booking)
         messages.info(request, "The place has been cancelled. Thank you!")
     return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))

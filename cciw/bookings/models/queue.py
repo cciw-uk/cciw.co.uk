@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from functools import cached_property
-from typing import TYPE_CHECKING, Literal, assert_never
+from typing import TYPE_CHECKING, Literal
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
@@ -246,6 +246,17 @@ class QueueEntryActionLogType(TextChoices):
     # When they are not allocated a place, and are notified.
     DECLINED = "declined", "declined"
 
+    # When they accept a place (which happens if they are allocated a place
+    # when in "waiting list" mode
+    ACCEPTED = "accepted", "accepted"
+
+    # When they reject a place offered and cancel their place.
+    REJECTED_OFFERED_PLACE = "rejected_offered_place", "rejected offered place"
+
+    # When an offered place expires because they didn't accept,
+    # and is therefore cancelled.
+    EXPIRED = "expired", "expired"
+
 
 class QueueEntryActionLog(models.Model):
     queue_entry = models.ForeignKey(BookingQueueEntry, related_name="action_logs", on_delete=models.CASCADE)
@@ -289,8 +300,14 @@ class QueueEntryActionLog(models.Model):
                 return "Place allocated"
             case QueueEntryActionLogType.DECLINED:
                 return "Place declined"
-            case _:
-                assert_never(self.action_type)
+            case QueueEntryActionLogType.ACCEPTED:
+                return "Place accepted"
+            case QueueEntryActionLogType.REJECTED_OFFERED_PLACE:
+                return "Place rejected"
+            case QueueEntryActionLogType.EXPIRED:
+                return "Place expired because it was not accepted"
+            case other:
+                return str(other)
 
 
 @dataclass

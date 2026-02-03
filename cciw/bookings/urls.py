@@ -53,5 +53,6 @@ urlpatterns = [
         name="cciw-bookings-manage_queue_booking_modal",
     ),
     path("accept/<int:booking_id>/", views.accept_place, name="cciw-bookings-accept_place"),
-    path("cancel/<int:booking_id>/", views.cancel_place, name="cciw-bookings-cancel_place"),
+    # Use 'cancel' in URL as it appears in email and sounds less severe than 'reject'
+    path("cancel/<int:booking_id>/", views.reject_place, name="cciw-bookings-reject_place"),
 ]
