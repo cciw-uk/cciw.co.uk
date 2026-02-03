@@ -637,7 +637,19 @@ class BookingAdmin(admin.ModelAdmin):
                 ]
             },
         ),
-        ("Internal", {"fields": ["state", "booking_queue_status", "created_at", "shelved", "created_online"]}),
+        (
+            "Internal",
+            {
+                "fields": [
+                    "state",
+                    "booking_queue_status",
+                    "booking_expires_at",
+                    "created_at",
+                    "shelved",
+                    "created_online",
+                ]
+            },
+        ),
         ("Old fields", {"fields": ["south_wales_transport", "early_bird_discount"], "classes": ("collapse",)}),
         ("Add a payment for account (optional)", {"fields": ["manual_payment_amount", "manual_payment_payment_type"]}),
     )
