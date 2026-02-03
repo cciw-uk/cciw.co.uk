@@ -51,10 +51,11 @@ for val in DataRetentionNotice:
     assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
 
-def show_data_retention_notice[F: Callable](notice_type: DataRetentionNotice, brief_title: str) -> Callable[[F], F]:
+def sensitive_data_download[F: Callable](notice_type: DataRetentionNotice, brief_title: str) -> Callable[[F], F]:
     """
-    Decorator for downloads to show a prompt to ensure
-    user knows about data retention
+    Decorator for sensitive data downloads:
+
+    - shows a prompt to ensure to user the knows about data retention
     """
 
     def decorator(func: F) -> F:

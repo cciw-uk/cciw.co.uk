@@ -29,7 +29,7 @@ from ..utils.auth import (
 )
 from ..utils.breadcrumbs import leaders_breadcrumbs, with_breadcrumbs
 from ..utils.campid import get_camp_or_404
-from ..utils.data_retention import DataRetentionNotice, show_data_retention_notice
+from ..utils.data_retention import DataRetentionNotice, sensitive_data_download
 from ..utils.spreadsheets import spreadsheet_response
 
 
@@ -240,7 +240,7 @@ def resend_email(request: HttpRequest) -> HttpResponse:
 
 @staff_member_required
 @camp_admin_required
-@show_data_retention_notice(DataRetentionNotice.OFFICERS, "Officer data")
+@sensitive_data_download(DataRetentionNotice.OFFICERS, "Officer data")
 def export_officer_data(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(

@@ -11,13 +11,13 @@ from ..utils.auth import (
     camp_admin_required,
 )
 from ..utils.campid import get_camp_or_404
-from ..utils.data_retention import DataRetentionNotice, show_data_retention_notice
+from ..utils.data_retention import DataRetentionNotice, sensitive_data_download
 from ..utils.spreadsheets import spreadsheet_response
 
 
 @staff_member_required
 @camp_admin_required
-@show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
+@sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
@@ -29,7 +29,7 @@ def export_camper_data(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
 @staff_member_required
 @camp_admin_required
-@show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper sharable transport details")
+@sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper sharable transport details")
 def export_sharable_transport_details(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(

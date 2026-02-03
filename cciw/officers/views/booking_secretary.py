@@ -41,7 +41,7 @@ from .utils.auth import (
     secretary_or_committee_required,
 )
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
-from .utils.data_retention import DataRetentionNotice, show_data_retention_notice
+from .utils.data_retention import DataRetentionNotice, sensitive_data_download
 from .utils.spreadsheets import spreadsheet_response
 
 EXPORT_PAYMENT_DATE_FORMAT = "%Y-%m-%d"
@@ -51,7 +51,7 @@ BOOKING_STATS_PREVIOUS_YEARS = 4
 
 @staff_member_required
 @booking_secretary_required
-@show_data_retention_notice(DataRetentionNotice.CAMPERS, "Camper data")
+@sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data_for_year(request: HttpRequest, year: int):
     return spreadsheet_response(
         year_bookings_to_spreadsheet(year),
