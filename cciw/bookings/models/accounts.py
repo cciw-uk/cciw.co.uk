@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING
@@ -80,17 +81,17 @@ class BookingAccountQuerySet(models.QuerySet):
 
 
 class BookingAccountManagerBase(models.Manager):
-    def payments_due(self):
+    def payments_due(self) -> Sequence[BookingAccount]:
         """
         Returns a list of accounts that owe money.
         Account objects are annotated with attribute 'confirmed_balance_due' as a Decimal
         """
         # To limit the size of queries, we do a SQL query for people who might
         # owe money.
-        potentials = self.get_queryset().non_zero_final_balance()
+        potentials: Sequence[BookingAccount] = self.get_queryset().non_zero_final_balance()
         # 'balance due now' can be less than 'final balance', because we
         # allow bookings without payment before a certain date
-        retval = []
+        retval: list[BookingAccount] = []
         account: BookingAccount
         today = date.today()
 
