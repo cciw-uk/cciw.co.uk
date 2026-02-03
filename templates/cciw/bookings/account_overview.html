@@ -68,6 +68,11 @@
             {% include "cciw/bookings/place_table.html" with bookings=waiting_places show_manage_button=True %}
           </div>
         </div>
+
+        {% if booking_open_data.is_before_initial_notifications_date %}
+          <p>We will notify you on or before {{ booking_open_data.initial_notifications_on }} about
+            whether you have been allocated this place.</p>
+        {% endif %}
       {% endif %}
 
       {% if basket_or_shelf_places %}

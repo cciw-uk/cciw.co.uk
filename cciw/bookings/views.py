@@ -651,6 +651,7 @@ def account_overview(request: HttpRequest) -> HttpResponse:
 
     account: BookingAccount = request.booking_account
     year = common.get_thisyear()
+    booking_open_data = get_booking_open_data(year)
     bookings = account.bookings.for_year(year)
 
     booked_places = bookings.booked().with_prefetch_camp_info()
@@ -673,6 +674,7 @@ def account_overview(request: HttpRequest) -> HttpResponse:
             "payment_required": balance_due_now > 0,
             "balance_full": account.get_balance_full(),
             "pending_payment_total": account.get_pending_payment_total(),
+            "booking_open_data": booking_open_data,
         },
     )
 

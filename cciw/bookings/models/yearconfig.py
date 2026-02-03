@@ -136,6 +136,14 @@ class BookingOpenData:
         today: date = timezone.now().date()
         return today > end
 
+    @property
+    def is_before_initial_notifications_date(self) -> bool:
+        if self.initial_notifications_on is None:
+            return False
+        today: date = timezone.now().date()
+
+        return today < self.initial_notifications_on
+
     @classmethod
     def from_year_config(cls, config: YearConfig, *, price_info: PriceInfo | None) -> BookingOpenData:
         now = timezone.now()
