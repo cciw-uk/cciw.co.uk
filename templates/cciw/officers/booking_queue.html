@@ -190,7 +190,12 @@
           <p>No places can be allocated, due to the maximum places set for the camp.</p>
         {% endif %}
       {% elif ranked_queue_bookings %}
-        <p>You don't have permissions to go ahead and allocate these places</p>
+        {% if not booking_open_data.is_closed_for_initial_period %}
+          <p>The initial booking period is still open, so places can't be allocated yet.
+          </p>
+        {% else %}
+          <p>You don't have the necessary permissions to allocate these places</p>
+        {% endif %}
       {% endif %}
 
     </div>

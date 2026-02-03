@@ -2973,10 +2973,11 @@ class BookingQueuePageBase(FuncBaseMixin):
             assert b.state == BookingState.INFO_COMPLETE
 
         camp = self.camp
-        self.officer_login(officers_factories.create_booking_secretary())
-        self.get_url("cciw-officers-booking_queue", camp_id=camp.url_id)
+        with time_machine.travel(self.year_config.bookings_close_for_initial_period_on + timedelta(days=2)):
+            self.officer_login(officers_factories.create_booking_secretary())
+            self.get_url("cciw-officers-booking_queue", camp_id=camp.url_id)
 
-        self.submit('[name="allocate"]')
+            self.submit('[name="allocate"]')
 
         for b in bookings:
             b.refresh_from_db()

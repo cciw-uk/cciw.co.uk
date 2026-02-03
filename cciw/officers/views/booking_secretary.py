@@ -18,7 +18,7 @@ from cciw.bookings.models.queue import (
     allocate_places_and_notify,
     get_camp_booking_queue_ranking_result,
 )
-from cciw.bookings.models.yearconfig import get_year_config
+from cciw.bookings.models.yearconfig import get_booking_open_data, get_year_config
 from cciw.bookings.stats import get_booking_summary_stats
 from cciw.bookings.utils import (
     addresses_for_mailing_list,
@@ -253,9 +253,8 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
 
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
 
-    # TODO - check dates in year_config before enabling this button
-
-    can_allocate_places = request.user.is_booking_secretary
+    booking_open_data = get_booking_open_data(camp.year)
+    can_allocate_places = request.user.is_booking_secretary and booking_open_data.is_closed_for_initial_period
     if can_allocate_places and request.method == "POST" and "allocate" in request.POST:
         result = allocate_places_and_notify(ranking_result.bookings, by_user=request.user)
         messages.info(
@@ -283,6 +282,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "problems": ranking_result.problems,
         "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
         "can_edit_bookings": request.user.can_edit_bookings,
+        "booking_open_data": booking_open_data,
         "can_allocate_places": can_allocate_places,
     }
     return TemplateResponse(request, "cciw/officers/booking_queue.html", context)
