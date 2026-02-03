@@ -641,6 +641,21 @@ class Booking(models.Model):
         # Same as fuzzy_camper_id_strict, but when we haven't saved the data yet
         return f"{self.account_id} {normalise_booking_name(self)} {self.birth_date.year}"
 
+    def booking_queue_status(self) -> str:
+        """
+        Friendly description of status, for admin
+        """
+        if self.is_booked:
+            if self.self_expires_at is None:
+                return "Booked"
+            else:
+                return "Booked, but will expire if they don't accept it"
+        else:
+            if self.is_in_queue:
+                return "Waiting in queue to be allocated"
+            else:
+                return "Not waiting in queue - they still need to 'Apply'"
+
 
 # Attributes that the account holder is allowed to see
 BOOKING_PLACE_USER_VISIBLE_ATTRS = [
