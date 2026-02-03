@@ -1,0 +1,36 @@
+{% extends "admin/object_history.html" %}
+
+{% load i18n admin_urls %}
+
+{% block content %}
+  <div id="content-main">
+    <div id="change-history" class="module">
+
+      {# Similar to admin/object_history, but simplified to remove pagination #}
+
+      {# Tests via tests for get_booking_history_log_for_admin #}
+      {% if action_list %}
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{% translate 'Date/time' %}</th>
+              <th scope="col">{% translate 'User' %}</th>
+              <th scope="col">{% translate 'Action' %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for action in action_list %}
+              <tr>
+                <th scope="row">{{ action.action_time|date:"DATETIME_FORMAT" }}</th>
+                <td>{{ action.user.get_username }}{% if action.user.get_full_name %} ({{ action.user.get_full_name }}){% endif %}</td>
+                <td>{{ action.get_change_message }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No history available</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

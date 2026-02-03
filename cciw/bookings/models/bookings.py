@@ -330,7 +330,7 @@ class Booking(models.Model):
         return self.state == BookingState.BOOKED
 
     @property
-    def _queue_entry_or_none(self) -> BookingQueueEntry | None:
+    def queue_entry_or_none(self) -> BookingQueueEntry | None:
         try:
             return self.queue_entry
         except BookingQueueEntry.DoesNotExist:
@@ -338,10 +338,10 @@ class Booking(models.Model):
 
     @property
     def is_in_queue(self) -> bool:
-        return (queue_entry := self._queue_entry_or_none) is not None and queue_entry.is_active
+        return (queue_entry := self.queue_entry_or_none) is not None and queue_entry.is_active
 
     def add_to_queue(self, *, by_user: User | BookingAccount) -> BookingQueueEntry:
-        queue_entry = self._queue_entry_or_none
+        queue_entry = self.queue_entry_or_none
         if queue_entry is not None:
             if not queue_entry.is_active:
                 queue_entry.make_active(by_user=by_user)

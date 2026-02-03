@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from functools import cached_property
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, assert_never
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
@@ -274,6 +274,23 @@ class QueueEntryActionLog(models.Model):
 
     class Meta:
         ordering = ("created_at",)
+
+    def description(self) -> str:
+        match self.action_type:
+            case QueueEntryActionLogType.FIELDS_CHANGED:
+                desc = "Queue entry fields changed: "
+                if "fields_changed" in self.details:
+                    changes = [f"'{d['name']}' changed to {d['new_value']}" for d in self.details["fields_changed"]]
+                    desc += ", ".join(changes)
+                return desc
+            case QueueEntryActionLogType.CREATED:
+                return "Added to booking queue"
+            case QueueEntryActionLogType.ALLOCATED:
+                return "Place allocated"
+            case QueueEntryActionLogType.DECLINED:
+                return "Place declined"
+            case _:
+                assert_never(self.action_type)
 
 
 @dataclass

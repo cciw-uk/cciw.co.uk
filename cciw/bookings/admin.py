@@ -1,16 +1,23 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from datetime import datetime
 
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.options import PermissionDenied, get_content_type_for_model, unquote
+from django.contrib.admin.utils import capfirst
 from django.db.models import GeneratedField, ManyToOneRel, Value
 from django.db.models.functions import Concat
 from django.http import HttpRequest, HttpResponse
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, escapejs, format_html
 
+from cciw.accounts.models import User
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
@@ -35,7 +42,7 @@ from .models import (
 from .models.accounts import BookingAccountQuerySet
 from .models.bookings import BookingQuerySet
 from .models.problems import ApprovalStatus, BookingApproval, BookingApprovalQuerySet
-from .models.queue import BookingQueueEntry
+from .models.queue import BookingQueueEntry, QueueEntryActionLog
 from .models.states import CURRENT_BOOKING_STATES
 from .models.supporting_information import SupportingInformationQuerySet
 from .models.yearconfig import YearConfig
@@ -696,6 +703,134 @@ class BookingAdmin(admin.ModelAdmin):
                 )
 
         return retval
+
+    def history_view(self, request: HttpRequest, object_id: str, extra_context=None):
+        # Overridden history view.
+        # Similar to the base class version, but:
+        # - we include other events, especially booking queue actions.
+        # - no pagination
+
+        # First check if the user can see this history.
+        model = self.model
+        obj = self.get_object(request, unquote(object_id))
+        if obj is None:
+            return self._get_obj_does_not_exist_redirect(request, model._meta, object_id)
+
+        if not self.has_view_or_change_permission(request, obj):
+            raise PermissionDenied
+
+        # Then get the history for this object.
+        app_label = self.opts.app_label
+        action_list = get_booking_history_log_for_admin(obj, object_id)
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": f"Booking history: {obj}",
+            "subtitle": None,
+            "action_list": action_list,
+            "module_name": str(capfirst(self.opts.verbose_name_plural)),
+            "object": obj,
+            "opts": self.opts,
+            "preserved_filters": self.get_preserved_filters(request),
+            **(extra_context or {}),
+        }
+
+        request.current_app = self.admin_site.name
+
+        return TemplateResponse(
+            request,
+            self.object_history_template
+            or [
+                f"admin/{app_label}/{self.opts.model_name}/object_history.html",
+                f"admin/{app_label}/object_history.html",
+                "admin/object_history.html",
+            ],
+            context,
+        )
+
+
+def get_booking_history_log_for_admin(booking: Booking, object_id: int) -> list[LogEntry | LogEntryLike]:
+    # We want all the normal LogEntry objects:
+    model = booking.__class__
+    log_entries = list(
+        LogEntry.objects.filter(
+            object_id=unquote(object_id),
+            content_type=get_content_type_for_model(model),
+        )
+        .select_related()
+        .order_by("action_time")
+    )
+    # We also want data from the queue etc.
+    other: list[LogEntryLike] = []
+    if booking.created_online:
+        other.append(LogEntryLike.for_booking_creation(booking))
+    queue_entry = booking.queue_entry_or_none
+    if queue_entry:
+        other.extend(
+            LogEntryLike.for_queue_action(action)
+            for action in queue_entry.action_logs.all().select_related("staff_user", "account_user")
+        )
+
+    all_items = log_entries + other
+    all_items.sort(key=lambda item: item.action_time)
+    return all_items
+
+
+@dataclass
+class LogEntryLike:
+    """
+    Adaptor object that looks like a LogEntry for the purposes of the history view
+    """
+
+    action_time: datetime
+    user: LogEntryUserLike | User | None
+    change_message: str
+
+    def get_change_message(self) -> str:
+        return self.change_message
+
+    @classmethod
+    def for_booking_creation(cls, booking: Booking) -> LogEntryLike:
+        return cls(
+            action_time=booking.created_at,
+            user=LogEntryUserLike.for_booking_account(booking.account),
+            change_message="Booking created online",
+        )
+
+    @classmethod
+    def for_queue_action(cls, action: QueueEntryActionLog) -> LogEntryLike:
+        user = action.staff_user or action.account_user or None
+        if isinstance(user, BookingAccount):
+            log_entry_user = LogEntryUserLike.for_booking_account(user)
+        elif isinstance(user, User):
+            log_entry_user = user  # Already has the right interface, the one we are adapting to
+        else:
+            log_entry_user = None
+        return cls(
+            action_time=action.created_at,
+            change_message=action.description(),
+            user=log_entry_user,
+        )
+
+
+@dataclass
+class LogEntryUserLike:
+    """
+    Adaptor object that looks like a LogEntry.user object, for the purposes of the history view
+    """
+
+    username: str
+    full_name: str
+
+    def get_username(self) -> str:
+        return self.username
+
+    def get_full_name(self) -> str:
+        return self.full_name
+
+    @classmethod
+    def for_booking_account(cls, account: BookingAccount) -> LogEntryUserLike:
+        return cls(username=account.email, full_name=account.name)
 
 
 class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):

@@ -23,6 +23,7 @@ from django_functest import FuncBaseMixin, Upload
 from hypothesis import example, given
 from hypothesis import strategies as st
 
+from cciw.bookings.admin import get_booking_history_log_for_admin
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
 from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
@@ -3035,6 +3036,29 @@ def test_booking_queue_track_changes():
         ]
     }
     assert log.staff_user == user
+
+    # Test for the admin code that lists history including the queue changes.
+    log_entries = get_booking_history_log_for_admin(booking, str(booking.id))
+
+    # We test the properties that are displayed in the bookings/object_history.html page
+    properties = [
+        (action.action_time, action.user.get_username(), action.user.get_full_name(), action.get_change_message())
+        for action in log_entries
+    ]
+    assert properties == [
+        (
+            logs[0].created_at,
+            booking.account.email,
+            booking.account.name,
+            "Added to booking queue",
+        ),
+        (
+            logs[1].created_at,
+            user.username,
+            user.get_full_name(),
+            "Queue entry fields changed: 'is_active' changed to False",
+        ),
+    ]
 
 
 @pytest.mark.django_db
