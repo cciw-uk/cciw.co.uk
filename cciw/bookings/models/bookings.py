@@ -646,10 +646,11 @@ class Booking(models.Model):
         Friendly description of status, for admin
         """
         if self.is_booked:
-            if self.self_expires_at is None:
-                return "Booked"
-            else:
+            if self.will_expire:
                 return "Booked, but will expire if they don't accept it"
+            else:
+                return "Booked"
+
         else:
             if self.is_in_queue:
                 return "Waiting in queue to be allocated"
