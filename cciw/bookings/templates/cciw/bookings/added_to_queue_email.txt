@@ -3,7 +3,7 @@
 Thank you for your booking request. The following places have been added to the queue:
 
 {% for booking in bookings %}
-- {{ booking.name }} for {{ booking.camp.name }} {{ booking.camp.year }}
+- {{ booking.name }} for {{ booking.camp.nice_name }}
 {% endfor %}
 
 We will notify you by email whether or not your application for these
