@@ -31,9 +31,9 @@ class MessageQuerySet(models.QuerySet):
 
 
 class ContactType(TextChoices):
-    WEBSITE = "website", "Web site problems"
-    BOOKINGFORM = "bookingform", "Paper booking form request"
     BOOKINGS = "bookings", "Camp bookings and places"
+    BOOKINGFORM = "bookingform", "Paper booking form request"
+    WEBSITE = "website", "Web site problems"
     DATA_PROTECTION = "data_protection", "Data protection and related"
     VOLUNTEERING = "volunteering", "Volunteering"
     GENERAL = "general", "Other"
