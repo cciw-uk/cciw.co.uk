@@ -111,6 +111,7 @@ dev = [
     "locust>=2.39.1",
     "ruff>=0.14.9",
     "ruff>=0.14.9",
+    "django-watchfiles>=1.4.0",
 ]
 
 [tool.uv]

@@ -185,6 +185,7 @@ if DEVBOX and DEBUG:
 if DEVBOX:
     INSTALLED_APPS += [
         "django_extensions",
+        "django_watchfiles",
     ]
 
 if USE_DEBUG_TOOLBAR and DEBUG:
