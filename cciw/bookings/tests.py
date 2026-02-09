@@ -834,7 +834,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_show_error_if_not_open(self):
         self.booking_login()
         self.get_url(self.urlname)
-        self.assertTextPresent(self.BOOKING_IS_NOT_OPEN)
+        self.assertTextPresent(MSGS.BOOKING_IS_NOT_OPEN)
 
     def test_post_not_allowed_if_not_open(self):
         self.booking_login()
@@ -848,14 +848,14 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Now remove prices, just to be awkward:
         Price.objects.all().delete()
         self.submit()
-        self.assertTextPresent(self.BOOKING_IS_NOT_OPEN)
+        self.assertTextPresent(MSGS.BOOKING_IS_NOT_OPEN)
 
     def test_allowed_if_prices_set_and_year_config_open_for_data_entry(self):
         self.booking_login()
         self.add_prices()
         self.create_year_config(open_for_data_entry=True)
         self.get_url(self.urlname)
-        self.assertTextAbsent(self.BOOKING_IS_NOT_OPEN)
+        self.assertTextAbsent(MSGS.BOOKING_IS_NOT_OPEN)
 
     def test_incomplete(self):
         self.booking_login()
@@ -1367,7 +1367,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_problems_are_shown_and_block_booking(self):
         # This test ensures that booking problems are shown and block
-        # the use from continuing. More detailed tests for booking problems are
+        # the user from continuing. More detailed tests for booking problems are
         # done at model layer.
         self.booking_login()
         self.create_booking(price_type=PriceType.CUSTOM)
@@ -1496,6 +1496,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             assert not b.is_in_queue
         self.assertTextPresent("These places cannot be booked")
 
+    # TODO - some of the below can be converted to model layer tests
     def test_same_name_same_camp(self):
         self.booking_login()
         self.create_booking()
