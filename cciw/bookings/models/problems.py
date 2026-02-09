@@ -465,7 +465,7 @@ def get_booking_warnings(booking: Booking, *, booking_sec: bool = False) -> list
     if relevant_bookings_limited_to_self.aggregate(count=models.Count("camp"))["count"] > 1:
         warnings.append(
             f'You are trying to book places for "{booking.name}" on more than one camp. '
-            + "This will result in one place having low priority and being unlikely to get allocated, but we cannot gaurantee which one."
+            + "This will result in one place having low priority and being unlikely to get allocated, but we cannot guarantee which one."
         )
 
     return [Warning(description=warning) for warning in warnings]
