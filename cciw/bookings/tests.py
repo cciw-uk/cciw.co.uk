@@ -335,7 +335,7 @@ class CreateBookingWebMixin(BookingLogInMixin):
         return super().fill(data2, scroll=scroll)
 
 
-class BookingBaseMixin:
+class MSGS:
     # Constants used in 'assertTextPresent' and 'assertTextAbsent', the latter
     # being prone to false positives if a constant isn't used.
     ABOVE_MAXIMUM_AGE = "above the maximum age"
@@ -355,6 +355,8 @@ class BookingBaseMixin:
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
     BOOKINGS_WILL_EXPIRE = "you have 24 hours to complete payment online"
 
+
+class BookingBaseMixin:
     def setUp(self):
         super().setUp()
         HtmlChunk.objects.get_or_create(name="bookingform_post_to", menu_link=None)
@@ -1381,14 +1383,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
-        self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
+        self.assertTextPresent(MSGS.CANNOT_USE_2ND_CHILD)
         self.assert_book_button_disabled()
 
         # 2 places, both at 2nd child discount, is not allowed.
         self.create_booking(price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
-        self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
+        self.assertTextPresent(MSGS.CANNOT_USE_2ND_CHILD)
         self.assert_book_button_disabled()
 
     def test_2nd_child_discount_allowed_if_booked(self):
@@ -1435,14 +1437,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking(birth_date=date(year=self.camp.year - self.camp_minimum_age, month=8, day=31))
         self.get_url(self.urlname)
-        self.assertTextAbsent(self.BELOW_MINIMUM_AGE)
+        self.assertTextAbsent(MSGS.BELOW_MINIMUM_AGE)
 
         # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
         self.create_booking(birth_date=date(year=self.camp.year - self.camp_minimum_age, month=9, day=1))
         self.get_url(self.urlname)
-        self.assertTextPresent(self.BELOW_MINIMUM_AGE)
+        self.assertTextPresent(MSGS.BELOW_MINIMUM_AGE)
 
     def test_maximum_age(self):
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
@@ -1450,14 +1452,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking(birth_date=date(year=self.camp.year - (self.camp_maximum_age + 1), month=9, day=1))
         self.get_url(self.urlname)
-        self.assertTextAbsent(self.ABOVE_MAXIMUM_AGE)
+        self.assertTextAbsent(MSGS.ABOVE_MAXIMUM_AGE)
 
         # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
         self.create_booking(birth_date=date(year=self.camp.year - (self.camp_maximum_age + 1), month=8, day=31))
         self.get_url(self.urlname)
-        self.assertTextPresent(self.ABOVE_MAXIMUM_AGE)
+        self.assertTextPresent(MSGS.ABOVE_MAXIMUM_AGE)
 
     def test_no_places_left(self):
         for i in range(0, self.camp.max_campers):
@@ -1466,11 +1468,11 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking(sex="m")
         self.get_url(self.urlname)
-        self.assertTextPresent(self.NO_PLACES_LEFT)
+        self.assertTextPresent(MSGS.NO_PLACES_LEFT)
         self.assert_book_button_enabled()
 
         # Don't want a redundant message
-        self.assertTextAbsent(self.NO_PLACES_LEFT_FOR_BOYS)
+        self.assertTextAbsent(MSGS.NO_PLACES_LEFT_FOR_BOYS)
 
     def test_no_male_places_left(self):
         for i in range(0, self.camp.max_male_campers):
@@ -1479,7 +1481,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking(sex="m")
         self.get_url(self.urlname)
-        self.assertTextPresent(self.NO_PLACES_LEFT_FOR_BOYS)
+        self.assertTextPresent(MSGS.NO_PLACES_LEFT_FOR_BOYS)
         self.assert_book_button_enabled()
 
     def test_no_female_places_left(self):
@@ -1489,7 +1491,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking(sex="f")
         self.get_url(self.urlname)
-        self.assertTextPresent(self.NO_PLACES_LEFT_FOR_GIRLS)
+        self.assertTextPresent(MSGS.NO_PLACES_LEFT_FOR_GIRLS)
         self.assert_book_button_enabled()
 
     def test_not_enough_places_left(self):
@@ -1500,7 +1502,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="f")
         self.create_booking(sex="f")
         self.get_url(self.urlname)
-        self.assertTextPresent(self.NOT_ENOUGH_PLACES)
+        self.assertTextPresent(MSGS.NOT_ENOUGH_PLACES)
         self.assert_book_button_enabled()
 
     def test_not_enough_male_places_left(self):
@@ -1512,7 +1514,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="m")
         self.create_booking(sex="m")
         self.get_url(self.urlname)
-        self.assertTextPresent(self.NOT_ENOUGH_PLACES_FOR_BOYS)
+        self.assertTextPresent(MSGS.NOT_ENOUGH_PLACES_FOR_BOYS)
         self.assert_book_button_enabled()
 
     def test_not_enough_female_places_left(self):
@@ -1524,7 +1526,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(sex="f")
         self.create_booking(sex="f")
         self.get_url(self.urlname)
-        self.assertTextPresent(self.NOT_ENOUGH_PLACES_FOR_GIRLS)
+        self.assertTextPresent(MSGS.NOT_ENOUGH_PLACES_FOR_GIRLS)
         self.assert_book_button_enabled()
 
     def test_booking_after_closing_date(self):
@@ -1534,7 +1536,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.booking_login()
         self.create_booking()
         self.get_url(self.urlname)
-        self.assertTextPresent(self.CAMP_CLOSED_FOR_BOOKINGS)
+        self.assertTextPresent(MSGS.CAMP_CLOSED_FOR_BOOKINGS)
         self.assert_book_button_disabled()
 
     def test_handle_two_problem_bookings(self):
@@ -1659,7 +1661,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(name="Mary Bloggs")
 
         self.get_url(self.urlname)
-        self.assertTextPresent(self.MULTIPLE_FULL_PRICE_WARNING)
+        self.assertTextPresent(MSGS.MULTIPLE_FULL_PRICE_WARNING)
         self.assertTextPresent("If Mary Bloggs and Frédéric Bloggs")
         # This is only a warning:
         self.assert_book_button_enabled()
@@ -1676,7 +1678,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(name="Peter Bloggs", price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
-        self.assertTextPresent(self.MULTIPLE_2ND_CHILD_WARNING)
+        self.assertTextPresent(MSGS.MULTIPLE_2ND_CHILD_WARNING)
         self.assertTextPresent("If Peter Bloggs and Mary Bloggs")
         self.assertTextPresent("one is eligible")
         # This is only a warning:
@@ -1692,7 +1694,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(camp=self.camp_2)
 
         self.get_url(self.urlname)
-        self.assertTextAbsent(self.MULTIPLE_FULL_PRICE_WARNING)
+        self.assertTextAbsent(MSGS.MULTIPLE_FULL_PRICE_WARNING)
         self.assert_book_button_enabled()
 
     def test_error_for_2nd_child_discount_for_same_camper(self):
@@ -1701,7 +1703,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(camp=self.camp_2, price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
-        self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
+        self.assertTextPresent(MSGS.CANNOT_USE_2ND_CHILD)
         self.assert_book_button_disabled()
 
     def test_error_for_multiple_2nd_child_discount(self):
@@ -1715,7 +1717,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking(name="Mary Bloggs", camp=self.camp_2, price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
-        self.assertTextPresent(self.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER)
+        self.assertTextPresent(MSGS.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER)
         self.assert_book_button_disabled()
 
     def test_book_now_safeguard(self):
