@@ -50,6 +50,14 @@
     your <a href="{% url 'cciw-bookings-account_overview' %}">account overview</a> page.
   </p>
 
+  {% if shelf_bookings_count %}
+    <p>
+      <b>Remember that you have other bookings in
+        <a href="{% url 'cciw-bookings-basket_list_bookings' %}">“Saved for later”</a>.
+      </b>
+    </p>
+  {% endif %}
+
   {% include 'cciw/bookings/booking_process_info.html' with booking_open_data=booking_open_data %}
 
 {% endblock %}

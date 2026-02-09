@@ -464,6 +464,11 @@ def _basket_list_bookings(request: HttpRequest) -> HttpResponse:
         for booking in shelf_bookings
         for problem in booking.problems
     )
+    basket_bookings_problems_pending_approval = any(
+        isinstance(problem, ApprovalNeeded) and problem.is_pending
+        for booking in basket_bookings
+        for problem in booking.problems
+    )
 
     # There is no point in "Save for later" if they can't
     # press "Apply now":
@@ -478,6 +483,7 @@ def _basket_list_bookings(request: HttpRequest) -> HttpResponse:
             "basket_bookings": basket_bookings,
             "shelf_bookings": shelf_bookings,
             "shelf_bookings_problems_pending_approval": shelf_bookings_problems_pending_approval,
+            "basket_bookings_problems_pending_approval": basket_bookings_problems_pending_approval,
             "all_bookable": all_bookable,
             "all_unbookable": all_unbookable,
             "state_token": make_state_token(basket_bookings),
@@ -515,20 +521,24 @@ def _handle_list_booking_actions(request: HttpRequest, places: list[Booking]) ->
 @booking_account_required
 def added_to_queue(request: HttpRequest) -> HttpResponse:
     account: BookingAccount = request.booking_account
-    waiting_in_queue_bookings: list[Booking] = list(account.bookings.waiting_in_queue())
+    year = get_thisyear()
+    account_bookings = account.bookings.for_year(year)
+    waiting_in_queue_bookings: list[Booking] = list(account_bookings.waiting_in_queue())
     all_waiting_list_mode = all(b.queue_entry.waiting_list_mode for b in waiting_in_queue_bookings)
     none_waiting_list_mode = all(not b.queue_entry.waiting_list_mode for b in waiting_in_queue_bookings)
+    shelf_bookings_count = account_bookings.on_shelf().count()
 
     return TemplateResponse(
         request,
         "cciw/bookings/added_to_queue.html",
         {
             "title": "Booking - added to queue",
-            "booking_open_data": get_booking_open_data(get_thisyear()),
+            "booking_open_data": get_booking_open_data(year),
             "all_waiting_list_mode": all_waiting_list_mode,
             "none_waiting_list_mode": none_waiting_list_mode,
             "waiting_in_queue_bookings": waiting_in_queue_bookings,
             "booking_expires_after_display": settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER_DISPLAY,
+            "shelf_bookings_count": shelf_bookings_count,
         },
     )
 

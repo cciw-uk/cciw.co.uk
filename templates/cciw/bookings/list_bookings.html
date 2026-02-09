@@ -72,17 +72,30 @@
             {% else %}
               This place cannot be booked for the reasons described above.
             {% endif %}
-            For problems marked 'Pending', the booking secretary will review it and you will be notified when this is done.
           </p>
         {% else %}
           <p>
             One or more of the places cannot be booked, so this set cannot be booked as a group.
-            For problems marked 'Pending', the booking secretary will review it and you will be notified when this is done.
           </p>
-
-          <p>You can also use the 'save for later' button on the place(s) that cannot be booked,
-            and book the other place(s).</p>
         {% endif %}
+
+        <p>
+          For problems marked 'Pending', the booking secretary will review it
+          and you will be notified when this is done – just leave the bookings in your basket.
+        </p>
+
+        {% if not all_unbookable %}
+          <p>If you wish to book some of these places, you can use "save for
+            later" on the place(s) that cannot be booked, and book the
+            other place(s).
+            {% if basket_bookings_problems_pending_approval %}
+              <b>However, for places that are waiting for approval, remember to put the
+                bookings back into your basket so that they can be approved.</b>
+            {% endif %}
+          </p>
+        {% endif %}
+
+
         {% if not booking_open_data.is_open_for_booking %}
           <p>Bookings are not formally open yet,
             you will need to return between
