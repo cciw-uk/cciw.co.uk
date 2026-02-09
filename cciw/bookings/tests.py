@@ -354,6 +354,7 @@ class MSGS:
     BOOKING_IS_NOT_OPEN = "Booking is not yet open"
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
     BOOKINGS_WILL_EXPIRE = "you have 24 hours to complete payment online"
+    CUSTOM_DISCOUNT_MUST_BE_ARRANGED = "A custom discount needs to be arranged by the booking secretary"
 
 
 class BookingBaseMixin:
@@ -1364,7 +1365,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("No problems with this booking")
         self.assert_book_button_enabled()
 
-    def test_handle_custom_price(self):
+    def test_problems_are_shown_and_block_booking(self):
+        # This test ensures that booking problems are shown and block
+        # the use from continuing. More detailed tests for booking problems are
+        # done at model layer.
         self.booking_login()
         self.create_booking(price_type=PriceType.CUSTOM)
         self.get_url(self.urlname)
@@ -1372,77 +1376,9 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("Camp Blue")
         self.assertTextPresent("Frédéric Bloggs")
         self.assertTextPresent("TBA")
-        self.assertTextPresent("A custom discount needs to be arranged by the booking secretary")
+        self.assertTextPresent(MSGS.CUSTOM_DISCOUNT_MUST_BE_ARRANGED)
         self.assert_book_button_disabled()
         self.assertTextPresent("This place cannot be booked for the reasons described above")
-
-    def test_no_places_left(self):
-        for i in range(0, self.camp.max_campers):
-            factories.create_booking(camp=self.camp, state=BookingState.BOOKED)
-
-        self.booking_login()
-        self.create_booking(sex="m")
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.NO_PLACES_LEFT)
-        self.assert_book_button_enabled()
-
-        # Don't want a redundant message
-        self.assertTextAbsent(MSGS.NO_PLACES_LEFT_FOR_BOYS)
-
-    def test_no_male_places_left(self):
-        for i in range(0, self.camp.max_male_campers):
-            factories.create_booking(camp=self.camp, sex="m", state=BookingState.BOOKED)
-
-        self.booking_login()
-        self.create_booking(sex="m")
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.NO_PLACES_LEFT_FOR_BOYS)
-        self.assert_book_button_enabled()
-
-    def test_no_female_places_left(self):
-        for i in range(0, self.camp.max_female_campers):
-            factories.create_booking(camp=self.camp, sex="f", state=BookingState.BOOKED)
-
-        self.booking_login()
-        self.create_booking(sex="f")
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.NO_PLACES_LEFT_FOR_GIRLS)
-        self.assert_book_button_enabled()
-
-    def test_not_enough_places_left(self):
-        for i in range(0, self.camp.max_campers - 1):
-            factories.create_booking(camp=self.camp, sex="m", state=BookingState.BOOKED)
-
-        self.booking_login()
-        self.create_booking(sex="f")
-        self.create_booking(sex="f")
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.NOT_ENOUGH_PLACES)
-        self.assert_book_button_enabled()
-
-    def test_not_enough_male_places_left(self):
-        for i in range(0, self.camp.max_male_campers - 1):
-            factories.create_booking(camp=self.camp, sex="m", state=BookingState.BOOKED)
-        self.camp.bookings.update(state=BookingState.BOOKED)
-
-        self.booking_login()
-        self.create_booking(sex="m")
-        self.create_booking(sex="m")
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.NOT_ENOUGH_PLACES_FOR_BOYS)
-        self.assert_book_button_enabled()
-
-    def test_not_enough_female_places_left(self):
-        for i in range(0, self.camp.max_female_campers - 1):
-            factories.create_booking(camp=self.camp, sex="f", state=BookingState.BOOKED)
-        self.camp.bookings.update(state=BookingState.BOOKED)
-
-        self.booking_login()
-        self.create_booking(sex="f")
-        self.create_booking(sex="f")
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.NOT_ENOUGH_PLACES_FOR_GIRLS)
-        self.assert_book_button_enabled()
 
     def test_booking_after_closing_date(self):
         self.camp.last_booking_date = self.today - timedelta(days=1)
@@ -3291,6 +3227,14 @@ def test_booking_problems_serious_illness():
 
 
 @pytest.mark.django_db
+def test_booking_problems_custom_discount():
+    booking = factories.create_booking(price_type=PriceType.CUSTOM)
+    problems = get_booking_problems(booking)
+    assert any(MSGS.CUSTOM_DISCOUNT_MUST_BE_ARRANGED in p.description and p.blocker for p in problems)
+    assert booking in Booking.objects.need_approving()
+
+
+@pytest.mark.django_db
 def test_booking_problems_minimum_age():
     # if born Aug 31st, camp with minimum_age == 11
     camp: Camp = camps_factories.create_camp()
@@ -3316,6 +3260,66 @@ def test_booking_problems_maximum_age():
     )
     problems_2 = get_booking_problems(booking_2)
     assert any(MSGS.ABOVE_MAXIMUM_AGE in p.description and p.blocker for p in problems_2)
+
+
+@pytest.mark.django_db
+def test_no_places_left():
+    camp = camps_factories.create_camp(max_campers=3)
+    for i in range(0, camp.max_campers):
+        factories.create_booking(camp=camp, state=BookingState.BOOKED)
+
+    booking = factories.create_booking(camp=camp, sex=Sex.MALE)
+    problems = get_booking_problems(booking)
+    assert any(MSGS.NO_PLACES_LEFT in p.description for p in problems)
+
+    # Don't want a redundant message
+    assert not any(MSGS.NO_PLACES_LEFT_FOR_BOYS in p.description for p in problems)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("sex", [Sex.MALE, Sex.FEMALE])
+def test_no_places_left_for_male_female(sex: Sex):
+    camp = camps_factories.create_camp(max_campers=10, max_male_campers=3, max_female_campers=3)
+    for i in range(0, 3):
+        factories.create_booking(camp=camp, state=BookingState.BOOKED, sex=sex)
+
+    booking = factories.create_booking(camp=camp, sex=sex)
+    problems = get_booking_problems(booking)
+    message = MSGS.NO_PLACES_LEFT_FOR_BOYS if sex == Sex.MALE else MSGS.NO_PLACES_LEFT_FOR_GIRLS
+    assert any(message in p.description for p in problems)
+
+
+@pytest.mark.django_db
+def test_not_enough_places_left():
+    camp = camps_factories.create_camp(max_campers=3)
+    for i in range(0, camp.max_campers - 1):
+        factories.create_booking(camp=camp, state=BookingState.BOOKED)
+
+    account = factories.create_booking_account()
+    _booking_1 = factories.create_booking(account=account, camp=camp)
+    booking_2 = factories.create_booking(account=account, camp=camp)
+    problems = get_booking_problems(booking_2)
+
+    assert any(MSGS.NOT_ENOUGH_PLACES in p.description for p in problems)
+
+    # Don't want a redundant message
+    assert not any(MSGS.NOT_ENOUGH_PLACES_FOR_BOYS in p.description for p in problems)
+    assert not any(MSGS.NOT_ENOUGH_PLACES_FOR_GIRLS in p.description for p in problems)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("sex", [Sex.MALE, Sex.FEMALE])
+def test_not_enough_places_left_for_male_female(sex: Sex):
+    camp = camps_factories.create_camp(max_campers=10, max_male_campers=3, max_female_campers=3)
+    for i in range(0, 2):
+        factories.create_booking(camp=camp, state=BookingState.BOOKED, sex=sex)
+
+    account = factories.create_booking_account()
+    _booking_1 = factories.create_booking(account=account, camp=camp, sex=sex)
+    booking_2 = factories.create_booking(account=account, camp=camp, sex=sex)
+    problems = get_booking_problems(booking_2)
+    message = MSGS.NOT_ENOUGH_PLACES_FOR_BOYS if sex == Sex.MALE else MSGS.NOT_ENOUGH_PLACES_FOR_GIRLS
+    assert any(message in p.description for p in problems)
 
 
 @pytest.mark.django_db
