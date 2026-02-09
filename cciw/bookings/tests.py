@@ -1364,8 +1364,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("No problems with this booking")
         self.assert_book_button_enabled()
 
-    # TODO - maybe some of these should be moved to model based tests via get_booking_problems()
-
     def test_handle_custom_price(self):
         self.booking_login()
         self.create_booking(price_type=PriceType.CUSTOM)
@@ -1377,89 +1375,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("A custom discount needs to be arranged by the booking secretary")
         self.assert_book_button_disabled()
         self.assertTextPresent("This place cannot be booked for the reasons described above")
-
-    def test_2nd_child_discount_allowed(self):
-        self.booking_login()
-        self.create_booking(price_type=PriceType.SECOND_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.CANNOT_USE_2ND_CHILD)
-        self.assert_book_button_disabled()
-
-        # 2 places, both at 2nd child discount, is not allowed.
-        self.create_booking(price_type=PriceType.SECOND_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.CANNOT_USE_2ND_CHILD)
-        self.assert_book_button_disabled()
-
-    def test_2nd_child_discount_allowed_if_booked(self):
-        """
-        Test that we can have 2nd child discount if full price
-        place is already booked.
-        """
-        account = self.booking_login()
-        self.create_booking(first_name="Joe")
-        account.bookings.update(state=BookingState.BOOKED)
-
-        self.create_booking(first_name="Mary", price_type=PriceType.SECOND_CHILD)
-
-        self.get_url(self.urlname)
-        self.assert_book_button_enabled()
-
-    def test_3rd_child_discount_allowed(self):
-        self.booking_login()
-        self.create_booking(price_type=PriceType.FULL)
-        self.create_booking(price_type=PriceType.THIRD_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent("You cannot use a 3rd child discount")
-        self.assert_book_button_disabled()
-
-        # 3 places, with 2 at 3rd child discount, is not allowed.
-        self.create_booking(price_type=PriceType.THIRD_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent("You cannot use a 3rd child discount")
-        self.assert_book_button_disabled()
-
-    def test_handle_serious_illness(self):
-        self.booking_login()
-        booking = self.create_booking(serious_illness=True)
-        self.get_url(self.urlname)
-        self.assertTextPresent("Must be approved by leader due to serious illness/condition")
-        self.assert_book_button_disabled()
-        assert booking in Booking.objects.need_approving()
-
-    def test_minimum_age(self):
-        # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
-        # minimum_age == 11
-        self.booking_login()
-        self.create_booking(birth_date=date(year=self.camp.year - self.camp_minimum_age, month=8, day=31))
-        self.get_url(self.urlname)
-        self.assertTextAbsent(MSGS.BELOW_MINIMUM_AGE)
-
-        # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
-        # minimum_age == 11
-        Booking.objects.all().delete()
-        self.create_booking(birth_date=date(year=self.camp.year - self.camp_minimum_age, month=9, day=1))
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.BELOW_MINIMUM_AGE)
-
-    def test_maximum_age(self):
-        # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
-        # maximum_age == 17
-        self.booking_login()
-        self.create_booking(birth_date=date(year=self.camp.year - (self.camp_maximum_age + 1), month=9, day=1))
-        self.get_url(self.urlname)
-        self.assertTextAbsent(MSGS.ABOVE_MAXIMUM_AGE)
-
-        # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
-        # maximum_age == 17
-        Booking.objects.all().delete()
-        self.create_booking(birth_date=date(year=self.camp.year - (self.camp_maximum_age + 1), month=8, day=31))
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.ABOVE_MAXIMUM_AGE)
 
     def test_no_places_left(self):
         for i in range(0, self.camp.max_campers):
@@ -3314,6 +3229,93 @@ def test_booking_same_person_on_multiple_camps():
     assert len(problems2) == len(problems1) - 1
     messages2 = [p.description for p in problems2]
     assert len([True for m in messages2 if msg in m]) == 0
+
+
+@pytest.mark.django_db
+def test_booking_problems_2nd_child_discount_allowed():
+    account = factories.create_booking_account()
+    booking_1 = factories.create_booking(account=account, price_type=PriceType.SECOND_CHILD)
+
+    problems_1 = get_booking_problems(booking_1)
+    assert any(MSGS.CANNOT_USE_2ND_CHILD in p.description for p in problems_1)
+
+    # 2 places, both at 2nd child discount, is not allowed.
+    booking_2 = factories.create_booking(account=account, price_type=PriceType.SECOND_CHILD)
+
+    problems_2 = get_booking_problems(booking_2)
+    assert any(MSGS.CANNOT_USE_2ND_CHILD in p.description and p.blocker for p in problems_2)
+
+
+@pytest.mark.django_db
+def test_booking_problems_2nd_child_discount_allowed_if_booked():
+    """
+    Test that we can have 2nd child discount if full price
+    place is already booked.
+    """
+    account = factories.create_booking_account()
+    booking = factories.create_booking(account=account, first_name="Joe")
+    allocate_bookings_now([booking])
+
+    booking_2 = factories.create_booking(account=account, first_name="Mary", price_type=PriceType.SECOND_CHILD)
+
+    problems_2 = get_booking_problems(booking_2)
+    assert not any(p.blocker for p in problems_2)
+    assert not problems_2
+
+
+@pytest.mark.django_db
+def test_booking_problems_3rd_child_discount_allowed():
+    account = factories.create_booking_account()
+    booking_1 = factories.create_booking(account=account, first_name="Joe", price_type=PriceType.FULL)
+    assert not get_booking_problems(booking_1)
+
+    # 2 places with 1 at 3rd child discount, is not allowed
+    booking_2 = factories.create_booking(account=account, first_name="Mary", price_type=PriceType.THIRD_CHILD)
+    problems_2 = get_booking_problems(booking_2)
+    assert any("You cannot use a 3rd child discount" in p.description and p.blocker for p in problems_2)
+
+    # 3 places, with 2 at 3rd child discount, is not allowed.
+    booking_3 = factories.create_booking(account=account, first_name="Anne", price_type=PriceType.THIRD_CHILD)
+    problems_3 = get_booking_problems(booking_3)
+    assert any("You cannot use a 3rd child discount" in p.description and p.blocker for p in problems_3)
+
+
+@pytest.mark.django_db
+def test_booking_problems_serious_illness():
+    booking = factories.create_booking(serious_illness=True)
+    problems = get_booking_problems(booking)
+    assert any(
+        "Must be approved by leader due to serious illness/condition" in p.description and p.blocker for p in problems
+    )
+    assert booking in Booking.objects.need_approving()
+
+
+@pytest.mark.django_db
+def test_booking_problems_minimum_age():
+    # if born Aug 31st, camp with minimum_age == 11
+    camp: Camp = camps_factories.create_camp()
+    booking = factories.create_booking(camp=camp, birth_date=date(year=camp.year - camp.minimum_age, month=8, day=31))
+    assert not get_booking_problems(booking)
+
+    # if born 1st Sept 2001 same year should not be allowed on camp with minimum_age == 11
+    booking_2 = factories.create_booking(camp=camp, birth_date=date(year=camp.year - camp.minimum_age, month=9, day=1))
+    problems_2 = get_booking_problems(booking_2)
+    assert any(MSGS.BELOW_MINIMUM_AGE in p.description and p.blocker for p in problems_2)
+
+
+@pytest.mark.django_db
+def test_booking_problems_maximum_age():
+    camp: Camp = camps_factories.create_camp()
+    booking = factories.create_booking(
+        camp=camp, birth_date=date(year=camp.year - (camp.maximum_age + 1), month=9, day=1)
+    )
+    assert not get_booking_problems(booking)
+
+    booking_2 = factories.create_booking(
+        camp=camp, birth_date=date(year=camp.year - (camp.maximum_age + 1), month=8, day=31)
+    )
+    problems_2 = get_booking_problems(booking_2)
+    assert any(MSGS.ABOVE_MAXIMUM_AGE in p.description and p.blocker for p in problems_2)
 
 
 @pytest.mark.django_db
