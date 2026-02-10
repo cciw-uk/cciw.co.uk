@@ -377,8 +377,7 @@ class BookingBaseMixin:
 # created the same way a user would.
 
 
-@pytest.mark.django_db
-def test_Camp_open_for_bookings():
+def test_Camp_open_for_bookings(db):
     today = date.today()
     camp = camps_factories.create_camp(start_date=today + timedelta(days=10))
     assert camp.open_for_bookings(today)
@@ -390,8 +389,7 @@ def test_Camp_open_for_bookings():
     assert not camp.open_for_bookings(today + timedelta(days=1))
 
 
-@pytest.mark.django_db
-def test_BookingAccount_balance_due(django_assert_num_queries):
+def test_BookingAccount_balance_due(db, django_assert_num_queries):
     year_config = create_year_config_for_queue_tests()
     year: int = year_config.year
     factories.create_prices(year=year, full_price=100)
@@ -1380,16 +1378,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assert_book_button_disabled()
         self.assertTextPresent("This place cannot be booked for the reasons described above")
 
-    def test_booking_after_closing_date(self):
-        self.camp.last_booking_date = self.today - timedelta(days=1)
-        self.camp.save()
-
-        self.booking_login()
-        self.create_booking()
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.CAMP_CLOSED_FOR_BOOKINGS)
-        self.assert_book_button_disabled()
-
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
         self.booking_login()
@@ -1495,82 +1483,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             assert b.state == BookingState.INFO_COMPLETE
             assert not b.is_in_queue
         self.assertTextPresent("These places cannot be booked")
-
-    # TODO - some of the below can be converted to model layer tests
-    def test_same_name_same_camp(self):
-        self.booking_login()
-        self.create_booking()
-        self.create_booking()  # Identical
-
-        self.get_url(self.urlname)
-        self.assertTextPresent("You have entered another set of place details for a camper called")
-        # This is only a warning:
-        self.assert_book_button_enabled()
-
-    def test_warn_about_multiple_full_price(self):
-        self.booking_login()
-        self.create_booking(name="Frédéric Bloggs")
-        self.create_booking(name="Mary Bloggs")
-
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.MULTIPLE_FULL_PRICE_WARNING)
-        self.assertTextPresent("If Mary Bloggs and Frédéric Bloggs")
-        # This is only a warning:
-        self.assert_book_button_enabled()
-
-        # Check for more than 2
-        self.create_booking(name="Peter Bloggs")
-        self.get_url(self.urlname)
-        self.assertTextPresent("If Mary Bloggs, Peter Bloggs and Frédéric Bloggs")
-
-    def test_warn_about_multiple_2nd_child(self):
-        self.booking_login()
-        self.create_booking(name="Frédéric Bloggs")
-        self.create_booking(name="Mary Bloggs", price_type=PriceType.SECOND_CHILD)
-        self.create_booking(name="Peter Bloggs", price_type=PriceType.SECOND_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.MULTIPLE_2ND_CHILD_WARNING)
-        self.assertTextPresent("If Peter Bloggs and Mary Bloggs")
-        self.assertTextPresent("one is eligible")
-        # This is only a warning:
-        self.assert_book_button_enabled()
-
-        self.create_booking(name="Zac Bloggs", price_type=PriceType.SECOND_CHILD)
-        self.get_url(self.urlname)
-        self.assertTextPresent("2 are eligible")
-
-    def test_dont_warn_about_multiple_full_price_for_same_child(self):
-        self.booking_login()
-        self.create_booking()
-        self.create_booking(camp=self.camp_2)
-
-        self.get_url(self.urlname)
-        self.assertTextAbsent(MSGS.MULTIPLE_FULL_PRICE_WARNING)
-        self.assert_book_button_enabled()
-
-    def test_error_for_2nd_child_discount_for_same_camper(self):
-        self.booking_login()
-        self.create_booking()
-        self.create_booking(camp=self.camp_2, price_type=PriceType.SECOND_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.CANNOT_USE_2ND_CHILD)
-        self.assert_book_button_disabled()
-
-    def test_error_for_multiple_2nd_child_discount(self):
-        self.booking_login()
-        # Frederik x2
-        self.create_booking(name="Peter Bloggs")
-        self.create_booking(name="Peter Bloggs", camp=self.camp_2)
-
-        # Mary x2
-        self.create_booking(name="Mary Bloggs", price_type=PriceType.SECOND_CHILD)
-        self.create_booking(name="Mary Bloggs", camp=self.camp_2, price_type=PriceType.SECOND_CHILD)
-
-        self.get_url(self.urlname)
-        self.assertTextPresent(MSGS.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER)
-        self.assert_book_button_disabled()
 
     def test_book_now_safeguard(self):
         self.booking_login()
@@ -1706,8 +1618,7 @@ class TestPayReturnPoints(BookingBaseMixin, BookingLogInMixin, WebTestBase):
         assert resp.status_code == 200
 
 
-@pytest.mark.django_db
-def test_email_for_bad_payment_1():
+def test_email_for_bad_payment_1(db):
     ipn_1 = IpnMock()
     ipn_1.id = 123
     ipn_1.mc_gross = Decimal("1.00")
@@ -1722,8 +1633,7 @@ def test_email_for_bad_payment_1():
     assert "No associated account" in mail.outbox[0].body
 
 
-@pytest.mark.django_db
-def test_email_for_bad_payment_2():
+def test_email_for_bad_payment_2(db):
     account = BookingAccount(id=1234567)  # bad ID, not in DB
     ipn_1 = IpnMock()
     ipn_1.id = 123
@@ -1739,8 +1649,7 @@ def test_email_for_bad_payment_2():
     assert "No associated account" in mail.outbox[0].body
 
 
-@pytest.mark.django_db
-def test_email_for_bad_payment_3():
+def test_email_for_bad_payment_3(db):
     ipn_1 = IpnMock()
     ipn_1.id = 123
     ipn_1.mc_gross = Decimal("1.00")
@@ -1754,8 +1663,7 @@ def test_email_for_bad_payment_3():
     assert "Invalid IPN" in mail.outbox[0].body
 
 
-@pytest.mark.django_db
-def test_receive_payment_signal_handler():
+def test_receive_payment_signal_handler(db):
     # Use the actual signal handler, check the good path.
     account = factories.create_booking_account()
     assert account.total_received == Decimal(0)
@@ -1786,8 +1694,7 @@ def test_receive_payment_signal_handler():
     assert account.total_received == Decimal(0)
 
 
-@pytest.mark.django_db
-def test_email_for_good_payment(mailoutbox: list[mail.EmailMessage]):
+def test_email_for_good_payment(db, mailoutbox: list[mail.EmailMessage]):
     account = factories.create_booking_account()
     factories.create_ipn(account=account, mc_gross=Decimal(100))
 
@@ -1799,8 +1706,7 @@ def test_email_for_good_payment(mailoutbox: list[mail.EmailMessage]):
     assert "We have received your payment of £100" in email.body
 
 
-@pytest.mark.django_db
-def test_BookingAccount_concurrent_save():
+def test_BookingAccount_concurrent_save(db):
     acc1 = BookingAccount.objects.create(email="foo@foo.com")
     acc2 = BookingAccount.objects.get(email="foo@foo.com")
 
@@ -1813,8 +1719,7 @@ def test_BookingAccount_concurrent_save():
     assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
 
 
-@pytest.mark.django_db
-def test_pending_payment_handling():
+def test_pending_payment_handling(db):
     # This test is story-style - checks the whole process
     # of handling pending payments.
 
@@ -2058,8 +1963,7 @@ class TestLogOutSL(LogOutBase, SeleniumBase):
     pass
 
 
-@pytest.mark.django_db
-def test_ManualPayment_create():
+def test_ManualPayment_create(db):
     account = BookingAccount.objects.create(email="foo@foo.com")
     assert Payment.objects.count() == 0
     ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
@@ -2070,8 +1974,7 @@ def test_ManualPayment_create():
     assert account.total_received == Decimal("100.00")
 
 
-@pytest.mark.django_db
-def test_ManualPayment_delete():
+def test_ManualPayment_delete(db):
     # Setup
     account = BookingAccount.objects.create(email="foo@foo.com")
     mp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
@@ -2084,8 +1987,7 @@ def test_ManualPayment_delete():
     assert account.total_received == Decimal("0.00")
 
 
-@pytest.mark.django_db
-def test_ManualPayment_edit():
+def test_ManualPayment_edit(db):
     # Setup
     account = BookingAccount.objects.create(email="foo@foo.com")
     mp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
@@ -2095,8 +1997,7 @@ def test_ManualPayment_edit():
         mp.save()
 
 
-@pytest.mark.django_db
-def test_RefundPayment_create():
+def test_RefundPayment_create(db):
     account = BookingAccount.objects.create(email="foo@foo.com")
     assert Payment.objects.count() == 0
     RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
@@ -2107,8 +2008,7 @@ def test_RefundPayment_create():
     assert account.total_received == Decimal("-100.00")
 
 
-@pytest.mark.django_db
-def test_RefundPayment_delete():
+def test_RefundPayment_delete(db):
     # Setup
     account = BookingAccount.objects.create(email="foo@foo.com")
     rp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
@@ -2121,8 +2021,7 @@ def test_RefundPayment_delete():
     assert account.total_received == Decimal("0.00")
 
 
-@pytest.mark.django_db
-def test_RefundPayment_edit():
+def test_RefundPayment_edit(db):
     # Setup
     account = BookingAccount.objects.create(email="foo@foo.com")
     rp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
@@ -2132,15 +2031,13 @@ def test_RefundPayment_edit():
         rp.save()
 
 
-@pytest.mark.django_db
-def test_cancel_amount_due():
+def test_cancel_amount_due(db):
     booking = factories.create_booking()
     booking.state = BookingState.CANCELLED_FULL_REFUND
     assert booking.expected_amount_due() == Decimal(0)
 
 
-@pytest.mark.django_db
-def test_cancel_account_amount_due():
+def test_cancel_account_amount_due(db):
     booking = factories.create_booking()
     account = booking.account
     booking.state = BookingState.CANCELLED_HALF_REFUND
@@ -2152,15 +2049,13 @@ def test_cancel_account_amount_due():
     assert account.get_balance_full() == booking.amount_due
 
 
-@pytest.mark.django_db
-def test_cancel_full_refund_amount_due():
+def test_cancel_full_refund_amount_due(db):
     booking = factories.create_booking()
     booking.state = BookingState.CANCELLED_FULL_REFUND
     assert booking.expected_amount_due() == Decimal("0.00")
 
 
-@pytest.mark.django_db
-def test_cancel_half_refund_amount_due():
+def test_cancel_half_refund_amount_due(db):
     booking = factories.create_booking()
     booking.state = BookingState.CANCELLED_HALF_REFUND
     assert (
@@ -2168,8 +2063,7 @@ def test_cancel_half_refund_amount_due():
     )
 
 
-@pytest.mark.django_db
-def test_cancel_booking_fee_kept_amount_due():
+def test_cancel_booking_fee_kept_amount_due(db):
     booking = factories.create_booking()
     booking.state = BookingState.CANCELLED_BOOKING_FEE_KEPT
 
@@ -2179,8 +2073,7 @@ def test_cancel_booking_fee_kept_amount_due():
     )
 
 
-@pytest.mark.django_db
-def test_cancel_full_refund_account_amount_due():
+def test_cancel_full_refund_account_amount_due(db):
     booking = factories.create_booking()
     account = booking.account
     booking.state = BookingState.CANCELLED_FULL_REFUND
@@ -2191,8 +2084,7 @@ def test_cancel_full_refund_account_amount_due():
     assert account.get_balance_full() == booking.amount_due
 
 
-@pytest.mark.django_db
-def test_export_places_summary():
+def test_export_places_summary(db):
     booking = factories.create_booking()
     booking.state = BookingState.BOOKED
     booking.save()
@@ -2206,7 +2098,6 @@ def test_export_places_summary():
     assert wksh_all.cell(2, 1).value == booking.first_name
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     # Choose some different dates to set camp, to exercise logic for calculating
     # birthdays. Birthday is set day after camp start date.
@@ -2243,7 +2134,7 @@ def test_export_places_summary():
         ),
     ],
 )
-def test_export_places_birthdays(dates_and_age: tuple[date, date, int, date]):
+def test_export_places_birthdays(db, dates_and_age: tuple[date, date, int, date]):
     camp = camps_factories.create_camp(start_date=dates_and_age[0])
     birth_date = dates_and_age[1]
     age = dates_and_age[2]
@@ -2264,8 +2155,7 @@ def test_export_places_birthdays(dates_and_age: tuple[date, date, int, date]):
     assert wksh_bdays.cell(2, 4).value == str(age)
 
 
-@pytest.mark.django_db
-def test_export_payment_data():
+def test_export_payment_data(db):
     account1 = BookingAccount.objects.create(name="Joe Bloggs", email="joe@foo.com")
     account2 = BookingAccount.objects.create(name="Mary Muddle", email="mary@foo.com")
     factories.create_ipn(account=account1, mc_gross=Decimal("10.00"))
@@ -2294,8 +2184,7 @@ def test_export_payment_data():
     assert ["Joe Bloggs", "joe@foo.com", -1.23, "ManualPayment (deleted)"] not in data2
 
 
-@pytest.mark.django_db
-def test_booking_saved_approvals_unapproved_and_need_approving():
+def test_booking_saved_approvals_unapproved_and_need_approving(db):
     booking = factories.create_booking()
     assert len(Booking.objects.need_approving()) == 0
 
@@ -2344,8 +2233,7 @@ def test_booking_saved_approvals_unapproved_and_need_approving():
     assert booking.saved_approvals_unapproved == []
 
 
-@pytest.mark.django_db
-def test_booking_add_to_queue():
+def test_booking_add_to_queue(db):
     booking = factories.create_booking()
     assert not booking.is_in_queue
     booking.add_to_queue(by_user=booking.account)
@@ -2368,24 +2256,21 @@ def test_booking_add_to_queue():
     assert booking.queue_entry.created_at == created_at
 
 
-@pytest.mark.django_db
-def test_payment_source_save_bad():
+def test_payment_source_save_bad(db):
     manual = factories.create_manual_payment()
     refund = factories.create_refund_payment()
     with pytest.raises(AssertionError):
         PaymentSource.objects.create(manual_payment=manual, refund_payment=refund)
 
 
-@pytest.mark.django_db
-def test_payment_source_save_good():
+def test_payment_source_save_good(db):
     manual = factories.create_manual_payment()
     PaymentSource.objects.all().delete()
     p = PaymentSource.objects.create(manual_payment=manual)
     assert p.id is not None
 
 
-@pytest.mark.django_db
-def test_write_off_debt_payment():
+def test_write_off_debt_payment(db):
     account = factories.create_booking_account()
     factories.create_booking(account=account, state=BookingState.BOOKED)
     account.refresh_from_db()
@@ -2584,8 +2469,7 @@ def test_tolerate_truncated_trailing_equals(email):
         assert v.email_from_token(remove_equals(v.token_for_email(email))) == email
 
 
-@pytest.mark.django_db
-def test_booking_open():
+def test_booking_open(db):
     # Initially:
     year = date.today().year  # doesn't really matter
     assert not get_booking_open_data(year).is_open_for_booking
@@ -2632,8 +2516,7 @@ def create_year_config_for_queue_tests(year: int = 2026) -> YearConfig:
     )
 
 
-@pytest.mark.django_db
-def test_rank_queue_booking():
+def test_rank_queue_booking(db):
     year_config = create_year_config_for_queue_tests(year=2026)
     with time_machine.travel(year_config.bookings_open_for_entry_on + timedelta(days=1)):
         b1 = factories.create_booking(first_name="Amy")
@@ -2680,8 +2563,7 @@ def test_rank_queue_booking():
     assert b4_q.rank_info.queue_position_rank == 3
 
 
-@pytest.mark.django_db
-def test_rank_queue_booking_same_camper_multiple_camps():
+def test_rank_queue_booking_same_camper_multiple_camps(db):
     year = 2026
     year_config = create_year_config_for_queue_tests(year=year)
     camp_1 = camps_factories.create_camp(year=year)
@@ -2725,8 +2607,7 @@ def test_rank_queue_booking_same_camper_multiple_camps():
     assert not b3_q.rank_info.has_other_place_in_queue
 
 
-@pytest.mark.django_db
-def test_Booking_withdraw_from_queue_and_add_again():
+def test_Booking_withdraw_from_queue_and_add_again(db):
     with time_machine.travel("2026-01-01"):
         booking = factories.create_booking()
         booking.add_to_queue(by_user=booking.account)
@@ -2750,8 +2631,7 @@ def test_Booking_withdraw_from_queue_and_add_again():
     assert booking.queue_entry.action_logs.count() == 3
 
 
-@pytest.mark.django_db
-def test_QueueEntry_get_current_field_data():
+def test_QueueEntry_get_current_field_data(db):
     booking = factories.create_booking()
     queue_entry = booking.add_to_queue(by_user=booking.account)
     keys = sorted(queue_entry.get_current_field_data().keys())
@@ -2774,8 +2654,7 @@ def test_QueueEntry_get_current_field_data():
     )
 
 
-@pytest.mark.django_db
-def test_get_booking_queue_problems_rejected_first_timers():
+def test_get_booking_queue_problems_rejected_first_timers(db):
     year_config = create_year_config_for_queue_tests()
     camp = camps_factories.create_camp(
         year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
@@ -2791,8 +2670,7 @@ def test_get_booking_queue_problems_rejected_first_timers():
     assert len(problems.rejected_first_timers) == 5
 
 
-@pytest.mark.django_db
-def test_get_booking_queue_problems_too_many_first_timers():
+def test_get_booking_queue_problems_too_many_first_timers(db):
     year_config = create_year_config_for_queue_tests()
     camp = camps_factories.create_camp(
         year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
@@ -2878,8 +2756,7 @@ class TestBookingQueuePageWT(BookingQueuePageBase, WebTestBase):
     pass
 
 
-@pytest.mark.django_db
-def test_booking_queue_track_changes():
+def test_booking_queue_track_changes(db):
     booking = factories.create_booking()
     booking.add_to_queue(by_user=booking.account)
     user = officers_factories.create_booking_secretary()
@@ -2926,8 +2803,7 @@ def test_booking_queue_track_changes():
     ]
 
 
-@pytest.mark.django_db
-def test_year_config_fetcher(django_assert_num_queries):
+def test_year_config_fetcher(db, django_assert_num_queries):
     factories.create_year_config(year=2025)
     factories.create_year_config(year=2026)
     fetcher = YearConfigFetcher()
@@ -2951,8 +2827,7 @@ def test_year_config_fetcher(django_assert_num_queries):
         assert fetcher.lookup_year(2024) is None
 
 
-@pytest.mark.django_db
-def test_camp_places_left():
+def test_camp_places_left(db):
     camp: Camp = camps_factories.create_camp(max_campers=10, max_male_campers=6, max_female_campers=7)
     places_left = camp.get_places_left()
     assert places_left.total == 10
@@ -2975,8 +2850,7 @@ def test_camp_places_left():
     assert places_left2.minimum_places_available == 4
 
 
-@pytest.mark.django_db
-def test_allocate_places(mailoutbox: list[mail.EmailMessage]):
+def test_allocate_places(db, mailoutbox: list[mail.EmailMessage]):
     year_config = create_year_config_for_queue_tests()
     camp: Camp = camps_factories.create_camp(
         year=year_config.year, max_campers=5, max_male_campers=5, max_female_campers=5
@@ -3051,9 +2925,8 @@ def test_allocate_places(mailoutbox: list[mail.EmailMessage]):
 
 
 @pytest.mark.parametrize("action", ["accept", "cancel", "ignore"])
-@pytest.mark.django_db
 def test_allocate_places_for_waiting_list(
-    mailoutbox: list[mail.EmailMessage], client: Client, action: Literal["accept", "cancel", "ignore"]
+    db, mailoutbox: list[mail.EmailMessage], client: Client, action: Literal["accept", "cancel", "ignore"]
 ):
     year_config = create_year_config_for_queue_tests()
     camp: Camp = camps_factories.create_camp(
@@ -3139,8 +3012,7 @@ def test_allocate_places_for_waiting_list(
         assert_never(action)
 
 
-@pytest.mark.django_db
-def test_booking_same_person_on_multiple_camps():
+def test_booking_same_person_on_multiple_camps(db):
     year_config = create_year_config_for_queue_tests()
     year: int = year_config.year
     camp_1: Camp = camps_factories.create_camp(year=year)
@@ -3168,8 +3040,7 @@ def test_booking_same_person_on_multiple_camps():
     assert len([True for m in messages2 if msg in m]) == 0
 
 
-@pytest.mark.django_db
-def test_booking_problems_2nd_child_discount_allowed():
+def test_booking_problems_2nd_child_discount_allowed(db):
     account = factories.create_booking_account()
     booking_1 = factories.create_booking(account=account, price_type=PriceType.SECOND_CHILD)
 
@@ -3183,8 +3054,7 @@ def test_booking_problems_2nd_child_discount_allowed():
     assert any(MSGS.CANNOT_USE_2ND_CHILD in p.description and p.blocker for p in problems_2)
 
 
-@pytest.mark.django_db
-def test_booking_problems_2nd_child_discount_allowed_if_booked():
+def test_booking_problems_2nd_child_discount_allowed_if_booked(db):
     """
     Test that we can have 2nd child discount if full price
     place is already booked.
@@ -3200,8 +3070,7 @@ def test_booking_problems_2nd_child_discount_allowed_if_booked():
     assert not problems_2
 
 
-@pytest.mark.django_db
-def test_booking_problems_3rd_child_discount_allowed():
+def test_booking_problems_3rd_child_discount_allowed(db):
     account = factories.create_booking_account()
     booking_1 = factories.create_booking(account=account, first_name="Joe", price_type=PriceType.FULL)
     assert not get_booking_problems(booking_1)
@@ -3217,8 +3086,7 @@ def test_booking_problems_3rd_child_discount_allowed():
     assert any("You cannot use a 3rd child discount" in p.description and p.blocker for p in problems_3)
 
 
-@pytest.mark.django_db
-def test_booking_problems_serious_illness():
+def test_booking_problems_serious_illness(db):
     booking = factories.create_booking(serious_illness=True)
     problems = get_booking_problems(booking)
     assert any(
@@ -3227,16 +3095,14 @@ def test_booking_problems_serious_illness():
     assert booking in Booking.objects.need_approving()
 
 
-@pytest.mark.django_db
-def test_booking_problems_custom_discount():
+def test_booking_problems_custom_discount(db):
     booking = factories.create_booking(price_type=PriceType.CUSTOM)
     problems = get_booking_problems(booking)
     assert any(MSGS.CUSTOM_DISCOUNT_MUST_BE_ARRANGED in p.description and p.blocker for p in problems)
     assert booking in Booking.objects.need_approving()
 
 
-@pytest.mark.django_db
-def test_booking_problems_minimum_age():
+def test_booking_problems_minimum_age(db):
     # if born Aug 31st, camp with minimum_age == 11
     camp: Camp = camps_factories.create_camp()
     booking = factories.create_booking(camp=camp, birth_date=date(year=camp.year - camp.minimum_age, month=8, day=31))
@@ -3248,8 +3114,7 @@ def test_booking_problems_minimum_age():
     assert any(MSGS.BELOW_MINIMUM_AGE in p.description and p.blocker for p in problems_2)
 
 
-@pytest.mark.django_db
-def test_booking_problems_maximum_age():
+def test_booking_problems_maximum_age(db):
     camp: Camp = camps_factories.create_camp()
     booking = factories.create_booking(
         camp=camp, birth_date=date(year=camp.year - (camp.maximum_age + 1), month=9, day=1)
@@ -3263,8 +3128,7 @@ def test_booking_problems_maximum_age():
     assert any(MSGS.ABOVE_MAXIMUM_AGE in p.description and p.blocker for p in problems_2)
 
 
-@pytest.mark.django_db
-def test_no_places_left():
+def test_booking_problems_no_places_left(db):
     camp = camps_factories.create_camp(max_campers=3)
     for i in range(0, camp.max_campers):
         factories.create_booking(camp=camp, state=BookingState.BOOKED)
@@ -3277,9 +3141,8 @@ def test_no_places_left():
     assert not any(MSGS.NO_PLACES_LEFT_FOR_BOYS in p.description for p in problems)
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("sex", [Sex.MALE, Sex.FEMALE])
-def test_no_places_left_for_male_female(sex: Sex):
+def test_booking_problems_no_places_left_for_male_female(db, sex: Sex):
     camp = camps_factories.create_camp(max_campers=10, max_male_campers=3, max_female_campers=3)
     for i in range(0, 3):
         factories.create_booking(camp=camp, state=BookingState.BOOKED, sex=sex)
@@ -3290,8 +3153,7 @@ def test_no_places_left_for_male_female(sex: Sex):
     assert any(message in p.description for p in problems)
 
 
-@pytest.mark.django_db
-def test_not_enough_places_left():
+def test_booking_problems_not_enough_places_left(db):
     camp = camps_factories.create_camp(max_campers=3)
     for i in range(0, camp.max_campers - 1):
         factories.create_booking(camp=camp, state=BookingState.BOOKED)
@@ -3308,9 +3170,8 @@ def test_not_enough_places_left():
     assert not any(MSGS.NOT_ENOUGH_PLACES_FOR_GIRLS in p.description for p in problems)
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize("sex", [Sex.MALE, Sex.FEMALE])
-def test_not_enough_places_left_for_male_female(sex: Sex):
+def test_booking_problems_not_enough_places_left_for_male_female(db, sex: Sex):
     camp = camps_factories.create_camp(max_campers=10, max_male_campers=3, max_female_campers=3)
     for i in range(0, 2):
         factories.create_booking(camp=camp, state=BookingState.BOOKED, sex=sex)
@@ -3323,8 +3184,105 @@ def test_not_enough_places_left_for_male_female(sex: Sex):
     assert any(message in p.description for p in problems)
 
 
-@pytest.mark.django_db
-def test_booking_fuzzy_camper_id_strict():
+def test_booking_problems_after_camp_closing_date(db):
+    camp = camps_factories.create_camp(last_booking_date=date.today())
+    with time_machine.travel(camp.last_booking_date + timedelta(days=1)):
+        booking = factories.create_booking()
+        problems = get_booking_problems(booking)
+        assert any(MSGS.CAMP_CLOSED_FOR_BOOKINGS in p.description for p in problems)
+
+
+def test_booking_problems_same_name_same_camp(db):
+    account = factories.create_booking_account()
+    booking_1 = factories.create_booking(account=account, first_name="Joe Bloggs")
+    booking_2 = factories.create_booking(account=account, first_name="Joe Bloggs", camp=booking_1.camp)
+
+    problems = get_booking_problems(booking_2)
+    assert any(
+        "You have entered another set of place details for a camper called" in p.description and not p.blocker
+        for p in problems
+    )
+
+
+def test_booking_problems_warn_about_multiple_full_price(db):
+    booking_1 = factories.create_booking(name="Frédéric Bloggs")
+    booking_2 = factories.create_booking(name="Mary Bloggs", account=booking_1.account)
+
+    problems = get_booking_problems(booking_2)
+
+    assert any(MSGS.MULTIPLE_FULL_PRICE_WARNING in p.description and not p.blocker for p in problems)
+    assert any("If Mary Bloggs and Frédéric Bloggs" in p.description and not p.blocker for p in problems)
+
+    # Check for more than 2
+    booking_3 = factories.create_booking(first_name="Peter", last_name="Bloggs", account=booking_1.account)
+    problems = get_booking_problems(booking_3)
+    assert any("If Mary Bloggs, Peter Bloggs and Frédéric Bloggs" in p.description for p in problems)
+
+
+def test_booking_problems_warn_about_multiple_2nd_child(db):
+    booking_1 = factories.create_booking(name="Frédéric Bloggs")
+    _booking_2 = factories.create_booking(
+        name="Mary Bloggs", price_type=PriceType.SECOND_CHILD, account=booking_1.account
+    )
+    booking_3 = factories.create_booking(
+        name="Peter Bloggs", price_type=PriceType.SECOND_CHILD, account=booking_1.account
+    )
+
+    problems = get_booking_problems(booking_3)
+    assert any(MSGS.MULTIPLE_2ND_CHILD_WARNING in p.description for p in problems)
+    assert any(
+        "If Peter Bloggs and Mary Bloggs" in p.description and "one is eligible" in p.description and not p.blocker
+        for p in problems
+    )
+
+    booking_4 = factories.create_booking(
+        name="Zac Bloggs", price_type=PriceType.SECOND_CHILD, account=booking_1.account
+    )
+    problems_4 = get_booking_problems(booking_4)
+    assert any("2 are eligible" in p.description for p in problems_4)
+
+
+def test_booking_problems_dont_warn_about_multiple_full_price_for_same_child(db):
+    camp_1 = camps_factories.create_camp()
+    camp_2 = camps_factories.create_camp()
+    booking_1 = factories.create_booking(name="Frédéric Bloggs", camp=camp_1)
+    booking_2 = factories.create_booking(name="Frédéric Bloggs", camp=camp_2, account=booking_1.account)
+    problems = get_booking_problems(booking_2)
+    assert not any(MSGS.MULTIPLE_FULL_PRICE_WARNING in p.description for p in problems)
+
+
+def test_booking_problems_error_for_2nd_child_discount_for_same_camper(db):
+    camp_1 = camps_factories.create_camp()
+    camp_2 = camps_factories.create_camp()
+    booking_1 = factories.create_booking(name="Frédéric Bloggs", camp=camp_1)
+    booking_2 = factories.create_booking(
+        name="Frédéric Bloggs", camp=camp_2, price_type=PriceType.SECOND_CHILD, account=booking_1.account
+    )
+    problems = get_booking_problems(booking_2)
+    assert any(MSGS.CANNOT_USE_2ND_CHILD in p.description and p.blocker for p in problems)
+
+
+def test_booking_problems_error_for_multiple_2nd_child_discount(db):
+    camp_1 = camps_factories.create_camp()
+    camp_2 = camps_factories.create_camp()
+
+    # Peter x2
+    booking_1 = factories.create_booking(name="Peter Bloggs", camp=camp_1)
+    _booking_2 = factories.create_booking(name="Peter Bloggs", camp=camp_2, account=booking_1.account)
+
+    # Mary x2
+    _booking_3 = factories.create_booking(
+        name="Mary Bloggs", camp=camp_1, price_type=PriceType.SECOND_CHILD, account=booking_1.account
+    )
+    booking_4 = factories.create_booking(
+        name="Mary Bloggs", camp=camp_2, price_type=PriceType.SECOND_CHILD, account=booking_1.account
+    )
+
+    problems = get_booking_problems(booking_4)
+    assert any(MSGS.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER in p.description and p.blocker for p in problems)
+
+
+def test_booking_fuzzy_camper_id_strict(db):
     booking_1 = factories.create_booking()
     assert booking_1.fuzzy_camper_id_strict_unsaved == booking_1.fuzzy_camper_id_strict
 
@@ -3337,8 +3295,7 @@ def test_booking_fuzzy_camper_id_strict():
     assert booking_2.fuzzy_camper_id_strict_unsaved == booking_1.fuzzy_camper_id_strict
 
 
-@pytest.mark.django_db
-def test_add_to_queue_after_camp_full():
+def test_add_to_queue_after_camp_full(db):
     # Bookings that are added to a queue after a camp is full
     # are marked as 'waiting_list_from_start'
     camp: Camp = camps_factories.create_camp(max_campers=5)

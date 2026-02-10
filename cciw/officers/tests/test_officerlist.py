@@ -2,7 +2,6 @@ import io
 from datetime import date, timedelta
 
 import openpyxl
-import pytest
 from django.conf import settings
 from django.core import mail
 from openpyxl.utils import get_column_letter
@@ -18,8 +17,7 @@ from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_sprea
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 
-@pytest.mark.django_db
-def test_create_officer():
+def test_create_officer(db):
     user = create_officer("Joe", "Bloggs", "joebloggs@example.com")
 
     user = User.objects.get(id=user.id)
@@ -28,8 +26,7 @@ def test_create_officer():
     assert user.last_login is None
 
 
-@pytest.mark.django_db
-def test_export_no_application():
+def test_export_no_application(db):
     """
     Test that the export data view generates an Excel file with all the data
     we expect if there is no application form.
@@ -55,8 +52,7 @@ def test_export_no_application():
     assert wksh.cell(2, 4).value == "Tent Officer"
 
 
-@pytest.mark.django_db
-def test_export_with_application():
+def test_export_with_application(db):
     """
     Test that the export data view generates an Excel file with all the data
     we expect if there are application forms.
@@ -74,8 +70,7 @@ def test_export_with_application():
     assert "123 The Way" in [c.value for c in wksh[get_column_letter(5)]]
 
 
-@pytest.mark.django_db
-def test_serious_slackers():
+def test_serious_slackers(db):
     officer1 = factories.create_officer()
     officer2 = factories.create_officer()
     camp1 = camp_factories.create_camp(year=date.today().year - 2, officers=[officer1, officer2])

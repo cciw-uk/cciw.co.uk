@@ -24,6 +24,7 @@ def create_camp(
     max_campers: int = 80,
     max_male_campers: int = 60,
     max_female_campers: int = 60,
+    last_booking_date: date | None = None,
 ) -> Camp:
     assert not (leader is not Auto and leaders is not Auto), "Only supply one of 'leaders' and 'leader'"
     if leader:
@@ -82,6 +83,7 @@ def create_camp(
         max_campers=max_campers,
         max_male_campers=max_male_campers,
         max_female_campers=max_female_campers,
+        last_booking_date=last_booking_date,
     )
     if leaders:
         set_camp_leaders(camp, leaders)

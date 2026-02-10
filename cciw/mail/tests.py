@@ -63,8 +63,7 @@ def _is_forwarded_message(raw_message: EmailMessage) -> bool:
 
 
 # Check that our TestMailBackend stuff above is actually working
-@pytest.mark.django_db
-def test_TestMailBackend_check_messages():
+def test_TestMailBackend_check_messages(db):
     with pytest.raises(EmailSubjectAssertionError):
         mail.send_mail(
             subject="This doesn't start with the right prefix",

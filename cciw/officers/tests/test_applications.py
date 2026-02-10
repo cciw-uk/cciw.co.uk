@@ -1,6 +1,5 @@
 from datetime import date, timedelta
 
-import pytest
 from django.core import mail
 
 from cciw.accounts.models import User
@@ -13,8 +12,7 @@ from cciw.officers.tests.base import RequireQualificationTypesMixin
 from cciw.utils.tests.webtest import WebTestBase
 
 
-@pytest.mark.django_db
-def test_Application_referees():
+def test_Application_referees(db):
     app1 = factories.create_application()
     app2 = factories.create_application()
     app3 = factories.create_application()
@@ -185,8 +183,7 @@ class PersonalApplicationView(WebTestBase):
         assert ftype == "text/rtf"
 
 
-@pytest.mark.django_db
-def test_Application_saved_on_logic():
+def test_Application_saved_on_logic(db):
     # Setup:
     # * two camps, different years, but within 12 months of each
     #   other.
