@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import Mock
 
-from pyastgrep.api import Match, search_python_files
+from pyastgrep.api import Match, process_python_file_cached, search_python_files
 
 from cciw.utils.functional import partition
 
@@ -17,7 +17,11 @@ def assert_expected_pyastgrep_matches(xpath_expr: str, *, expected_count: int, m
 
     """
     xpath_expr = xpath_expr.strip()
-    matches: list[Match] = [item for item in search_python_files([SRC_ROOT], xpath_expr) if isinstance(item, Match)]
+    matches: list[Match] = [
+        item
+        for item in search_python_files([SRC_ROOT], xpath_expr, python_file_processor=process_python_file_cached)
+        if isinstance(item, Match)
+    ]
 
     expected_matches, other_matches = partition(matches, key=lambda match: "pyastgrep: expected" in match.matching_line)
 
