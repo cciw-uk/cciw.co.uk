@@ -28,9 +28,17 @@
     <td>{{ booking.queue_entry.tiebreaker_display }}</td>
     <td>
       <input
-        type="submit" name="edit-queue-entry" value="Edit queue details"
+        type="submit"
+        name="edit-queue-entry"
+        value="Edit queue details"
+        hx-trigger="edit"
         hx-post="{% url 'cciw-officers-booking_queue_row' camp_id=camp.url_id %}"
-
+        onclick="
+                 this.closest('table').querySelectorAll('tr').forEach((el) => {
+                 el.inert = true;
+                 })
+                 htmx.trigger(this, 'edit');
+                "
       >
       {% if can_edit_bookings %}
         &nbsp;
@@ -60,8 +68,17 @@
         hx-post="{% url 'cciw-officers-booking_queue_row' camp_id=camp.url_id %}"
       >
       <input
-        type="submit" name="cancel-edit-queue-entry" value="Cancel"
+        type="submit" name="cancel-edit-queue-entry"
+        value="Cancel"
+        hx-trigger="cancel"
         hx-post="{% url 'cciw-officers-booking_queue_row' camp_id=camp.url_id %}"
+        onclick="
+                 htmx.trigger(this, 'cancel');
+                 this.closest('table').querySelectorAll('tr').forEach((el) => {
+                 el.removeAttribute('inert');
+                 })
+
+                "
       >
       {% if form.errors %}
         <br>
