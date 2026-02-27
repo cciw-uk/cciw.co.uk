@@ -168,6 +168,8 @@ def make_empty(field, instance, value):
         return ""
     if isinstance(field, models.BinaryField):
         return b""
+    if isinstance(field, models.JSONField):
+        return {}
     return None
 
 
@@ -487,6 +489,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "amount_due": keep,
     "shelved": keep,
     "state": keep,
+    "booking_expires_at": keep,
     "created_at": keep,
     "created_online": keep,
     "erased_at": keep,
@@ -845,12 +848,24 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
     bookings.BookingQueueEntry: AnonymiseWithMap(
         bookings.BookingQueueEntry,
         {
-            "state": keep,
             "created_at": keep,
             "officer_child": keep,
             "first_timer_allocated": keep,
             "sibling_booking_account": keep,
             "sibling_surname": lambda f, queue_entry, v: queue_entry.booking.last_name,
+            "is_active": keep,
+            "enqueued_at": keep,
+            "waiting_list_from_start": keep,
+            "declined_notification_sent_at": keep,
+            "accepted_notification_sent_at": keep,
+        },
+    ),
+    bookings.QueueEntryActionLog: AnonymiseWithMap(
+        bookings.QueueEntryActionLog,
+        {
+            "action_type": keep,
+            "created_at": keep,
+            "details": make_empty,
         },
     ),
     bookings.SupportingInformation: AnonymiseWithMap(
