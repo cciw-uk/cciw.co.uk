@@ -36,18 +36,16 @@ several years will be given the same 'first_name' and 'last_name'
 #   fab get-and-load-production-db
 #   ./scripts/anonymise_db.py
 
-# Copy the notes at the end into a text file
-
-#   fab local-db-dump ../db_backups/anonymized.$(date +%Y-%m-%d-%H.%M.%S).pgdump
-
 # Finally delete the downloaded production databases, keeping only the anonymized copies
 
 # ruff: noqa:E402
 
 import fnmatch
+import subprocess
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from datetime import date
+from pathlib import Path
 from typing import TypeVar
 
 import django
@@ -88,10 +86,16 @@ faker = Faker("en_GB")
 
 
 def main():
+    date_string = subprocess.check_output(["date", "+%Y-%m-%d-%H.%M.%S"]).strip().decode("utf-8")
     test_anonymisation()
     anonymise_db()
     create_users_for_roles()
-    print_interesting_people()
+    notes = get_interesting_people()
+    print(notes)
+    output_db = Path("..") / "db_backups" / f"anonymized.{date_string}.pgdump"
+    output_notes = Path("..") / "db_backups" / f"anonymized.{date_string}.notes.txt"
+    output_notes.write_text(notes)
+    subprocess.check_call(["fab", "local-db-dump", str(output_db)])
 
 
 def anonymise_db():
@@ -129,9 +133,10 @@ def create_users_for_roles():
         print(f"{username} created with {role=}, login using: ?as={username}")
 
 
-def print_interesting_people():
-    print()
-    print("== Interesting people ==")
+def get_interesting_people() -> str:
+    output: list[str] = []
+    output.append("")
+    output.append("== Interesting people ==")
     last_active_year = bookings.Booking.objects.order_by("-camp__year").first().camp.year
     recent_leaders = [
         user
@@ -141,7 +146,8 @@ def print_interesting_people():
     ]
     for user in recent_leaders:
         camp_count = len(user.camps_as_admin_or_leader)
-        print(f"  {user.username}  - Camp leader ({camp_count})")
+        output.append(f"  {user.username}  - Camp leader ({camp_count})")
+    return "\n".join(output)
 
 
 # --- Field Fixers ---
