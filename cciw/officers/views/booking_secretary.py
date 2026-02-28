@@ -281,11 +281,19 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         "edit_queue_entry_mode": False,
         "problems": ranking_result.problems,
         "FIRST_TIMER_PERCENTAGE": FIRST_TIMER_PERCENTAGE,
-        "can_edit_bookings": request.user.can_edit_bookings,
         "booking_open_data": booking_open_data,
         "can_allocate_places": can_allocate_places,
-    }
+    } | _booking_context_common(request)
     return TemplateResponse(request, "cciw/officers/booking_queue.html", context)
+
+
+def _booking_context_common(request) -> dict:
+    can_edit_bookings = request.user.can_edit_bookings
+    can_view_booking_info = (can_edit_bookings or request.user.can_view_booking_info,)
+    return {
+        "can_edit_bookings": can_edit_bookings,
+        "can_view_booking_info": can_view_booking_info,
+    }
 
 
 @camp_admin_required
@@ -340,7 +348,7 @@ def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
             "booking": booking,
             "edit_queue_entry_mode": edit_queue_entry_mode,
             "form": form,
-            "can_edit_bookings": request.user.can_edit_bookings,
-        },
+        }
+        | _booking_context_common(request),
         headers=headers,
     )

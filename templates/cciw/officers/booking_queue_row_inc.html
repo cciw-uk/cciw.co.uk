@@ -43,6 +43,9 @@
       {% if can_edit_bookings %}
         &nbsp;
         <nobr><a href="{% url 'admin:bookings_booking_change' booking.id %}" target="_blank">Edit booking</a></nobr>
+      {% elif can_view_booking_info %}
+        &nbsp;
+        <nobr><a href="{% url 'admin:bookings_booking_change' booking.id %}" target="_blank">View booking</a></nobr>
       {% endif %}
     </td>
   {% else %}
