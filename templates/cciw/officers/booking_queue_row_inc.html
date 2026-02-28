@@ -11,7 +11,25 @@
         {% endif %}
     >{{ booking.rank_info.cutoff_state }}</td>
     <td>{{ booking.first_name }}</td>
-    <td>{{ booking.last_name }}</td>
+    <td>{{ booking.last_name }}
+      <button
+        class="show-popover"
+        title="Show camper details"
+        popovertarget="id_booking-details-{{ booking.id }}">…</button>
+      <div popover="auto"
+           class="details-popover"
+           id="id_booking-details-{{ booking.id }}"
+      >
+        <b>Name:</b> {{ booking.first_name }} {{ booking.last_name }}<br>
+        <b>Age:</b> {{ booking.age_on_camp }}<br>
+        <b>Sex:</b> {{ booking.get_sex_display }}<br>
+        <b>From:</b> {{ booking.address_city }}<br>
+        {% if booking.church %}
+          <b>Church:</b> {{ booking.church }}<br>
+        {% endif %}
+        <b>Booked by:</b> {{ booking.account.name }} &lt;{{ booking.account.email }}&gt;<br>
+      </div>
+    </td>
     <td>{% if booking.queue_entry.officer_child %}✔️{% endif %}</td>
     <td>{% if booking.queue_entry.first_timer_allocated %}✔️{% endif %}</td>
     <td>
