@@ -357,6 +357,10 @@ class User(AbstractBaseUser):
     def can_manage_application_forms(self) -> bool:
         return self.has_perm("officers.change_application") or self.is_camp_admin or self.is_dbs_officer
 
+    @cached_property
+    def can_view_booking_info(self) -> bool:
+        return self.is_camp_admin
+
     # These methods control permissions in admin
     def can_view_any_camps(self):
         if self.has_perm("cciwmain.view_camp"):

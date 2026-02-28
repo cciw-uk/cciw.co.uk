@@ -67,6 +67,10 @@ class CciwAuthBackend:
             return False
         if perm == "accounts.view_user" and user_obj.can_manage_application_forms:
             return True
+        if perm == "bookings.view_booking" and user_obj.can_view_booking_info:
+            return True
+        if perm == "bookings.view_bookingaccount" and user_obj.can_view_booking_info:
+            return True
         return perm in self.get_all_permissions(user_obj, obj=obj)
 
     def has_module_perms(self, user_obj: User, app_label: str) -> bool:
@@ -103,6 +107,9 @@ class CciwAuthBackend:
                     return True
             if app_label == "cciwmain":
                 if user_obj.can_edit_some_camps:
+                    return True
+            if app_label == "bookings":
+                if user_obj.can_view_booking_info:
                     return True
         return user_obj.is_active and any(
             perm[: perm.index(".")] == app_label for perm in self.get_all_permissions(user_obj)
