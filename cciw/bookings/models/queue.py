@@ -233,7 +233,7 @@ class RankInfo:
     previous_attendance_score: int
     in_previous_year_waiting_list: bool
     sibling_bonus: int
-    has_other_place_in_queue: bool
+    has_other_place_waiting_in_queue: bool
     has_other_place_booked: bool
     cutoff_state: QueueCutoff = QueueCutoff.UNDECIDED
 
@@ -414,7 +414,7 @@ def add_rank_info(bookings: list[Booking], year_config: YearConfig, camp: Camp):
         attendance_counts=attendance_counts,
         in_previous_year_waiting_list_info=in_previous_year_waiting_list_info,
     )
-    other_places_in_queue: dict[BookingId, int] = get_other_places_in_queue(bookings, camp)
+    other_places_waiting_in_queue: dict[BookingId, int] = get_other_places_waiting_in_queue(bookings, camp)
     other_places_booked: dict[BookingId, int] = get_other_places_booked(bookings, camp)
     for booking in bookings:
         booking.rank_info = RankInfo(
@@ -424,7 +424,7 @@ def add_rank_info(bookings: list[Booking], year_config: YearConfig, camp: Camp):
             previous_attendance_score=attendance_counts[booking.id],
             in_previous_year_waiting_list=in_previous_year_waiting_list_info[booking.id],
             sibling_bonus=sibling_bonus_scores[booking.id],
-            has_other_place_in_queue=other_places_in_queue[booking.id] > 0,
+            has_other_place_waiting_in_queue=other_places_waiting_in_queue[booking.id] > 0,
             has_other_place_booked=other_places_booked[booking.id] > 0,
         )
 
@@ -585,7 +585,7 @@ def find_siblings(bookings: list[Booking], camp: Camp) -> dict[BookingId, set[Bo
     return booking_to_sibling_booking_ids_dict
 
 
-def get_other_places_in_queue(bookings: Sequence[Booking], camp: Camp) -> dict[BookingId, int]:
+def get_other_places_waiting_in_queue(bookings: Sequence[Booking], camp: Camp) -> dict[BookingId, int]:
     """
     Gets counts of bookings that have other places in queue for the same camper but different camp.
     """
@@ -593,7 +593,7 @@ def get_other_places_in_queue(bookings: Sequence[Booking], camp: Camp) -> dict[B
 
     # We can do a simpler query by starting with a new QuerySet:
     this_camp_bookings = Booking.objects.for_camp(camp).in_queue()
-    other_camp_bookings = Booking.objects.for_year(camp.year).in_queue().exclude(camp=camp)
+    other_camp_bookings = Booking.objects.for_year(camp.year).waiting_in_queue().exclude(camp=camp)
     with_matches = this_camp_bookings.annotate(
         other_places_count=Subquery(
             other_camp_bookings.filter(fuzzy_camper_id_strict=OuterRef("fuzzy_camper_id_strict"))

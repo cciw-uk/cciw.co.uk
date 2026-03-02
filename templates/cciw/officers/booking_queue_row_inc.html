@@ -34,7 +34,7 @@
     <td>{% if booking.queue_entry.first_timer_allocated %}✔️{% endif %}</td>
     <td>
       {% partialdef otherplace inline %}
-        {% if booking.rank_info.has_other_place_booked %}❌{% elif booking.rank_info.has_other_place_in_queue %}
+        {% if booking.rank_info.has_other_place_booked %}❌{% elif booking.rank_info.has_other_place_waiting_in_queue %}
           <span title="No other place booked yet, but they are in the queue for another camp, which will push them down if that place is booked."><b>?</b></span>
         {% endif %}
       {% endpartialdef %}

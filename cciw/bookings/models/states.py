@@ -18,6 +18,13 @@ CURRENT_BOOKING_STATES = {
     BookingState.CANCELLED_FULL_REFUND,
 }
 
+CANCELLED_BOOKING_STATES = {
+    BookingState.CANCELLED_DEPOSIT_KEPT,
+    BookingState.CANCELLED_BOOKING_FEE_KEPT,
+    BookingState.CANCELLED_HALF_REFUND,
+    BookingState.CANCELLED_FULL_REFUND,
+}
+
 
 # States for which the amount due is always zero.
 BOOKING_STATES_NO_FEE_DUE = {

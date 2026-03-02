@@ -28,7 +28,7 @@ from .problems import (
     calculate_approvals_needed,
     get_booking_problems,
 )
-from .states import BOOKING_STATES_NO_FEE_DUE, BookingState
+from .states import BOOKING_STATES_NO_FEE_DUE, CANCELLED_BOOKING_STATES, BookingState
 from .utils import normalise_booking_name, sql_normalise_booking_name
 from .yearconfig import YearConfigFetcher
 
@@ -75,7 +75,9 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.in_basket() | self.booked()
 
     def in_queue(self) -> BookingQuerySet:
-        return self.filter(queue_entry__isnull=False, queue_entry__is_active=True)
+        return self.filter(queue_entry__isnull=False, queue_entry__is_active=True).exclude(
+            state__in=CANCELLED_BOOKING_STATES
+        )
 
     def not_in_queue(self) -> BookingQuerySet:
         return self.filter(queue_entry__isnull=True) | self.filter(queue_entry__is_active=False)

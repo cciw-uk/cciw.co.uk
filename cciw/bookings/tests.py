@@ -2600,7 +2600,7 @@ def test_rank_queue_booking_same_camper_multiple_camps(db):
     # Before we book, we just know that b1 (and b2) have other places in queue:
     ranked_bookings_camp_1 = rank_queue_bookings(camp=camp_1, year_config=year_config)
     assert (b1_q := ranked_bookings_camp_1[0]) == b1
-    assert b1_q.rank_info.has_other_place_in_queue
+    assert b1_q.rank_info.has_other_place_waiting_in_queue
     assert not b1_q.rank_info.has_other_place_booked
 
     # Then we booked one of them:
@@ -2621,9 +2621,9 @@ def test_rank_queue_booking_same_camper_multiple_camps(db):
     assert not b3_q.rank_info.has_other_place_booked
 
     # We also track if camper has other place in queue, to display in UI
-    assert b1_q.rank_info.has_other_place_in_queue
-    assert b2_q.rank_info.has_other_place_in_queue
-    assert not b3_q.rank_info.has_other_place_in_queue
+    assert b1_q.rank_info.has_other_place_waiting_in_queue
+    assert not b2_q.rank_info.has_other_place_waiting_in_queue  # no longer waiting, it's booked
+    assert not b3_q.rank_info.has_other_place_waiting_in_queue
 
 
 def test_Booking_withdraw_from_queue_and_add_again(db):
