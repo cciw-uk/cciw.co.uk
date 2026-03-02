@@ -56,8 +56,10 @@ from cciw.bookings.models.queue import (
     allocate_places_and_notify,
     get_booking_queue_problems,
     get_camp_booking_queue_ranking_result,
+    get_previous_attendance_counts,
     rank_queue_bookings,
 )
+from cciw.bookings.models.utils import normalise_booking_name
 from cciw.bookings.models.yearconfig import YearConfig, YearConfigFetcher, get_booking_open_data
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
@@ -2563,6 +2565,23 @@ def test_rank_queue_booking(db):
     assert b4_q.rank_info.queue_position_rank == 3
 
 
+def test_get_previous_attendance_counts(db):
+    year_config_previous = factories.create_year_config(year=2024)
+    year_config_thisyear = factories.create_year_config(year=2025)
+    camp_previous = camps_factories.create_camp(year=year_config_previous.year)
+    camp_thisyear = camps_factories.create_camp(year=year_config_thisyear.year)
+    factories.create_booking(first_name="Anna", last_name="Bloggs", camp=camp_previous, state=BookingState.BOOKED)
+    b1 = factories.create_booking(first_name="Anna", last_name="Bloggs", camp=camp_thisyear, state=BookingState.BOOKED)
+    b2 = factories.create_booking(first_name="Joe", last_name="Bloggs", camp=camp_thisyear, state=BookingState.BOOKED)
+
+    # Regression tests for some name issues, note the different apostrophe
+    factories.create_booking(first_name="My'Name", last_name="Bloggs", camp=camp_previous, state=BookingState.BOOKED)
+    b3 = factories.create_booking(first_name="My’Name", last_name="Bloggs", camp=camp_thisyear)
+    counts = get_previous_attendance_counts([b1, b2, b3], year_config=year_config_thisyear)
+
+    assert counts == {b1.id: 1, b2.id: 0, b3.id: 1}
+
+
 def test_rank_queue_booking_same_camper_multiple_camps(db):
     year = 2026
     year_config = create_year_config_for_queue_tests(year=year)
@@ -3326,3 +3345,8 @@ def test_add_to_queue_after_camp_full(db):
 
     q1 = b1.add_to_queue(by_user=b1.account)
     assert q1.waiting_list_from_start
+
+
+def test_normalise_booking_name():
+    assert normalise_booking_name(Booking(first_name="joe ", last_name="bloggs ")) == "joe bloggs"
+    assert normalise_booking_name(Booking(first_name="M'Name", last_name="O’Brian")) == "m name o brian"
