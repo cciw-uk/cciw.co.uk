@@ -121,7 +121,7 @@ class Message(models.Model):
         )
 
     def send_emails(self):
-        if self.spam_classification_bogofilter == BogofilterStatus.SPAM and self.bogosity > 0.95:
+        if self.spam_classification_bogofilter == BogofilterStatus.SPAM and self.bogosity > 0.90:
             logger.info("Not sending contact_us email id=%s with spam score %.3f", self.id, self.bogosity)
             return
 
