@@ -2514,7 +2514,9 @@ def create_year_config_for_queue_tests(year: int = 2026) -> YearConfig:
         year=year,
         bookings_open_for_entry_on=date(year, 2, 1),
         bookings_open_for_booking_on=date(year, 3, 1),
-        bookings_close_for_initial_period_on=date(year, 4, 1),
+        bookings_initial_notifications_on=date(year, 4, 1),
+        bookings_close_for_initial_period_on=date(year, 4, 15),
+        payments_due_on=date(year, 4, 30),
     )
 
 
@@ -2913,6 +2915,13 @@ def test_allocate_places(db, mailoutbox: list[mail.EmailMessage]):
     assert (
         outbox_count_1 := len(mailoutbox)
     ) == result.accepted_account_count + result.declined_and_notified_account_count
+
+    # Test the email
+    email = mailoutbox[0]
+    assert "The following places on a CCiW camp have been confirmed:" in email.body
+    assert "Please pay for the bookings by 30th April" in email.body
+    assert "https://example.com/booking/pay/?bt" in email.body
+    assert "https://example.com/contact/?bookings" in email.body
 
     for booking in bookings:
         booking.refresh_from_db()

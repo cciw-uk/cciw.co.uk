@@ -10,7 +10,17 @@ Camp: {{ b.camp }}
 Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
 {% endfor %}
 
-The camp leaders will be in contact with more details in due time.
+Please pay for the bookings by {{ booking_open_data.payments_due_on|date:"jS F" }}:
+
+{{ pay_url }}
+
+If you cannot pay the full fee by this date, please contact the CCiW Bookings
+Secretary to arrange a payment plan:
+
+{{ contact_url }}
+
+The camp leaders will be in contact with more details about camp in due time,
+typically a month before the camp starts.
 
 Many thanks!
 

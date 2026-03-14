@@ -285,6 +285,8 @@ def create_year_config(
     bookings_open_for_entry_on: date | Literal["past", "future"] = "future",
     bookings_open_for_booking_on: date | Literal["past", "future"] = "future",
     bookings_close_for_initial_period_on: date | Literal["past", "future"] = "future",
+    bookings_initial_notifications_on: date | None = None,
+    payments_due_on: date | None = None,
 ) -> YearConfig:
     if bookings_open_for_entry_on == "past":
         bookings_open_for_entry_on = date.today() - timedelta(days=3)
@@ -313,8 +315,10 @@ def create_year_config(
             bookings_open_for_booking_on + timedelta(days=1),
         )
     assert bookings_open_for_entry_on <= bookings_open_for_booking_on <= bookings_close_for_initial_period_on
-    bookings_initial_notifications_on = bookings_close_for_initial_period_on + timedelta(days=15)
-    payments_due_on = bookings_initial_notifications_on + timedelta(days=15)
+    if bookings_initial_notifications_on is None:
+        bookings_initial_notifications_on = bookings_close_for_initial_period_on + timedelta(days=15)
+    if payments_due_on is None:
+        payments_due_on = bookings_initial_notifications_on + timedelta(days=15)
 
     return YearConfig.objects.create(
         year=year,

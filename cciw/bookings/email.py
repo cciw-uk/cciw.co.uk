@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from paypal.standard.ipn.models import PayPalIPN
 
+from cciw.bookings.models.yearconfig import get_booking_open_data
 from cciw.cciwmain import common
 from cciw.utils.functional import partition
 
@@ -141,6 +142,8 @@ def send_places_allocated_emails(account: BookingAccount, bookings: Sequence[Boo
     if not account.email:
         return
 
+    year = bookings[0].camp.year
+    booking_open_data = get_booking_open_data(year)
     expiring_bookings, non_expiring_bookings = partition(bookings, lambda b: b.will_expire)
 
     for booking in expiring_bookings:
@@ -164,6 +167,9 @@ def send_places_allocated_emails(account: BookingAccount, bookings: Sequence[Boo
             "domain": common.get_current_domain(),
             "account": account,
             "bookings": bookings,
+            "booking_open_data": booking_open_data,
+            "pay_url": build_url_with_booking_token(view_name="cciw-bookings-pay", email=account.email),
+            "contact_url": build_url(view_name="cciw-contact_us-send") + "?bookings",
         }
         body = loader.render_to_string("cciw/bookings/places_confirmed_email.txt", c)
         subject = "[CCIW] Booking - places confirmed"
