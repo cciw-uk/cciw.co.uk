@@ -2,6 +2,7 @@ import json
 from datetime import timedelta
 from decimal import Decimal
 
+import furl
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -22,7 +23,7 @@ from cciw.bookings.email import (
     send_verify_email,
 )
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm, UsePreviousData
-from cciw.bookings.middleware import unset_booking_account_cookie
+from cciw.bookings.middleware import EXPECTED_BOOKING_LOGIN_VIEWS, unset_booking_account_cookie
 from cciw.bookings.models import (
     BOOKING_ACCOUNT_ADDRESS_TO_CAMPER_ADDRESS_FIELDS,
     BOOKING_ACCOUNT_ADDRESS_TO_CONTACT_ADDRESS_FIELDS,
@@ -110,13 +111,17 @@ def next_step(account: BookingAccount) -> HttpResponseRedirect:
 def start(request: HttpRequest) -> HttpResponse:
     form_class = EmailForm
     account = request.booking_account
+    goto = request.GET.get("goto", None)
+    target_view_name = "cciw-bookings-verify_and_continue"
+    if goto and goto in EXPECTED_BOOKING_LOGIN_VIEWS:
+        target_view_name = goto
     if account is not None:
         return next_step(account)
     if request.method == "POST":
         form = form_class(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
-            send_verify_email(booking_account_email=email, target_view_name="cciw-bookings-verify_and_continue")
+            send_verify_email(booking_account_email=email, target_view_name=target_view_name)
             return HttpResponseRedirect(reverse("cciw-bookings-email_sent"))
     else:
         form = form_class()
@@ -190,11 +195,16 @@ def verify_email_failed(request: HttpRequest) -> TemplateResponse:
 
 @booking_account_optional
 def not_logged_in(request: HttpRequest) -> TemplateResponse:
+    booking_start_url = furl.furl(reverse("cciw-bookings-start"))
+    goto = request.GET.get("goto", None)
+    if goto and goto in EXPECTED_BOOKING_LOGIN_VIEWS:
+        booking_start_url = booking_start_url.add(query_params={"goto": goto})
     return TemplateResponse(
         request,
         "cciw/bookings/not_logged_in.html",
         {
             "title": "Booking - not logged in",
+            "booking_start_url": booking_start_url,
         },
     )
 

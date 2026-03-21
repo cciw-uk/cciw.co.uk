@@ -1352,7 +1352,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
+        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in") + "?goto=cciw-bookings-basket_list_bookings")
 
     def test_show_bookings(self):
         self.booking_login()
@@ -1953,7 +1953,7 @@ class LogOutBase(BookingBaseMixin, BookingLogInMixin, FuncBaseMixin):
         self.assertUrlsEqual(reverse("cciw-bookings-index"))
 
         # Try accessing a page which is restricted
-        self.get_url("cciw-bookings-account_overview")
+        self.get_url("cciw-bookings-add_place")
         self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
 
 

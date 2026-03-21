@@ -2,10 +2,11 @@ from collections.abc import Callable
 from functools import wraps
 from typing import TYPE_CHECKING, Concatenate
 
+import furl
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 
-from .middleware import get_booking_account_from_request
+from .middleware import EXPECTED_BOOKING_LOGIN_VIEWS, get_booking_account_from_request
 
 if TYPE_CHECKING:
     from .models import BookingAccount
@@ -35,7 +36,12 @@ def booking_account_required[**P](
         ensure_booking_account_attr(request)
         booking_account: BookingAccount | None = request.booking_account
         if booking_account is None:
-            return HttpResponseRedirect(reverse("cciw-bookings-not_logged_in"))
+            url = furl.furl(reverse("cciw-bookings-not_logged_in"))
+            if (
+                resolver_match := getattr(request, "resolver_match", None)
+            ) and resolver_match.url_name in EXPECTED_BOOKING_LOGIN_VIEWS:
+                url = url.add(query_params={"goto": resolver_match.url_name})
+            return HttpResponseRedirect(str(url))
         return view_func(request, *args, **kwargs)
 
     setattr(view, _BOOKING_DECORATOR_APPLIED, True)
