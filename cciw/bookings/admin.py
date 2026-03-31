@@ -531,6 +531,7 @@ class BookingAdmin(admin.ModelAdmin):
     ]
     readonly_fields = [
         "booked_at",
+        "created_at",
         "created_online",
         "booking_queue_status",
         # Old business logic:
