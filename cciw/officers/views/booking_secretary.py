@@ -259,7 +259,7 @@ def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
         result = allocate_places_and_notify(ranking_result.bookings, by_user=request.user)
         messages.info(
             request,
-            f"{result.accepted_account_count} places have been allocated, "
+            f"{result.accepted_booking_count} places have been allocated, "
             + f"and {result.accepted_account_count} accounts have been emailed.",
         )
         if result.declined_and_notified_account_count:
