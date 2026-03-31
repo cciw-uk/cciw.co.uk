@@ -148,7 +148,6 @@ class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
         return (
             super()
             .get_queryset(*args, **kwargs)
-            .booked()
             .select_related(
                 "camp",
                 "camp__camp_name",
