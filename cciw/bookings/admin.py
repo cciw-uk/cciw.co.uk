@@ -497,11 +497,22 @@ class ApprovalsInline(admin.TabularInline):
         return False
 
 
-class QueueStateInline(admin.TabularInline):
+class QueueStateInline(admin.StackedInline):
     model = BookingQueueEntry
     extra = 0
-    fields = ["is_active", "created_at"]
-    readonly_fields = ["is_active", "created_at"]
+    readonly_fields = ["created_at"]
+    classes = ["collapse"]
+    fieldsets = [
+        (
+            "",
+            {
+                "fields": ["is_active", "created_at", "enqueued_at"],
+                "description": "The 'enqueued at' date can be modified to adjust the position of the booking in the queue."
+                + " 'is active' can be unchecked to withdraw the entry from the queue. "
+                + "Otherwise these fields should be left as they are.",
+            },
+        ),
+    ]
 
     def has_add_permission(self, request: HttpRequest, obj: Booking | None) -> bool:
         # Disable "add another", doesn't make sense
