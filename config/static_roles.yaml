@@ -88,6 +88,8 @@ Roles:
       - bookings.WriteOffDebt/change
       - bookings.WriteOffDebt/delete
       - ipn.PayPalIPN/view
+      # To manage queue entries:
+      - bookings.BookingQueueEntry/change
       # In order to view payment inlines, need this:
       - bookings.Payment/view
       # Helpful for them to be able to manage prices
