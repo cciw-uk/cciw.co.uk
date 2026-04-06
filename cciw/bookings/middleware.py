@@ -46,6 +46,7 @@ Middleware = Callable[[HttpRequest], HttpResponse]
 
 EXPECTED_BOOKING_LOGIN_VIEWS = [
     "cciw-bookings-pay",
+    "cciw-bookings-pay-installment",
     "cciw-bookings-account_overview",
     "cciw-bookings-basket_list_bookings",
     "cciw-bookings-verify_and_continue",
