@@ -150,8 +150,6 @@ Please find attached a copy of the application you requested
     else:
         raise Http404
 
-    return resp
-
 
 @staff_member_required
 def view_application_redirect(request):

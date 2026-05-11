@@ -59,10 +59,8 @@ def booking_token_login(get_response: Middleware) -> Middleware:
             token = request.GET["bt"]
             verified_email = EmailVerifyTokenGenerator().email_from_token(token)
             if isinstance(verified_email, VerifyFailed):
-                logger.warning("Booking login verification failed, token=%s", token)
                 return HttpResponseRedirect(reverse("cciw-bookings-verify_email_failed"))
             elif isinstance(verified_email, VerifyExpired):
-                logger.warning("Booking login verification token expired, token=%s", token)
                 # Re-send email, to the same view as before.
                 # We whitelist here to stop open redirect vulnerability
                 target_view_name = None
