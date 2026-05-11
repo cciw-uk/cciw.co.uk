@@ -31,7 +31,6 @@ def cciw_all():
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def cciw_require_auth_roles():
     from cciw.accounts.models import setup_auth_roles
 

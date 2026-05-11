@@ -86,7 +86,7 @@ dev = [
     "django-debug-toolbar>=4.1.0",
     "django-extensions>=3.2.3",
     "django-find-view>=0.1.0",
-    "django-functest==1.6.2",
+    "django-functest>=1.6.2",
     "faker>=33.0.0",
     "hypothesis>=6.54.6",
     "ipdb>=0.13.13",
