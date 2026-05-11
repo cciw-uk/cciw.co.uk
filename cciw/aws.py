@@ -88,7 +88,7 @@ def verify_sns_notification(request):
 @lru_cache(maxsize=100)
 def load_resource_cached(url):
     logger.info(f"Downloading {url}")
-    return requests.get(url).content
+    return requests.get(url, timeout=10).content
 
 
 def ensure_from_aws_sns[T: Callable](view_func: T) -> T:
@@ -117,9 +117,13 @@ def confirm_sns_subscriptions[T: Callable](view_func: T) -> T:
     def wrapper(request: HttpRequest):
         msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
         if msg_type == SNS_MESSAGE_TYPE_SUB_NOTIFICATION:
+            # Verify before doing a request.get()
+            if not verify_sns_notification(request):
+                return HttpResponse("Invalid or missing signature", status=400)
+
             subscribe_url = json.loads(request.body)["SubscribeURL"]
             logger.info(f"Accessing {subscribe_url}")
-            requests.get(subscribe_url)
+            requests.get(subscribe_url, timeout=10)
             return HttpResponse("Subscribed")
         else:
             return view_func(request)
