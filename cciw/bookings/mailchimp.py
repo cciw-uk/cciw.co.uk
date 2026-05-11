@@ -41,7 +41,7 @@ def _update(booking_account: BookingAccount, current_status: str, desired_status
 
 
 def email_to_mailchimp_id(email: str) -> str:
-    return hashlib.md5(email.lower().encode("utf-8")).hexdigest()
+    return hashlib.md5(email.lower().encode("utf-8"), usedforsecurity=False).hexdigest()
 
 
 def get_status(booking_account: BookingAccount) -> str:
