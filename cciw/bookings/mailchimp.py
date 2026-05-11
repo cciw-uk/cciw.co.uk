@@ -8,7 +8,7 @@ from requests.models import Response
 from cciw.bookings.models.accounts import BookingAccount
 
 
-def update_newsletter_subscription(booking_account: BookingAccount) -> Response:
+def update_newsletter_subscription(booking_account: BookingAccount) -> Response | None:
     status = get_status(booking_account)
     if booking_account.subscribe_to_newsletter:
         if status is None or status != "subscribed":
@@ -19,7 +19,7 @@ def update_newsletter_subscription(booking_account: BookingAccount) -> Response:
     return None
 
 
-def _update(booking_account: BookingAccount, current_status: str, desired_status: str) -> Response:
+def _update(booking_account: BookingAccount, current_status: str | None, desired_status: str) -> Response:
     if current_status is None:
         return mailchimp_request(
             "POST",
@@ -44,7 +44,7 @@ def email_to_mailchimp_id(email: str) -> str:
     return hashlib.md5(email.lower().encode("utf-8"), usedforsecurity=False).hexdigest()
 
 
-def get_status(booking_account: BookingAccount) -> str:
+def get_status(booking_account: BookingAccount) -> str | None:
     mailchimp_id = email_to_mailchimp_id(booking_account.email)
     response = mailchimp_request_unchecked(
         "GET", f"/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}"
