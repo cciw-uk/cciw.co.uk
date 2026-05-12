@@ -112,6 +112,7 @@ dev = [
     "ruff>=0.14.9",
     "ruff>=0.14.9",
     "django-watchfiles>=1.4.0",
+    "pip-audit>=2.10.0",
 ]
 
 [tool.uv]
