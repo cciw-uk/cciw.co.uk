@@ -99,6 +99,21 @@ def redirect_to_password_change_with_next(request: HttpRequest) -> HttpResponseR
     return redirect_to_url_with_next(path, password_change_url, REDIRECT_FIELD_NAME)
 
 
+# MAYBE combine these utilities that check redirect URLs, we've got slightly
+# different patterns going on.
+
+
+def validated_redirect_response(
+    *, requested_redirect_url: str | list | None, default_redirect_url: str
+) -> HttpResponseRedirect:
+    if isinstance(requested_redirect_url, str) and url_has_allowed_host_and_scheme(
+        url=requested_redirect_url,
+        allowed_hosts=settings.ALLOWED_HOSTS,
+    ):
+        return HttpResponseRedirect(requested_redirect_url)
+    return HttpResponseRedirect(default_redirect_url)
+
+
 def get_current_url_for_redirection(request: HttpRequest, redirect_url: str) -> str:
     url = request.build_absolute_uri()
     # If the url is the same scheme and net location then just
@@ -116,7 +131,7 @@ def get_redirect_from_request(request: HttpRequest) -> HttpResponse:
     if redirect_to:
         url_is_safe = url_has_allowed_host_and_scheme(
             url=redirect_to,
-            allowed_hosts=request.get_host(),
+            allowed_hosts=settings.ALLOWED_HOSTS,
             require_https=request.is_secure(),
         )
         if url_is_safe and urlparse(redirect_to).path != request.path:

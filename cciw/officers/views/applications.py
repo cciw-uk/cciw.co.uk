@@ -22,6 +22,7 @@ from cciw.officers.applications import (
     application_txt_filename,
     thisyears_applications,
 )
+from cciw.utils.views import validated_redirect_response
 
 from ..email_utils import formatted_email, send_mail_with_attachments
 from ..models import (
@@ -145,7 +146,9 @@ Please find attached a copy of the application you requested
         messages.info(request, "Email sent.")
 
         # Redirect back where we came from
-        return HttpResponseRedirect(request.POST.get("to", "/officers/"))
+        return validated_redirect_response(
+            requested_redirect_url=request.POST.get("to", None), default_redirect_url=reverse("cciw-officers-index")
+        )
 
     else:
         raise Http404
