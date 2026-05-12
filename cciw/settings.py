@@ -205,6 +205,9 @@ URLCONFCHECKS_SILENCED_VIEWS = {
     "*.View.as_view": "W001",
     # Django currently doesn't have type annotations:
     "django.*": "W003",
+    # Problems in modules with `from __future__ import annotations`
+    # https://github.com/AliSayyah/django-urlconfchecks/issues/310
+    "cciw.bookings.admin.BookingAdmin.history_view": "E002",
 }
 
 if not CHECK_DEPLOY:

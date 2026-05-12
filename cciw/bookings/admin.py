@@ -773,7 +773,7 @@ class BookingAdmin(admin.ModelAdmin):
         )
 
 
-def get_booking_history_log_for_admin(booking: Booking, object_id: int) -> list[LogEntry | LogEntryLike]:
+def get_booking_history_log_for_admin(booking: Booking, object_id: str) -> list[LogEntry | LogEntryLike]:
     # We want all the normal LogEntry objects:
     model = booking.__class__
     log_entries = list(
