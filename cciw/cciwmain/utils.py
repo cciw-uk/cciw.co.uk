@@ -12,7 +12,7 @@ from typing import TypeGuard
 
 from django.conf import settings
 from django.core.validators import ValidationError, validate_email
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.functional import Promise
@@ -64,7 +64,12 @@ def make_content_disposition_safe_filename(filename):
     return value.decode("utf-8")
 
 
-def get_protected_download(folder, filename):
+def get_protected_download(folder: str, filename: str) -> HttpResponse:
+    if "/" in filename:
+        # potential path traversal
+        return HttpResponseBadRequest(content=b"Bad filename requested")
+    assert "/" not in folder  # this should be supplied by developer, not external
+
     response = HttpResponse()
     response["Content-Disposition"] = f'attachment; filename="{make_content_disposition_safe_filename(filename)}"'
     # Using X-Accel-Redirect means:
