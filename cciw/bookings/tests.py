@@ -3359,3 +3359,20 @@ def test_add_to_queue_after_camp_full(db):
 def test_normalise_booking_name():
     assert normalise_booking_name(Booking(first_name="joe ", last_name="bloggs ")) == "joe bloggs"
     assert normalise_booking_name(Booking(first_name="M'Name", last_name="O’Brian")) == "m name o brian"
+
+
+def test_booking_age_on_camp(db):
+    with time_machine.travel("2001-01-01"):
+        camp = camps_factories.create_camp(start_date=date(2001, 8, 1))
+
+        booking = factories.create_booking(
+            camp=camp,
+            birth_date=date(1988, 8, 31),
+        )
+        assert booking.age_on_camp() == 13
+
+        # Changing across the threshold date:
+        booking.birth_date = date(1988, 9, 1)
+        booking.save()
+        booking.refresh_from_db()
+        assert booking.age_on_camp() == 12
