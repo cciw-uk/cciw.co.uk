@@ -8,6 +8,7 @@ import json
 import re
 import unicodedata
 from datetime import date, datetime
+from pathlib import Path
 from typing import TypeGuard
 
 from django.conf import settings
@@ -65,10 +66,9 @@ def make_content_disposition_safe_filename(filename):
 
 
 def get_protected_download(folder: str, filename: str) -> HttpResponse:
-    if "/" in filename:
-        # potential path traversal
+    if has_path_traversal(filename):
         return HttpResponseBadRequest(content=b"Bad filename requested")
-    assert "/" not in folder  # this should be supplied by developer, not external
+    assert "/" not in folder  # this should be supplied by developer, not externally
 
     response = HttpResponse()
     response["Content-Disposition"] = f'attachment; filename="{make_content_disposition_safe_filename(filename)}"'
@@ -81,6 +81,14 @@ def get_protected_download(folder: str, filename: str) -> HttpResponse:
     response["X-Accel-Redirect"] = settings.SECURE_DOWNLOAD_URL_BASE + folder + "/" + filename
     del response["Content-Type"]  # Get nginx/upstream to set it
     return response
+
+
+def has_path_traversal(filename: str) -> bool:
+    try:
+        Path("/root").joinpath(filename).resolve().relative_to("/root")
+        return False
+    except ValueError:
+        return True
 
 
 def ensure_timezone_aware(datetime_obj: datetime) -> datetime:
