@@ -16,9 +16,9 @@ class CciwAuthBackend:
 
     def authenticate(
         self, request: HttpRequest, username: str | None = None, password: str | None = None, **kwargs
-    ) -> User:
+    ) -> User | None:
         if username is None or password is None:
-            return
+            return None
         try:
             user = User.objects.get_by_natural_key(username)
         except User.DoesNotExist:
@@ -30,7 +30,7 @@ class CciwAuthBackend:
                 self.check_password_validation(user, password)
                 return user
 
-    def get_user(self, user_id: int) -> User:
+    def get_user(self, user_id: int) -> User | None:
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:

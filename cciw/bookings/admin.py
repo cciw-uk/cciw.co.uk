@@ -319,6 +319,7 @@ class QueueStateFilter(admin.SimpleListFilter):
             return queryset.waiting_in_queue()
         elif val == "a":
             return queryset.accepted_in_queue()
+        return queryset
 
 
 class BookingAdminForm(forms.ModelForm):

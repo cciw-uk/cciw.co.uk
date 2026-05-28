@@ -409,7 +409,7 @@ class User(AbstractBaseUser):
         return self.current_camps_as_admin_or_leader
 
     @cached_property
-    def camps_as_admin_or_leader(self) -> models.QuerySet[Camp]:
+    def camps_as_admin_or_leader(self) -> CampQuerySet:
         """
         Returns all the camps for which the user is an admin or leader.
         """

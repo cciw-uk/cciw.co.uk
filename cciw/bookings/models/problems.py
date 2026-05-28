@@ -219,7 +219,7 @@ def get_booking_problems(booking: Booking, *, booking_sec: bool = False) -> list
 
 
 def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[BookingProblem]:
-    errors: list[ApprovalNeeded | Blocker] = []
+    errors: list[BookingProblem] = []
     camp: Camp = booking.camp
 
     def blocker(description: str) -> Blocker:
