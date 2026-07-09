@@ -113,6 +113,8 @@ dev = [
     "ruff>=0.14.9",
     "django-watchfiles>=1.4.0",
     "pip-audit>=2.10.0",
+    "pyrefly>=1.0.0",
+    "django-stubs>=6.0.5",
 ]
 
 [tool.uv]
@@ -120,3 +122,8 @@ environments = ["platform_python_implementation != 'PyPy'"]
 
 [tool.uv.sources]
 django-q2 = { git = "https://github.com/spookylukey/django-q2", rev = "631dee1b01e956ff98c7fea365d38160c0878311" }
+
+[tool.pyrefly]
+project-excludes = ["**/submodules*"]
+preset = "legacy"
+ignore-missing-imports = ["*"]
