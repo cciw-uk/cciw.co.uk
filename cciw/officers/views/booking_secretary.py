@@ -197,7 +197,7 @@ def booking_problems_json(request: HttpRequest) -> dict[str, object]:
 @json_response
 @staff_member_required
 @booking_secretary_required
-def get_booking_expected_amount_due(request: HttpRequest):
+def get_booking_expected_amount_due(request: HttpRequest) -> HttpResponse:
     fail = {"status": "success", "amount": None}
     try:
         # If we use a form to construct an object, we won't get pass
@@ -225,7 +225,7 @@ def get_booking_expected_amount_due(request: HttpRequest):
 
 
 @cciw_secretary_or_booking_secretary_required
-def brochure_mailing_list(request: HttpRequest, year: int):
+def brochure_mailing_list(request: HttpRequest, year: int) -> HttpResponse:
     return spreadsheet_response(
         addresses_for_mailing_list(year), f"CCIW-mailing-list-{year}", notice=DataRetentionNotice.CAMPERS
     )
