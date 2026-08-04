@@ -6,6 +6,7 @@
     hx-include="this"
 >
   {% if not edit_queue_entry_mode %}
+    {# View mode #}
     <td {% if booking.rank_info.cutoff_state == "A" %}
           class="to-accept"
         {% endif %}
@@ -67,6 +68,7 @@
       {% endif %}
     </td>
   {% else %}
+    {# Edit mode #}
     <td></td>
     <td>{{ booking.first_name }}</td>
     <td>{{ booking.last_name }}</td>
