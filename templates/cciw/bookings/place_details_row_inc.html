@@ -28,7 +28,7 @@
         class="compactButton"
         hx-trigger="click"
         hx-post="."
-        hx-vals='{"booking_id": {{ booking.id }}, "shelve": "true", "use_block": ["content"] }'
+        hx-vals='{"booking_id": {{ booking.id }}, "shelve": "true", "use_partial": "content" }'
         hx-target="#contentinner"
         hx-swap="innerHTML"
         value="Save for later"
@@ -41,7 +41,7 @@
         class="compactButton"
         hx-trigger="click"
         hx-post="."
-        hx-vals='{"booking_id": {{ booking.id }}, "unshelve": "true", "use_block": ["content"] }'
+        hx-vals='{"booking_id": {{ booking.id }}, "unshelve": "true", "use_partial": "content" }'
         hx-target="#contentinner"
         hx-swap="innerHTML"
         value="Move to basket"
@@ -54,7 +54,7 @@
       hx-trigger="click"
       hx-post="."
       hx-confirm="Delete this booking for {{ booking.name }}?"
-      hx-vals='{"booking_id": {{ booking.id }}, "delete": "true", "use_block": ["content"] }'
+      hx-vals='{"booking_id": {{ booking.id }}, "delete": "true", "use_partial": "content" }'
       hx-target="#contentinner"
       hx-swap="innerHTML"
       value="Delete"

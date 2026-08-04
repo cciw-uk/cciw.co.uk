@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from cciw.accounts.models import User
 from cciw.cciwmain.common import CampId
 from cciw.mail.lists import address_for_camp_officers
-from cciw.utils.views import for_htmx, get_redirect_from_request, make_get_request
+from cciw.utils.views import for_htmx2, get_redirect_from_request, make_get_request
 
 from ...create import email_officer
 from ...forms import (
@@ -35,7 +35,7 @@ from ..utils.spreadsheets import spreadsheet_response
 
 @staff_member_required
 @camp_admin_required
-@for_htmx(use_block_from_params=True)
+@for_htmx2(use_partial_from_params=True)
 @with_breadcrumbs(leaders_breadcrumbs)
 def officer_list(
     request: HttpRequest,

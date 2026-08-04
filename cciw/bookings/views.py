@@ -43,8 +43,7 @@ from cciw.bookings.models.prices import PriceInfo
 from cciw.bookings.models.problems import ApprovalNeeded
 from cciw.cciwmain import common
 from cciw.cciwmain.common import get_current_domain, get_thisyear, htmx_form_validate
-from cciw.officers.views.utils.htmx import add_hx_trigger_header
-from cciw.utils.views import for_htmx, for_htmx2, htmx_redirect, make_get_request
+from cciw.utils.views import add_hx_trigger_header, for_htmx2, htmx_redirect, make_get_request
 
 from .decorators import (
     account_details_required,
@@ -306,7 +305,7 @@ def edit_place(request: HttpRequest, *, booking_id: int) -> HttpResponse:
 
 
 @booking_account_required
-@for_htmx(use_block_from_params=True)
+@for_htmx2(use_partial_from_params=True)
 @require_GET
 def add_place_reuse_data(request: HttpRequest, booking_id: int | None = None):
     """
@@ -392,7 +391,7 @@ def make_state_token(bookings: list[Booking]) -> str:
 
 
 @booking_account_required
-@for_htmx(use_block_from_params=True)
+@for_htmx2(use_partial_from_params=True)
 def basket_list_bookings(request: HttpRequest) -> HttpResponse:
     """
     List bookings ready to book
@@ -668,7 +667,7 @@ def pay_cancelled(request: HttpRequest) -> TemplateResponse:
 
 @booking_account_required
 @for_htmx2(use_partial_from_params=True)
-def account_overview(request: HttpRequest) -> HttpResponse:
+def account_overview(request: HttpRequest) -> TemplateResponse:
     if "logout" in request.POST:
         response = HttpResponseRedirect(reverse("cciw-bookings-index"))
         unset_booking_account_cookie(response)

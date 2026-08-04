@@ -15,7 +15,7 @@
         <input
           type="submit" name="remove" value="Remove"
           hx-post="."
-          hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"], "officer_id":"{{ invitation.officer.id }}" }'
+          hx-vals='{"use_partial": ["currentofficers", "chooseofficers__form"], "officer_id":"{{ invitation.officer.id }}" }'
           {# propagate selected 'role' in 'Available officers' section to maintain state: #}
           hx-include="#id_chooseofficer__form"
         >

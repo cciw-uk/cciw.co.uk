@@ -78,11 +78,11 @@
     {% endif %}
 
     <div class="manage-reference-list">
-      {% block list-body %}
+      {% partialdef list-body inline %}
         {% for referee in all_referees %}
           <div
             id="id-manage-reference-{{ referee.id }}"
-            hx-get="?referee_id={{ referee.id }}&use_block=list-body"
+            hx-get="?referee_id={{ referee.id }}&use_partial=list-body"
             hx-trigger="refreshReferee-{{ referee.id }} from:body"
             hx-target="this"
             hx-swap="outerHTML"
@@ -283,7 +283,7 @@
             <p>No references/application forms found</p>
           </div>
         {% endfor %}
-      {% endblock %}
+      {% endpartialdef %}
     </div>
 
   </div>

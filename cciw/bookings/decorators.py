@@ -6,15 +6,14 @@ import furl
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 
+from cciw.utils.views import ViewFunc
+
 from .middleware import EXPECTED_BOOKING_LOGIN_VIEWS, get_booking_account_from_request
 
 if TYPE_CHECKING:
     from .models import BookingAccount
 
 _BOOKING_DECORATOR_APPLIED = "_BOOKING_DECORATOR_APPLIED"
-
-
-type ViewFunc = Callable[Concatenate[HttpRequest, ...], HttpResponse]
 
 
 def ensure_booking_account_attr(request: HttpRequest):

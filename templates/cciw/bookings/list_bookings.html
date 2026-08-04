@@ -3,129 +3,27 @@
 
 {% block content %}
 
-  <h2>Basket</h2>
+  {% partialdef content inline %}
+    <h2>Basket</h2>
 
-  {% if basket_bookings %}
+    {% if basket_bookings %}
 
-    {% if all_bookable %}
-      {% if booking_open_data.is_open_for_booking %}
-        <p>The places below are ready to be booked — but not booked yet!
-          Please continue by choosing from the options below.</p>
-      {% else %}
-        <p>The places below are ready to be booked. However, booking is not open yet. So:</p>
-
-        <ul>
-          <li>Leave the places in your basket (and add any others as needed)</li>
-          <li>Return between
-            <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b> and
-            <b>{{ booking_open_data.closes_for_initial_period_on|date:"j F" }}</b>
-            to complete the process.
-          </li>
-        </ul>
-      {% endif %}
-    {% endif %}
-
-    <table class="topheaders bookinglist">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Camp</th>
-          <th scope="col">Price</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for booking in basket_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_save_for_later=show_save_for_later_button showproblems=True %}
-        {% endfor %}
-
-        <tr>
-          <td colspan="2" class="total">Total:</td>
-          <td class="price">{% if total|default_if_none:"None" == "None" %}TBA{% else %}
-            £{{ total }}
-          {% endif %}
-          </td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <form action="" method="POST">
-
-      {% csrf_token %}
-      <input type="hidden" name="state_token" value="{{ state_token }}"/>
-      <div class="actionsplit">
-        <div class="actionbutton">
-          <input type="submit" name="add_another" value="Add another place" class="bigaction">
-          <input type="submit" name="book_now" value="Apply now" id="id_book_now_btn"
-                 class="bigaction"
-                 {% if not all_bookable or not booking_open_data.is_open_for_booking %} disabled{% endif %}>
-        </div>
-      </div>
-
-      {% if not all_bookable %}
-        {% if all_unbookable %}
-          <p>
-            {% if basket_bookings|length > 1 %}
-              These places cannot be booked for the reasons described above.
-            {% else %}
-              This place cannot be booked for the reasons described above.
-            {% endif %}
-          </p>
+      {% if all_bookable %}
+        {% if booking_open_data.is_open_for_booking %}
+          <p>The places below are ready to be booked — but not booked yet!
+            Please continue by choosing from the options below.</p>
         {% else %}
-          <p>
-            One or more of the places cannot be booked, so this set cannot be booked as a group.
-          </p>
+          <p>The places below are ready to be booked. However, booking is not open yet. So:</p>
+
+          <ul>
+            <li>Leave the places in your basket (and add any others as needed)</li>
+            <li>Return between
+              <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b> and
+              <b>{{ booking_open_data.closes_for_initial_period_on|date:"j F" }}</b>
+              to complete the process.
+            </li>
+          </ul>
         {% endif %}
-
-        <p>
-          For problems marked 'Pending', the booking secretary will review it
-          and you will be notified when this is done – just leave the bookings in your basket.
-        </p>
-
-        {% if not all_unbookable %}
-          <p>If you wish to book some of these places, you can use "save for
-            later" on the place(s) that cannot be booked, and book the
-            other place(s).
-            {% if basket_bookings_problems_pending_approval %}
-              <b>However, for places that are waiting for approval, remember to put the
-                bookings back into your basket so that they can be approved.</b>
-            {% endif %}
-          </p>
-        {% endif %}
-
-
-        {% if not booking_open_data.is_open_for_booking %}
-          <p>Bookings are not formally open yet,
-            you will need to return between
-            <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>
-            and <b>{{ booking_open_data.closes_for_initial_period_on|date:"j F" }}</b>
-            to actually book this place.</p>
-        {% endif %}
-      {% endif %}
-    </form>
-
-  {% else %}
-
-    <p>Nothing in your basket.</p>
-
-  {% endif %} {# basket_bookings #}
-
-  {% if show_save_for_later_button or shelf_bookings %}
-
-    <h2>Saved for later</h2>
-
-    {% if shelf_bookings %}
-
-      <p>These place details are saved for later use - move them to the
-        basket in order to book them.</p>
-
-      {% if shelf_bookings_problems_pending_approval %}
-        <p>
-          <b>For bookings that need approval, you need to move the booking
-            to your basket for the booking secretary to be able to see and approve it.</b>
-        </p>
       {% endif %}
 
       <table class="topheaders bookinglist">
@@ -137,27 +35,131 @@
             <th scope="col">Actions</th>
           </tr>
         </thead>
+
         <tbody>
-          {% for booking in shelf_bookings %}
-            {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_move_to_basket=True showproblems=False %}
+          {% for booking in basket_bookings %}
+            {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_save_for_later=show_save_for_later_button showproblems=True %}
           {% endfor %}
+
+          <tr>
+            <td colspan="2" class="total">Total:</td>
+            <td class="price">{% if total|default_if_none:"None" == "None" %}TBA{% else %}
+              £{{ total }}
+            {% endif %}
+            </td>
+            <td></td>
+          </tr>
         </tbody>
       </table>
 
+      <form action="" method="POST">
+
+        {% csrf_token %}
+        <input type="hidden" name="state_token" value="{{ state_token }}"/>
+        <div class="actionsplit">
+          <div class="actionbutton">
+            <input type="submit" name="add_another" value="Add another place" class="bigaction">
+            <input type="submit" name="book_now" value="Apply now" id="id_book_now_btn"
+                   class="bigaction"
+                   {% if not all_bookable or not booking_open_data.is_open_for_booking %} disabled{% endif %}>
+          </div>
+        </div>
+
+        {% if not all_bookable %}
+          {% if all_unbookable %}
+            <p>
+              {% if basket_bookings|length > 1 %}
+                These places cannot be booked for the reasons described above.
+              {% else %}
+                This place cannot be booked for the reasons described above.
+              {% endif %}
+            </p>
+          {% else %}
+            <p>
+              One or more of the places cannot be booked, so this set cannot be booked as a group.
+            </p>
+          {% endif %}
+
+          <p>
+            For problems marked 'Pending', the booking secretary will review it
+            and you will be notified when this is done – just leave the bookings in your basket.
+          </p>
+
+          {% if not all_unbookable %}
+            <p>If you wish to book some of these places, you can use "save for
+              later" on the place(s) that cannot be booked, and book the
+              other place(s).
+              {% if basket_bookings_problems_pending_approval %}
+                <b>However, for places that are waiting for approval, remember to put the
+                  bookings back into your basket so that they can be approved.</b>
+              {% endif %}
+            </p>
+          {% endif %}
+
+
+          {% if not booking_open_data.is_open_for_booking %}
+            <p>Bookings are not formally open yet,
+              you will need to return between
+              <b>{{ booking_open_data.opens_for_booking_on|date:"j F" }}</b>
+              and <b>{{ booking_open_data.closes_for_initial_period_on|date:"j F" }}</b>
+              to actually book this place.</p>
+          {% endif %}
+        {% endif %}
+      </form>
+
     {% else %}
+
+      <p>Nothing in your basket.</p>
+
+    {% endif %} {# basket_bookings #}
+
+    {% if show_save_for_later_button or shelf_bookings %}
+
+      <h2>Saved for later</h2>
+
+      {% if shelf_bookings %}
+
+        <p>These place details are saved for later use - move them to the
+          basket in order to book them.</p>
+
+        {% if shelf_bookings_problems_pending_approval %}
+          <p>
+            <b>For bookings that need approval, you need to move the booking
+              to your basket for the booking secretary to be able to see and approve it.</b>
+          </p>
+        {% endif %}
+
+        <table class="topheaders bookinglist">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Camp</th>
+              <th scope="col">Price</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in shelf_bookings %}
+              {% include "cciw/bookings/place_details_row_inc.html" with booking=booking show_move_to_basket=True showproblems=False %}
+            {% endfor %}
+          </tbody>
+        </table>
+
+      {% else %}
 
       {# no shelf_bookings - Message shown for explanation #}
 
-      <p>
-        If you have some bookings in your basket above that are not ready to be
-        booked, awaiting approval or declined, use the "Save for later" button to
-        move them here so that you can book the other places.
-      </p>
+        <p>
+          If you have some bookings in your basket above that are not ready to be
+          booked, awaiting approval or declined, use the "Save for later" button to
+          move them here so that you can book the other places.
+        </p>
+
+      {% endif %}
 
     {% endif %}
 
-  {% endif %}
+    {% include 'cciw/bookings/help.html' %}
 
-  {% include 'cciw/bookings/help.html' %}
-
+  {% endpartialdef %}
 {% endblock %}

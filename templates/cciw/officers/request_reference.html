@@ -3,43 +3,45 @@
 {% block title %}Request reference for {{ app.officer.full_name }} from {{ referee.name }}{% endblock %}
 
 {% block content %}
-  {% include "cciw/officers/referee_details_summary_inc.html" with referee=referee %}
+  {% partialdef content inline %}
+    {% include "cciw/officers/referee_details_summary_inc.html" with referee=referee %}
 
-  <div><br></div>
+    <div><br></div>
 
-  {% if already_requested %}
-    <p><strong class="ok">PLEASE NOTE: A request has already been sent for this reference</strong></p>
-  {% endif %}
+    {% if already_requested %}
+      <p><strong class="ok">PLEASE NOTE: A request has already been sent for this reference</strong></p>
+    {% endif %}
 
-  {% if is_update and known_email_address %}
-    <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in the past.</p>
-  {% endif %}
+    {% if is_update and known_email_address %}
+      <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in the past.</p>
+    {% endif %}
 
-  {% if not is_update %}
-    <p><strong>{{ referee.name }} has not done a reference for
-      {{ app.officer.first_name }} in the past.</strong>  Before requesting this reference, you should endeavour to ensure that this person is who the applicant claims they are, and <strong>ensure the email address is correct</strong>, and that they are happy to do a reference.</p>
-  {% endif %}
+    {% if not is_update %}
+      <p><strong>{{ referee.name }} has not done a reference for
+        {{ app.officer.first_name }} in the past.</strong>  Before requesting this reference, you should endeavour to ensure that this person is who the applicant claims they are, and <strong>ensure the email address is correct</strong>, and that they are happy to do a reference.</p>
+    {% endif %}
 
-  {% if is_update and not known_email_address %}
-    <p>In the past, <b>"{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;"</b> did a reference for {{ app.officer.first_name }}.  If you have confirmed that this person's name/email address is now <b>"{{ referee.name }} &lt;{{ referee.email }}&gt;",</b> you can ask them to update their reference.</p>
-  {% endif %}
+    {% if is_update and not known_email_address %}
+      <p>In the past, <b>"{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;"</b> did a reference for {{ app.officer.first_name }}.  If you have confirmed that this person's name/email address is now <b>"{{ referee.name }} &lt;{{ referee.email }}&gt;",</b> you can ask them to update their reference.</p>
+    {% endif %}
 
-  {% if form.errors %}
-    <p class="actionnote">Please check the errors below</p>
-  {% endif %}
+    {% if form.errors %}
+      <p class="actionnote">Please check the errors below</p>
+    {% endif %}
 
-  <p>The following email, which you can now modify, will be sent to them. Make sure you don't modify the link contained in the email.</p>
-  <form
-    hx-post="{{ request.get_full_path }}"
-    hx-target="#dialog-content-main"
-    hx-vals='{"use_block": "content"}'
-  >
-    <div class="stacked-form limit-text-width-60em">
-      {{ form.as_div }}
-    </div>
-    <div>
-      <input type="submit" name="send" value="Send" />
-      <input type="submit" name="cancel" value="Cancel" formnovalidate />
-    </div>
-  </form>
+    <p>The following email, which you can now modify, will be sent to them. Make sure you don't modify the link contained in the email.</p>
+    <form
+      hx-post="{{ request.get_full_path }}"
+      hx-target="#dialog-content-main"
+      hx-vals='{"use_partial": "content"}'
+    >
+      <div class="stacked-form limit-text-width-60em">
+        {{ form.as_div }}
+      </div>
+      <div>
+        <input type="submit" name="send" value="Send" />
+        <input type="submit" name="cancel" value="Cancel" formnovalidate />
+      </div>
+    </form>
+  {% endpartialdef %}
 {% endblock %}

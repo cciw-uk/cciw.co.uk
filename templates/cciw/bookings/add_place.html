@@ -18,7 +18,7 @@
       </p>
     {% endif %}
 
-    {% block form-block %}
+    {% partialdef form-block inline %}
       <form action="" method="POST" id="id_addplaceform" name="addplaceform">
 
         {% if form.errors and 'save' in request.POST %}
@@ -97,7 +97,7 @@
         {% cciw_form_field form 'sex' %}
         {% cciw_form_field form 'birth_date' %}
 
-        {% block camper-address %}
+        {% partialdef camper-address inline %}
           <div id="id-add-place-camper-address">
             <h2 class="columns-space-between">
               <span>
@@ -109,7 +109,7 @@
                 name="copy_account_address_to_camper"
                 hx-trigger="click"
                 hx-get="{{ reuse_data_url }}"
-                hx-vals='{"use_block": "camper-address", "copy_account_address_to_camper": "1"}'
+                hx-vals='{"use_partial": "camper-address", "copy_account_address_to_camper": "1"}'
                 hx-include="#id-add-place-camper-address"
                 hx-target="#id-add-place-camper-address"
                 hx-swap="outerHTML"
@@ -129,13 +129,13 @@
             {% cciw_form_field form 'phone_number' %}
             {% cciw_form_field form 'email' %}
           </div>
-        {% endblock %}
+        {% endpartialdef %}
 
         <h2>Church</h2>
 
         {% cciw_form_field form 'church' %}
 
-        {% block contact-details %}
+        {% partialdef contact-details inline %}
           <div id="id-add-place-contact-details">
             <h2 class="columns-space-between">
               <span>
@@ -147,7 +147,7 @@
                 name="copy_account_address_to_contact_details"
                 hx-trigger="click"
                 hx-get="{{ reuse_data_url }}"
-                hx-vals='{"use_block": "contact-details", "copy_account_address_to_contact_details": "1"}'
+                hx-vals='{"use_partial": "contact-details", "copy_account_address_to_contact_details": "1"}'
                 hx-include="#id-add-place-contact-details"
                 hx-target="#id-add-place-contact-details"
                 hx-swap="outerHTML"
@@ -169,7 +169,7 @@
             {% cciw_form_field form 'contact_phone_number' %}
 
           </div>
-        {% endblock %}
+        {% endpartialdef %}
 
         <h2>Dietary requirements</h2>
 
@@ -267,7 +267,7 @@
         {% csrf_token %}
 
       </form>
-    {% endblock %}
+    {% endpartialdef %}
 
   {% endif %}
 {% endblock %}

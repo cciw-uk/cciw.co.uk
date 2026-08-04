@@ -13,7 +13,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from cciw.accounts.models import User
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
-from cciw.utils.views import for_htmx
+from cciw.utils.views import add_hx_trigger_header, for_htmx2
 
 from ..applications import (
     camps_for_application,
@@ -38,14 +38,13 @@ from .utils.auth import (
     dbs_officer_required,
 )
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
-from .utils.htmx import add_hx_trigger_header
 
 
 @staff_member_required
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
 @with_breadcrumbs(officers_breadcrumbs)
-@for_htmx(use_block_from_params=True)
+@for_htmx2(use_partial_from_params=True)
 def manage_dbss(request: HttpRequest, year: int) -> HttpResponse:
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
@@ -59,9 +58,9 @@ def manage_dbss(request: HttpRequest, year: int) -> HttpResponse:
         selected_camp_slugs = set(request.GET.getlist("camp"))
         selected_camps = {c for c in camps if c.slug_name in selected_camp_slugs}
     else:
-        if "Hx-Request" in request.headers and request.GET.get("use_block", "") == "content":
+        if "Hx-Request" in request.headers and request.GET.get("use_partial", "") == "content":
             # They deselected the last checkbox, we should show them nothing for UI consistency.
-            # In other cases (e.g. use_block = table-body, officer_id=...), we should include all camps.
+            # In other cases (e.g. use_partial = table-body, officer_id=...), we should include all camps.
             selected_camps = set()
         else:
             # Assume all, because having none is never useful
@@ -118,8 +117,8 @@ def mark_dbs_sent(request):
 
 @staff_member_required
 @dbs_officer_required
-@for_htmx(use_block_from_params=True)
-def dbs_consent_alert_leaders(request, application_id: int):
+@for_htmx2(use_partial_from_params=True)
+def dbs_consent_alert_leaders(request: HttpRequest, application_id: int) -> HttpResponse:
     app = get_object_or_404(Application.objects.filter(id=application_id))
     officer = app.officer
     camps = camps_for_application(app)
@@ -185,7 +184,6 @@ def request_dbs_form_action(request, application_id: int):
 
 @staff_member_required
 @dbs_officer_required
-@for_htmx(use_block_from_params=True)
 def dbs_checked_online(request: HttpRequest, officer_id: int):
     officer = User.objects.get(id=officer_id)
     dbs_number = request.GET.get("dbs_number", "")
@@ -208,7 +206,6 @@ def dbs_checked_online(request: HttpRequest, officer_id: int):
 
 @staff_member_required
 @dbs_officer_required
-@for_htmx(use_block_from_params=True)
 def dbs_register_received(request: HttpRequest, officer_id: int):
     officer = User.objects.get(id=officer_id)
     form_initial = {
@@ -255,7 +252,7 @@ def modal_dialog_message_form(
     messageform_class=type,
     success_response: HttpResponse,
     cancel_response: HttpResponse,
-):
+) -> HttpResponse:
     if request.method == "POST":
         if "send" in request.POST:
             messageform = messageform_class(request.POST, message_info=messageform_info)

@@ -19,7 +19,7 @@
 
     <div class="columns-align-left columns-wrap">
       <div> {# column 1 #}
-        {% block currentofficers %}
+        {% partialdef currentofficers inline %}
           <div
             class="currentofficers"
             id="id_currentofficers"
@@ -52,7 +52,7 @@
             <p>Total: {{ invitations|length }}</p>
 
           </div>
-        {% endblock %}
+        {% endpartialdef %}
       </div>
       {% if not readonly %}
         <div> {# column 2 #}
@@ -62,13 +62,13 @@
               <summary>
                 Available officers
               </summary>
-              {% block chooseofficers__form %}
+              {% partialdef chooseofficers__form inline %}
                 <form
                   id="id_chooseofficer__form"
                   method="POST"
                   action="."
                   hx-post="."
-                  hx-vals='{"use_block": ["currentofficers", "chooseofficers__form"]}'
+                  hx-vals='{"use_partial": ["currentofficers", "chooseofficers__form"]}'
                   hx-swap-oob="true"
                 >
                   {% csrf_token %}
@@ -163,7 +163,7 @@
                     <p>Roles are displayed when collecting references, and not used otherwise.</p>
                   </div>
                 </form>
-              {% endblock %}
+              {% endpartialdef %}
             </details>
           </div>
 

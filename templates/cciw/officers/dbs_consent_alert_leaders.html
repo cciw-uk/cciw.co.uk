@@ -3,21 +3,23 @@
 {% block title %}DBS consent problem for {{ officer.full_name }}{% endblock %}
 
 {% block content %}
-  <h2>Report DBS problem to leaders</h2>
+  {% partialdef content inline %}
+    <h2>Report DBS problem to leaders</h2>
 
-  <p>The following email, which you can now modify, will be sent to the leaders of the relevant camp(s).</p>
+    <p>The following email, which you can now modify, will be sent to the leaders of the relevant camp(s).</p>
 
-  <form
-    hx-post="{{ request.get_full_path }}"
-    hx-target="#dialog-content-main"
-    hx-vals='{"use_block": "content"}'
-  >
-    <div class="stacked-form limit-text-width-60em">
-      {{ messageform.as_div }}
-    </div>
-    <p>
-      <input type="submit" name="send" value="Send" />
-      <input type="submit" name="cancel" value="Cancel" formnovalidate />
-    </p>
-  </form>
+    <form
+      hx-post="{{ request.get_full_path }}"
+      hx-target="#dialog-content-main"
+      hx-vals='{"use_partial": "content"}'
+    >
+      <div class="stacked-form limit-text-width-60em">
+        {{ messageform.as_div }}
+      </div>
+      <p>
+        <input type="submit" name="send" value="Send" />
+        <input type="submit" name="cancel" value="Cancel" formnovalidate />
+      </p>
+    </form>
+  {% endpartialdef %}
 {% endblock %}

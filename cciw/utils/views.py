@@ -1,6 +1,9 @@
 import copy
+import json
+import typing
 from collections.abc import Callable
 from functools import wraps
+from typing import Concatenate
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -11,9 +14,11 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
-from render_block import render_block_to_string
 
 from cciw.accounts.models import User
+
+type ViewFunc = Callable[Concatenate[HttpRequest, ...], HttpResponse]
+type TemplateResponseViewFunc = Callable[Concatenate[HttpRequest, ...], TemplateResponse]
 
 
 def close_window_response(request: HttpRequest, *, clear_messages=False) -> HttpResponse:
@@ -145,74 +150,6 @@ def redirect_to_url_with_next(next_url: str, url: str, redirect_field_name: str)
     return HttpResponseRedirect(f.url)
 
 
-def for_htmx(
-    *,
-    if_hx_target: str | None = None,
-    use_template: str | None = None,
-    use_block: str | list[str] | None = None,
-    use_block_from_params: bool = False,
-) -> Callable:
-    """
-    If the request is from htmx, then render a partial page, using either:
-    - the template specified in `use_template` param
-    - the block specified in `use_block` param
-    - the block specified in GET/POST parameter "use_block", if `use_block_from_params=True` is passed
-    If the optional `if_hx_target` parameter is supplied, the
-    hx-target header must match the supplied value as well in order
-    for this decorator to be applied.
-    """
-    if len([p for p in [use_block, use_template, use_block_from_params] if p]) != 1:
-        raise ValueError("You must pass exactly one of 'use_template', 'use_block' or 'use_block_from_params=True'")
-
-    def decorator(view):
-        @wraps(view)
-        def _view(request, *args, **kwargs):
-            resp = view(request, *args, **kwargs)
-            if request.headers.get("Hx-Request", False):
-                if if_hx_target is None or request.headers.get("Hx-Target", None) == if_hx_target:
-                    blocks_to_use = use_block
-                    if not hasattr(resp, "render"):
-                        if not resp.content and any(
-                            h in resp.headers
-                            for h in (
-                                "Hx-Trigger",
-                                "Hx-Trigger-After-Swap",
-                                "Hx-Trigger-After-Settle",
-                                "Hx-Redirect",
-                            )
-                        ):
-                            # This is a special case response, it doesn't need modifying:
-                            return resp
-                        # Otherwise there is some mistake
-                        raise ValueError(f"Cannot modify a response of type {type(resp)} that isn't a TemplateResponse")
-                    if resp.is_rendered:
-                        raise ValueError("Cannot modify a response that has already been rendered")
-
-                    if use_block_from_params:
-                        use_block_from_params_val = _get_param_from_request(request, "use_block")
-                        blocks_to_use = use_block_from_params_val
-
-                    if use_template is not None:
-                        resp.template_name = use_template
-                    elif blocks_to_use is not None:
-                        if not isinstance(blocks_to_use, list):
-                            blocks_to_use = [blocks_to_use]
-                        rendered_blocks = [
-                            render_block_to_string(resp.template_name, b, context=resp.context_data, request=request)
-                            for b in blocks_to_use
-                        ]
-                        # Create new simple HttpResponse as replacement
-                        resp = HttpResponse(
-                            content="".join(rendered_blocks), status=resp.status_code, headers=resp.headers
-                        )
-
-            return resp
-
-        return _view
-
-    return decorator
-
-
 def _get_param_from_request(request: HttpRequest, param) -> list[str] | None:
     """
     Checks GET then POST params for specified param
@@ -241,23 +178,25 @@ def htmx_redirect(url):
 # New methods for htmx - using partials.
 # `for_htmx` is deprecated and should be replaced,
 # bulking out this function as necessary.
-def for_htmx2(
+def for_htmx2[V: ViewFunc](
     *,
     use_partial_from_params: bool = False,
-) -> Callable:
+) -> Callable[[V], V]:
     """
     If the request is from htmx, then render a partial page, using either:
+
     - the partial specified in GET/POST parameter "use_partial", if `use_partial_from_params=True` is passed
+    - more options in the future?
     """
     if len([p for p in [use_partial_from_params] if p]) != 1:
         raise ValueError("You must pass exactly one of 'use_partial_from_params=True'")
 
-    def decorator(view):
+    def decorator(view: V) -> V:
         @wraps(view)
-        def _view(request, *args, **kwargs):
-            resp: TemplateResponse = view(request, *args, **kwargs)
+        def _view(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+            resp: HttpResponse = view(request, *args, **kwargs)
             if request.headers.get("Hx-Request", False):
-                if not hasattr(resp, "render"):
+                if not isinstance(resp, TemplateResponse):
                     if not resp.content and any(
                         h in resp.headers
                         for h in (
@@ -277,17 +216,37 @@ def for_htmx2(
                 if resp.is_rendered:
                     raise ValueError("Cannot modify a response that has already been rendered")
 
-                partial_to_use: str | None = None
+                partials_to_use: list[str] | None = None
                 if use_partial_from_params:
                     use_partial_from_params_val = _get_param_from_request(request, "use_partial")
-                    assert use_partial_from_params_val is not None and len(use_partial_from_params_val) == 1
-                    partial_to_use = use_partial_from_params_val[0]
+                    if use_partial_from_params_val is not None and len(use_partial_from_params_val) > 0:
+                        partials_to_use = use_partial_from_params_val
 
-                if partial_to_use is not None:
-                    resp.template_name = resp.template_name + "#" + partial_to_use
+                if partials_to_use is not None:
+                    if len(partials_to_use) == 1:
+                        resp.template_name = resp.template_name + "#" + partials_to_use[0]
+                        return resp
+                    else:
+                        # Need to render multiple times.
+                        content = []
+                        for partial in partials_to_use:
+                            part = TemplateResponse(
+                                request,
+                                resp.template_name + "#" + partial,
+                                context=resp.context_data,
+                            )
+                            part.render()
+                            content.append(part.content)
+                        return HttpResponse(content=b"".join(content))
 
             return resp
 
-        return _view
+        return typing.cast(V, _view)
 
     return decorator
+
+
+def add_hx_trigger_header(response: HttpResponse, events: dict) -> HttpResponse:
+    if events:
+        response.headers["Hx-Trigger"] = json.dumps(events)
+    return response

@@ -313,7 +313,6 @@ dependencies = [
     { name = "django-mailer", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-paypal", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-q2", marker = "platform_python_implementation != 'PyPy'" },
-    { name = "django-render-block", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-simple-captcha", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-spurl", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-urlconfchecks", marker = "platform_python_implementation != 'PyPy'" },
@@ -398,7 +397,6 @@ requires-dist = [
     { name = "django-mailer", specifier = ">=2.3.1" },
     { name = "django-paypal", specifier = ">=2.0" },
     { name = "django-q2", git = "https://github.com/spookylukey/django-q2?rev=631dee1b01e956ff98c7fea365d38160c0878311" },
-    { name = "django-render-block", specifier = ">=0.9.2" },
     { name = "django-simple-captcha", specifier = ">=0.5.17" },
     { name = "django-spurl", specifier = ">=0.6.8" },
     { name = "django-urlconfchecks", specifier = ">=0.11.0" },
@@ -920,18 +918,6 @@ dependencies = [
     { name = "django", marker = "platform_python_implementation != 'PyPy'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/70/e3/9372fcdca8e9c3205e7979528ccd1a14354a9a24d38efff11c1846ff8bf1/django-ranged-response-0.2.0.tar.gz", hash = "sha256:f71fff352a37316b9bead717fc76e4ddd6c9b99c4680cdf4783b9755af1cf985", size = 3021, upload-time = "2017-07-18T09:20:27.603Z" }
-
-[[package]]
-name = "django-render-block"
-version = "0.11"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django", marker = "platform_python_implementation != 'PyPy'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6b/2f/588cf58f7b37ab3b7994727d590381aed747173ef5670457c798518621dc/django_render_block-0.11.tar.gz", hash = "sha256:17886dd3bff222fe8a2f019509c6c53e0e4a38fe684e80d48e8697a879e1301b", size = 12432, upload-time = "2025-05-13T11:48:51.333Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/ef/f80dddb0e05887cda30b7c8140a2b0caa957d31d68fcfec84cb445d792ef/django_render_block-0.11-py3-none-any.whl", hash = "sha256:e6a7161393fb59ee803ab0a97ce96286897abafa42835215e019b47ebc442727", size = 9652, upload-time = "2025-05-13T11:48:50.247Z" },
-]
 
 [[package]]
 name = "django-simple-captcha"

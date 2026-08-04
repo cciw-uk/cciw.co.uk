@@ -3,17 +3,22 @@
 {% block title %}Add DBS check for {{ officer.full_name }}{% endblock %}
 
 {% block content %}
-  <form
-    hx-post="{{ request.get_full_path }}"
-    hx-target="#dialog-content-main"
-    hx-vals='{"use_block": "content"}'
-  >
-    <div class="tabular-form limit-text-width-60em">
-      {{ form.as_div }}
-    </div>
-    <p>
-      <input type="submit" name="save" value="Save" />
-      <input type="submit" name="cancel" value="Cancel" formnovalidate />
-    </p>
-  </form>
+  {% partialdef content inline %}
+    {% if form.errors %}
+      <p class="actionnote">Please check the errors below</p>
+    {% endif %}
+    <form
+      hx-post="{{ request.get_full_path }}"
+      hx-target="#dialog-content-main"
+      hx-vals='{"use_partial": "content"}'
+    >
+      <div class="tabular-form limit-text-width-60em">
+        {{ form.as_div }}
+      </div>
+      <p>
+        <input type="submit" name="save" value="Save" />
+        <input type="submit" name="cancel" value="Cancel" formnovalidate />
+      </p>
+    </form>
+  {% endpartialdef %}
 {% endblock %}
