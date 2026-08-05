@@ -20,6 +20,7 @@ from email.message import EmailMessage
 from django.conf import settings
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
+from django_q.tasks import async_task
 
 from cciw.accounts.models import (
     DBS_OFFICER_ROLE_NAME,
@@ -468,11 +469,8 @@ def mangle_from_address(address: str) -> str:
 INCOMING_MAIL_TEMPFILE_PREFIX = "mail-incoming-"
 
 
-def handle_mail_from_s3_async(message_id):
-    manage_py_path = os.path.join(settings.PROJECT_ROOT, "manage.py")
-    # Poor man's async - use spawnlp which returns instantly.
-    # Indirectly calls handle_mail_from_s3 below.
-    os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", message_id)
+def handle_mail_from_s3_async(message_id: str):
+    async_task(handle_mail_from_s3, message_id)
 
 
 def handle_mail_from_s3(message_id: str):
