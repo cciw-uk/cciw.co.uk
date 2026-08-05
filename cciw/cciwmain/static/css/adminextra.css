@@ -464,10 +464,15 @@ table.data th {
     background-color: #f8f8f8;
 }
 
+details {
+    margin-bottom: 1em;
+}
 details summary {
     font-weight: bold;
     font-size: 110%;
     cursor: pointer;
+    color: var(--link-fg);
+    text-decoration: underline;
 }
 
 
