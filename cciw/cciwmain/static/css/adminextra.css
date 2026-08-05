@@ -111,6 +111,10 @@ div.tabular-form {
             grid-column: 2;
             grid-row: 2;
         }
+        & > .errorlist {
+            grid-column: 2;
+            grid-row: 4;
+        }
         & input[type="checkbox"] {
             justify-self: start;
         }
@@ -129,6 +133,10 @@ div.tabular-form {
                 grid-column: 1;
                 grid-row: 3;
             }
+            & > .errorlist {
+                grid-column: 1;
+                grid-row: 4;
+            }
         }
     }
 }
@@ -145,6 +153,9 @@ div.stacked-form {
     }
     & .helptext {
         order: 3;
+    }
+    & .errorlist {
+        order: 4;
     }
 }
 
