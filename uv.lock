@@ -447,7 +447,7 @@ dev = [
     { name = "pip-audit", specifier = ">=2.10.0" },
     { name = "pre-commit", specifier = ">=4.2" },
     { name = "pre-commit-uv", specifier = ">=4.2" },
-    { name = "pyastgrep", specifier = ">=1.3.2" },
+    { name = "pyastgrep", specifier = ">=1.7" },
     { name = "pyquery", specifier = ">=1.4.3" },
     { name = "pyrefly", specifier = ">=1.0.0" },
     { name = "pytest", specifier = ">=7.1.3" },
@@ -2089,7 +2089,7 @@ wheels = [
 
 [[package]]
 name = "pyastgrep"
-version = "1.6"
+version = "1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astpretty", marker = "platform_python_implementation != 'PyPy'" },
@@ -2099,9 +2099,9 @@ dependencies = [
     { name = "pathspec", marker = "platform_python_implementation != 'PyPy'" },
     { name = "typing-extensions", marker = "platform_python_implementation != 'PyPy'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bc/68/469dd5ff669e783b568feeeefe6526d8869dc4f9fab2a2285ecf4b2db788/pyastgrep-1.6.tar.gz", hash = "sha256:ed78dbd6b12f1a5d2fe4e09b8f7c6d00d2c6dc89f9325f1111a63eec9944564b", size = 29262, upload-time = "2026-01-08T17:30:11.617Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e5/1e/4a594fe5e162c620a8fbf8e4145f9e319e996af47fd8d23dd9d5b5ebf9c7/pyastgrep-1.7.tar.gz", hash = "sha256:da8b03b8cc1a723fae28d90a1af62ca3eef557a46c9b5d0330d600fa94545e4a", size = 29460, upload-time = "2026-07-01T15:27:06.055Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/59/29f30b2d8e0e5cf576e62b4ee5161bb426175238c981e8044de73c3aa80e/pyastgrep-1.6-py3-none-any.whl", hash = "sha256:6229ff7ad47883b6a3499da53979d414842bc336603e04ddea31c9c45201f3fd", size = 22675, upload-time = "2026-01-08T17:30:10.662Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/cb/dc7369dbf57a9d011a382e0e823496056800280acd32a31193aaff4cd607/pyastgrep-1.7-py3-none-any.whl", hash = "sha256:81a260751f72336fcf6e85de8f36e0a502e379752f7faf8492ee9be347efbc2c", size = 22720, upload-time = "2026-07-01T15:27:04.813Z" },
 ]
 
 [[package]]
