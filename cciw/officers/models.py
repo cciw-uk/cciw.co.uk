@@ -210,6 +210,11 @@ class Application(ClearCachedPropertyMixin, models.Model):
         to_delete.delete()
 
 
+def no_titles(name: str) -> None:
+    if name.lower().split(" ")[0] in ("mr", "mrs", "dr", "rev"):
+        raise ValidationError("Do not include title in name.")
+
+
 class Referee(models.Model):
     # Referee applies to one Application only, and has to be soft-matched to
     # subsequent Applications by the same officer, even if the referee is the
@@ -221,7 +226,7 @@ class Referee(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, limit_choices_to={"finished": True})
     referee_number = models.SmallIntegerField("Referee number", choices=[(n, str(n)) for n in REFEREE_NUMBERS])
 
-    name = RequiredCharField("Name", max_length=NAME_LENGTH, help_text=REFEREE_NAME_HELP_TEXT)
+    name = RequiredCharField("Name", max_length=NAME_LENGTH, help_text=REFEREE_NAME_HELP_TEXT, validators=[no_titles])
     capacity_known = RequiredCharField(
         "Capacity known", max_length=255, help_text="In what capacity does the referee know you? (see above)"
     )

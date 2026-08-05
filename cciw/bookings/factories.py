@@ -51,7 +51,7 @@ def create_booking(
     address_city="Metrocity",
     address_country="GB",
     address_post_code="ABC 123",
-    contact_name="Mr Father",
+    contact_name="My Father",
     contact_line1="98 Main Street",
     contact_city="Metrocity",
     contact_country="GB",

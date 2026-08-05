@@ -312,7 +312,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
 
     def test_role_name_present(self):
         camp, leader, officer = create_camp_with_leader_and_officer(officer_role="Tent Officer")
-        application = factories.create_application(officer=officer, year=camp.year, referee1_name="Mr Referee Name")
+        application = factories.create_application(officer=officer, year=camp.year, referee1_name="My Referee Name")
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
         self.get_literal_url(url)
         self.assertCode(200)
@@ -335,7 +335,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         and that the name on the application form is updated.
         """
         camp, leader, officer = create_camp_with_leader_and_officer()
-        application = factories.create_application(officer=officer, year=camp.year, referee1_name="Mr Referee Name")
+        application = factories.create_application(officer=officer, year=camp.year, referee1_name="My Referee Name")
         assert not application.referees[0].reference_is_received()
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
         self.get_literal_url(url)
