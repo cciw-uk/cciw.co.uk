@@ -144,7 +144,7 @@ def booking_summary_stats_download(request: HttpRequest, start_year: int, end_ye
 
 @booking_secretary_required
 @json_response
-def place_availability_json(request: HttpRequest):
+def place_availability_json(request: HttpRequest) -> dict:
     retval: dict[str, object] = {"status": "success"}
     camp_id = int(request.GET["camp_id"])
     camp: Camp = Camp.objects.get(id=camp_id)
@@ -194,10 +194,10 @@ def booking_problems_json(request: HttpRequest) -> dict[str, object]:
     return retval
 
 
-@json_response
 @staff_member_required
 @booking_secretary_required
-def get_booking_expected_amount_due(request: HttpRequest) -> HttpResponse:
+@json_response
+def get_booking_expected_amount_due(request: HttpRequest) -> dict:
     fail = {"status": "success", "amount": None}
     try:
         # If we use a form to construct an object, we won't get pass

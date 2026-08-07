@@ -1,14 +1,18 @@
 from collections.abc import Callable
 from functools import wraps
+from typing import Concatenate
 
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 
 from cciw.cciwmain.utils import python_to_json
 
 
-def json_response(view_func: Callable) -> Callable:
-    def _inner(request, *args, **kwargs):
+def json_response[**P](
+    view_func: Callable[Concatenate[HttpRequest, P], dict],
+) -> Callable[Concatenate[HttpRequest, P], HttpResponse]:
+    @wraps(view_func)
+    def _inner(request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> HttpResponse:
         try:
             data = view_func(request, *args, **kwargs)
         except ValidationError as e:
@@ -32,4 +36,4 @@ def json_response(view_func: Callable) -> Callable:
         resp["Cache-Control"] = "no-cache"
         return resp
 
-    return wraps(view_func)(_inner)
+    return _inner
