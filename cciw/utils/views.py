@@ -175,10 +175,7 @@ def htmx_redirect(url):
     return HttpResponse(headers={"HX-Redirect": url})
 
 
-# New methods for htmx - using partials.
-# `for_htmx` is deprecated and should be replaced,
-# bulking out this function as necessary.
-def for_htmx2[V: ViewFunc](
+def for_htmx[V: ViewFunc](
     *,
     use_partial_from_params: bool = False,
 ) -> Callable[[V], V]:

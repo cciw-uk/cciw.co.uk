@@ -13,7 +13,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from cciw.accounts.models import User
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
-from cciw.utils.views import add_hx_trigger_header, for_htmx2
+from cciw.utils.views import add_hx_trigger_header, for_htmx
 
 from ..applications import (
     camps_for_application,
@@ -44,7 +44,7 @@ from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
 @with_breadcrumbs(officers_breadcrumbs)
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def manage_dbss(request: HttpRequest, year: int) -> HttpResponse:
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
@@ -117,7 +117,7 @@ def mark_dbs_sent(request):
 
 @staff_member_required
 @dbs_officer_required
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def dbs_consent_alert_leaders(request: HttpRequest, application_id: int) -> HttpResponse:
     app = get_object_or_404(Application.objects.filter(id=application_id))
     officer = app.officer

@@ -31,7 +31,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers.forms import UpdateQueueEntryForm
 from cciw.officers.views.utils.campid import get_camp_or_404
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
-from cciw.utils.views import for_htmx2
+from cciw.utils.views import for_htmx
 
 from .utils.auth import (
     booking_secretary_or_treasurer_required,
@@ -242,7 +242,7 @@ def booking_queues(request: HttpRequest, year: int) -> HttpResponse:
 
 
 @camp_admin_required
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def booking_queue(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     camp = get_camp_or_404(camp_id)
     year_config = get_year_config(year=camp.year)

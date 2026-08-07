@@ -9,7 +9,7 @@ from django.views.decorators.cache import cache_control, never_cache
 
 from cciw.accounts.models import User
 from cciw.cciwmain.common import CampId
-from cciw.utils.views import add_hx_trigger_header, for_htmx2
+from cciw.utils.views import add_hx_trigger_header, for_htmx
 
 from ...applications import (
     applications_for_camp,
@@ -44,7 +44,7 @@ from ..utils.campid import get_camp_or_404
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
 @with_breadcrumbs(leaders_breadcrumbs)
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def manage_references(request: HttpRequest, camp_id: CampId) -> TemplateResponse:
     # If referee_id is set, we just want to update part of the page.
     referee_id = request.GET.get("referee_id")
@@ -110,7 +110,7 @@ def manage_references(request: HttpRequest, camp_id: CampId) -> TemplateResponse
 
 @staff_member_required
 @camp_admin_required
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def correct_referee_details(request: HttpRequest, camp_id: CampId, referee_id: int):
     referee = get_object_or_404(Referee.objects.filter(id=referee_id))
     if request.method == "POST":
@@ -162,7 +162,7 @@ def _get_previous_reference(referee: Referee, prev_ref_id: int) -> tuple[bool, R
 
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
     camp = get_camp_or_404(camp_id)
     referee: Referee = get_object_or_404(Referee.objects.filter(id=referee_id))
@@ -223,7 +223,7 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
 
 @staff_member_required
 @camp_admin_required
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id: int):
     referee = get_object_or_404(Referee.objects.filter(id=referee_id))
     reference: Reference | None = referee.reference if hasattr(referee, "reference") else None
@@ -263,7 +263,7 @@ def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id
 
 @staff_member_required
 @camp_admin_required
-@for_htmx2(use_partial_from_params=True)
+@for_htmx(use_partial_from_params=True)
 def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
     # htmx only view, runs in modal dialog
     camp = get_camp_or_404(camp_id)
