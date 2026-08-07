@@ -14,8 +14,6 @@ from cciw.middleware import threadlocals
 from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import (
-    REFEREE_DATA_FIELDS,
-    REFEREE_NUMBERS,
     Application,
     CampRole,
     DBSActionLog,
@@ -27,6 +25,7 @@ from cciw.officers.models import (
     Reference,
     ReferenceAction,
 )
+from cciw.officers.models.references import REFEREE_DATA_FIELDS, REFEREE_NUMBERS
 from cciw.utils.admin import RerouteResponseAdminMixin
 from cciw.utils.views import close_window_response
 

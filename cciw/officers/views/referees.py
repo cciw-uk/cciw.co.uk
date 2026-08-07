@@ -6,7 +6,7 @@ from django.urls import reverse
 from cciw.officers.applications import invitations_for_application
 from cciw.officers.email import make_ref_form_url_hash
 from cciw.officers.forms import ReferenceForm
-from cciw.officers.models import Referee, Reference, empty_reference
+from cciw.officers.models.references import Referee, Reference, empty_reference
 
 
 def get_initial_reference_form(

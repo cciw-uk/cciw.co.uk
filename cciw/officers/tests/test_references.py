@@ -11,7 +11,12 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.officers.email import make_ref_form_url
-from cciw.officers.models import Referee, ReferenceAction, close_enough_referee_match, get_previous_references
+from cciw.officers.models.references import (
+    Referee,
+    ReferenceAction,
+    close_enough_referee_match,
+    get_previous_references,
+)
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RolesSetupMixin
 from cciw.utils.tests.factories import Auto, _Auto

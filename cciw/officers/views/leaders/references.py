@@ -11,9 +11,7 @@ from cciw.accounts.models import User
 from cciw.cciwmain.common import CampId
 from cciw.utils.views import add_hx_trigger_header, for_htmx
 
-from ...applications import (
-    applications_for_camp,
-)
+from ...applications import applications_for_camp
 from ...email import (
     make_ref_form_url,
     send_nag_by_officer,
@@ -25,7 +23,7 @@ from ...forms import (
     SendNagByOfficerForm,
     SendReferenceRequestForm,
 )
-from ...models import (
+from ...models.references import (
     Referee,
     Reference,
     ReferenceAction,
@@ -33,9 +31,7 @@ from ...models import (
     get_previous_references,
 )
 from ..referees import get_initial_reference_form
-from ..utils.auth import (
-    camp_admin_required,
-)
+from ..utils.auth import camp_admin_required
 from ..utils.breadcrumbs import leaders_breadcrumbs, with_breadcrumbs
 from ..utils.campid import get_camp_or_404
 

@@ -25,10 +25,8 @@ from cciw.officers.applications import (
 from cciw.utils.views import validated_redirect_response
 
 from ..email_utils import formatted_email, send_mail_with_attachments
-from ..models import (
-    REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS,
-    Application,
-)
+from ..models import Application
+from ..models.references import REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 
 

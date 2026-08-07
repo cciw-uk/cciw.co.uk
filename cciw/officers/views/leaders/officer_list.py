@@ -16,7 +16,7 @@ from ...forms import (
     CreateOfficerForm,
     UpdateOfficerForm,
 )
-from ...models import (
+from ...models.invitations import (
     CampRole,
     Invitation,
     OfficerList,
