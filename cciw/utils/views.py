@@ -17,8 +17,8 @@ from furl import furl
 
 from cciw.accounts.models import User
 
-type ViewFunc = Callable[Concatenate[HttpRequest, ...], HttpResponse]
-type TemplateResponseViewFunc = Callable[Concatenate[HttpRequest, ...], TemplateResponse]
+type ViewFunc[**P] = Callable[Concatenate[HttpRequest, P], HttpResponse]
+type TemplateResponseViewFunc[**P] = Callable[Concatenate[HttpRequest, P], TemplateResponse]
 
 
 def close_window_response(request: HttpRequest, *, clear_messages=False) -> HttpResponse:

@@ -307,7 +307,7 @@ def edit_place(request: HttpRequest, *, booking_id: int) -> HttpResponse:
 @booking_account_required
 @for_htmx(use_partial_from_params=True)
 @require_GET
-def add_place_reuse_data(request: HttpRequest, booking_id: int | None = None):
+def add_place_reuse_data(request: HttpRequest, booking_id: int | None = None) -> HttpResponse:
     """
     Adds in additional data to the form on the page, depending on the buttons used.
     """
@@ -667,7 +667,7 @@ def pay_cancelled(request: HttpRequest) -> TemplateResponse:
 
 @booking_account_required
 @for_htmx(use_partial_from_params=True)
-def account_overview(request: HttpRequest) -> TemplateResponse:
+def account_overview(request: HttpRequest) -> HttpResponse:
     if "logout" in request.POST:
         response = HttpResponseRedirect(reverse("cciw-bookings-index"))
         unset_booking_account_cookie(response)

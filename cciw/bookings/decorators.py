@@ -1,6 +1,5 @@
-from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, Concatenate
+from typing import TYPE_CHECKING, cast
 
 import furl
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -21,9 +20,7 @@ def ensure_booking_account_attr(request: HttpRequest):
         request.booking_account = get_booking_account_from_request(request)
 
 
-def booking_account_required[**P](
-    view_func: Callable[Concatenate[HttpRequest, P], HttpResponse],
-) -> Callable[Concatenate[HttpRequest, P], HttpResponse]:
+def booking_account_required[V: ViewFunc](view_func: V) -> V:
     """
     Requires a signed cookie that verifies the booking account,
     redirecting if this is not satisfied,
@@ -31,7 +28,7 @@ def booking_account_required[**P](
     """
 
     @wraps(view_func)
-    def view(request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> HttpResponse:
+    def view(request: HttpRequest, *args, **kwargs) -> HttpResponse:
         ensure_booking_account_attr(request)
         booking_account: BookingAccount | None = request.booking_account
         if booking_account is None:
@@ -44,24 +41,22 @@ def booking_account_required[**P](
         return view_func(request, *args, **kwargs)
 
     setattr(view, _BOOKING_DECORATOR_APPLIED, True)
-    return view
+    return cast(V, view)
 
 
-def booking_account_optional[**P](
-    view_func: Callable[Concatenate[HttpRequest, P], HttpResponse],
-) -> Callable[Concatenate[HttpRequest, P], HttpResponse]:
+def booking_account_optional[V: ViewFunc](view_func: V) -> V:
     """
     Marks a view as not needing a booking account. It also adds
     `booking_account` to request object, though it might be be `None`
     """
 
     @wraps(view_func)
-    def view(request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> HttpResponse:
+    def view(request: HttpRequest, *args, **kwargs) -> HttpResponse:
         ensure_booking_account_attr(request)
         return view_func(request, *args, **kwargs)
 
     setattr(view, _BOOKING_DECORATOR_APPLIED, True)
-    return view
+    return cast(V, view)
 
 
 def check_booking_decorator[T: ViewFunc](view_func: T) -> T:
@@ -82,19 +77,17 @@ def check_booking_decorator[T: ViewFunc](view_func: T) -> T:
 # meaning they depend on one of the previous required decorators.
 
 
-def account_details_required[**P](
-    view_func: Callable[Concatenate[HttpRequest, P], HttpResponse],
-) -> Callable[Concatenate[HttpRequest, P], HttpResponse]:
+def account_details_required[V: ViewFunc](view_func: V) -> V:
     """
     Ensures that the user has filled out their account details. Otherwise
     redirects to that page.
     """
 
     @wraps(view_func)
-    def view(request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> HttpResponse:
+    def view(request: HttpRequest, *args, **kwargs) -> HttpResponse:
         booking_account: BookingAccount | None = request.booking_account
         if not (booking_account is not None and booking_account.has_account_details()):
             return HttpResponseRedirect(reverse("cciw-bookings-account_details"))
         return view_func(request, *args, **kwargs)
 
-    return view
+    return cast(V, view)
