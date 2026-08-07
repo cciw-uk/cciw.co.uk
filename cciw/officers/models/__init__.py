@@ -1,4 +1,5 @@
 from .applications import Application, ApplicationQuerySet, Qualification, QualificationType
+from .data_retention import DataDownloadLog
 from .dbss import DBSActionLog, DBSActionLogType, DBSCheck
 from .invitations import Invitation, OfficerList
 from .references import Referee, Reference, ReferenceAction
@@ -18,4 +19,5 @@ __all__ = [
     "DBSActionLog",
     "DBSCheck",
     "DBSActionLogType",
+    "DataDownloadLog",
 ]

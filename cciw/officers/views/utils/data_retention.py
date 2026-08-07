@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from enum import StrEnum
 from functools import wraps
+from typing import Any, Literal, Protocol, overload
 
 import furl
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
+
+from cciw.officers.models.data_retention import DataRelation, NoDataRelation, log_data_download
+from cciw.utils.views import ViewFunc
 
 
 class DataRetentionNotice(StrEnum):
@@ -51,20 +57,63 @@ for val in DataRetentionNotice:
     assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
 
-def sensitive_data_download[F: Callable](notice_type: DataRetentionNotice, brief_title: str) -> Callable[[F], F]:
+class DownloadViewFunc[**P](Protocol):
+    def __call__(self, request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> SensitiveDownloadResponse: ...
+
+
+class SensitiveDownloadResponse(HttpResponse):
+    def __init__(self, content=b"", *args, data_relation: DataRelation, filename: str, **kwargs):
+        """
+        HTTP response for a sensitive download.
+        """
+        super().__init__(content, *args, **kwargs)
+        self.data_relation = data_relation
+        self.filename = filename
+        self.headers["Content-Disposition"] = f"attachment; filename={filename}"
+
+
+@overload
+def sensitive_data_download[**P](
+    *,
+    skip_notice: Literal[True],
+) -> Callable[[DownloadViewFunc[P]], ViewFunc[P]]: ...
+
+
+@overload
+def sensitive_data_download[**P](
+    notice_type: DataRetentionNotice, brief_title: str, /
+) -> Callable[[DownloadViewFunc[P]], ViewFunc[P]]: ...
+
+
+def sensitive_data_download[**P](
+    notice_type: DataRetentionNotice | None = None,
+    brief_title: str | None = None,
+    /,
+    *,
+    skip_notice: Literal[True] | None = None,
+) -> Callable[[DownloadViewFunc[P]], ViewFunc[P]]:
     """
     Decorator for sensitive data downloads:
 
-    - shows a prompt to ensure to user the knows about data retention
+    - shows a prompt to ensure to user the knows about data retention,
+      using notice_type and brief_title (unless you pass 'skip_notice=True')
+
+    - logs the download
     """
 
-    def decorator(func: F) -> F:
+    def decorator(func: DownloadViewFunc[P]) -> ViewFunc[P]:
         @wraps(func)
-        def wrapper(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             htmx = "HX-Request" in request.headers
-            if "data_retention_notice_seen" in request.GET:
-                return func(request, *args, **kwargs)
+            if "data_retention_notice_seen" in request.GET or skip_notice:
+                response = func(request, *args, **kwargs)
+                data_relation = response.data_relation
+                if not isinstance(data_relation, NoDataRelation):
+                    log_data_download(user=request.user, data_relation=data_relation, filename=response.filename)
+                return response
             else:
+                assert notice_type is not None
+                assert brief_title is not None
                 if htmx:
                     base_template = "cciw/officers/modal_dialog.html"
                 else:

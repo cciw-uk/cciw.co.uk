@@ -1,7 +1,11 @@
 import openpyxl
-from django.http import HttpResponse
 
-from cciw.officers.views.utils.data_retention import DATA_RETENTION_NOTICES_TXT, DataRetentionNotice
+from cciw.officers.views.utils.data_retention import (
+    DATA_RETENTION_NOTICES_TXT,
+    DataRelation,
+    DataRetentionNotice,
+    SensitiveDownloadResponse,
+)
 from cciw.utils import xl
 from cciw.utils.spreadsheet import ExcelBuilder
 
@@ -11,7 +15,8 @@ def spreadsheet_response(
     filename: str,
     *,
     notice: DataRetentionNotice | None,
-) -> HttpResponse:
+    data_relation: DataRelation,
+) -> SensitiveDownloadResponse:
     output = builder.to_bytes()
 
     if notice is not None:
@@ -28,9 +33,9 @@ def spreadsheet_response(
         sheet.column_dimensions["A"].width = 100
 
         output = xl.workbook_to_bytes(workbook)
-    response = HttpResponse(output, content_type=builder.mimetype)
-    response["Content-Disposition"] = f"attachment; filename={filename}.{builder.file_ext}"
-    return response
+    return SensitiveDownloadResponse(
+        output, content_type=builder.mimetype, data_relation=data_relation, filename=f"{filename}.{builder.file_ext}"
+    )
 
 
 def notice_to_lines(notice: DataRetentionNotice) -> list[str]:

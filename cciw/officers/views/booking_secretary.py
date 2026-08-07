@@ -33,6 +33,10 @@ from cciw.officers.views.utils.campid import get_camp_or_404
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
 from cciw.utils.views import for_htmx
 
+from ..models.data_retention import (
+    DataRelatedToCampersYear,
+    NoDataRelation,
+)
 from .utils.auth import (
     booking_secretary_or_treasurer_required,
     booking_secretary_required,
@@ -41,7 +45,11 @@ from .utils.auth import (
     secretary_or_committee_required,
 )
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
-from .utils.data_retention import DataRetentionNotice, sensitive_data_download
+from .utils.data_retention import (
+    DataRetentionNotice,
+    SensitiveDownloadResponse,
+    sensitive_data_download,
+)
 from .utils.spreadsheets import spreadsheet_response
 
 EXPORT_PAYMENT_DATE_FORMAT = "%Y-%m-%d"
@@ -52,11 +60,12 @@ BOOKING_STATS_PREVIOUS_YEARS = 4
 @staff_member_required
 @booking_secretary_required
 @sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper data")
-def export_camper_data_for_year(request: HttpRequest, year: int):
+def export_camper_data_for_year(request: HttpRequest, year: int) -> SensitiveDownloadResponse:
     return spreadsheet_response(
         year_bookings_to_spreadsheet(year),
         f"CCIW-bookings-{year}",
         notice=DataRetentionNotice.CAMPERS,
+        data_relation=DataRelatedToCampersYear(year=year),
     )
 
 
@@ -101,7 +110,8 @@ def booking_secretary_reports(request: HttpRequest, year: int):
 
 
 @booking_secretary_required
-def export_payment_data(request: HttpRequest):
+@sensitive_data_download(skip_notice=True)
+def export_payment_data(request: HttpRequest) -> SensitiveDownloadResponse:
     date_start = request.GET["start"]
     date_end = request.GET["end"]
     date_start = datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT).replace(
@@ -112,13 +122,15 @@ def export_payment_data(request: HttpRequest):
         payments_to_spreadsheet(date_start, date_end),
         f"CCIW-payments-{date_start:%Y-%m-%d}-to-{date_end:%Y-%m-%d}",
         notice=DataRetentionNotice.CAMPERS,
+        # We base data relation on the last year that might be included.
+        data_relation=DataRelatedToCampersYear(year=date_end.year),
     )
 
 
 @staff_member_required
 @secretary_or_committee_required
 @with_breadcrumbs(officers_breadcrumbs)
-def booking_summary_stats(request: HttpRequest, start_year: int, end_year: int):
+def booking_summary_stats(request: HttpRequest, start_year: int, end_year: int) -> HttpResponse:
     chart_data = get_booking_summary_stats(start_year, end_year)
     chart_data.pop("Total")
     return TemplateResponse(
@@ -135,11 +147,16 @@ def booking_summary_stats(request: HttpRequest, start_year: int, end_year: int):
 
 @staff_member_required
 @secretary_or_committee_required
-def booking_summary_stats_download(request: HttpRequest, start_year: int, end_year: int):
+def booking_summary_stats_download(request: HttpRequest, start_year: int, end_year: int) -> HttpResponse:
     data = get_booking_summary_stats(start_year, end_year)
     builder = ExcelFromDataFrameBuilder()
     builder.add_sheet_from_dataframe("Bookings", data)
-    return spreadsheet_response(builder, f"CCIW-booking-summary-stats-{start_year}-{end_year}", notice=None)
+    return spreadsheet_response(
+        builder,
+        f"CCIW-booking-summary-stats-{start_year}-{end_year}",
+        notice=None,
+        data_relation=NoDataRelation(),
+    )
 
 
 @booking_secretary_required
@@ -225,9 +242,13 @@ def get_booking_expected_amount_due(request: HttpRequest) -> dict:
 
 
 @cciw_secretary_or_booking_secretary_required
-def brochure_mailing_list(request: HttpRequest, year: int) -> HttpResponse:
+@sensitive_data_download(skip_notice=True)
+def brochure_mailing_list(request: HttpRequest, year: int) -> SensitiveDownloadResponse:
     return spreadsheet_response(
-        addresses_for_mailing_list(year), f"CCIW-mailing-list-{year}", notice=DataRetentionNotice.CAMPERS
+        addresses_for_mailing_list(year),
+        f"CCIW-mailing-list-{year}",
+        notice=DataRetentionNotice.CAMPERS,
+        data_relation=DataRelatedToCampersYear(year=year),
     )
 
 

@@ -1,13 +1,14 @@
 import pandas as pd
 import pandas_highcharts.core
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats
 from cciw.cciwmain.common import CampId
 from cciw.cciwmain.models import Camp
+from cciw.officers.models.data_retention import NoDataRelation
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
 
 from ...stats import get_camp_officer_stats, get_camp_officer_stats_trend
@@ -79,7 +80,7 @@ def officer_stats_trend(request, start_year: int, end_year: int):
 
 @staff_member_required
 @camp_admin_required
-def officer_stats_download(request, year: int) -> HttpResponse:
+def officer_stats_download(request: HttpRequest, year: int) -> HttpResponse:
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
     builder = ExcelFromDataFrameBuilder()
     for camp in camps:
@@ -88,15 +89,21 @@ def officer_stats_download(request, year: int) -> HttpResponse:
         builder,
         f"CCIW-officer-stats-{year}",
         notice=None,
+        data_relation=NoDataRelation(),
     )
 
 
 @staff_member_required
 @camp_admin_required
-def officer_stats_trend_download(request, start_year: int, end_year: int) -> HttpResponse:
+def officer_stats_trend_download(request: HttpRequest, start_year: int, end_year: int) -> HttpResponse:
     builder = ExcelFromDataFrameBuilder()
     builder.add_sheet_from_dataframe("Officer stats trend", get_camp_officer_stats_trend(start_year, end_year))
-    return spreadsheet_response(builder, f"CCIW-officer-stats-trend-{start_year}-{end_year}", notice=None)
+    return spreadsheet_response(
+        builder,
+        f"CCIW-officer-stats-trend-{start_year}-{end_year}",
+        notice=None,
+        data_relation=NoDataRelation(),
+    )
 
 
 def fraction_to_percent(data):
@@ -151,8 +158,11 @@ def booking_progress_stats(
 @staff_member_required
 @camp_admin_required
 def booking_progress_stats_download(
-    request, start_year: int | None = None, end_year: int | None = None, camp_ids: list[CampId] | None = None
-):
+    request: HttpRequest,
+    start_year: int | None = None,
+    end_year: int | None = None,
+    camp_ids: list[CampId] | None = None,
+) -> HttpResponse:
     start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=False
     )
@@ -167,6 +177,7 @@ def booking_progress_stats_download(
         builder,
         filename,
         notice=None,
+        data_relation=NoDataRelation(),
     )
 
 
@@ -174,12 +185,12 @@ def booking_progress_stats_download(
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
 def booking_ages_stats(
-    request,
+    request: HttpRequest,
     start_year: int | None = None,
     end_year: int | None = None,
     camp_ids: list[CampId] | None = None,
     single_year: int | None = None,
-):
+) -> HttpResponse:
     if single_year is not None:
         camps = Camp.objects.filter(year=int(single_year))
         return HttpResponseRedirect(
@@ -226,7 +237,10 @@ def booking_ages_stats(
 @staff_member_required
 @camp_admin_required
 def booking_ages_stats_download(
-    request, start_year: int | None = None, end_year: int | None = None, camp_ids: list[CampId] | None = None
+    request: HttpRequest,
+    start_year: int | None = None,
+    end_year: int | None = None,
+    camp_ids: list[CampId] | None = None,
 ):
     start_year, end_year, camps, data = _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
     builder = ExcelFromDataFrameBuilder()
@@ -235,7 +249,12 @@ def booking_ages_stats_download(
         filename = f"CCIW-booking-ages-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
         filename = f"CCIW-booking-ages-stats-{start_year}-{end_year}"
-    return spreadsheet_response(builder, filename, notice=None)
+    return spreadsheet_response(
+        builder,
+        filename,
+        notice=None,
+        data_relation=NoDataRelation(),
+    )
 
 
 def _get_booking_ages_stats_from_params(

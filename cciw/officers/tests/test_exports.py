@@ -26,8 +26,14 @@ def test_export_camper_data(db, client: Client):
     resp2 = client.get(url2)
 
     assert resp2.headers["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    assert (
-        resp2.headers["Content-Disposition"]
-        == f"attachment; filename=CCIW-camp-{camp.year}-{camp.slug_name}-campers.xlsx"
-    )
+    filename = f"CCIW-camp-{camp.year}-{camp.slug_name}-campers.xlsx"
+    assert resp2.headers["Content-Disposition"] == f"attachment; filename={filename}"
     # Content is tested more easily using tests for `camp_bookings_to_spreadsheet`
+
+    download_logs = user.data_download_logs.all()
+    assert len(download_logs) == 1
+    log = download_logs[0]
+    assert log.filename == filename
+    assert log.relation_type == "DataRelatedToCampersOnCamp"
+    assert log.camp == camp
+    assert log.year is None

@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from cciw.accounts.models import User
 from cciw.cciwmain.common import CampId
 from cciw.mail.lists import address_for_camp_officers
+from cciw.officers.models.data_retention import DataRelatedToOfficersOnCamp
 from cciw.utils.views import for_htmx, get_redirect_from_request, make_get_request
 
 from ...create import email_officer
@@ -29,7 +30,7 @@ from ..utils.auth import (
 )
 from ..utils.breadcrumbs import leaders_breadcrumbs, with_breadcrumbs
 from ..utils.campid import get_camp_or_404
-from ..utils.data_retention import DataRetentionNotice, sensitive_data_download
+from ..utils.data_retention import DataRetentionNotice, SensitiveDownloadResponse, sensitive_data_download
 from ..utils.spreadsheets import spreadsheet_response
 
 
@@ -241,10 +242,11 @@ def resend_email(request: HttpRequest) -> HttpResponse:
 @staff_member_required
 @camp_admin_required
 @sensitive_data_download(DataRetentionNotice.OFFICERS, "Officer data")
-def export_officer_data(request: HttpRequest, camp_id: CampId) -> HttpResponse:
+def export_officer_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownloadResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
         officer_data_to_spreadsheet(camp),
         f"CCIW-camp-{camp.url_id}-officers",
         notice=DataRetentionNotice.OFFICERS,
+        data_relation=DataRelatedToOfficersOnCamp(camp),
     )
