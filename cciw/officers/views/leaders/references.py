@@ -1,4 +1,3 @@
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Prefetch
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -36,7 +35,6 @@ from ..utils.breadcrumbs import leaders_breadcrumbs, with_breadcrumbs
 from ..utils.campid import get_camp_or_404
 
 
-@staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
 @with_breadcrumbs(leaders_breadcrumbs)
@@ -104,7 +102,6 @@ def manage_references(request: HttpRequest, camp_id: CampId) -> TemplateResponse
     )
 
 
-@staff_member_required
 @camp_admin_required
 @for_htmx(use_partial_from_params=True)
 def correct_referee_details(request: HttpRequest, camp_id: CampId, referee_id: int):
@@ -156,7 +153,6 @@ def _get_previous_reference(referee: Referee, prev_ref_id: int) -> tuple[bool, R
         return (False, prev_references[0])
 
 
-@staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @for_htmx(use_partial_from_params=True)
 def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
@@ -217,7 +213,6 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
     return TemplateResponse(request, "cciw/officers/request_reference.html", context)
 
 
-@staff_member_required
 @camp_admin_required
 @for_htmx(use_partial_from_params=True)
 def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id: int):
@@ -257,7 +252,6 @@ def fill_in_reference_manually(request: HttpRequest, camp_id: CampId, referee_id
     )
 
 
-@staff_member_required
 @camp_admin_required
 @for_htmx(use_partial_from_params=True)
 def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
@@ -294,7 +288,6 @@ def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
     )
 
 
-@staff_member_required
 @camp_admin_required
 @cache_control(max_age=3600)
 def view_reference(request, reference_id: int):
@@ -325,7 +318,6 @@ def htmx_reference_events_response(
     return add_hx_trigger_header(HttpResponse(""), events)
 
 
-@staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @cache_control(max_age=3600)
 def officer_history(request, officer_id: int):

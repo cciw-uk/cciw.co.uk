@@ -1,4 +1,3 @@
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest
 
 from cciw.bookings.utils import (
@@ -20,7 +19,6 @@ from ..utils.data_retention import (
 from ..utils.spreadsheets import spreadsheet_response
 
 
-@staff_member_required
 @camp_admin_required
 @sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownloadResponse:
@@ -33,7 +31,6 @@ def export_camper_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownlo
     )
 
 
-@staff_member_required
 @camp_admin_required
 @sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper sharable transport details")
 def export_sharable_transport_details(request: HttpRequest, camp_id: CampId) -> SensitiveDownloadResponse:

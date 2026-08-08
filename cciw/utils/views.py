@@ -20,6 +20,8 @@ from cciw.accounts.models import User
 type ViewFunc[**P] = Callable[Concatenate[HttpRequest, P], HttpResponse]
 type TemplateResponseViewFunc[**P] = Callable[Concatenate[HttpRequest, P], TemplateResponse]
 
+USER_AUTH_DECORATOR_APPLIED = "USER_AUTH_DECORATOR_APPLIED"
+
 
 def close_window_response(request: HttpRequest, *, clear_messages=False) -> HttpResponse:
     # First we clear any messages, because, due to the closed window, these will
@@ -57,23 +59,17 @@ def reroute_response(request: HttpRequest, *, default_to_close: bool = True) -> 
         return None
 
 
-def user_passes_test_improved[F: Callable[..., HttpResponse]](
+def user_passes_test_improved[**P](
     test_func: Callable[[User], bool],
-) -> Callable[[F], F]:
+) -> Callable[[ViewFunc[P]], ViewFunc[P]]:
     """
     Like user_passes_test, but doesn't redirect user to login screen if they are
     already logged in.
     """
 
-    # Can't work out how to correct the type sigs for this yet.
-    # We want the decorated view function to:
-    # - take a HttpRequest
-    # - and any number of other params
-    # - and return a HttpResponse
-
-    def decorator[F2: Callable[..., HttpResponse]](view_func: F2) -> F2:
+    def decorator(view_func: ViewFunc[P]) -> ViewFunc[P]:
         @wraps(view_func)
-        def _wrapped_view(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        def _wrapped_view(request: HttpRequest, *args: P.args, **kwargs: P.kwargs) -> HttpResponse:
             user = request.user
             if user.is_authenticated:
                 if user.is_superuser or test_func(user):
@@ -85,9 +81,15 @@ def user_passes_test_improved[F: Callable[..., HttpResponse]](
             # login.
             return redirect_to_login_with_next(request)
 
+        setattr(_wrapped_view, USER_AUTH_DECORATOR_APPLIED, True)
         return _wrapped_view
 
     return decorator
+
+
+def anonymous_allowed[V: ViewFunc](view_func: V) -> V:
+    setattr(view_func, USER_AUTH_DECORATOR_APPLIED, True)
+    return view_func
 
 
 def redirect_to_login_with_next(request: HttpRequest) -> HttpResponseRedirect:

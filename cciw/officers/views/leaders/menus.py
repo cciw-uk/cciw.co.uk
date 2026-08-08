@@ -1,6 +1,5 @@
 from collections.abc import Iterable
 
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest
 from django.template.response import TemplateResponse
 
@@ -12,7 +11,6 @@ from ..utils.auth import camp_admin_required
 from ..utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 
 
-@staff_member_required
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
 def leaders_index(request: HttpRequest) -> TemplateResponse:

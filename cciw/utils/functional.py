@@ -13,3 +13,7 @@ def partition[T](values: Iterable[T], key: Callable[[T], bool]) -> tuple[list[T]
         else:
             falsey.append(item)
     return (truthy, falsey)
+
+
+def func_name(function: Callable) -> str:
+    return f"{function.__module__}.{function.__qualname__}"

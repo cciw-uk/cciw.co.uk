@@ -1,6 +1,5 @@
 import pandas as pd
 import pandas_highcharts.core
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -20,7 +19,6 @@ from ..utils.campid import get_camp_or_404
 from ..utils.spreadsheets import spreadsheet_response
 
 
-@staff_member_required
 @camp_admin_required
 @with_breadcrumbs(leaders_breadcrumbs)
 def officer_stats(request, year: int):
@@ -53,7 +51,6 @@ def officer_stats(request, year: int):
     )
 
 
-@staff_member_required
 @camp_admin_required
 @with_breadcrumbs(leaders_breadcrumbs)
 def officer_stats_trend(request, start_year: int, end_year: int):
@@ -78,7 +75,6 @@ def officer_stats_trend(request, start_year: int, end_year: int):
     )
 
 
-@staff_member_required
 @camp_admin_required
 def officer_stats_download(request: HttpRequest, year: int) -> HttpResponse:
     camps = list(Camp.objects.filter(year=year).order_by("camp_name__slug"))
@@ -93,7 +89,6 @@ def officer_stats_download(request: HttpRequest, year: int) -> HttpResponse:
     )
 
 
-@staff_member_required
 @camp_admin_required
 def officer_stats_trend_download(request: HttpRequest, start_year: int, end_year: int) -> HttpResponse:
     builder = ExcelFromDataFrameBuilder()
@@ -125,7 +120,6 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, **kw
     return start_year, end_year, camps, data_dates, data_rel_days
 
 
-@staff_member_required
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
 def booking_progress_stats(
@@ -155,7 +149,6 @@ def booking_progress_stats(
     )
 
 
-@staff_member_required
 @camp_admin_required
 def booking_progress_stats_download(
     request: HttpRequest,
@@ -181,7 +174,6 @@ def booking_progress_stats_download(
     )
 
 
-@staff_member_required
 @camp_admin_required
 @with_breadcrumbs(officers_breadcrumbs)
 def booking_ages_stats(
@@ -234,7 +226,6 @@ def booking_ages_stats(
     )
 
 
-@staff_member_required
 @camp_admin_required
 def booking_ages_stats_download(
     request: HttpRequest,

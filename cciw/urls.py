@@ -9,6 +9,7 @@ from django.urls import include, path, register_converter
 
 import cciw.cciwmain.views.debug
 import cciw.officers.views
+import cciw.officers.views.checks
 from cciw.bookings.decorators import check_booking_decorator
 
 from . import converters
@@ -45,7 +46,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Our normal views
     path("booking/", decorator_include([check_booking_decorator], "cciw.bookings.urls")),
-    path("officers/", include("cciw.officers.urls")),
+    path("officers/", decorator_include([cciw.officers.views.checks.check_officers_views], "cciw.officers.urls")),
     # Disabling wiki until they support Django 6.0 or drop their upper bounds
     # path("notifications/", include("django_nyt.urls")),
     # path("wiki/", include("wiki.urls")),

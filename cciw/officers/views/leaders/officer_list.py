@@ -1,6 +1,5 @@
 import furl
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls.resolvers import ResolverMatch, get_resolver
@@ -10,6 +9,7 @@ from cciw.accounts.models import User
 from cciw.cciwmain.common import CampId
 from cciw.mail.lists import address_for_camp_officers
 from cciw.officers.models.data_retention import DataRelatedToOfficersOnCamp
+from cciw.utils.functional import func_name
 from cciw.utils.views import for_htmx, get_redirect_from_request, make_get_request
 
 from ...create import email_officer
@@ -34,7 +34,6 @@ from ..utils.data_retention import DataRetentionNotice, SensitiveDownloadRespons
 from ..utils.spreadsheets import spreadsheet_response
 
 
-@staff_member_required
 @camp_admin_required
 @for_htmx(use_partial_from_params=True)
 @with_breadcrumbs(leaders_breadcrumbs)
@@ -135,7 +134,6 @@ def _officer_list(
     return TemplateResponse(request, "cciw/officers/officer_list.html", context)
 
 
-@staff_member_required
 @camp_admin_required
 def update_officer(request: HttpRequest) -> HttpResponse:
     # Partial page, via htmx
@@ -166,7 +164,6 @@ def update_officer(request: HttpRequest) -> HttpResponse:
     )
 
 
-@staff_member_required
 @camp_admin_required
 @with_breadcrumbs(leaders_breadcrumbs)
 def create_officer(request: HttpRequest) -> HttpResponse:
@@ -192,7 +189,7 @@ def create_officer(request: HttpRequest) -> HttpResponse:
                     redirect_url = redirect_resp["Location"]
                     message = f"Officer {u.full_name} has been added to the system and emailed."
                     match: ResolverMatch = get_resolver().resolve(redirect_url)
-                    if match is not None and match.func == officer_list:
+                    if match is not None and func_name(match.func) == func_name(officer_list):
                         message += " Don't forget to choose a role and add them to your officer list!"
 
                     redirect_resp["Location"] = furl.furl(redirect_url).add({"created_officer_id": u.id}).url
@@ -222,7 +219,6 @@ def create_officer(request: HttpRequest) -> HttpResponse:
     )
 
 
-@staff_member_required
 @camp_admin_required
 @require_POST
 def resend_email(request: HttpRequest) -> HttpResponse:
@@ -239,7 +235,6 @@ def resend_email(request: HttpRequest) -> HttpResponse:
     )
 
 
-@staff_member_required
 @camp_admin_required
 @sensitive_data_download(DataRetentionNotice.OFFICERS, "Officer data")
 def export_officer_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownloadResponse:

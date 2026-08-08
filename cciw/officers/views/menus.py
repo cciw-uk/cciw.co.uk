@@ -6,12 +6,13 @@ from django.views.decorators.cache import never_cache
 from cciw.accounts.models import User
 from cciw.bookings.models import most_recent_booking_year
 from cciw.cciwmain import common
-from cciw.utils.views import get_redirect_from_request
+from cciw.utils.views import USER_AUTH_DECORATOR_APPLIED, get_redirect_from_request
 
 from .booking_secretary import BOOKING_STATS_PREVIOUS_YEARS
 
 
 # /officers/
+# This, uniquely, needs @staff_member_required not @active_staff_required as it is our LOGIN_URL
 @staff_member_required
 @never_cache
 def index(request: HttpRequest) -> TemplateResponse:
@@ -50,3 +51,6 @@ def index(request: HttpRequest) -> TemplateResponse:
         context["show_visitor_book_links"] = True
 
     return TemplateResponse(request, "cciw/officers/index.html", context)
+
+
+setattr(index, USER_AUTH_DECORATOR_APPLIED, True)

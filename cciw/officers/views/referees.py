@@ -7,6 +7,7 @@ from cciw.officers.applications import invitations_for_application
 from cciw.officers.email import make_ref_form_url_hash
 from cciw.officers.forms import ReferenceForm
 from cciw.officers.models.references import Referee, Reference, empty_reference
+from cciw.utils.views import anonymous_allowed
 
 
 def get_initial_reference_form(
@@ -26,6 +27,7 @@ def get_initial_reference_form(
     return form
 
 
+@anonymous_allowed  # Security via magic link
 def create_reference(request: HttpRequest, referee_id: int, hash: str, prev_ref_id: int | None = None) -> HttpResponse:
     """
     View for allowing referee to submit reference (create the Reference object)
@@ -66,6 +68,7 @@ def create_reference(request: HttpRequest, referee_id: int, hash: str, prev_ref_
     return TemplateResponse(request, "cciw/officers/create_reference.html", context)
 
 
+@anonymous_allowed  # Just a thank you page
 def create_reference_thanks(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(request, "cciw/officers/create_reference_thanks.html", {})
 

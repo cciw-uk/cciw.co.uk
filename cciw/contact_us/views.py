@@ -1,7 +1,6 @@
 import logging
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
@@ -66,7 +65,6 @@ def contact_us_done(request: HttpRequest) -> TemplateResponse:
 
 
 @cciw_secretary_or_booking_secretary_required
-@staff_member_required
 def view_message(request: HttpRequest, *, message_id: int) -> TemplateResponse:
     msg: Message = get_object_or_404(Message.objects.filter(id=int(message_id)))
 

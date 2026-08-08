@@ -4,7 +4,6 @@ Views relating to officers submitting and viewing their application forms.
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.core import signing
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
@@ -22,7 +21,8 @@ from cciw.officers.applications import (
     application_txt_filename,
     thisyears_applications,
 )
-from cciw.utils.views import validated_redirect_response
+from cciw.officers.views.utils.auth import active_staff_required
+from cciw.utils.views import anonymous_allowed, validated_redirect_response
 
 from ..email_utils import formatted_email, send_mail_with_attachments
 from ..models import Application
@@ -30,7 +30,7 @@ from ..models.references import REFEREE_DATA_FIELDS_TO_COPY_FROM_PREVIOUS
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 
 
-@staff_member_required
+@active_staff_required
 @never_cache
 @with_breadcrumbs(officers_breadcrumbs)
 def applications(request: HttpRequest) -> HttpResponse:
@@ -99,7 +99,7 @@ def _copy_application(application: Application) -> Application:
     return new_obj
 
 
-@staff_member_required
+@active_staff_required
 def get_application(request: HttpRequest) -> HttpResponse:
     try:
         application_id = int(request.POST["application"])
@@ -152,7 +152,7 @@ Please find attached a copy of the application you requested
         raise Http404
 
 
-@staff_member_required
+@active_staff_required
 def view_application_redirect(request):
     if "application_id" in request.GET:
         return HttpResponseRedirect(
@@ -161,7 +161,7 @@ def view_application_redirect(request):
     raise Http404
 
 
-@staff_member_required
+@active_staff_required
 @cache_control(max_age=3600)
 @with_breadcrumbs(officers_breadcrumbs)
 def view_application(request: HttpRequest, application_id: int) -> TemplateResponse:
@@ -184,6 +184,7 @@ def view_application(request: HttpRequest, application_id: int) -> TemplateRespo
     )
 
 
+@anonymous_allowed  # Security is via signed data
 def correct_email(request: HttpRequest) -> TemplateResponse:
     context = {}
     try:
@@ -205,6 +206,7 @@ def correct_email(request: HttpRequest) -> TemplateResponse:
     return TemplateResponse(request, "cciw/officers/email_update.html", context)
 
 
+@anonymous_allowed  # Security is via signed data
 def correct_application(request: HttpRequest) -> TemplateResponse:
     context = {}
     try:

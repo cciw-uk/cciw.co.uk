@@ -8,9 +8,11 @@ from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
 
 from cciw.cciwmain import common
+from cciw.officers.views.utils.auth import active_staff_required
 from cciw.visitors.views import make_visitor_log_url
 
 
+@active_staff_required
 def visitor_book_utilities(request: HttpRequest) -> HttpResponse:
     return TemplateResponse(
         request,
@@ -33,6 +35,7 @@ def text_to_qr_data_url(text):
     return f"data:image/png;base64,{img_str}"
 
 
+@active_staff_required
 def visitor_book_printout(request: HttpRequest) -> HttpResponse:
     year = common.get_thisyear()
     create_log_url = full_visitor_log_url(year)

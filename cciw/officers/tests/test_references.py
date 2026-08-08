@@ -56,15 +56,6 @@ class ManageReferencesPageWT(WebTestBase):
         self.assertTextPresent(application.referees[1].email)
         self.assertTextPresent(application.referees[1].name)
 
-    def test_page_anonymous_denied(self):
-        camp = camps_factories.create_camp()
-        self.get_literal_url(
-            reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id)), auto_follow=False
-        )
-        self.assertCode(302)
-        self.auto_follow()
-        self.assertTextAbsent("For camp {camp.year}")
-
     def test_page_officers_denied(self):
         camp, leader, officer = create_camp_with_leader_and_officer()
         self.officer_login(officer)

@@ -85,6 +85,9 @@ def sensitive_data_download[**P](
 ) -> Callable[[DownloadViewFunc[P]], ViewFunc[P]]: ...
 
 
+DOWNLOAD_HAS_BEEN_LOGGED = "DOWNLOAD_HAS_BEEN_LOGGED"
+
+
 def sensitive_data_download[**P](
     notice_type: DataRetentionNotice | None = None,
     brief_title: str | None = None,
@@ -110,6 +113,7 @@ def sensitive_data_download[**P](
                 data_relation = response.data_relation
                 if not isinstance(data_relation, NoDataRelation):
                     log_data_download(user=request.user, data_relation=data_relation, filename=response.filename)
+                    setattr(response, DOWNLOAD_HAS_BEEN_LOGGED, True)
                 return response
             else:
                 assert notice_type is not None

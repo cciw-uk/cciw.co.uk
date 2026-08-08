@@ -3,7 +3,6 @@ from datetime import datetime
 
 import pandas_highcharts.core
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -57,7 +56,6 @@ EXPORT_PAYMENT_DATE_FORMAT = "%Y-%m-%d"
 BOOKING_STATS_PREVIOUS_YEARS = 4
 
 
-@staff_member_required
 @booking_secretary_required
 @sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper data")
 def export_camper_data_for_year(request: HttpRequest, year: int) -> SensitiveDownloadResponse:
@@ -127,7 +125,6 @@ def export_payment_data(request: HttpRequest) -> SensitiveDownloadResponse:
     )
 
 
-@staff_member_required
 @secretary_or_committee_required
 @with_breadcrumbs(officers_breadcrumbs)
 def booking_summary_stats(request: HttpRequest, start_year: int, end_year: int) -> HttpResponse:
@@ -145,7 +142,6 @@ def booking_summary_stats(request: HttpRequest, start_year: int, end_year: int) 
     )
 
 
-@staff_member_required
 @secretary_or_committee_required
 def booking_summary_stats_download(request: HttpRequest, start_year: int, end_year: int) -> HttpResponse:
     data = get_booking_summary_stats(start_year, end_year)
@@ -211,7 +207,6 @@ def booking_problems_json(request: HttpRequest) -> dict[str, object]:
     return retval
 
 
-@staff_member_required
 @booking_secretary_required
 @json_response
 def get_booking_expected_amount_due(request: HttpRequest) -> dict:

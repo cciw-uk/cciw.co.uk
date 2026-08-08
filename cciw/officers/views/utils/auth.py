@@ -13,6 +13,7 @@ def any_passes[**P](*funcs: Callable[P, bool]) -> Callable[P, bool]:
     return func
 
 
+active_staff_required = user_passes_test_improved(lambda u: u.is_active_staff)
 camp_admin_required = user_passes_test_improved(lambda u: u.is_camp_admin)
 dbs_officer_required = user_passes_test_improved(lambda u: u.is_dbs_officer)
 dbs_officer_or_camp_admin_required = user_passes_test_improved(lambda u: u.is_dbs_officer or u.is_camp_admin)

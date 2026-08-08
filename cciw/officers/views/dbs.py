@@ -3,7 +3,6 @@ from datetime import date
 
 from django.conf import settings
 from django.contrib.admin import site as admin_site
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
@@ -40,7 +39,6 @@ from .utils.auth import (
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 
 
-@staff_member_required
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
 @with_breadcrumbs(officers_breadcrumbs)
@@ -102,7 +100,6 @@ def htmx_dbs_events_response(
     return add_hx_trigger_header(HttpResponse(""), events)
 
 
-@staff_member_required
 @dbs_officer_required
 def mark_dbs_sent(request):
     officer_id = int(request.POST["officer_id"])
@@ -115,7 +112,6 @@ def mark_dbs_sent(request):
     return htmx_dbs_events_response(refreshOfficer=officer)
 
 
-@staff_member_required
 @dbs_officer_required
 @for_htmx(use_partial_from_params=True)
 def dbs_consent_alert_leaders(request: HttpRequest, application_id: int) -> HttpResponse:
@@ -147,7 +143,6 @@ def dbs_consent_alert_leaders(request: HttpRequest, application_id: int) -> Http
     )
 
 
-@staff_member_required
 @dbs_officer_required
 def request_dbs_form_action(request, application_id: int):
     app = get_object_or_404(Application.objects.filter(id=application_id))
@@ -182,7 +177,6 @@ def request_dbs_form_action(request, application_id: int):
     )
 
 
-@staff_member_required
 @dbs_officer_required
 def dbs_checked_online(request: HttpRequest, officer_id: int):
     officer = User.objects.get(id=officer_id)
@@ -204,7 +198,6 @@ def dbs_checked_online(request: HttpRequest, officer_id: int):
     return _dbscheck_create_form(request, officer, form_initial)
 
 
-@staff_member_required
 @dbs_officer_required
 def dbs_register_received(request: HttpRequest, officer_id: int):
     officer = User.objects.get(id=officer_id)
