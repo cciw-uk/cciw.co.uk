@@ -336,14 +336,14 @@ class Booking(models.Model):
                         make_date(
                           (SELECT year
                               FROM cciwmain_camp AS camp
-                              JOIN bookings_booking AS booking
-                              ON booking.camp_id = camp.id
-                              WHERE booking.id = NEW.id limit 1),
+                              WHERE camp.id = NEW.camp_id
+                              LIMIT 1),
                            8, 31),
                         NEW.birth_date)
                       )
                     ),
-                    NEW.stored_age_on_camp
+                    NEW.stored_age_on_camp,
+                    OLD.stored_age_on_camp
                 );
                 RETURN NEW;
                 """,
