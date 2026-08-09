@@ -4,6 +4,8 @@ from functools import partial
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.db.models import Value
+from django.db.models.functions import Concat
 from django.forms.utils import ErrorList
 from django.http.response import HttpResponse
 from django.urls import reverse
@@ -25,6 +27,7 @@ from cciw.officers.models import (
     Reference,
     ReferenceAction,
 )
+from cciw.officers.models.data_retention import DataDownloadLog
 from cciw.officers.models.references import REFEREE_DATA_FIELDS, REFEREE_NUMBERS
 from cciw.utils.admin import RerouteResponseAdminMixin
 from cciw.utils.views import close_window_response
@@ -592,6 +595,31 @@ class ReferenceActionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("referee__application__officer", "user")
+
+
+@admin.display(ordering=Concat("camp__year", Value("-"), "camp__camp_name__name"), description="camp")
+def camp_admin_display_for_data_download_log(log: DataDownloadLog) -> str:
+    if log.camp is None:
+        return "-"
+    return str(log.camp.url_id)
+
+
+@admin.register(DataDownloadLog)
+class DataDownloadLogAdmin(admin.ModelAdmin):
+    list_display = [
+        "user",
+        "relation_type",
+        "filename",
+        "year",
+        camp_admin_display_for_data_download_log,
+        "created_at",
+    ]
+    date_hierarchy = "created_at"
+    list_filter = [
+        "relation_type",
+        "year",
+        "camp",
+    ]
 
 
 admin.site.register(QualificationType)
