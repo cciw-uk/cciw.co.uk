@@ -5,7 +5,6 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from dateutil.relativedelta import relativedelta
 from django.db import models
 from django.db.models import Q, QuerySet, Value, functions
 from django.utils import timezone
@@ -244,6 +243,7 @@ class Booking(models.Model):
 
     # State - internal
     state = models.CharField(choices=BookingState)
+    age_on_camp = models.IntegerField(null=True, blank=True, default=None)
     booking_expires_at = models.DateTimeField(
         default=None, null=True, blank=True, help_text="If not empty, a 'Booked' booking will expire at this time"
     )
@@ -469,10 +469,6 @@ class Booking(models.Model):
                 return full_amount
 
         return full_amount
-
-    @property
-    def age_on_camp(self) -> int:
-        return relativedelta(self.age_base_date(), self.birth_date).years
 
     def age_base_date(self) -> date:
         # Age is calculated based on school years, i.e. age on 31st August
