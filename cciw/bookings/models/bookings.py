@@ -183,7 +183,7 @@ class Booking(models.Model):
     # This allows us to null out birth_date on erasure, but still keep
     # stored_age_on_camp (as a DB stored field for easy stats),
     # and have the logic defined in just one place.
-    stored_age_on_camp = models.IntegerField(null=True, blank=True, default=None)
+    stored_age_on_camp = models.IntegerField()
 
     # We need the value created by the trigger to be returned to Django after an
     # insert or update, so that we can immediately use. So we use a generated
