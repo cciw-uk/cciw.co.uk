@@ -177,6 +177,13 @@ class Booking(models.Model):
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=Sex)
     birth_date = models.DateField("date of birth")
+
+    # stored_age_on_camp - populated by trigger from birth_date and camp.
+    # This allows us to null out birth_date on erasure, but still keep
+    # stored_age_on_camp (as a DB stored field for easy stats),
+    # and have the logic defined in just one place.
+    stored_age_on_camp = models.IntegerField(null=True, blank=True, default=None)
+
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255)
@@ -243,7 +250,7 @@ class Booking(models.Model):
 
     # State - internal
     state = models.CharField(choices=BookingState)
-    age_on_camp = models.IntegerField(null=True, blank=True, default=None)
+
     booking_expires_at = models.DateTimeField(
         default=None, null=True, blank=True, help_text="If not empty, a 'Booked' booking will expire at this time"
     )
