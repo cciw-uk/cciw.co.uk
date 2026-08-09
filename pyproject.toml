@@ -48,6 +48,7 @@ dependencies = [
     "fabutils-cciw>=0.1.1",
     "django-q2>=1.8.0",
     "blessed>=1.22.0",
+    "django-pgtrigger>=4.17.0",
 ]
 
 
@@ -115,6 +116,7 @@ dev = [
     "pyrefly>=1.0.0",
     "django-stubs>=6.0.5",
     "django-urlconfchecks>=0.13.2",
+    "pgcli>=4.5.0",
 ]
 
 [tool.uv]

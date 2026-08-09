@@ -5,6 +5,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
+import pgtrigger
 from django.db import models
 from django.db.models import Q, QuerySet, Value, functions
 from django.utils import timezone
@@ -306,6 +307,36 @@ class Booking(models.Model):
     class Meta:
         ordering = ["-created_at"]
         base_manager_name = "objects"
+        triggers = [
+            pgtrigger.Trigger(
+                name="populate_stored_age_on_camp",
+                operation=pgtrigger.Update | pgtrigger.Insert,
+                when=pgtrigger.Before,
+                # Age on camp is their age on 31st August of the camp year.
+                # See also age_base_date()
+                #
+                # We may need to cope with erased data where birth_date is None,
+                # in which case we fall back to old `stored_age_on_camp`.
+                func="""
+                NEW.stored_age_on_camp = COALESCE(
+                   (SELECT EXTRACT(YEAR FROM
+                      age(
+                        make_date(
+                          (SELECT year
+                              FROM cciwmain_camp AS camp
+                              JOIN bookings_booking AS booking
+                              ON booking.camp_id = camp.id
+                              WHERE booking.id = NEW.id limit 1),
+                           8, 31),
+                        NEW.birth_date)
+                      )
+                    ),
+                    NEW.stored_age_on_camp
+                );
+                RETURN NEW;
+                """,
+            )
+        ]
 
     # Methods
 
@@ -479,7 +510,7 @@ class Booking(models.Model):
 
     def age_base_date(self) -> date:
         # Age is calculated based on school years, i.e. age on 31st August
-        # See also PreserveAgeOnCamp.build_update_dict()
+        # See also trigger for stored_age_on_camp
         return date(self.camp.year, 8, 31)
 
     def is_too_young(self) -> bool:

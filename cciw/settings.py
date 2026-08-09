@@ -172,6 +172,7 @@ INSTALLED_APPS = (
         "spurl",
         "widget_tweaks",
         "django_q",
+        "pgtrigger",
         # Where we need to override something added:
         "cciw.overrides",
     ]
