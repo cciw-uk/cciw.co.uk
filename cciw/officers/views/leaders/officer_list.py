@@ -189,7 +189,7 @@ def create_officer(request: HttpRequest) -> HttpResponse:
                     if url_matches_view_function(redirect_url, officer_list):
                         message += " Don't forget to choose a role and add them to your officer list!"
 
-                    redirect_resp["Location"] = furl.furl(redirect_url).add({"created_officer_id": u.id}).url
+                    redirect_resp["Location"] = furl.furl(redirect_url).set({"created_officer_id": u.id}).url
                     messages.info(request, message)
                     return redirect_resp
                 else:
