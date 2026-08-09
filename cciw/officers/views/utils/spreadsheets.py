@@ -34,7 +34,7 @@ def spreadsheet_response(
 
         output = xl.workbook_to_bytes(workbook)
     # All spreadsheets are assumed to be sensitive by default,
-    # NoDataRelation can be used for those that aren't.
+    # NoSensitiveData can be used for those that aren't.
     return SensitiveDownloadResponse(
         output, content_type=builder.mimetype, data_relation=data_relation, filename=f"{filename}.{builder.file_ext}"
     )

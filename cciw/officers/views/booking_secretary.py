@@ -34,7 +34,7 @@ from cciw.utils.views import for_htmx
 
 from ..models.data_retention import (
     DataRelatedToCampersYear,
-    NoDataRelation,
+    NoSensitiveData,
 )
 from .utils.auth import (
     booking_secretary_or_treasurer_required,
@@ -151,7 +151,7 @@ def booking_summary_stats_download(request: HttpRequest, start_year: int, end_ye
         builder,
         f"CCIW-booking-summary-stats-{start_year}-{end_year}",
         notice=None,
-        data_relation=NoDataRelation(),
+        data_relation=NoSensitiveData(),
     )
 
 

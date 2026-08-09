@@ -7,7 +7,7 @@ from django.urls import reverse
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats
 from cciw.cciwmain.common import CampId
 from cciw.cciwmain.models import Camp
-from cciw.officers.models.data_retention import NoDataRelation
+from cciw.officers.models.data_retention import NoSensitiveData
 from cciw.utils.spreadsheet import ExcelFromDataFrameBuilder
 
 from ...stats import get_camp_officer_stats, get_camp_officer_stats_trend
@@ -85,7 +85,7 @@ def officer_stats_download(request: HttpRequest, year: int) -> HttpResponse:
         builder,
         f"CCIW-officer-stats-{year}",
         notice=None,
-        data_relation=NoDataRelation(),
+        data_relation=NoSensitiveData(),
     )
 
 
@@ -97,7 +97,7 @@ def officer_stats_trend_download(request: HttpRequest, start_year: int, end_year
         builder,
         f"CCIW-officer-stats-trend-{start_year}-{end_year}",
         notice=None,
-        data_relation=NoDataRelation(),
+        data_relation=NoSensitiveData(),
     )
 
 
@@ -170,7 +170,7 @@ def booking_progress_stats_download(
         builder,
         filename,
         notice=None,
-        data_relation=NoDataRelation(),
+        data_relation=NoSensitiveData(),
     )
 
 
@@ -244,7 +244,7 @@ def booking_ages_stats_download(
         builder,
         filename,
         notice=None,
-        data_relation=NoDataRelation(),
+        data_relation=NoSensitiveData(),
     )
 
 

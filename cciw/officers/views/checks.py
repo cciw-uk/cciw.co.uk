@@ -15,7 +15,7 @@ def check_officers_views[**P](view_func: ViewFunc[P]) -> ViewFunc[P]:
     """
     Checks the decorators applied to officers view functions
     """
-    from cciw.officers.models.data_retention import NoDataRelation
+    from cciw.officers.models.data_retention import NoSensitiveData
     from cciw.officers.views.utils.data_retention import DOWNLOAD_HAS_BEEN_LOGGED, SensitiveDownloadResponse
     from cciw.utils.views import USER_AUTH_DECORATOR_APPLIED
 
@@ -32,10 +32,9 @@ def check_officers_views[**P](view_func: ViewFunc[P]) -> ViewFunc[P]:
         resp = view_func(request, *args, **kwargs)
         # Check 2:
         # - if the response is a SensitiveDownloadResponse,
-        #   and the data relation was not `NoDataRelation`,
         #   then the download should have been logged.
 
-        if isinstance(resp, SensitiveDownloadResponse) and not isinstance(resp.data_relation, NoDataRelation):
+        if isinstance(resp, SensitiveDownloadResponse) and not isinstance(resp.data_relation, NoSensitiveData):
             if not getattr(resp, DOWNLOAD_HAS_BEEN_LOGGED, False):
                 raise AssertionError(f"Sensitive download wasn't logged, bug in {view_func_name}")
 

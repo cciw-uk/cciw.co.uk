@@ -26,7 +26,7 @@ class DataRelatedToOfficersOnCamp:
 
 
 @dataclass(frozen=True)
-class NoDataRelation:
+class NoSensitiveData:
     """
     Sentinel that can be used when there is no sensitive data in the download
     (e.g. only stats, or nothing personal)
@@ -39,7 +39,7 @@ class NoDataRelation:
 # they are used in `type` field below
 type LoggableDataRelation = DataRelatedToCampersYear | DataRelatedToCampersOnCamp | DataRelatedToOfficersOnCamp
 
-type DataRelation = LoggableDataRelation | NoDataRelation
+type DataRelation = LoggableDataRelation | NoSensitiveData
 
 
 LOGGABLE_DATA_RELATION_TYPES = [cls.__name__ for cls in LoggableDataRelation.__value__.__args__]

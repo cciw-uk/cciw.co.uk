@@ -9,7 +9,7 @@ import furl
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 
-from cciw.officers.models.data_retention import DataRelation, NoDataRelation, log_data_download
+from cciw.officers.models.data_retention import DataRelation, NoSensitiveData, log_data_download
 from cciw.utils.views import ViewFunc
 
 
@@ -111,7 +111,7 @@ def sensitive_data_download[**P](
             if "data_retention_notice_seen" in request.GET or skip_notice:
                 response = func(request, *args, **kwargs)
                 data_relation = response.data_relation
-                if not isinstance(data_relation, NoDataRelation):
+                if not isinstance(data_relation, NoSensitiveData):
                     log_data_download(user=request.user, data_relation=data_relation, filename=response.filename)
                     setattr(response, DOWNLOAD_HAS_BEEN_LOGGED, True)
                 return response
