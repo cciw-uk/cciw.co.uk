@@ -519,15 +519,14 @@ class QueueStateInline(admin.StackedInline):
         return False
 
 
+@admin.display(ordering=Concat("camp__year", Value("-"), "camp__camp_name__name"), description="camp")
+def camp_admin_display_for_booking(booking: Booking):
+    return str(booking.camp.url_id)
+
+
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    def camp(booking):
-        return str(booking.camp.url_id)
-
-    camp.admin_order_field = Concat("camp__year", Value("-"), "camp__camp_name__name")
-
-    list_display = ["first_name", "last_name", "sex", "account", camp, "state", "created_at"]
-    del camp
+    list_display = ["first_name", "last_name", "sex", "account", camp_admin_display_for_booking, "state", "created_at"]
     search_fields = ["first_name", "last_name"]
     ordering = ["-created_at"]
     list_filter = [
