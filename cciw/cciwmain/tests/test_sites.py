@@ -2,7 +2,7 @@ from django.urls import reverse
 
 from cciw.cciwmain.tests import factories
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.base import TestBase
+from cciw.test_utils.base import TestBase
 
 
 class SitePage(TestBase):

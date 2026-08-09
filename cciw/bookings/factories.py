@@ -30,7 +30,7 @@ from cciw.bookings.models.payments import Payment
 from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
-from cciw.utils.tests.factories import Auto, sequence
+from cciw.test_utils.factories import Auto, sequence
 
 BOOKING_ACCOUNT_EMAIL_SEQUENCE = sequence(lambda n: f"booker_{n}@example.com")
 

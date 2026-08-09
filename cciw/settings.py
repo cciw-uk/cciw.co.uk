@@ -699,7 +699,7 @@ if TESTS_RUNNING:
     DEBUG_PROPAGATE_EXCEPTIONS = True
 
     PASSWORD_HASHERS = [
-        "cciw.utils.tests.hashers.PlainPasswordHasher",
+        "cciw.test_utils.hashers.PlainPasswordHasher",
     ]
 
     MIDDLEWARE = [

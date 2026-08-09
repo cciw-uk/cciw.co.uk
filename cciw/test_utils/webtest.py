@@ -12,7 +12,7 @@ from pyquery import PyQuery
 import conftest
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Person
-from cciw.utils.tests.base import TestBase, TestBaseMixin
+from cciw.test_utils.base import TestBase, TestBaseMixin
 
 
 class CommonMixin:

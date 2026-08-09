@@ -8,8 +8,8 @@ from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.contact_us.bogofilter import BogofilterStatus
 from cciw.officers.tests import factories as officer_factories
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.factories import Auto
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.factories import Auto
+from cciw.test_utils.webtest import WebTestBase
 
 from .models import ContactType, Message, SpamStatus
 

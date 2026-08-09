@@ -5,7 +5,7 @@ from cciw.bookings.factories import create_ipn
 from cciw.bookings.models import Payment
 from cciw.donations.views import DONATION_CUSTOM_VALUE
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 
 
 class DonatePage(WebTestBase):

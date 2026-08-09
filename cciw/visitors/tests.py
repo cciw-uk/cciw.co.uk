@@ -1,7 +1,7 @@
 from django.test import RequestFactory
 
 from cciw.cciwmain.tests.factories import create_camp
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 from cciw.visitors.forms import get_remote_addr
 from cciw.visitors.models import VisitorLog
 from cciw.visitors.views import make_visitor_log_url

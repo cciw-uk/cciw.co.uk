@@ -4,7 +4,7 @@ from django.urls import reverse
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.base import TestBase
+from cciw.test_utils.base import TestBase
 
 from . import factories
 

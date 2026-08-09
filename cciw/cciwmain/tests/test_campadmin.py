@@ -2,7 +2,7 @@ from django.urls import reverse
 
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.tests import factories as officer_factories
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 
 
 class CampAdmin(WebTestBase):

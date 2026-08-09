@@ -14,7 +14,7 @@ from cciw.officers.create import create_officer
 from cciw.officers.models import Application
 from cciw.officers.tests import factories
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
-from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
+from cciw.test_utils.webtest import SeleniumBase, WebTestBase
 
 
 def test_create_officer(db):

@@ -9,7 +9,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.dbs import DBSInfo, get_officers_with_dbs_info_for_camps
 from cciw.officers.models import DBSActionLog, DBSActionLogType, DBSCheck
-from cciw.utils.tests.webtest import SeleniumBase
+from cciw.test_utils.webtest import SeleniumBase
 
 from . import factories
 

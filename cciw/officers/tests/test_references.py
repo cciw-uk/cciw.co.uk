@@ -19,8 +19,8 @@ from cciw.officers.models.references import (
 )
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RolesSetupMixin
-from cciw.utils.tests.factories import Auto, _Auto
-from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
+from cciw.test_utils.factories import Auto, _Auto
+from cciw.test_utils.webtest import SeleniumBase, WebTestBase
 
 
 def create_camp_with_leader_and_officer(

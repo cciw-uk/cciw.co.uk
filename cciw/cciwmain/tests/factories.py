@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.officers.models import CampRole
-from cciw.utils.tests.factories import Auto
+from cciw.test_utils.factories import Auto
 
 
 def create_camp(

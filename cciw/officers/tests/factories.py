@@ -15,7 +15,7 @@ from cciw.accounts.models import (
 )
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application, CampRole, Invitation, Qualification, Referee, Reference
-from cciw.utils.tests.factories import Auto, sequence
+from cciw.test_utils.factories import Auto, sequence
 
 USERNAME_SEQUENCE = sequence(lambda n: f"auto_user_{n}")
 CAMPROLE_NAME_SEQUENCE = sequence(lambda n: f"Camp Role {n}")

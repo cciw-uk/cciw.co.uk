@@ -9,7 +9,7 @@ from cciw.officers.models import Application, Qualification
 from cciw.officers.templatetags.rtf import unicode_to_rtf
 from cciw.officers.tests import factories
 from cciw.officers.tests.base import RequireQualificationTypesMixin
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 
 
 def test_Application_referees(db):

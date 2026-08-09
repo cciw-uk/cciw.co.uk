@@ -67,10 +67,10 @@ from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.officers.tests import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
-from cciw.utils.tests.base import disable_logging
-from cciw.utils.tests.db import refresh
-from cciw.utils.tests.factories import Auto
-from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
+from cciw.test_utils.base import disable_logging
+from cciw.test_utils.db import refresh
+from cciw.test_utils.factories import Auto
+from cciw.test_utils.webtest import SeleniumBase, WebTestBase
 
 from . import factories
 

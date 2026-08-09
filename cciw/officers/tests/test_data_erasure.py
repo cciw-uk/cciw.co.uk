@@ -4,7 +4,7 @@ from cciw.contact_us.models import Message
 from cciw.contact_us.tests import create_message
 from cciw.data_retention.models import ErasureExecutionLog
 from cciw.officers.tests import factories
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 
 
 class DataErasureRequestTestsBase(FuncBaseMixin):

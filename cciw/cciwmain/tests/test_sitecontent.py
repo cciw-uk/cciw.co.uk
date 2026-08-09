@@ -2,10 +2,10 @@ from django.conf import settings
 
 from cciw.officers.tests import factories
 from cciw.sitecontent.models import HtmlChunk, MenuLink
+from cciw.test_utils.base import TestBase
+from cciw.test_utils.webtest import WebTestBase
 from cciw.utils.literate_yaml import literate_yaml_to_rst
 from cciw.utils.rst import remove_rst_title, rst_to_html
-from cciw.utils.tests.base import TestBase
-from cciw.utils.tests.webtest import WebTestBase
 
 
 class HtmlChunkPage(WebTestBase):

@@ -2,7 +2,7 @@ from django.urls import reverse
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.tests import factories as camp_factories
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 
 from . import factories
 

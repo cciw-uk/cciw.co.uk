@@ -16,7 +16,7 @@ from cciw.accounts.utils import merge_users
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.models.invitations import add_officer_to_camp
 from cciw.officers.tests import factories
-from cciw.utils.tests.webtest import WebTestBase
+from cciw.test_utils.webtest import WebTestBase
 
 pytestmark = pytest.mark.django_db
 
