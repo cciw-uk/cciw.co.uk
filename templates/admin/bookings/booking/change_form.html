@@ -4,27 +4,44 @@
 {% load compress %}
 
 
-{% block after_related_objects %}
+{% block form_top %}
+  {{ block.super }}
   {# Some javascript enhancements  #}
-  <div>
 
-    <h2>Problems and warnings:</h2>
-    <p>Please check the following list of problems and warnings before saving. They
-      include problems that normally will stop a booking from being automatically
-      approved, like the camp being out of space, or a custom discount being applied
-      for, and warnings due to likely errors, like booking the same place twice.</p>
+  {% if booking_problems %}
 
-    <p>The booking secretary has the right to ignore these problems, after
-      checking with the camp leader where necessary.</p>
+    <h2>Errors and warnings:</h2>
+
+    <p>Please check the following list of problems before changing a booking to
+      'Booked'. These are the warnings that would normally be shown to the user.
+      The booking secretary has the right to ignore these problems, after
+      checking with the camp leader where necessary.
+    </p>
 
     <div class="bookingProblems" id="id_problems">
+      <ul>
+        {% for problem in booking_problems %}
+          <li>
+            {% if problem.blocker %}
+              <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">
+            {% elif problem.warning %}
+              <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">
+            {% else %}
+              {# for approvals that have been granted #}
+              <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">
+            {% endif %}
+            {{ problem.description }}
+            <i>{{ problem.status_display }}</i>
 
+          </li>
+        {% endfor %}
+      </ul>
     </div>
-  </div>
+
+  {% endif %}
   <script type="text/javascript">
     var cciw = (function(pub) {
       "use strict";
-      pub.bookingProblemsJsonUrl = '{% url "cciw-officers-booking_problems_json" %}';
       pub.placeAvailabilityJsonUrl = '{% url "cciw-officers-place_availability_json" %}';
       pub.getExpectedAmountDueUrl = '{% url "cciw-officers-get_booking_expected_amount_due" %}';
 

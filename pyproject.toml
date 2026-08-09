@@ -114,6 +114,7 @@ dev = [
     "pip-audit>=2.10.0",
     "pyrefly>=1.0.0",
     "django-stubs>=6.0.5",
+    "django-urlconfchecks>=0.13.2",
 ]
 
 [tool.uv]

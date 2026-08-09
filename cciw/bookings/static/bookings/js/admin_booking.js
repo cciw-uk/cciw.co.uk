@@ -22,37 +22,6 @@
             }
         };
 
-        var getBookingProblems = function() {
-            var formData = $('#booking_form').serialize();
-            var bookingId = getBookingId();
-            if (bookingId != null) {
-                formData = formData + "&booking_id=" + bookingId;
-            }
-            $.ajax({
-                type: "POST",
-                url: cciw.bookingProblemsJsonUrl,
-                dataType: "json",
-                data: formData,
-                success: function(json) {
-                    if (json.valid) {
-                        if (json.problems.length == 0) {
-                            $('#id_problems').html('<p>No problems found</p>');
-                        } else {
-                            $('#id_problems').html('<ul></ul>');
-                            $.each(json.problems, function(idx, val) {
-                                var html = $('<li></li>').text(val);
-                                $('#id_problems ul').append(html);
-                            });
-                        }
-                    } else {
-                        $('#id_problems').html('<i>Form has validation errors, ' +
-                            'please correct first. You can see validation errors ' +
-                            'by pressing "Save"</i>');
-                    }
-                }
-            });
-        }
-
         var getPlaceAvailability = function() {
             var campId = $('#id_camp').val();
             if (campId == undefined || campId == "") {
@@ -107,9 +76,6 @@
         $('#id_amount_due_auto').hide();
 
         // Wiring for event handlers
-        getBookingProblems();
-        $('input,select,textarea').change(getBookingProblems);
-
         getPlaceAvailability();
         $('#id_camp').change(getPlaceAvailability);
 

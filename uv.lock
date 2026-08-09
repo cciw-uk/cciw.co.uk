@@ -353,6 +353,7 @@ dev = [
     { name = "django-find-view", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-functest", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-stubs", marker = "platform_python_implementation != 'PyPy'" },
+    { name = "django-urlconfchecks", marker = "platform_python_implementation != 'PyPy'" },
     { name = "django-watchfiles", marker = "platform_python_implementation != 'PyPy'" },
     { name = "faker", marker = "platform_python_implementation != 'PyPy'" },
     { name = "hypothesis", marker = "platform_python_implementation != 'PyPy'" },
@@ -437,6 +438,7 @@ dev = [
     { name = "django-find-view", specifier = ">=0.1.0" },
     { name = "django-functest", specifier = ">=1.6.2" },
     { name = "django-stubs", specifier = ">=6.0.5" },
+    { name = "django-urlconfchecks", specifier = ">=0.13.2" },
     { name = "django-watchfiles", specifier = ">=1.4.0" },
     { name = "faker", specifier = ">=33.0.0" },
     { name = "hypothesis", specifier = ">=6.54.6" },
@@ -976,15 +978,15 @@ wheels = [
 
 [[package]]
 name = "django-urlconfchecks"
-version = "0.13.1"
+version = "0.13.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", marker = "platform_python_implementation != 'PyPy'" },
     { name = "typer", marker = "platform_python_implementation != 'PyPy'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7a/34/f20ed8ac98e483e55271b7736e78ded1ab28ad03bb3212622ad91721ccf5/django_urlconfchecks-0.13.1.tar.gz", hash = "sha256:495f5b76cf8e76ee17cd80c904e2361e267165f94971340f845915769174479c", size = 43045, upload-time = "2025-12-31T07:34:24.215Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/18/4031e9b0724d781e4a9bf744ba04d80019eddb51daa54f1c7d8e06fb89e1/django_urlconfchecks-0.13.2.tar.gz", hash = "sha256:4efa62580bf5786ac65a61cb5849cd9ec484dca7795cb7aca70a67136bb0b18e", size = 45508, upload-time = "2026-06-03T08:48:44.132Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/85/856fbf4f0a485b0da02a328001f50d7b481a5922932d88e0ad3041cebc61/django_urlconfchecks-0.13.1-py3-none-any.whl", hash = "sha256:c4ebd28f309baa3285173a955fb0319dd0db86e2407783673f800536e523d85b", size = 37229, upload-time = "2025-12-31T07:34:23.326Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/6d/a50c3cfc935f08ec6c92d99066a1b3fbe3e5724ceb20ba2d5c0967b62325/django_urlconfchecks-0.13.2-py3-none-any.whl", hash = "sha256:4d0181489feeb387a28271b29f4f325bb6e64055d6aa16fd285d3f0e2068c84b", size = 37464, upload-time = "2026-06-03T08:48:43.199Z" },
 ]
 
 [[package]]

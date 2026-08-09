@@ -1137,6 +1137,8 @@ def fix_autocomplete_fields(field_names: list[str]):
 
 
 class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]), CreateBookingWebMixin, FuncBaseMixin):
+    CONFIRMATION_EMAIL_SENT_MESSAGE = "A confirmation email has been sent"
+
     def test_approve_and_unapprove(self):
         self.booking_login()
         booking = self.create_booking(serious_illness=True)
@@ -1144,6 +1146,9 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         self.officer_login(secretary := officers_factories.create_booking_secretary())
 
         self.get_url("admin:bookings_booking_change", booking.id)
+        # There should be a list of problems at the top of the page:
+        self.assertTextPresent("Please check the following list of problems")
+        self.assertTextPresent("Must be approved by leader due to serious illness/condition")
         self.fill_by_name({"approvals-0-status": ApprovalStatus.APPROVED})
         self.submit("[name=_save]")
 
@@ -1191,7 +1196,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         self.fill_by_name(fields)
         self.submit("[name=_save]")
         self.assertTextPresent("Select booking")
-        self.assertTextPresent("A confirmation email has been sent")
+        self.assertTextPresent(self.CONFIRMATION_EMAIL_SENT_MESSAGE)
         booking = Booking.objects.get()
         assert not booking.created_online
         assert booking.account.manual_payments.count() == 1

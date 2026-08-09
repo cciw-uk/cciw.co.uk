@@ -41,7 +41,7 @@ from .models import (
 )
 from .models.accounts import BookingAccountQuerySet
 from .models.bookings import BookingQuerySet
-from .models.problems import ApprovalStatus, BookingApproval, BookingApprovalQuerySet
+from .models.problems import ApprovalStatus, BookingApproval, BookingApprovalQuerySet, get_booking_problems
 from .models.queue import BookingQueueEntry, QueueEntryActionLog
 from .models.states import CURRENT_BOOKING_STATES
 from .models.supporting_information import SupportingInformationQuerySet
@@ -651,6 +651,13 @@ class BookingAdmin(admin.ModelAdmin):
         (
             "Internal",
             {
+                "description": """
+                These fields should normally be managed by the booking queue system.
+                If you want to change the state to 'Booked' and have changed
+                any other details, please first save the form and check
+                and problems shown at the top of the page, then proceed
+                to change to 'Booked'.
+                """,
                 "fields": [
                     "state",
                     "booking_queue_status",
@@ -658,7 +665,7 @@ class BookingAdmin(admin.ModelAdmin):
                     "created_at",
                     "shelved",
                     "created_online",
-                ]
+                ],
             },
         ),
         ("Old fields", {"fields": ["south_wales_transport", "early_bird_discount"], "classes": ("collapse",)}),
@@ -693,7 +700,9 @@ class BookingAdmin(admin.ModelAdmin):
                 amount=manual_amount, payment_type=int(form.cleaned_data["manual_payment_payment_type"])
             )
 
-        if old_state != booking.state and booking.state == BookingState.BOOKED:
+        changed_to_booked = old_state != booking.state and booking.state == BookingState.BOOKED
+
+        if changed_to_booked:
             email_sent = send_booking_confirmed_mail(booking)
             if email_sent:
                 messages.info(
@@ -703,6 +712,15 @@ class BookingAdmin(admin.ModelAdmin):
                 )
         booking.update_approvals()
         return retval
+
+    def change_view(
+        self, request: HttpRequest, object_id: str, form_url: str = "", extra_context: dict | None = None
+    ) -> HttpResponse:
+        response = super().change_view(request, object_id, form_url, extra_context)
+        if request.method == "GET" and isinstance(response, TemplateResponse):
+            original = response.context_data["original"]
+            response.context_data["booking_problems"] = get_booking_problems(original, booking_sec=True)
+        return response
 
     def save_related(self, request, form, formsets, change):
         booking: Booking = form.instance
