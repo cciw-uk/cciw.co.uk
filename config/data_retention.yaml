@@ -559,6 +559,8 @@
       columns: all
     - name: officers.DBSActionLog
       columns: all
+    - name: officers.DataDownloadLog
+      columns: all
     - name: data_retention.ErasureExecutionLog
       columns: all
     - name: ipn.PayPalIPN
