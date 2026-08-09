@@ -185,6 +185,18 @@ class Booking(models.Model):
     # and have the logic defined in just one place.
     stored_age_on_camp = models.IntegerField(null=True, blank=True, default=None)
 
+    # We need the value created by the trigger to be returned to Django after an
+    # insert or update, so that we can immediately use. So we use a generated
+    # field as these are returned.
+    age_on_camp = models.GeneratedField(
+        expression=models.F("stored_age_on_camp"),
+        output_field=models.IntegerField(),
+        # We don't need db_persist=True here, but we're currently
+        # on Postgresql 16 which doesn't support db_persist=False (VIRTUAL).
+        # This could change when we upgrade.
+        db_persist=True,
+    )
+
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255)
