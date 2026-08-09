@@ -106,7 +106,7 @@ def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_t
     for item in items:
         qs = Booking.objects.booked().select_related(None).select_related("camp").only("birth_date", "camp")
         objs = query_filter(qs, item)
-        vals = [b.age_on_camp() for b in objs]
+        vals = [b.age_on_camp for b in objs]
         data[labeller(item)] = counts(vals)
     df = pd.DataFrame(data=data).fillna(0)
     if include_total:

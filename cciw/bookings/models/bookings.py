@@ -470,6 +470,7 @@ class Booking(models.Model):
 
         return full_amount
 
+    @property
     def age_on_camp(self) -> int:
         return relativedelta(self.age_base_date(), self.birth_date).years
 
@@ -479,10 +480,10 @@ class Booking(models.Model):
         return date(self.camp.year, 8, 31)
 
     def is_too_young(self) -> bool:
-        return self.age_on_camp() < self.camp.minimum_age
+        return self.age_on_camp < self.camp.minimum_age
 
     def is_too_old(self) -> bool:
-        return self.age_on_camp() > self.camp.maximum_age
+        return self.age_on_camp > self.camp.maximum_age
 
     @property
     def will_expire(self) -> bool:

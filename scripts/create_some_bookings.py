@@ -54,7 +54,7 @@ def create(year: int, *, fix_names_from_anonymised: bool):
         b.camp = new_camp
 
         # Remove those who are too old.
-        if b.age_on_camp() > new_camp.maximum_age:
+        if b.age_on_camp > new_camp.maximum_age:
             continue
 
         # Remove some psuedo-randomly to give more spaces:

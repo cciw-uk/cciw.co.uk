@@ -2123,7 +2123,7 @@ def test_booking_saved_approvals_unapproved_and_need_approving(db):
 
     assert len(Booking.objects.need_approving()) == 1
     booking: Booking = Booking.objects.get()
-    camper_age = booking.age_on_camp()
+    camper_age = booking.age_on_camp
     camp = booking.camp
     actual_approvals = [(app.description, app.type) for app in booking.saved_approvals_unapproved]
     expected_approvals = [
@@ -3305,10 +3305,10 @@ def test_booking_age_on_camp(db):
             camp=camp,
             birth_date=date(1988, 8, 31),
         )
-        assert booking.age_on_camp() == 13
+        assert booking.age_on_camp == 13
 
         # Changing across the threshold date:
         booking.birth_date = date(1988, 9, 1)
         booking.save()
         booking.refresh_from_db()
-        assert booking.age_on_camp() == 12
+        assert booking.age_on_camp == 12

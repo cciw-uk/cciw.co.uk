@@ -229,12 +229,12 @@ def test_erase_Booking_PreserveAgeOnCamp(db: None):
                 birth_date=birth_date,
             )
             assert booking.birth_date == birth_date
-            assert booking.age_on_camp() == age_on_camp
+            assert booking.age_on_camp == age_on_camp
 
         with travel(booking.camp.end_date + timedelta(days=365 + 1)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
-            assert booking.age_on_camp() == age_on_camp
+            assert booking.age_on_camp == age_on_camp
             assert booking.birth_date.year == birth_date.year
             assert booking.birth_date != birth_date
 

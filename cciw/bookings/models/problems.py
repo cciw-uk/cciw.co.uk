@@ -180,7 +180,7 @@ def calculate_approvals_needed(booking: Booking) -> list[ApprovalNeeded]:
         )
 
     if booking.is_too_young() or booking.is_too_old():
-        camper_age = booking.age_on_camp()
+        camper_age = booking.age_on_camp
         age_base = booking.age_base_date().strftime("%e %B %Y")
         camp: Camp = booking.camp
 
