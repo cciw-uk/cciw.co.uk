@@ -226,8 +226,8 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[B
         return Blocker(description=description)
 
     approvals_needed = calculate_approvals_needed(booking)
-    if booking.id is not None:
-        incorporate_approvals_granted(booking, approvals_needed)
+    assert booking.id is not None
+    incorporate_approvals_granted(booking, approvals_needed)
     errors.extend(approvals_needed)
 
     relevant_bookings = booking.account.bookings.for_year(camp.year).basket_relevant()

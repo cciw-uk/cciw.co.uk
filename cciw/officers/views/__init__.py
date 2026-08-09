@@ -22,7 +22,6 @@ from .applications import (
     view_application_redirect,
 )
 from .booking_secretary import (
-    booking_problems_json,
     booking_queue,
     booking_queue_row,
     booking_queues,

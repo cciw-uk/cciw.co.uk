@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Literal, assert_never
@@ -1794,85 +1793,6 @@ def test_pending_payment_handling(db):
     assert account.get_pending_payment_total(now=three_days_later) == Decimal("0.00")
 
 
-class TestAjaxViews(BookingBaseMixin, CreateBookingWebMixin, WebTestBase):
-    # Basic tests to ensure that the views that serve AJAX return something
-    # sensible.
-
-    # NB use a mixture of WebTest and Django client tests
-
-    def _booking_problems_json(self, place_details: dict[str, object]) -> dict[str, object]:
-        data = {}
-        for k, v in place_details.items():
-            data[k] = v.id if isinstance(v, models.Model) else v
-
-        resp = self.client.post(reverse("cciw-officers-booking_problems_json"), data)
-        return json.loads(resp.content.decode("utf-8"))
-
-    def _initial_place_details(
-        self,
-    ) -> dict[str, object]:
-        data = self.get_place_details()
-        data["created_at_0"] = "1970-01-01"  # Simulate form, which doesn't supply created
-        data["created_at_1"] = "00:00:00"
-        return data
-
-    def test_booking_problems(self):
-        self.open_bookings()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
-        officer = officers_factories.create_booking_secretary()
-        self.client.force_login(officer)
-        resp = self.client.post(reverse("cciw-officers-booking_problems_json"), {"account": str(acc1.id)})
-
-        assert resp.status_code == 200
-        j = json.loads(resp.content.decode("utf-8"))
-        assert not j["valid"]
-
-        data = self._initial_place_details()
-        data["account"] = str(acc1.id)
-        data["state"] = BookingState.INFO_COMPLETE
-        data["amount_due"] = "100.00"
-        data["price_type"] = PriceType.CUSTOM
-        j = self._booking_problems_json(data)
-        assert j["valid"]
-        assert "A custom discount needs to be arranged by the booking secretary" in j["problems"]
-
-    def test_booking_problems_price_check(self):
-        # Test that the price is checked.
-        # This is a check that is only run for booking secretary
-        self.open_bookings()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
-        officer = officers_factories.create_booking_secretary()
-        self.client.force_login(officer)
-
-        data = self._initial_place_details()
-        data["account"] = str(acc1.id)
-        data["state"] = BookingState.BOOKED
-        data["amount_due"] = "0.00"
-        data["price_type"] = PriceType.FULL
-        j = self._booking_problems_json(data)
-        assert any(
-            p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}") for p in j["problems"]
-        )
-
-    def test_booking_problems_full_refund(self):
-        # Test that the price is checked.
-        # This is a check that is only run for booking secretary
-        self.open_bookings()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
-        officer = officers_factories.create_booking_secretary()
-        self.client.force_login(officer)
-
-        data = self._initial_place_details()
-        data["account"] = str(acc1.id)
-
-        # Check 'full refund' cancellation.
-        data["state"] = BookingState.CANCELLED_FULL_REFUND
-        data["amount_due"] = "20.00"
-        data["price_type"] = PriceType.FULL
-        j = self._booking_problems_json(data)
-        assert any(p.startswith("The 'amount due' is not the expected value of £0.00") for p in j["problems"])
-
-
 class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     urlname = "cciw-bookings-account_overview"
 
@@ -3313,6 +3233,17 @@ def test_booking_problems_error_for_multiple_2nd_child_discount(db):
 
     problems = get_booking_problems(booking_4)
     assert any(MSGS.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER in p.description and p.blocker for p in problems)
+
+
+def test_booking_problems_price_check(db):
+    # This is a check that is only run for booking secretary
+    camp = camps_factories.create_camp()
+    price_full, *_ = factories.create_prices(year=camp.year)
+    booking = factories.create_booking(camp=camp, amount_due=0)
+    problems = get_booking_problems(booking, booking_sec=True)
+    assert any(
+        p.description.startswith(f"The 'amount due' is not the expected value of £{price_full}") for p in problems
+    )
 
 
 def test_booking_fuzzy_camper_id_strict(db):

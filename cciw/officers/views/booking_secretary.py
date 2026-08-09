@@ -1,4 +1,3 @@
-import contextlib
 from datetime import datetime
 
 import pandas_highcharts.core
@@ -10,7 +9,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from cciw.bookings.models import Booking, Price
-from cciw.bookings.models.prices import are_prices_set_for_year
 from cciw.bookings.models.queue import (
     FIRST_TIMER_PERCENTAGE,
     BookingQueueEntry,
@@ -163,47 +161,6 @@ def place_availability_json(request: HttpRequest) -> dict:
     camp: Camp = Camp.objects.get(id=camp_id)
     places = camp.get_places_left()
     retval["result"] = dict(total=places.total, male=places.male, female=places.female)
-    return retval
-
-
-@booking_secretary_required
-@json_response
-def booking_problems_json(request: HttpRequest) -> dict[str, object]:
-    """
-    Get the booking problems associated with the data POSTed.
-    """
-    # This is used by the admin.
-    # We have to create a Booking object, but not save it.
-    from cciw.bookings.admin import BookingAdminForm
-
-    # Make it easy on front end:
-    data = request.POST.copy()
-    with contextlib.suppress(KeyError):
-        data["created_at"] = data["created_at_0"] + " " + data["created_at_1"]
-
-    if "booking_id" in data:
-        booking_obj = Booking.objects.get(id=int(data["booking_id"]))
-        if "created_online" not in data:
-            # readonly field, data not included in form
-            data["created_online"] = booking_obj.created_online
-        form = BookingAdminForm(data, instance=booking_obj)
-    else:
-        form = BookingAdminForm(data)
-
-    retval: dict[str, object] = {"status": "success"}
-    if form.is_valid():
-        retval["valid"] = True
-        instance: Booking = form.save(commit=False)
-        # We will get errors later on if prices don't exist for the year chosen, so
-        # we check that first.
-        if not are_prices_set_for_year(instance.camp.year):
-            retval["problems"] = [f"Prices have not been set for the year {instance.camp.year}"]
-        else:
-            problems = instance.get_booking_problems(booking_sec=True)
-            retval["problems"] = [p.description for p in problems]
-    else:
-        retval["valid"] = False
-        retval["errors"] = form.errors
     return retval
 
 

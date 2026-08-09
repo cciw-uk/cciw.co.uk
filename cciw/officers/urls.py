@@ -147,7 +147,6 @@ urlpatterns = [
     path(
         "bookings/place-availability-json/", views.place_availability_json, name="cciw-officers-place_availability_json"
     ),
-    path("bookings/booking-problems-json/", views.booking_problems_json, name="cciw-officers-booking_problems_json"),
     path(
         "bookings/expected-amount-json/",
         views.get_booking_expected_amount_due,
