@@ -177,7 +177,7 @@ class Booking(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=Sex)
-    birth_date = models.DateField("date of birth")
+    birth_date = models.DateField("date of birth", null=True)
 
     # stored_age_on_camp - populated by trigger from birth_date and camp.
     # This allows us to null out birth_date on erasure, but still keep

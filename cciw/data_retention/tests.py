@@ -15,7 +15,7 @@ from cciw.cciwmain.tests import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us import tests as contact_us_factories
 from cciw.contact_us.models import Message
-from cciw.data_retention.applying import NOT_IN_USE_METHODS, PreserveAgeOnCamp, apply_data_retention
+from cciw.data_retention.applying import NOT_IN_USE_METHODS, apply_data_retention
 from cciw.data_retention.datatypes import ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, Rules
 from cciw.data_retention.loading import parse_keep
 from cciw.mail.tests import send_queued_mail
@@ -210,13 +210,12 @@ def test_erase_Booking(db: None):
         assert booking.address_line1 == "[deleted]"
 
 
-def test_erase_Booking_PreserveAgeOnCamp(db: None):
+def test_erase_birth_date_but_keep_stored_age_on_camp(db: None):
     policy = make_policy(
         model=Booking,
         delete_row=False,
         keep=timedelta(days=365),
         fields=["birth_date"],
-        custom_erasure_methods={"birth_date": PreserveAgeOnCamp()},
     )
     for birth_date, age_on_camp in [
         (date(1988, 8, 31), 13),
@@ -234,9 +233,11 @@ def test_erase_Booking_PreserveAgeOnCamp(db: None):
         with travel(booking.camp.end_date + timedelta(days=365 + 1)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
+            assert booking.birth_date is None
             assert booking.age_on_camp == age_on_camp
-            assert booking.birth_date.year == birth_date.year
-            assert booking.birth_date != birth_date
+
+            booking.refresh_from_db()  # Needed to get stored_age_on_camp
+            assert booking.stored_age_on_camp == age_on_camp
 
 
 def test_erase_BookingAccount(db: None):

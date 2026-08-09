@@ -307,13 +307,6 @@
       - gp_phone_number
       - friends_for_tent_sharing
 
-      deletion methods:
-        # It is useful for our statistics and records to know the approx age of
-        # campers on camp. So we here configure a custom deletion method that
-        # chooses a date of birth that will preserve the calculated "age on
-        # camp", but anonymise.
-        birth_date: preserve age on camp
-
     - name: bookings.BookingQueueEntry
       columns:
       - sibling_surname
@@ -465,6 +458,9 @@
       - created_at
       - created_online
       - booking_expires_at
+      # age_on_camp is derived from birth_date, but it is useful to keep
+      # for our stats so is stored separately so that we can erase birth_date
+      - stored_age_on_camp
 
     - name: bookings.BookingApproval
       columns:

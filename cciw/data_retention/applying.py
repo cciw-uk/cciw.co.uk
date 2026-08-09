@@ -21,7 +21,7 @@ from typing import Protocol
 
 from django.db import models, transaction
 from django.db.models.expressions import RawSQL
-from django.db.models.fields import CharField, DateField, Field
+from django.db.models.fields import CharField, Field
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django_countries.fields import CountryField
@@ -410,32 +410,5 @@ ERASED_AT_EXCEPTIONS = [
 ]
 
 
-class PreserveAgeOnCamp(ErasureMethod):
-    def allowed_for_field(self, field: DateField) -> bool:
-        return field.model == Booking and field.name == "birth_date"
-
-    def build_update_dict(self, field: Field) -> dict[str, RawSQL]:
-        return {
-            "birth_date":
-            # Birthdates after YYYY-08-31 get counted as next school year,
-            # so we anonymise those to YYYY-12-01, everything else to YYYY-01-01
-            # See also Booking.age_base_date
-            RawSQL(
-                """
-            make_date(
-                EXTRACT(YEAR FROM birth_date)::int,
-                CASE WHEN EXTRACT(MONTH FROM birth_date) > 8 THEN 12
-                     ELSE 1
-                END,
-                1
-            )
-            """,
-                [],
-                models.DateTimeField(),
-            ),
-        }
-
-
-CUSTOM_ERASURE_METHODS = {
-    "preserve age on camp": PreserveAgeOnCamp(),
-}
+# Currently unused
+CUSTOM_ERASURE_METHODS = {}
