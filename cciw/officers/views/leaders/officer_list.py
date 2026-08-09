@@ -2,15 +2,13 @@ import furl
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
-from django.urls.resolvers import ResolverMatch, get_resolver
 from django.views.decorators.http import require_POST
 
 from cciw.accounts.models import User
 from cciw.cciwmain.common import CampId
 from cciw.mail.lists import address_for_camp_officers
 from cciw.officers.models.data_retention import DataRelatedToOfficersOnCamp
-from cciw.utils.functional import func_name
-from cciw.utils.views import for_htmx, get_redirect_from_request, make_get_request
+from cciw.utils.views import for_htmx, get_redirect_from_request, make_get_request, url_matches_view_function
 
 from ...create import email_officer
 from ...forms import (
@@ -188,8 +186,7 @@ def create_officer(request: HttpRequest) -> HttpResponse:
                 if redirect_resp:
                     redirect_url = redirect_resp["Location"]
                     message = f"Officer {u.full_name} has been added to the system and emailed."
-                    match: ResolverMatch = get_resolver().resolve(redirect_url)
-                    if match is not None and func_name(match.func) == func_name(officer_list):
+                    if url_matches_view_function(redirect_url, officer_list):
                         message += " Don't forget to choose a role and add them to your officer list!"
 
                     redirect_resp["Location"] = furl.furl(redirect_url).add({"created_officer_id": u.id}).url

@@ -12,10 +12,12 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, QueryDict
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.urls.resolvers import ResolverMatch, get_resolver
 from django.utils.http import url_has_allowed_host_and_scheme
 from furl import furl
 
 from cciw.accounts.models import User
+from cciw.utils.functional import func_name
 
 type ViewFunc[**P] = Callable[Concatenate[HttpRequest, P], HttpResponse]
 type TemplateResponseViewFunc[**P] = Callable[Concatenate[HttpRequest, P], TemplateResponse]
@@ -249,3 +251,14 @@ def add_hx_trigger_header(response: HttpResponse, events: dict) -> HttpResponse:
     if events:
         response.headers["Hx-Trigger"] = json.dumps(events)
     return response
+
+
+def url_matches_view_function(url: str, function: ViewFunc) -> bool:
+    # TODO
+    # - shouldn't raise error if no match found
+    # - strip query parameters
+    match: ResolverMatch = get_resolver().resolve(url)
+    if match is not None and func_name(match.func) == func_name(function):
+        return True
+
+    return False
