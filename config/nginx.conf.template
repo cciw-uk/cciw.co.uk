@@ -82,8 +82,8 @@ server {
         }
     }
 
-    location /favicon.ico {
-        alias            %(STATIC_ROOT)s/img/favicon.png;
+    location /robots.txt {
+        alias            %(STATIC_ROOT)s/robots.txt;
         access_log      off;
         log_not_found   off;
     }
