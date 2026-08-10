@@ -647,6 +647,33 @@ class TestBookingVerifySL(BookingVerifyBase, SeleniumBase):
     pass
 
 
+def test_payment_reminder_email_frequency(db):
+    booking = factories.create_booking()
+    allocate_bookings_now([booking])
+
+    with time_machine.travel(booking.created_at + timedelta(days=1)):
+        mail.outbox = []
+        send_payment_reminder_emails()
+        assert len(mail.outbox) == 1
+        m = mail.outbox[0]
+        assert m.subject == "[CCIW] Payment due"
+        assert m.to == [booking.account.email]
+        last_email_sent = datetime.now()
+
+    with time_machine.travel(booking.created_at + timedelta(days=2)):
+        # Next day - we don't spam them.
+        send_payment_reminder_emails()
+        assert len(mail.outbox) == 1
+
+    with time_machine.travel(last_email_sent + settings.BOOKING_EMAIL_REMINDER_FREQUENCY + timedelta(hours=1)):
+        send_payment_reminder_emails()
+        assert len(mail.outbox) == 2
+
+    with time_machine.travel(last_email_sent + settings.BOOKING_EMAIL_REMINDER_FREQUENCY + timedelta(hours=2)):
+        send_payment_reminder_emails()
+        assert len(mail.outbox) == 2
+
+
 class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
     def _create_booking(self) -> Booking:
         booking = factories.create_booking()
