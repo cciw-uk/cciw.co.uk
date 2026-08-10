@@ -661,15 +661,16 @@ def test_payment_reminder_email_frequency(db):
         last_email_sent = datetime.now()
 
     with time_machine.travel(booking.created_at + timedelta(days=2)):
-        # Next day - we don't spam them.
+        # Next day - we don't spam them, no more should be sent.
         send_payment_reminder_emails()
         assert len(mail.outbox) == 1
 
-    with time_machine.travel(last_email_sent + settings.BOOKING_EMAIL_REMINDER_FREQUENCY + timedelta(hours=1)):
+    with time_machine.travel(last_email_sent + settings.BOOKING_PAYMENT_EMAIL_REMINDER_FREQUENCY + timedelta(hours=1)):
+        # After BOOKING_PAYMENT_EMAIL_REMINDER_FREQUENCY has elapsed, we should send another.
         send_payment_reminder_emails()
         assert len(mail.outbox) == 2
 
-    with time_machine.travel(last_email_sent + settings.BOOKING_EMAIL_REMINDER_FREQUENCY + timedelta(hours=2)):
+    with time_machine.travel(last_email_sent + settings.BOOKING_PAYMENT_EMAIL_REMINDER_FREQUENCY + timedelta(hours=2)):
         send_payment_reminder_emails()
         assert len(mail.outbox) == 2
 

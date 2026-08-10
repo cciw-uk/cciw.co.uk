@@ -15,6 +15,7 @@ from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.models.yearconfig import get_booking_open_data
 from cciw.cciwmain import common
+from cciw.mail.models import RepeatAfter, send_mails_for_items_according_to_schedule
 from cciw.utils.functional import partition
 
 from .models.accounts import BookingAccount
@@ -262,30 +263,27 @@ def send_booking_expired_mail_to_booker(booking: Booking):
 def send_payment_reminder_emails():
     from cciw.bookings.models import BookingAccount
 
-    accounts = BookingAccount.objects.payments_due()
+    accounts: list[BookingAccount] = [
+        account for account in BookingAccount.objects.payments_due() if account.email != ""
+    ]
 
-    subject = "[CCIW] Payment due"
-    now = timezone.now()
-    for account in accounts:
-        if (
-            account.last_payment_reminder_at is not None
-            and (now - account.last_payment_reminder_at) < settings.BOOKING_EMAIL_REMINDER_FREQUENCY
-        ):
-            continue
-
-        if account.email is None:
-            continue
-
-        account.last_payment_reminder_at = now
-        account.save()
-
+    def build_email(account: BookingAccount) -> mail.EmailMessage:
         c = {
             "pay_url": build_url_with_booking_token(view_name="cciw-bookings-pay", email=account.email),
             "start_url": build_url(view_name="cciw-bookings-start"),
             "account": account,
         }
         body = loader.render_to_string("cciw/bookings/payments_due_email.txt", c)
-        mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
+        return mail.EmailMessage(
+            subject="[CCIW] Payment due", body=body, from_email=settings.WEBMASTER_FROM_EMAIL, to=[account.email]
+        )
+
+    send_mails_for_items_according_to_schedule(
+        items=accounts,
+        tracking_id_format=lambda item: f"booking-account-payment-reminder-{item.id}",
+        builder=build_email,
+        repeat=RepeatAfter(settings.BOOKING_PAYMENT_EMAIL_REMINDER_FREQUENCY),
+    )
 
 
 def send_place_cancelled_notification_to_booking_secretary(booking: Booking):

@@ -559,6 +559,8 @@
       columns: all
     - name: data_retention.ErasureExecutionLog
       columns: all
+    - name: mail.ScheduledMailRecord
+      columns: all
     - name: ipn.PayPalIPN
       columns:
       # Column names here are often confusing, this is due
