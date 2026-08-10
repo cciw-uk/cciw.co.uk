@@ -444,7 +444,6 @@
       - created_at
       - first_login_at
       - last_login_at
-      - last_payment_reminder_at
 
     - name: bookings.Booking
       columns:

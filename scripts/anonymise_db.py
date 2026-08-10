@@ -442,7 +442,6 @@ BOOKINGACCOUNT_FIELD_MAP: dict[str, Fixer[bookings.BookingAccount, object]] = {
     "created_at": keep,
     "first_login_at": keep,
     "last_login_at": keep,
-    "last_payment_reminder_at": keep,
 }
 
 BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {

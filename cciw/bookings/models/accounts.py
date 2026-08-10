@@ -158,7 +158,6 @@ class BookingAccount(models.Model):
     created_at = models.DateTimeField(blank=False)
     first_login_at = models.DateTimeField(null=True, blank=True)
     last_login_at = models.DateTimeField(null=True, blank=True)
-    last_payment_reminder_at = models.DateTimeField(null=True, blank=True)
 
     erased_at = models.DateTimeField(null=True, blank=True, default=None)
 
