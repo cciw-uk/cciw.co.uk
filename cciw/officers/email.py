@@ -354,11 +354,11 @@ def send_data_retention_reminder_emails_about_officer_data():
         return
 
     def build_email(user: User) -> EmailMessage:
-        download_logs = DataDownloadLog.objects.for_user(user).for_relation(DataRelatedToOfficersOnCamp(camp))
-        if download_logs:
+        download_filenames = download_log_filenames(user, DataRelatedToOfficersOnCamp(camp))
+        if download_filenames:
             download_log_message = (
                 "According to our logs, you have downloaded at least the following files:\n"
-                + "\n".join(f" - {log.filename}" for log in download_logs)
+                + "\n".join(f" - {filename}" for filename in download_filenames)
             ) + "\n\n"
         else:
             download_log_message = ""
@@ -392,6 +392,10 @@ Thank you.
             repeat=NeverRepeat(),
             builder=build_email,
         )
+
+
+def download_log_filenames(user: User, relation: LoggableDataRelation) -> list[str]:
+    return sorted(set(DataDownloadLog.objects.for_user(user).for_relation(relation).values_list("filename", flat=True)))
 
 
 def get_camps_and_users_for_data_protection_reminders(
