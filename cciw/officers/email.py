@@ -388,7 +388,7 @@ Thank you.
     ):
         send_mails_for_items_according_to_schedule(
             items=list(users),
-            tracking_id_format=lambda user: f"camp-{camp.url_id}-user-{user.id}",
+            tracking_id_format=lambda user: f"camp-{camp.url_id}-officer-data-user-{user.id}",
             repeat=NeverRepeat(),
             builder=build_email,
         )
@@ -421,9 +421,9 @@ def get_relevant_camps_for_data_protection_reminders(rule: DataRetentionRule) ->
     # to go back to previous years.
 
     # We want to avoid emailing people who may have long left CCIW (historic
-    # data), and we avoid emailing people who may be current about multiple past
-    # years, and just focus on the most recent year (and make the message remind
-    # about earlier years)
+    # data), and we avoid emailing people about multiple past years, and just
+    # focus on the most recent year (and make the message remind about earlier
+    # years)
     today = date.today()
     relevant_camps = Camp.objects.filter(end_date__lt=today - DATA_RETENTION_PERIODS[rule])
 
