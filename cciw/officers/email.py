@@ -2,19 +2,21 @@
 import contextlib
 import logging
 from collections.abc import Callable, Sequence
+from datetime import date, timedelta
 from urllib.parse import quote as urlquote
 
 from django.conf import settings
 from django.core import signing
 from django.core.mail import EmailMessage, send_mail
-from django.forms.utils import timezone
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.crypto import salted_hmac
 
 from cciw.accounts.models import User
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP, X_CCIW_REFEREE
+from cciw.mail.models import NeverRepeat, send_mails_for_items_according_to_schedule
 from cciw.officers.applications import (
     application_rtf_filename,
     application_to_rtf,
@@ -23,6 +25,12 @@ from cciw.officers.applications import (
 )
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
 from cciw.officers.models import Application, Referee, Reference
+from cciw.officers.models.data_retention import (
+    DATA_RETENTION_PERIODS,
+    DataDownloadLog,
+    DataRelatedToOfficersOnCamp,
+    DataRetentionRule,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +141,8 @@ def make_update_application_url(application: Application, email: str) -> str:
 def send_email_change_emails(officer: User, application: Application):
     subject = "[CCIW] Email change on CCiW"
     user_email = formatted_email(officer)
+    if user_email is None:
+        return
     user_msg = """{name},
 
 In your most recently submitted application form, you entered your
@@ -320,3 +330,118 @@ Use the following link to manage this reference:
         subject=f"[CCIW] Reference request to {bounced_email_address} bounced.",
         message=forward_body,
     )
+
+
+def send_data_retention_reminder_emails():
+    send_data_retention_reminder_emails_about_officer_data()
+    # TODO:
+    # send_data_retention_reminder_emails_about_camper_data()
+
+
+def send_data_retention_reminder_emails_about_officer_data():
+    if not in_period_for_sending_data_retention_reminder_emails():
+        return
+
+    # Get the camps we need to send notifications about
+
+    # Because of the long time limit, we have to go back to previous years.
+
+    # We avoid emailing people who may have long left CCIW (historic data),
+    # and we avoid emailing people who may be current about multiple past
+    # years, and just focus on the most recent year (and make the message
+    # remind about earlier years)
+    today = date.today()
+    relevant_camps = Camp.objects.filter(end_date__lt=today - DATA_RETENTION_PERIODS[DataRetentionRule.OFFICERS])
+
+    latest_relevant_camp = relevant_camps.order_by("end_date").last()
+    if not latest_relevant_camp:
+        # No camps, can't be any work to do here.
+        return None
+
+    # Exclude earlier years:
+    relevant_camps = relevant_camps.filter(year=latest_relevant_camp.year)
+
+    for camp in relevant_camps.prefetch_related("leaders", "leaders__users", "admins"):
+        # Leaders and admins need reminding.
+        leader_users: list[User] = [user for p in camp.leaders.all() for user in p.users.all()]
+        admin_users: list[User] = list(camp.admins.all())
+        relevant_users = leader_users + admin_users
+
+        def build_email(user: User) -> EmailMessage:
+            download_logs = DataDownloadLog.objects.for_user(user).for_relation(DataRelatedToOfficersOnCamp(camp))
+            if download_logs:
+                download_log_message = (
+                    "According to our logs, you have downloaded at least the following files:\n"
+                    + "\n".join(f" - {log.filename}" for log in download_logs)
+                ) + "\n\n"
+            else:
+                download_log_message = ""
+
+            return EmailMessage(
+                subject=f"[CCIW] Reminder: remove officer data for {camp.nice_name}",
+                body=f"""
+As a leader or admin for {camp.nice_name}, you may have
+downloaded officer data related to this camp. As per our data
+retention policy, you now need to delete all copies of this
+data (and for any earlier camps).
+
+Please remember to check:
+
+- downloaded files on all your devices
+- any backups or copies
+- emails that attached the data (both incoming and outgoing)
+- any other messaging apps
+
+{download_log_message}
+If you have shared the data with other officers, please also
+ensure they do the same.
+
+Thank you.
+
+""",
+                from_email=settings.WEBMASTER_FROM_EMAIL,
+                to=[user.email],
+            )
+
+        send_mails_for_items_according_to_schedule(
+            items=relevant_users,
+            tracking_id_format=lambda user: f"camp-{camp.url_id}-user-{user.id}",
+            repeat=NeverRepeat(),
+            builder=build_email,
+        )
+
+
+def in_period_for_sending_data_retention_reminder_emails():
+    # The rule is (currently) that data must be removed 1 year after
+    # the end of camp. We don't want to send exactly 1 year later,
+    # because this is typically when the leaders will be busy on the next camp.
+
+    # We also need to avoid confusion about which year the message relates
+    # to - it relates to the previous year.
+
+    # We allow for the fact that the crontab might be missed one day,
+    # but we limit the time when this trigger might happen, to the period
+    # after the camps have ended and before the new year.
+
+    # Work out when in the year we are.
+    today = date.today()
+    year = today.year
+
+    # Note that camps for next year may already be defined, we are ignoring
+    # those.
+    camps_for_year = Camp.objects.filter(year=year)
+    last_camp = camps_for_year.order_by("end_date").last()
+    if last_camp:
+        camp_period_end_date = last_camp.end_date
+    else:
+        # Either:
+        # - There were no camps this year
+        # - We haven't yet defined them, because it is too early in the
+        #   year.
+        # So we just pick a date around the normal end of camps.
+        camp_period_end_date = date(year, 8, 31)
+
+    delay_to_wait_after_camps = timedelta(days=30)
+    after_camps = today > (camp_period_end_date + delay_to_wait_after_camps)
+
+    return after_camps

@@ -27,6 +27,7 @@ from cciw.bookings.models import (
 )
 from cciw.bookings.models.constants import Sex
 from cciw.bookings.models.payments import Payment
+from cciw.bookings.models.queue import allocate_bookings_now
 from cciw.bookings.models.yearconfig import YearConfig
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camps_factories
@@ -70,6 +71,8 @@ def create_booking(
     # Internal fields
     state=BookingState.INFO_COMPLETE,
     amount_due=Auto,
+    # Other
+    allocate_it: bool = False,
 ) -> Booking:
     account = account or create_booking_account()
     camp = camp or camps_factories.get_any_camp()
@@ -122,6 +125,8 @@ def create_booking(
         booking.auto_set_amount_due()
         booking.save()
     booking.update_approvals()
+    if allocate_it:
+        allocate_bookings_now([booking])
     return booking
 
 

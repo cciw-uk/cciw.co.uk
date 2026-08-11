@@ -2,7 +2,6 @@ from django.test import Client
 from django.urls import reverse
 
 from cciw.bookings import factories
-from cciw.bookings.models.queue import allocate_bookings_now
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.tests import factories as officer_factories
 
@@ -10,8 +9,7 @@ from cciw.officers.tests import factories as officer_factories
 def test_export_camper_data(db, client: Client):
     user = officer_factories.create_officer()
     camp = camp_factories.create_camp(leader=user)
-    booking = factories.create_booking(camp=camp)
-    allocate_bookings_now([booking])
+    _booking = factories.create_booking(camp=camp, allocate_it=True)
 
     client.force_login(user)
     url1 = reverse("cciw-officers-export_camper_data", kwargs=dict(camp_id=camp.url_id))

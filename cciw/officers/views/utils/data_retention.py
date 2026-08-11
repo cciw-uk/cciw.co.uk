@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from enum import StrEnum
 from functools import wraps
 from typing import Any, Literal, Protocol, overload
 
@@ -9,14 +8,8 @@ import furl
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 
-from cciw.officers.models.data_retention import DataRelation, NoSensitiveData, log_data_download
+from cciw.officers.models.data_retention import DataRelation, DataRetentionRule, NoSensitiveData, log_data_download
 from cciw.utils.views import ViewFunc
-
-
-class DataRetentionRule(StrEnum):
-    OFFICERS = "officers"
-    CAMPERS = "campers"
-
 
 DATA_RETENTION_NOTICES_HTML = {
     DataRetentionRule.OFFICERS: "cciw/officers/officer_data_retention_rules_inc.html",
