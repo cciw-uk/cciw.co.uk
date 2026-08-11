@@ -84,7 +84,7 @@ def officer_stats_download(request: HttpRequest, year: int) -> HttpResponse:
     return spreadsheet_response(
         builder,
         f"CCIW-officer-stats-{year}",
-        notice=None,
+        rule=None,
         data_relation=NoSensitiveData(),
     )
 
@@ -96,7 +96,7 @@ def officer_stats_trend_download(request: HttpRequest, start_year: int, end_year
     return spreadsheet_response(
         builder,
         f"CCIW-officer-stats-trend-{start_year}-{end_year}",
-        notice=None,
+        rule=None,
         data_relation=NoSensitiveData(),
     )
 
@@ -169,7 +169,7 @@ def booking_progress_stats_download(
     return spreadsheet_response(
         builder,
         filename,
-        notice=None,
+        rule=None,
         data_relation=NoSensitiveData(),
     )
 
@@ -243,7 +243,7 @@ def booking_ages_stats_download(
     return spreadsheet_response(
         builder,
         filename,
-        notice=None,
+        rule=None,
         data_relation=NoSensitiveData(),
     )
 

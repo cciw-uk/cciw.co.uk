@@ -28,7 +28,7 @@ from ..utils.auth import (
 )
 from ..utils.breadcrumbs import leaders_breadcrumbs, with_breadcrumbs
 from ..utils.campid import get_camp_or_404
-from ..utils.data_retention import DataRetentionNotice, SensitiveDownloadResponse, sensitive_data_download
+from ..utils.data_retention import DataRetentionRule, SensitiveDownloadResponse, sensitive_data_download
 from ..utils.spreadsheets import spreadsheet_response
 
 
@@ -233,12 +233,12 @@ def resend_email(request: HttpRequest) -> HttpResponse:
 
 
 @camp_admin_required
-@sensitive_data_download(DataRetentionNotice.OFFICERS, "Officer data")
+@sensitive_data_download(DataRetentionRule.OFFICERS, "Officer data")
 def export_officer_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownloadResponse:
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
         officer_data_to_spreadsheet(camp),
         f"CCIW-camp-{camp.url_id}-officers",
-        notice=DataRetentionNotice.OFFICERS,
+        rule=DataRetentionRule.OFFICERS,
         data_relation=DataRelatedToOfficersOnCamp(camp),
     )

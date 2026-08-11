@@ -3,7 +3,7 @@ import openpyxl
 from cciw.officers.views.utils.data_retention import (
     DATA_RETENTION_NOTICES_TXT,
     DataRelation,
-    DataRetentionNotice,
+    DataRetentionRule,
     SensitiveDownloadResponse,
 )
 from cciw.utils import xl
@@ -14,19 +14,19 @@ def spreadsheet_response(
     builder: ExcelBuilder,
     filename: str,
     *,
-    notice: DataRetentionNotice | None,
+    rule: DataRetentionRule | None,
     data_relation: DataRelation,
 ) -> SensitiveDownloadResponse:
     output = builder.to_bytes()
 
-    if notice is not None:
+    if rule is not None:
         workbook: openpyxl.Workbook = xl.workbook_from_bytes(builder.to_bytes())
         sheet = workbook.create_sheet("Notice", 0)
         c_header = sheet.cell(1, 1)
         c_header.value = "Data retention notice:"
         c_header.font = xl.header_font
 
-        for row_idx, line in enumerate(notice_to_lines(notice), start=3):
+        for row_idx, line in enumerate(notice_to_lines(rule), start=3):
             c = sheet.cell(row_idx, 1)
             c.value = line
             c.font = xl.default_font
@@ -40,6 +40,6 @@ def spreadsheet_response(
     )
 
 
-def notice_to_lines(notice: DataRetentionNotice) -> list[str]:
-    txt = DATA_RETENTION_NOTICES_TXT[notice]
+def notice_to_lines(rule: DataRetentionRule, /) -> list[str]:
+    txt = DATA_RETENTION_NOTICES_TXT[rule]
     return list(txt.split("\n"))

@@ -13,18 +13,19 @@ from cciw.officers.models.data_retention import DataRelation, NoSensitiveData, l
 from cciw.utils.views import ViewFunc
 
 
-class DataRetentionNotice(StrEnum):
+class DataRetentionRule(StrEnum):
     OFFICERS = "officers"
     CAMPERS = "campers"
 
 
 DATA_RETENTION_NOTICES_HTML = {
-    DataRetentionNotice.OFFICERS: "cciw/officers/officer_data_retention_rules_inc.html",
-    DataRetentionNotice.CAMPERS: "cciw/officers/camper_data_retention_rules_inc.html",
+    DataRetentionRule.OFFICERS: "cciw/officers/officer_data_retention_rules_inc.html",
+    DataRetentionRule.CAMPERS: "cciw/officers/camper_data_retention_rules_inc.html",
 }
 
+
 DATA_RETENTION_NOTICES_TXT = {
-    DataRetentionNotice.OFFICERS: """
+    DataRetentionRule.OFFICERS: """
 Share this data only with leaders or the designated CCiW officers
 who assist leaders with tasks relating to officers, and no third parties.
 All such people must be aware of and abide by these rules.
@@ -38,7 +39,7 @@ online storage, including any copies you have made, such as attachments in
 emails and backups.
 
 """.strip(),
-    DataRetentionNotice.CAMPERS: """
+    DataRetentionRule.CAMPERS: """
 Share this data only with leaders and assistant leaders and no third parties.
 All these people must be aware of and abide by these rules.
 
@@ -52,7 +53,7 @@ copies you have made, such as attachments in emails and backups.
 """.strip(),
 }
 
-for val in DataRetentionNotice:
+for val in DataRetentionRule:
     assert val in DATA_RETENTION_NOTICES_HTML, f"Need to add {val} to DATA_RETENTION_NOTICES_HTML"
     assert val in DATA_RETENTION_NOTICES_TXT, f"Need to add {val} to DATA_RETENTION_NOTICES_TXT"
 
@@ -81,7 +82,7 @@ def sensitive_data_download[**P](
 
 @overload
 def sensitive_data_download[**P](
-    notice_type: DataRetentionNotice, brief_title: str, /
+    rule: DataRetentionRule, brief_title: str, /
 ) -> Callable[[DownloadViewFunc[P]], ViewFunc[P]]: ...
 
 
@@ -89,7 +90,7 @@ DOWNLOAD_HAS_BEEN_LOGGED = "DOWNLOAD_HAS_BEEN_LOGGED"
 
 
 def sensitive_data_download[**P](
-    notice_type: DataRetentionNotice | None = None,
+    rule: DataRetentionRule | None = None,
     brief_title: str | None = None,
     /,
     *,
@@ -116,7 +117,7 @@ def sensitive_data_download[**P](
                     setattr(response, DOWNLOAD_HAS_BEEN_LOGGED, True)
                 return response
             else:
-                assert notice_type is not None
+                assert rule is not None
                 assert brief_title is not None
                 if htmx:
                     base_template = "cciw/officers/modal_dialog.html"
@@ -129,7 +130,7 @@ def sensitive_data_download[**P](
                     template,
                     {
                         "base_template": base_template,
-                        "include_file": DATA_RETENTION_NOTICES_HTML[notice_type],
+                        "include_file": DATA_RETENTION_NOTICES_HTML[rule],
                         "brief_title": brief_title,
                         "download_link": furl.furl(request.get_full_path()).add(
                             query_params={"data_retention_notice_seen": "1"}

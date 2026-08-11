@@ -43,7 +43,7 @@ from .utils.auth import (
 )
 from .utils.breadcrumbs import officers_breadcrumbs, with_breadcrumbs
 from .utils.data_retention import (
-    DataRetentionNotice,
+    DataRetentionRule,
     SensitiveDownloadResponse,
     sensitive_data_download,
 )
@@ -55,12 +55,12 @@ BOOKING_STATS_PREVIOUS_YEARS = 4
 
 
 @booking_secretary_required
-@sensitive_data_download(DataRetentionNotice.CAMPERS, "Camper data")
+@sensitive_data_download(DataRetentionRule.CAMPERS, "Camper data")
 def export_camper_data_for_year(request: HttpRequest, year: int) -> SensitiveDownloadResponse:
     return spreadsheet_response(
         year_bookings_to_spreadsheet(year),
         f"CCIW-bookings-{year}",
-        notice=DataRetentionNotice.CAMPERS,
+        rule=DataRetentionRule.CAMPERS,
         data_relation=DataRelatedToCampersYear(year=year),
     )
 
@@ -117,7 +117,7 @@ def export_payment_data(request: HttpRequest) -> SensitiveDownloadResponse:
     return spreadsheet_response(
         payments_to_spreadsheet(date_start, date_end),
         f"CCIW-payments-{date_start:%Y-%m-%d}-to-{date_end:%Y-%m-%d}",
-        notice=DataRetentionNotice.CAMPERS,
+        rule=DataRetentionRule.CAMPERS,
         # We base data relation on the last year that might be included.
         data_relation=DataRelatedToCampersYear(year=date_end.year),
     )
@@ -148,7 +148,7 @@ def booking_summary_stats_download(request: HttpRequest, start_year: int, end_ye
     return spreadsheet_response(
         builder,
         f"CCIW-booking-summary-stats-{start_year}-{end_year}",
-        notice=None,
+        rule=None,
         data_relation=NoSensitiveData(),
     )
 
@@ -199,7 +199,7 @@ def brochure_mailing_list(request: HttpRequest, year: int) -> SensitiveDownloadR
     return spreadsheet_response(
         addresses_for_mailing_list(year),
         f"CCIW-mailing-list-{year}",
-        notice=DataRetentionNotice.CAMPERS,
+        rule=DataRetentionRule.CAMPERS,
         data_relation=DataRelatedToCampersYear(year=year),
     )
 
