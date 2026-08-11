@@ -39,9 +39,9 @@ X_REFERENCE_REQUEST = "ReferenceRequest"
 
 
 def admin_emails_for_camp(camp: Camp) -> list[str]:
-    leaders = [user for leader in camp.leaders.all() for user in leader.users.all()] + list(camp.admins.all())
+    users = sorted(camp.leader_and_admin_users, key=lambda user: user.id)
 
-    return list(filter(lambda x: x is not None, map(formatted_email, leaders)))
+    return list(filter(lambda x: x is not None, map(formatted_email, users)))
 
 
 def admin_emails_for_application(application: Application) -> list[tuple[Camp, list[str]]]:
@@ -361,11 +361,9 @@ def send_data_retention_reminder_emails_about_officer_data():
     # Exclude earlier years:
     relevant_camps = relevant_camps.filter(year=latest_relevant_camp.year)
 
-    for camp in relevant_camps.prefetch_related("leaders", "leaders__users", "admins"):
+    for camp in relevant_camps.with_all_leader_admin_data():
         # Leaders and admins need reminding.
-        leader_users: list[User] = [user for p in camp.leaders.all() for user in p.users.all()]
-        admin_users: list[User] = list(camp.admins.all())
-        relevant_users = leader_users + admin_users
+        relevant_users = camp.leader_and_admin_users
 
         def build_email(user: User) -> EmailMessage:
             download_logs = DataDownloadLog.objects.for_user(user).for_relation(DataRelatedToOfficersOnCamp(camp))

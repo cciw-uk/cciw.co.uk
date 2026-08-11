@@ -281,9 +281,9 @@ def email_match(email_address: str, users: UserQuerySet | set[User]) -> bool:
 
 def is_camp_leader_or_admin(email_address: str, camps: list[Camp]) -> bool:
     all_users = set()
-    for camp in camps:
-        all_users.update(get_leaders_for_camp(camp))
-        all_users.update(list(camp.admins.all()))
+    camp_qs = Camp.objects.all().filter(id__in=[c.id for c in camps])
+    for camp in camp_qs.with_all_leader_admin_data():
+        all_users.update(camp.leader_and_admin_users)
     return email_match(email_address, all_users)
 
 

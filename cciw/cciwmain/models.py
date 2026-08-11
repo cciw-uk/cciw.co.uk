@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os.path
 from dataclasses import dataclass
 from datetime import date
@@ -118,11 +120,14 @@ class CampManager(models.Manager):
 
 
 class CampQuerySet(models.QuerySet):
-    def include_other_years_info(self) -> "CampQuerySet":
+    def include_other_years_info(self) -> CampQuerySet:
         return self.prefetch_related("camp_name__camps")
 
-    def by_camp_id(self, camp_id: CampId) -> "CampQuerySet":
+    def by_camp_id(self, camp_id: CampId) -> CampQuerySet:
         return self.filter(year=camp_id.year, camp_name__slug=camp_id.slug)
+
+    def with_all_leader_admin_data(self) -> CampQuerySet:
+        return self.prefetch_related("leaders", "leaders__users", "admins")
 
 
 class Camp(models.Model):
@@ -196,7 +201,7 @@ class Camp(models.Model):
         return f"{self.url_id} ({leadertext})"
 
     @cached_property
-    def previous_camp(self) -> "Camp | None":
+    def previous_camp(self) -> Camp | None:
         if self._state.fields_cache.get("camp_name", None) is not None:
             camp_name = self.camp_name
             if hasattr(camp_name, "_prefetched_objects_cache"):
@@ -212,7 +217,7 @@ class Camp(models.Model):
         return Camp.objects.filter(year__lt=self.year, camp_name=self.camp_name).order_by("-year").first()
 
     @cached_property
-    def next_camp(self) -> "Camp | None":
+    def next_camp(self) -> Camp | None:
         return Camp.objects.filter(year__gt=self.year, camp_name=self.camp_name).order_by("year").first()
 
     def _format_leaders(self, leaders: list[Person]) -> str:
@@ -230,6 +235,10 @@ class Camp(models.Model):
         from cciw.mail.lists import address_for_camp_leaders
 
         return address_for_camp_leaders(self)
+
+    @property
+    def leader_and_admin_users(self) -> set[User]:
+        return set([user for p in self.leaders.all() for user in p.users.all()] + list(self.admins.all()))
 
     @property
     def name(self) -> str:
