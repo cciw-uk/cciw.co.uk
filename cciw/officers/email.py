@@ -31,6 +31,7 @@ from cciw.officers.models.data_retention import (
     DataDownloadLog,
     DataRelatedToOfficersOnCamp,
     DataRetentionRule,
+    LoggableDataRelation,
 )
 
 logger = logging.getLogger(__name__)
@@ -382,24 +383,37 @@ Thank you.
             to=[user.email],
         )
 
-    for camp, users in get_camps_and_users_for_data_protection_reminders(DataRetentionRule.OFFICERS):
+    for camp, users in get_camps_and_users_for_data_protection_reminders(
+        rule=DataRetentionRule.OFFICERS, make_relation=DataRelatedToOfficersOnCamp
+    ):
         send_mails_for_items_according_to_schedule(
-            items=users,
+            items=list(users),
             tracking_id_format=lambda user: f"camp-{camp.url_id}-user-{user.id}",
             repeat=NeverRepeat(),
             builder=build_email,
         )
 
 
-def get_camps_and_users_for_data_protection_reminders(rule: DataRetentionRule) -> Iterable[tuple[Camp, Sequence[User]]]:
+def get_camps_and_users_for_data_protection_reminders(
+    *, rule: DataRetentionRule, make_relation: Callable[[Camp], LoggableDataRelation]
+) -> Iterable[tuple[Camp, set[User]]]:
     relevant_camps = get_relevant_camps_for_data_protection_reminders(rule)
     if relevant_camps is None:
         return
 
     for camp in relevant_camps.with_all_leader_admin_data():
-        # Leaders and admins need reminding, they are
-        # the only ones with access to this data.
-        yield camp, camp.leader_and_admin_users
+        # Leaders and admins need reminding. This is especially necessary in
+        # first year of this feature where download logs will be incomplete
+        admin_users: set[User] = camp.leader_and_admin_users
+
+        # We also need anyone who may have been an admin temporarily and downloaded something.
+        relation: LoggableDataRelation = make_relation(camp)
+        download_users = set(
+            User.objects.filter(id__in=DataDownloadLog.objects.for_relation(relation).values_list("user_id", flat=True))
+        )
+        all_users = admin_users | download_users
+
+        yield camp, all_users
 
 
 def get_relevant_camps_for_data_protection_reminders(rule: DataRetentionRule) -> QuerySet[Camp] | None:
