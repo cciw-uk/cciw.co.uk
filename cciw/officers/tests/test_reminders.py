@@ -10,7 +10,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.email import send_data_retention_reminder_emails
 from cciw.officers.tests import factories as officer_factories
-from cciw.officers.views.leaders.officer_list import officer_data_filename
+from cciw.officers.views.leaders.officer_list import officer_data_filename_stem
 
 
 def test_data_cleanup_reminders(db, client: Client):
@@ -45,7 +45,7 @@ def test_data_cleanup_reminders(db, client: Client):
 
         leader_mail = [m for m in mail.outbox if m.to == [leader.email]][0]
         # This should have download logs in it
-        expected_file_name = f"{officer_data_filename(camp)}.xlsx"
+        expected_file_name = f"{officer_data_filename_stem(camp)}.xlsx"
         assert expected_file_name in leader_mail.body
 
     # No further emails when checking later.

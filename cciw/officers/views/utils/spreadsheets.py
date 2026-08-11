@@ -12,7 +12,7 @@ from cciw.utils.spreadsheet import ExcelBuilder
 
 def spreadsheet_response(
     builder: ExcelBuilder,
-    filename: str,
+    filename_stem: str,
     *,
     rule: DataRetentionRule | None,
     data_relation: DataRelation,
@@ -36,7 +36,10 @@ def spreadsheet_response(
     # All spreadsheets are assumed to be sensitive by default,
     # NoSensitiveData can be used for those that aren't.
     return SensitiveDownloadResponse(
-        output, content_type=builder.mimetype, data_relation=data_relation, filename=f"{filename}.{builder.file_ext}"
+        output,
+        content_type=builder.mimetype,
+        data_relation=data_relation,
+        filename=f"{filename_stem}.{builder.file_ext}",
     )
 
 

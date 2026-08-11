@@ -233,7 +233,7 @@ def resend_email(request: HttpRequest) -> HttpResponse:
     )
 
 
-def officer_data_filename(camp: Camp) -> str:
+def officer_data_filename_stem(camp: Camp) -> str:
     return f"CCIW-camp-{camp.url_id}-officers"
 
 
@@ -243,7 +243,7 @@ def export_officer_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownl
     camp = get_camp_or_404(camp_id)
     return spreadsheet_response(
         officer_data_to_spreadsheet(camp),
-        officer_data_filename(camp),
+        officer_data_filename_stem(camp),
         rule=DataRetentionRule.OFFICERS,
         data_relation=DataRelatedToOfficersOnCamp(camp),
     )
