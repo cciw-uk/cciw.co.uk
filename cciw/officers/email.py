@@ -1,13 +1,14 @@
 # ruff: noqa: UP032
 import contextlib
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from datetime import date, timedelta
 from urllib.parse import quote as urlquote
 
 from django.conf import settings
 from django.core import signing
 from django.core.mail import EmailMessage, send_mail
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
@@ -338,20 +339,79 @@ def send_data_retention_reminder_emails():
     # send_data_retention_reminder_emails_about_camper_data()
 
 
+REMEMBER_TO_CHECK_MESSAGE = """Please remember to check:
+
+- downloaded files on all your devices
+- any backups or copies
+- emails that attached the data (both incoming and outgoing)
+- any other messaging apps
+"""
+
+
 def send_data_retention_reminder_emails_about_officer_data():
     if not in_period_for_sending_data_retention_reminder_emails():
         return
 
-    # Get the camps we need to send notifications about
+    def build_email(user: User) -> EmailMessage:
+        download_logs = DataDownloadLog.objects.for_user(user).for_relation(DataRelatedToOfficersOnCamp(camp))
+        if download_logs:
+            download_log_message = (
+                "According to our logs, you have downloaded at least the following files:\n"
+                + "\n".join(f" - {log.filename}" for log in download_logs)
+            ) + "\n\n"
+        else:
+            download_log_message = ""
 
-    # Because of the long time limit, we have to go back to previous years.
+        return EmailMessage(
+            subject=f"[CCIW] Reminder: remove officer data for {camp.nice_name}",
+            body=f"""
+As a leader or admin for {camp.nice_name}, you may have
+downloaded officer data related to this camp. As per our data
+retention policy, you now need to delete all copies of this
+data (and for any earlier camps).
 
-    # We avoid emailing people who may have long left CCIW (historic data),
-    # and we avoid emailing people who may be current about multiple past
-    # years, and just focus on the most recent year (and make the message
-    # remind about earlier years)
+{REMEMBER_TO_CHECK_MESSAGE}
+{download_log_message}
+If you have shared the data with other officers, please also
+ensure they do the same.
+
+Thank you.
+
+""",
+            from_email=settings.WEBMASTER_FROM_EMAIL,
+            to=[user.email],
+        )
+
+    for camp, users in get_camps_and_users_for_data_protection_reminders(DataRetentionRule.OFFICERS):
+        send_mails_for_items_according_to_schedule(
+            items=users,
+            tracking_id_format=lambda user: f"camp-{camp.url_id}-user-{user.id}",
+            repeat=NeverRepeat(),
+            builder=build_email,
+        )
+
+
+def get_camps_and_users_for_data_protection_reminders(rule: DataRetentionRule) -> Iterable[tuple[Camp, Sequence[User]]]:
+    relevant_camps = get_relevant_camps_for_data_protection_reminders(rule)
+    if relevant_camps is None:
+        return
+
+    for camp in relevant_camps.with_all_leader_admin_data():
+        # Leaders and admins need reminding, they are
+        # the only ones with access to this data.
+        yield camp, camp.leader_and_admin_users
+
+
+def get_relevant_camps_for_data_protection_reminders(rule: DataRetentionRule) -> QuerySet[Camp] | None:
+    # Because of the long time limits possible in DATA_RETENTION_PERIODS we have
+    # to go back to previous years.
+
+    # We want to avoid emailing people who may have long left CCIW (historic
+    # data), and we avoid emailing people who may be current about multiple past
+    # years, and just focus on the most recent year (and make the message remind
+    # about earlier years)
     today = date.today()
-    relevant_camps = Camp.objects.filter(end_date__lt=today - DATA_RETENTION_PERIODS[DataRetentionRule.OFFICERS])
+    relevant_camps = Camp.objects.filter(end_date__lt=today - DATA_RETENTION_PERIODS[rule])
 
     latest_relevant_camp = relevant_camps.order_by("end_date").last()
     if not latest_relevant_camp:
@@ -360,53 +420,7 @@ def send_data_retention_reminder_emails_about_officer_data():
 
     # Exclude earlier years:
     relevant_camps = relevant_camps.filter(year=latest_relevant_camp.year)
-
-    for camp in relevant_camps.with_all_leader_admin_data():
-        # Leaders and admins need reminding.
-        relevant_users = camp.leader_and_admin_users
-
-        def build_email(user: User) -> EmailMessage:
-            download_logs = DataDownloadLog.objects.for_user(user).for_relation(DataRelatedToOfficersOnCamp(camp))
-            if download_logs:
-                download_log_message = (
-                    "According to our logs, you have downloaded at least the following files:\n"
-                    + "\n".join(f" - {log.filename}" for log in download_logs)
-                ) + "\n\n"
-            else:
-                download_log_message = ""
-
-            return EmailMessage(
-                subject=f"[CCIW] Reminder: remove officer data for {camp.nice_name}",
-                body=f"""
-As a leader or admin for {camp.nice_name}, you may have
-downloaded officer data related to this camp. As per our data
-retention policy, you now need to delete all copies of this
-data (and for any earlier camps).
-
-Please remember to check:
-
-- downloaded files on all your devices
-- any backups or copies
-- emails that attached the data (both incoming and outgoing)
-- any other messaging apps
-
-{download_log_message}
-If you have shared the data with other officers, please also
-ensure they do the same.
-
-Thank you.
-
-""",
-                from_email=settings.WEBMASTER_FROM_EMAIL,
-                to=[user.email],
-            )
-
-        send_mails_for_items_according_to_schedule(
-            items=relevant_users,
-            tracking_id_format=lambda user: f"camp-{camp.url_id}-user-{user.id}",
-            repeat=NeverRepeat(),
-            builder=build_email,
-        )
+    return relevant_camps
 
 
 def in_period_for_sending_data_retention_reminder_emails():
