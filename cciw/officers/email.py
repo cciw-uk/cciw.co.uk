@@ -29,6 +29,7 @@ from cciw.officers.models import Application, Referee, Reference
 from cciw.officers.models.data_retention import (
     DATA_RETENTION_PERIODS,
     DataDownloadLog,
+    DataRelatedToCampersOnCamp,
     DataRelatedToOfficersOnCamp,
     DataRetentionRule,
     LoggableDataRelation,
@@ -335,9 +336,10 @@ Use the following link to manage this reference:
 
 
 def send_data_retention_reminder_emails():
+    if not in_period_for_sending_data_retention_reminder_emails():
+        return
     send_data_retention_reminder_emails_about_officer_data()
-    # TODO:
-    # send_data_retention_reminder_emails_about_camper_data()
+    send_data_retention_reminder_emails_about_camper_data()
 
 
 REMEMBER_TO_CHECK_MESSAGE = """Please remember to check:
@@ -350,9 +352,6 @@ REMEMBER_TO_CHECK_MESSAGE = """Please remember to check:
 
 
 def send_data_retention_reminder_emails_about_officer_data():
-    if not in_period_for_sending_data_retention_reminder_emails():
-        return
-
     def build_email(user: User) -> EmailMessage:
         download_filenames = download_log_filenames(user, DataRelatedToOfficersOnCamp(camp))
         if download_filenames:
@@ -389,6 +388,48 @@ Thank you.
         send_mails_for_items_according_to_schedule(
             items=list(users),
             tracking_id_format=lambda user: f"camp-{camp.url_id}-officer-data-user-{user.id}",
+            repeat=NeverRepeat(),
+            builder=build_email,
+        )
+
+
+def send_data_retention_reminder_emails_about_camper_data():
+    def build_email(user: User) -> EmailMessage:
+        download_filenames = download_log_filenames(user, DataRelatedToCampersOnCamp(camp))
+        if download_filenames:
+            download_log_message = (
+                "According to our logs, you have downloaded at least the following files:\n"
+                + "\n".join(f" - {filename}" for filename in download_filenames)
+            ) + "\n\n"
+        else:
+            download_log_message = ""
+
+        return EmailMessage(
+            subject=f"[CCIW] Reminder: remove camper data for {camp.nice_name}",
+            body=f"""
+As a leader or admin for {camp.nice_name}, you may have
+downloaded camper data related to this camp. As per our data
+retention policy, you now need to delete all copies of this
+data (and for any earlier camps).
+
+{REMEMBER_TO_CHECK_MESSAGE}
+{download_log_message}
+If you have shared the data with other officers, please also
+ensure they do the same.
+
+Thank you.
+
+""",
+            from_email=settings.WEBMASTER_FROM_EMAIL,
+            to=[user.email],
+        )
+
+    for camp, users in get_camps_and_users_for_data_protection_reminders(
+        rule=DataRetentionRule.CAMPERS, make_relation=DataRelatedToCampersOnCamp
+    ):
+        send_mails_for_items_according_to_schedule(
+            items=list(users),
+            tracking_id_format=lambda user: f"camp-{camp.url_id}-camper-data-user-{user.id}",
             repeat=NeverRepeat(),
             builder=build_email,
         )
