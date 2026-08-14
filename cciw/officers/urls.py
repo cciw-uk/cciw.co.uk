@@ -42,11 +42,6 @@ urlpatterns = [
         name="cciw-officers-export_camper_data",
     ),
     path(
-        "leaders/export-camper-data/<yyyy:year>/",
-        views.export_camper_data_for_year,
-        name="cciw-officers-export_camper_data_for_year",
-    ),
-    path(
         "leaders/export-sharable-transport-details/<campid:camp_id>/",
         views.export_sharable_transport_details,
         name="cciw-officers-export_sharable_transport_details",
@@ -144,6 +139,11 @@ urlpatterns = [
         "bookings/reports/<yyyy:year>/", views.booking_secretary_reports, name="cciw-officers-booking_secretary_reports"
     ),
     path("bookings/export-payments/", views.export_payment_data, name="cciw-officers-export_payment_data"),
+    path(
+        "bookings/export-camper-data/<yyyy:year>/",
+        views.export_camper_data_for_year,
+        name="cciw-officers-export_camper_data_for_year",
+    ),
     path(
         "bookings/place-availability-json/", views.place_availability_json, name="cciw-officers-place_availability_json"
     ),
