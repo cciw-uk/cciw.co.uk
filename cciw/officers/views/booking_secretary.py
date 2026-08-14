@@ -55,7 +55,7 @@ BOOKING_STATS_PREVIOUS_YEARS = 4
 
 
 @booking_secretary_required
-@sensitive_data_download(DataRetentionRule.CAMPERS, "Camper data")
+@sensitive_data_download(skip_notice=True)
 def export_camper_data_for_year(request: HttpRequest, year: int) -> SensitiveDownloadResponse:
     return spreadsheet_response(
         year_bookings_to_spreadsheet(year),
