@@ -11,6 +11,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests import factories as camp_factories
 from cciw.officers.email import send_data_retention_reminder_emails
 from cciw.officers.tests import factories as officer_factories
+from cciw.officers.views.booking_secretary import bookings_data_filename_stem
 from cciw.officers.views.leaders.campers import camper_data_filename_stem
 from cciw.officers.views.leaders.officer_list import officer_data_filename_stem
 
@@ -93,6 +94,28 @@ def test_data_cleanup_reminders(db, client: Client):
         assert len(mail.outbox) == 0
 
 
+def test_data_cleanup_reminders_for_year(db, client: Client):
+    with travel(date(2021, 1, 2)):
+        booking_sec = officer_factories.create_booking_secretary()
+        camp = camp_factories.create_camp(start_date=date(2021, 8, 1))
+
+    with travel(date(2021, 6, 1)):
+        download_bookings_data(client, user=booking_sec, year=2021)
+
+    # They should get reminder about deleting camper data one month after the end
+    # of camp.
+    mail.outbox = []
+    with travel(camp.end_date + timedelta(days=35)):
+        send_data_retention_reminder_emails()
+        assert len(mail.outbox) == 1
+        m = mail.outbox[0]
+        assert m.subject == "[CCIW] Reminder: remove camper/bookings data for 2021"
+
+        expected_file_name = f"{bookings_data_filename_stem(2021)}.xlsx"
+        assert m.to == [booking_sec.email]
+        assert expected_file_name in m.body
+
+
 def sort_emails_by_user(
     mails: Sequence[mail.EmailMessage], users: Sequence[User]
 ) -> Iterable[tuple[mail.EmailMessage, User]]:
@@ -115,4 +138,10 @@ def download_camper_data(client: Client, user: User, camp: Camp) -> None:
     url1 = (
         reverse("cciw-officers-export_camper_data", kwargs=dict(camp_id=camp.url_id)) + "?data_retention_notice_seen=1"
     )
+    client.get(url1)
+
+
+def download_bookings_data(client: Client, user: User, year: int) -> None:
+    client.force_login(user)
+    url1 = reverse("cciw-officers-export_camper_data_for_year", kwargs=dict(year=year))
     client.get(url1)

@@ -30,6 +30,7 @@ from cciw.officers.models.data_retention import (
     DATA_RETENTION_PERIODS,
     DataDownloadLog,
     DataRelatedToCampersOnCamp,
+    DataRelatedToCampersYear,
     DataRelatedToOfficersOnCamp,
     DataRetentionRule,
     LoggableDataRelation,
@@ -340,6 +341,7 @@ def send_data_retention_reminder_emails():
         return
     send_data_retention_reminder_emails_about_officer_data()
     send_data_retention_reminder_emails_about_camper_data()
+    send_data_retention_reminder_emails_about_camper_year_data()
 
 
 REMEMBER_TO_CHECK_MESSAGE = """Please remember to check:
@@ -435,6 +437,55 @@ Thank you.
         )
 
 
+def send_data_retention_reminder_emails_about_camper_year_data():
+    # A bit contorted here - we need to use DATA_RETENTION_PERIODS,
+    # which relates to camps, so we have to go via camps to get
+    # back to a year, and then ignore earlier years.
+    relevant_camps = get_relevant_camps_for_data_protection_reminders(DataRetentionRule.CAMPERS)
+    if not relevant_camps:
+        return
+
+    year = max({camp.year for camp in relevant_camps})
+    relation = DataRelatedToCampersYear(year)
+
+    def build_email(user: User) -> EmailMessage:
+        download_filenames = download_log_filenames(user, relation)
+        if download_filenames:
+            download_log_message = (
+                "According to our logs, you have downloaded at least the following files:\n"
+                + "\n".join(f" - {filename}" for filename in download_filenames)
+            ) + "\n\n"
+        else:
+            download_log_message = ""
+
+        return EmailMessage(
+            subject=f"[CCIW] Reminder: remove camper/bookings data for {year}",
+            body=f"""
+In your role for CCiW, you may have downloaded camper data related to
+camps in year {year}. As per our data retention policy, you now need to
+delete all copies of this data (and for any previous years).
+
+{REMEMBER_TO_CHECK_MESSAGE}
+{download_log_message}
+If you have shared the data with other people, please also
+ensure they do the same.
+
+Thank you.
+
+""",
+            from_email=settings.WEBMASTER_FROM_EMAIL,
+            to=[user.email],
+        )
+
+    users = get_downloaders_for_data_protection_relation(relation)
+    send_mails_for_items_according_to_schedule(
+        items=list(users),
+        tracking_id_format=lambda user: f"year-{year}-camper-data-user-{user.id}",
+        repeat=NeverRepeat(),
+        builder=build_email,
+    )
+
+
 def download_log_filenames(user: User, relation: LoggableDataRelation) -> list[str]:
     return sorted(set(DataDownloadLog.objects.for_user(user).for_relation(relation).values_list("filename", flat=True)))
 
@@ -453,9 +504,7 @@ def get_camps_and_users_for_data_protection_reminders(
 
         # We also need anyone who may have been an admin temporarily and downloaded something.
         relation: LoggableDataRelation = make_relation(camp)
-        download_users = set(
-            User.objects.filter(id__in=DataDownloadLog.objects.for_relation(relation).values_list("user_id", flat=True))
-        )
+        download_users = get_downloaders_for_data_protection_relation(relation)
         all_users = admin_users | download_users
 
         yield camp, all_users
@@ -480,6 +529,15 @@ def get_relevant_camps_for_data_protection_reminders(rule: DataRetentionRule) ->
     # Exclude earlier years:
     relevant_camps = relevant_camps.filter(year=latest_relevant_camp.year)
     return relevant_camps
+
+
+def get_downloaders_for_data_protection_relation(
+    relation: LoggableDataRelation,
+) -> set[User]:
+    download_users = set(
+        User.objects.filter(id__in=DataDownloadLog.objects.for_relation(relation).values_list("user_id", flat=True))
+    )
+    return download_users
 
 
 def in_period_for_sending_data_retention_reminder_emails():
