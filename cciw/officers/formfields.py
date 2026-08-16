@@ -14,6 +14,7 @@ class YyyyMmField(forms.CharField):
     def clean(self, value):
         if not self.required and (value == "" or value is None):
             return ""
-        if not yyyy_mm_re.match(value):
+        value = value.strip()
+        if not yyyy_mm_re.fullmatch(value):
             raise forms.ValidationError("This field must be in the form YYYY/MM.")
         return value
