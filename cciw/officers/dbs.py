@@ -31,7 +31,7 @@ class DBSInfo:
     address: str
     birth_date: date
     dbs_check_consent: bool
-    update_enabled_dbs_number: str | None
+    update_enabled_dbs_number: DBSNumber | None
     last_dbs_rejected: bool
 
     @property
