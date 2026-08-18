@@ -36,6 +36,15 @@ def test_camp_previous_and_next():
     assert camp_2.next_camp is None
     assert camp_2.previous_camp == camp
 
+    camp_dict = {c.id: c for c in [camp, camp_2]}
+
+    # Test prefetch branch code:
+    camps = Camp.objects.select_related("camp_name").prefetch_related("camp_name__camps")
+    for c in camps:
+        matching_camp = camp_dict[c.id]
+        assert c.next_camp == matching_camp.next_camp
+        assert c.previous_camp == matching_camp.previous_camp
+
 
 class ThisyearPage(TestBase):
     def setUp(self):
