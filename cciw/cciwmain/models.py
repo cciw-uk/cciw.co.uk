@@ -207,18 +207,17 @@ class Camp(models.Model):
             if hasattr(camp_name, "_prefetched_objects_cache"):
                 other_camps = camp_name._prefetched_objects_cache.get("camps", None)
                 if other_camps is not None:
-                    previous_camps = [c for c in other_camps if c.year < self.year]
-                    previous_camps.sort(key=lambda c: -c.year)
+                    previous_camps = [c for c in other_camps if c.year == self.year - 1]
                     if previous_camps:
                         return previous_camps[0]
                     else:
                         return None
 
-        return Camp.objects.filter(year__lt=self.year, camp_name=self.camp_name).order_by("-year").first()
+        return Camp.objects.filter(year=self.year - 1, camp_name=self.camp_name).order_by("-year").first()
 
     @cached_property
     def next_camp(self) -> Camp | None:
-        return Camp.objects.filter(year__gt=self.year, camp_name=self.camp_name).order_by("year").first()
+        return Camp.objects.filter(year=self.year + 1, camp_name=self.camp_name).order_by("year").first()
 
     def _format_leaders(self, leaders: list[Person]) -> str:
         if len(leaders) > 0:
