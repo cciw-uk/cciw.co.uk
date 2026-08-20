@@ -1,5 +1,6 @@
 import operator
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from functools import cached_property, reduce
@@ -20,16 +21,16 @@ class DBSNumber:
 
 @dataclass
 class DBSInfo:
-    camps: list[Camp]
+    camps: Sequence[Camp]
     has_application_form: bool
-    application_id: int
+    application_id: int | None
     has_dbs: bool
     has_recent_dbs: bool
     last_dbs_form_sent: datetime | None
     last_leader_alert_sent: datetime | None
     last_form_request_sent: datetime | None
     address: str
-    birth_date: date
+    birth_date: date | None
     dbs_check_consent: bool
     update_enabled_dbs_number: DBSNumber | None
     last_dbs_rejected: bool
@@ -93,26 +94,20 @@ def get_officers_with_dbs_info_for_camps(
     # ever need this info in bulk for specific views, and efficient data access
     # patterns look completely different for the bulk case. So we use this
     # utility function.
-    # We need all the officers, and we need to know which camp(s) they belong
-    # to. Even if we have only selected one camp, it might be nice to know if
-    # they are on other camps. So we get data for all camps, and filter later.
+
     now = timezone.now()
 
-    camp_invitations = Invitation.objects.filter(camp__in=year_camps).select_related("officer", "camp__camp_name")
-    if officer_id is not None:
-        camp_invitations = camp_invitations.filter(officer__id=officer_id)
-    camp_invitations = list(camp_invitations)
-
-    all_officers = list({i.officer for i in camp_invitations})
-    all_officers.sort(key=lambda o: (o.first_name, o.last_name))
-    apps = list(applications_for_camps(year_camps))
+    dbs_requirement_data = get_dbs_requirement_data(year_camps=year_camps, officer_id=officer_id)
+    # TODO - split the rest of this logic into a function that returns 'DBSStatusData'
     recent_dbs_officer_ids = set(
         reduce(operator.or_, [DBSCheck.objects.get_for_camp(c, include_late=True) for c in year_camps]).values_list(
             "officer_id", flat=True
         )
     )
 
-    all_dbs_officer_ids = set(DBSCheck.objects.filter(officer__in=all_officers).values_list("officer_id", flat=True))
+    all_dbs_officer_ids = set(
+        DBSCheck.objects.filter(officer__in=dbs_requirement_data.all_officers).values_list("officer_id", flat=True)
+    )
 
     last_dbs_status = dict(
         DBSCheck.objects.filter(officer__in=all_dbs_officer_ids).values_list("officer_id", "applicant_accepted")
@@ -122,7 +117,7 @@ def get_officers_with_dbs_info_for_camps(
     # anything more than that will have been lost or irrelevant, and we don't
     # want to load everything into memory.
     relevant_action_logs = (
-        DBSActionLog.objects.filter(officer__in=all_officers)
+        DBSActionLog.objects.filter(officer__in=dbs_requirement_data.all_officers)
         .filter(created_at__gt=now - timedelta(365))
         .order_by("created_at")
     )
@@ -132,7 +127,7 @@ def get_officers_with_dbs_info_for_camps(
     )
     leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.LEADER_ALERT_SENT))
 
-    update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(all_officers)
+    update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(dbs_requirement_data.all_officers)
 
     # Work out, without doing any more queries:
     # - which camps each officer is on
@@ -140,12 +135,6 @@ def get_officers_with_dbs_info_for_camps(
     # - if they have an up to date DBS
     # - when the last DBS form was sent to officer
     # - when the last alert was sent to leader
-
-    officers_camps = defaultdict(list)
-    for invitation in camp_invitations:
-        officers_camps[invitation.officer_id].append(invitation.camp)
-
-    officer_apps = {a.officer_id: a for a in apps}
 
     def logs_to_dict(logs) -> dict[int, datetime]:
         # NB: order_by('created_at') above means that requests sent later will overwrite
@@ -157,28 +146,68 @@ def get_officers_with_dbs_info_for_camps(
     leader_alerts_sent_for_officers = logs_to_dict(leader_alerts_sent)
 
     retval = []
-    for o in all_officers:
-        officer_camps = officers_camps[o.id]
+    for officer in dbs_requirement_data.all_officers:
+        officer_camps = dbs_requirement_data.officer_camps[officer.id]
         if not any(c in selected_camps for c in officer_camps):
             continue
-        app = officer_apps.get(o.id, None)
+        app = dbs_requirement_data.officer_apps.get(officer.id, None)
         dbs_info = DBSInfo(
             camps=officer_camps,
             has_application_form=app is not None,
             application_id=app.id if app is not None else None,
-            has_dbs=o.id in all_dbs_officer_ids,
-            has_recent_dbs=o.id in recent_dbs_officer_ids,
-            last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id),
-            last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id),
-            last_form_request_sent=requests_for_dbs_form_sent_for_officers.get(o.id),
+            has_dbs=officer.id in all_dbs_officer_ids,
+            has_recent_dbs=officer.id in recent_dbs_officer_ids,
+            last_dbs_form_sent=dbs_forms_sent_for_officers.get(officer.id),
+            last_leader_alert_sent=leader_alerts_sent_for_officers.get(officer.id),
+            last_form_request_sent=requests_for_dbs_form_sent_for_officers.get(officer.id),
             address=app.one_line_address if app is not None else "",
             birth_date=app.birth_date if app is not None else None,
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
-            update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(o.id),
-            last_dbs_rejected=not last_dbs_status[o.id] if o.id in last_dbs_status else False,
+            update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(officer.id),
+            last_dbs_rejected=not last_dbs_status[officer.id] if officer.id in last_dbs_status else False,
         )
-        retval.append((o, dbs_info))
+        retval.append((officer, dbs_info))
     return retval
+
+
+type OfficerId = int
+
+
+@dataclass
+class DBSRequirementData:
+    # Data related to the *requirement* for a DBS check,
+    # bundled together for convenience.
+
+    # All the officers in the related scope (usually a specific year)
+    all_officers: list[User]
+    officer_camps: Mapping[OfficerId, Sequence[Camp]]
+    officer_apps: Mapping[OfficerId, Application]
+
+
+def get_dbs_requirement_data(year_camps: Sequence[Camp], officer_id: int | None) -> DBSRequirementData:
+    # We need all the officers, and we need to know which camp(s) they belong
+    # to. Even if we have only selected one camp, it might be nice to know if
+    # they are on other camps. So we get data for all camps, and filter later.
+
+    camp_invitations = Invitation.objects.filter(camp__in=year_camps).select_related("officer", "camp__camp_name")
+    if officer_id is not None:
+        camp_invitations = camp_invitations.filter(officer__id=officer_id)
+    camp_invitations = list(camp_invitations)
+
+    all_officers = list({i.officer for i in camp_invitations})
+    all_officers.sort(key=lambda o: (o.first_name, o.last_name))
+    apps = list(applications_for_camps(year_camps))
+
+    officers_camps = defaultdict(list)
+    for invitation in camp_invitations:
+        officers_camps[invitation.officer_id].append(invitation.camp)
+
+    officer_apps = {a.officer_id: a for a in apps}
+    return DBSRequirementData(
+        all_officers=all_officers,
+        officer_camps=officers_camps,
+        officer_apps=officer_apps,
+    )
 
 
 def get_update_service_dbs_numbers(officers: list[User]) -> dict[int, DBSNumber]:

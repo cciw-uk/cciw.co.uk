@@ -93,7 +93,7 @@ def applications_for_camp(camp: cciw.cciwmain.models.Camp, officer_ids: None = N
     return applications_for_camps([camp], officer_ids=officer_ids)
 
 
-def applications_for_camps(camps: CampQuerySet | list[Camp], officer_ids: None = None) -> QuerySet[Application]:
+def applications_for_camps(camps: CampQuerySet | Sequence[Camp], officer_ids: None = None) -> QuerySet[Application]:
     """
     Returns the applications that are relevant for a list of camps.
     """
