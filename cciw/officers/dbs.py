@@ -1,6 +1,6 @@
 import operator
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Container, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from functools import cached_property, reduce
@@ -95,39 +95,13 @@ def get_officers_with_dbs_info_for_camps(
     # patterns look completely different for the bulk case. So we use this
     # utility function.
 
-    now = timezone.now()
-
     dbs_requirement_data = get_dbs_requirement_data(year_camps=year_camps, officer_id=officer_id)
-    # TODO - split the rest of this logic into a function that returns 'DBSStatusData'
-    recent_dbs_officer_ids = set(
-        reduce(operator.or_, [DBSCheck.objects.get_for_camp(c, include_late=True) for c in year_camps]).values_list(
-            "officer_id", flat=True
-        )
-    )
 
-    all_dbs_officer_ids = set(
-        DBSCheck.objects.filter(officer__in=dbs_requirement_data.all_officers).values_list("officer_id", flat=True)
+    status_data = get_dbs_status_data(
+        dbs_requirement_data=dbs_requirement_data,
+        year_camps=year_camps,
+        now=timezone.now(),
     )
-
-    last_dbs_status = dict(
-        DBSCheck.objects.filter(officer__in=all_dbs_officer_ids).values_list("officer_id", "applicant_accepted")
-    )
-
-    # Looking for action logs: set cutoff to a year before now, on the basis that
-    # anything more than that will have been lost or irrelevant, and we don't
-    # want to load everything into memory.
-    relevant_action_logs = (
-        DBSActionLog.objects.filter(officer__in=dbs_requirement_data.all_officers)
-        .filter(created_at__gt=now - timedelta(365))
-        .order_by("created_at")
-    )
-    dbs_forms_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.FORM_SENT))
-    requests_for_dbs_form_sent = list(
-        relevant_action_logs.filter(action_type=DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT)
-    )
-    leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.LEADER_ALERT_SENT))
-
-    update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(dbs_requirement_data.all_officers)
 
     # Work out, without doing any more queries:
     # - which camps each officer is on
@@ -136,14 +110,14 @@ def get_officers_with_dbs_info_for_camps(
     # - when the last DBS form was sent to officer
     # - when the last alert was sent to leader
 
-    def logs_to_dict(logs) -> dict[int, datetime]:
+    def logs_to_dict(logs: Sequence[DBSActionLog]) -> dict[int, datetime]:
         # NB: order_by('created_at') above means that requests sent later will overwrite
         # those sent earlier in the following dictionary
         return {f.officer_id: f.created_at for f in logs}
 
-    dbs_forms_sent_for_officers = logs_to_dict(dbs_forms_sent)
-    requests_for_dbs_form_sent_for_officers = logs_to_dict(requests_for_dbs_form_sent)
-    leader_alerts_sent_for_officers = logs_to_dict(leader_alerts_sent)
+    dbs_forms_sent_for_officers = logs_to_dict(status_data.dbs_forms_sent)
+    requests_for_dbs_form_sent_for_officers = logs_to_dict(status_data.requests_for_dbs_form_sent)
+    leader_alerts_sent_for_officers = logs_to_dict(status_data.leader_alerts_sent)
 
     retval = []
     for officer in dbs_requirement_data.all_officers:
@@ -155,16 +129,16 @@ def get_officers_with_dbs_info_for_camps(
             camps=officer_camps,
             has_application_form=app is not None,
             application_id=app.id if app is not None else None,
-            has_dbs=officer.id in all_dbs_officer_ids,
-            has_recent_dbs=officer.id in recent_dbs_officer_ids,
+            has_dbs=status_data.officer_has_dbs_check(officer),
+            has_recent_dbs=status_data.officer_has_recent_dbs_check(officer),
             last_dbs_form_sent=dbs_forms_sent_for_officers.get(officer.id),
             last_leader_alert_sent=leader_alerts_sent_for_officers.get(officer.id),
             last_form_request_sent=requests_for_dbs_form_sent_for_officers.get(officer.id),
             address=app.one_line_address if app is not None else "",
             birth_date=app.birth_date if app is not None else None,
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
-            update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(officer.id),
-            last_dbs_rejected=not last_dbs_status[officer.id] if officer.id in last_dbs_status else False,
+            update_enabled_dbs_number=status_data.update_service_dbs_numbers_for_officers.get(officer.id, None),
+            last_dbs_rejected=status_data.officer_last_dbs_rejected(officer),
         )
         retval.append((officer, dbs_info))
     return retval
@@ -175,8 +149,10 @@ type OfficerId = int
 
 @dataclass
 class DBSRequirementData:
-    # Data related to the *requirement* for a DBS check,
-    # bundled together for convenience.
+    """
+    Bundle of all data related to the *requirement* for a DBS check,
+    for a set of camps and officers.
+    """
 
     # All the officers in the related scope (usually a specific year)
     all_officers: list[User]
@@ -207,6 +183,85 @@ def get_dbs_requirement_data(year_camps: Sequence[Camp], officer_id: int | None)
         all_officers=all_officers,
         officer_camps=officers_camps,
         officer_apps=officer_apps,
+    )
+
+
+@dataclass
+class DBSStatusData:
+    """
+    Bundle of DBS status information for a group of camps/officers
+    """
+
+    # Checks:
+    all_dbs_check_officer_ids: Container[OfficerId]
+    recent_dbs_check_officer_ids: Container[OfficerId]
+
+    # Actions:
+    dbs_forms_sent: Sequence[DBSActionLog]
+    requests_for_dbs_form_sent: Sequence[DBSActionLog]
+    leader_alerts_sent: Sequence[DBSActionLog]
+
+    # DBS numbers:
+    update_service_dbs_numbers_for_officers: Mapping[OfficerId, DBSNumber]
+
+    # Status:
+    last_dbs_applicant_accepted: Mapping[OfficerId, bool]
+
+    def officer_has_dbs_check(self, officer: User) -> bool:
+        return officer.id in self.all_dbs_check_officer_ids
+
+    def officer_has_recent_dbs_check(self, officer: User) -> bool:
+        return officer.id in self.recent_dbs_check_officer_ids
+
+    def officer_last_dbs_rejected(self, officer: User) -> bool:
+        return (
+            not self.last_dbs_applicant_accepted[officer.id]
+            if officer.id in self.last_dbs_applicant_accepted
+            else False
+        )
+
+
+def get_dbs_status_data(
+    *, now: datetime, year_camps: Sequence[Camp], dbs_requirement_data: DBSRequirementData
+) -> DBSStatusData:
+    now = timezone.now()
+
+    all_dbs_officer_ids = set(
+        DBSCheck.objects.filter(officer__in=dbs_requirement_data.all_officers).values_list("officer_id", flat=True)
+    )
+    recent_dbs_officer_ids = set(
+        reduce(operator.or_, [DBSCheck.objects.get_for_camp(c, include_late=True) for c in year_camps]).values_list(
+            "officer_id", flat=True
+        )
+    )
+
+    # Looking for action logs: set cutoff to a year before now, on the basis that
+    # anything more than that will have been lost or irrelevant, and we don't
+    # want to load everything into memory.
+    relevant_action_logs = (
+        DBSActionLog.objects.filter(officer__in=dbs_requirement_data.all_officers)
+        .filter(created_at__gt=now - timedelta(365))
+        .order_by("created_at")
+    )
+    dbs_forms_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.FORM_SENT))
+    requests_for_dbs_form_sent = list(
+        relevant_action_logs.filter(action_type=DBSActionLogType.REQUEST_FOR_DBS_FORM_SENT)
+    )
+    leader_alerts_sent = list(relevant_action_logs.filter(action_type=DBSActionLogType.LEADER_ALERT_SENT))
+
+    update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(dbs_requirement_data.all_officers)
+    last_dbs_applicant_accepted = dict(
+        DBSCheck.objects.filter(officer__in=all_dbs_officer_ids).values_list("officer_id", "applicant_accepted")
+    )
+
+    return DBSStatusData(
+        all_dbs_check_officer_ids=all_dbs_officer_ids,
+        recent_dbs_check_officer_ids=recent_dbs_officer_ids,
+        dbs_forms_sent=dbs_forms_sent,
+        requests_for_dbs_form_sent=requests_for_dbs_form_sent,
+        leader_alerts_sent=leader_alerts_sent,
+        update_service_dbs_numbers_for_officers=update_service_dbs_numbers_for_officers,
+        last_dbs_applicant_accepted=last_dbs_applicant_accepted,
     )
 
 
