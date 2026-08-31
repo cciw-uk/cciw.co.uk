@@ -441,7 +441,17 @@ class Booking(models.Model):
         # not initiated by the user. Otherwise it is identical to explicit cancel.
         self.cancel_expiring_place(by_user=None, action_type=QueueEntryActionLogType.EXPIRED)
 
+    def can_calculate_expected_amount_due(self) -> bool:
+        # Business rules changed in 2026, rules in expected_amount_due
+        # won't work before then.
+        return self.camp.year >= 2026
+
     def expected_amount_due(self) -> Decimal | None:
+        """
+        Gets the expected amount due. Returns None for custom discount bookings,
+        and raises an exception with `can_calculate_expected_amount_due()` doesn't
+        return True
+        """
         if self.price_type == PriceType.CUSTOM:
             return None
 
@@ -449,7 +459,7 @@ class Booking(models.Model):
         # logic and rules. For older bookings, the saved `amount_due` field is
         # the only method for knowing what is owed.
 
-        assert self.camp.year >= 2026, "`expected_amount_due` is not accurate for older bookings"
+        assert self.can_calculate_expected_amount_due(), "`expected_amount_due` is not accurate for older bookings"
 
         if self.state == BookingState.CANCELLED_BOOKING_FEE_KEPT:
             try:
@@ -467,7 +477,7 @@ class Booking(models.Model):
             return amount
 
     def auto_set_amount_due(self) -> None:
-        if self.camp.year < 2026:
+        if not self.can_calculate_expected_amount_due():
             # Business rules have changed, we can't calculate expected amount due
             # any more, and we shouldn't ever need to do this for old bookings.
             return

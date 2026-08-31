@@ -330,9 +330,10 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[B
         )
 
     if booking_sec and booking.price_type != PriceType.CUSTOM:
-        expected_amount = booking.expected_amount_due()
-        if booking.amount_due != expected_amount:
-            errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
+        if booking.can_calculate_expected_amount_due():
+            expected_amount = booking.expected_amount_due()
+            if booking.amount_due != expected_amount:
+                errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
 
     on_date: date = date.today()
     if booking_sec and booking.is_booked and booking.booked_at:
