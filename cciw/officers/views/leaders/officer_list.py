@@ -244,6 +244,5 @@ def export_officer_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownl
     return spreadsheet_response(
         officer_data_to_spreadsheet(camp),
         officer_data_filename_stem(camp),
-        rule=DataRetentionRule.OFFICERS,
         data_relation=DataRelatedToOfficersOnCamp(camp),
     )

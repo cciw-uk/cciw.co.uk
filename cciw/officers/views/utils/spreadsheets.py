@@ -14,10 +14,11 @@ def spreadsheet_response(
     builder: ExcelBuilder,
     filename_stem: str,
     *,
-    rule: DataRetentionRule | None,
     data_relation: DataRelation,
 ) -> SensitiveDownloadResponse:
     output = builder.to_bytes()
+
+    rule: DataRetentionRule | None = data_relation.get_rule()
 
     if rule is not None:
         workbook: openpyxl.Workbook = xl.workbook_from_bytes(builder.to_bytes())

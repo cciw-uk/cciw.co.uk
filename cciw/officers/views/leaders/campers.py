@@ -31,7 +31,6 @@ def export_camper_data(request: HttpRequest, camp_id: CampId) -> SensitiveDownlo
     return spreadsheet_response(
         camp_bookings_to_spreadsheet(camp),
         camper_data_filename_stem(camp),
-        rule=DataRetentionRule.CAMPERS,
         data_relation=DataRelatedToCampersOnCamp(camp=camp),
     )
 
@@ -43,6 +42,5 @@ def export_sharable_transport_details(request: HttpRequest, camp_id: CampId) -> 
     return spreadsheet_response(
         camp_sharable_transport_details_to_spreadsheet(camp),
         f"CCIW-camp-{camp.url_id}-transport-details",
-        rule=DataRetentionRule.CAMPERS,
         data_relation=DataRelatedToCampersOnCamp(camp=camp),
     )

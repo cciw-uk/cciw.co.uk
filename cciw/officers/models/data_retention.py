@@ -32,15 +32,24 @@ for val in DataRetentionRule:
 class DataRelatedToCampersYear:
     year: int
 
+    def get_rule(self) -> DataRetentionRule | None:
+        return DataRetentionRule.CAMPERS
+
 
 @dataclass(frozen=True)
 class DataRelatedToCampersOnCamp:
     camp: Camp
 
+    def get_rule(self) -> DataRetentionRule | None:
+        return DataRetentionRule.CAMPERS
+
 
 @dataclass(frozen=True)
 class DataRelatedToOfficersOnCamp:
     camp: Camp
+
+    def get_rule(self) -> DataRetentionRule | None:
+        return DataRetentionRule.OFFICERS
 
 
 @dataclass(frozen=True)
@@ -50,7 +59,8 @@ class NoSensitiveData:
     (e.g. only stats, or nothing personal)
     """
 
-    pass
+    def get_rule(self) -> DataRetentionRule | None:
+        return None
 
 
 # NOTE: changes to names of these classes will require a data migration,
