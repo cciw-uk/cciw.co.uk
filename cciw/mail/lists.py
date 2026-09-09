@@ -34,6 +34,7 @@ from cciw.accounts.models import (
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
+from cciw.contact_us.bogofilter import BogofilterStatus, get_bogofilter_classification
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.models import Application
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
@@ -520,10 +521,17 @@ def handle_mail(data: bytes):
         addresses = {a.lower() for a in extract_email_addresses(to)}
 
     if mail.get("X-SES-Spam-Verdict", "") == "FAIL":
-        logger.info("Discarding spam, message-id %s", mail.get("Message-ID", "<unknown>"))
+        logger.info("Discarding spam (SES), message-id %s", mail.get("Message-ID", "<unknown>"))
         return
     if mail.get("X-SES-Virus-Verdict", "") == "FAIL":
-        logger.info("Discarding virus, message-id %s", mail.get("Message-ID", "<unknown>"))
+        logger.info("Discarding virus (SES), message-id %s", mail.get("Message-ID", "<unknown>"))
+        return
+
+    bogofilter_status, bogofilter_certainty = get_bogofilter_classification(data)
+    # We use a fairly high threshold here, as we don't have a training mechanism
+    # to correct.
+    if bogofilter_status == BogofilterStatus.SPAM and bogofilter_certainty is not None and bogofilter_certainty > 0.90:
+        logger.info("Discarding spam (bogofilter), message-id %s", mail.get("Message-ID", "<unknown>"))
         return
 
     from_header = mail["From"]

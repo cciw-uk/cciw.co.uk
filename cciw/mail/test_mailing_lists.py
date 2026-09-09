@@ -10,6 +10,7 @@ from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import Role, User
 from cciw.cciwmain.tests import factories as camp_factories
+from cciw.contact_us.bogofilter import BogofilterStatus
 from cciw.officers.tests import factories as officer_factories
 from cciw.utils.functional import partition
 
@@ -251,6 +252,15 @@ def test_spam_and_virus_checking():
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         assert rejections == []
         assert sent_messages == []
+
+    # Custom spam checking
+    msg = make_message(to_email=role.email)
+    with mock.patch("cciw.mail.lists.get_bogofilter_classification") as m:
+        m.return_value = (BogofilterStatus.SPAM, 0.98)
+        handle_mail(msg)
+    rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+    assert rejections == []
+    assert sent_messages == []
 
 
 def test_extract():
