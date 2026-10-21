@@ -655,7 +655,7 @@ class BookingAdmin(admin.ModelAdmin):
                 These fields should normally be managed by the booking queue system.
                 If you want to change the state to 'Booked' and have changed
                 any other details, please first save the form and check
-                and problems shown at the top of the page, then proceed
+                any problems shown at the top of the page. Then proceed
                 to change to 'Booked'.
                 """,
                 "fields": [
