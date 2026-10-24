@@ -34,18 +34,18 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     devbox shell
 
-* Install Python 3.13::
+* Install Python::
 
-    uv python install 3.13
+    uv python install 3.14
 
-* Make a virtualenv using Python 3.13::
+* Make a virtualenv::
 
-    uv venv --python python3.13 --prompt cciw
+    uv venv --python python3.14 --prompt cciw
 
 
 * Ensure the current directory is on your Python path::
 
-    pwd > .venv/lib/python3.13/site-packages/projectsource.pth
+    pwd > .venv/lib/python3.14/site-packages/projectsource.pth
 
 * Install the requirements using uv and then the fabfile::
 

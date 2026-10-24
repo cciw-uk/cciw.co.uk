@@ -64,5 +64,5 @@ def mailchimp_request_unchecked(method: str, path: str, **kwargs) -> Response:
 def mailchimp_request(*args, **kwargs) -> Response:
     response = mailchimp_request_unchecked(*args, **kwargs)
     if response.status_code != 200:
-        raise Exception(f"Mailchimp returned {response.status_code}: {response.json()['detail']}")
+        raise RuntimeError(f"Mailchimp returned {response.status_code}: {response.json()['detail']}")
     return response

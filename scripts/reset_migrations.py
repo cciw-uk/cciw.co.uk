@@ -11,12 +11,11 @@ import subprocess
 from datetime import datetime
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "cciw.settings"
-import django  # NOQA isort:skip
+import django
 
 django.setup()
 
-from django.conf import settings  # NOQA isort:skip
-
+from django.conf import settings
 
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -210,7 +209,7 @@ def unhide_hidden_migrations(hidden_migrations):
     # Unhide the hidden migrations
     for f, f_hidden in hidden_migrations:
         if os.path.exists(f):
-            raise Exception(f"File {f} unexpectedly present")
+            raise RuntimeError(f"File {f} unexpectedly present")
         os.rename(f_hidden, f)
 
 

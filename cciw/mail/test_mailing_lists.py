@@ -138,7 +138,7 @@ def test_handle_role_list():
     rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
     assert len(rejections) == 1
     sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
-    sent_to_addresses = list(sorted(address for m in sent_messages for address in m.recipients()))
+    sent_to_addresses = sorted(address for m in sent_messages for address in m.recipients())
     assert sent_to_addresses == [
         "a.person.1@example.com",
         "a.person.2@example.com",
@@ -168,7 +168,7 @@ def test_handle_public_role_list():
     rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
     assert len(rejections) == 0
     assert len(sent_messages) == 1
-    sent_to_addresses = list(sorted(address for m in sent_messages for address in m.recipients()))
+    sent_to_addresses = sorted(address for m in sent_messages for address in m.recipients())
     assert sent_to_addresses == ["test1@example.com"]
 
     sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
@@ -317,7 +317,7 @@ def test_handle_partial_sending_failure():
         def sendmail(to_addresses, from_address, mail_bytes):
             for to_address in to_addresses:
                 if to_address.endswith("@faildomain.com"):
-                    raise Exception(f"We don't like {to_address}!")
+                    raise ValueError(f"We don't like {to_address}!")
             # Otherwise succeed silently
 
         m_s.side_effect = sendmail

@@ -113,7 +113,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
         total_forms_elem = pq.find(f"#id_{inline_name}-TOTAL_FORMS")
         form_count = int(total_forms_elem.val())
         template = pq.find(f"#{inline_name}-empty")
-        for i in range(0, count):
+        for i in range(count):
             new_form_number = form_count + i
             new_form = template.html().replace("__prefix__", str(new_form_number))
             parent.append(new_form)
@@ -163,7 +163,9 @@ class SeleniumBase(
             lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)')
         )
         self.wait_until(
-            lambda _: not self.is_element_present(".htmx-request")
-            and not self.is_element_present(".htmx-swapping")
-            and not self.is_element_present(".htmx-settling")
+            lambda _: (
+                not self.is_element_present(".htmx-request")
+                and not self.is_element_present(".htmx-swapping")
+                and not self.is_element_present(".htmx-settling")
+            )
         )

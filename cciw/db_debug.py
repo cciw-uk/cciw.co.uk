@@ -261,13 +261,13 @@ def display_query_info(recorder, request=None, response=None, detailed=False, sc
 
 
 class Style:
-    BLACK = lambda x: "\033[30m" + str(x) + "\033[0m"  # noqa: E731
-    RED = lambda x: "\033[31m" + str(x) + "\033[0m"  # noqa: E731
-    GREEN = lambda x: "\033[32m" + str(x) + "\033[0m"  # noqa: E731
-    YELLOW = lambda x: "\033[33m" + str(x) + "\033[0m"  # noqa: E731
-    BG_GREEN = lambda x: "\033[42m" + str(x) + "\033[0m"  # noqa: E731
-    BG_WHITE = lambda x: "\033[47m" + str(x) + "\033[0m"  # noqa: E731
-    BG_RED = lambda x: "\033[41m" + str(x) + "\033[0m"  # noqa: E731
+    BLACK = lambda x: "\033[30m" + str(x) + "\033[0m"
+    RED = lambda x: "\033[31m" + str(x) + "\033[0m"
+    GREEN = lambda x: "\033[32m" + str(x) + "\033[0m"
+    YELLOW = lambda x: "\033[33m" + str(x) + "\033[0m"
+    BG_GREEN = lambda x: "\033[42m" + str(x) + "\033[0m"
+    BG_WHITE = lambda x: "\033[47m" + str(x) + "\033[0m"
+    BG_RED = lambda x: "\033[41m" + str(x) + "\033[0m"
 
 
 class NoStyle:

@@ -14,6 +14,6 @@ class NoEditMixin:
 
     def save(self, **kwargs) -> None:
         if self.id is not None:
-            raise Exception(f"{self.__class__.__name__} cannot be edited after it has been saved to DB")
+            raise RuntimeError(f"{self.__class__.__name__} cannot be edited after it has been saved to DB")
         else:
             return super().save(**kwargs)

@@ -5,8 +5,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import SafeString, mark_safe
 
-import cciw.middleware.threadlocals as threadlocals
 from cciw.cciwmain.common import standard_subs
+from cciw.middleware import threadlocals
 
 
 class MenuLink(models.Model):

@@ -442,7 +442,7 @@ def forward_email_to_list(mail: EmailMessage, email_list: EmailList):
 
     if errors:
         # Attempt to report problem
-        address_messages = [f"{address}: {str(e)}" for address, e in errors]
+        address_messages = [f"{address}: {e!s}" for address, e in errors]
         subject = mail["Subject"]
         msg = f"""
 You attempted to email the list {email_list.address}

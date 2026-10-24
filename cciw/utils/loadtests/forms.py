@@ -183,9 +183,8 @@ class Select(Field):
             for option, checked, _ in self.options:
                 if checked:
                     return option
-            else:
-                if self.options:
-                    return self.options[0][0]
+            if self.options:
+                return self.options[0][0]
 
     value = property(value__get, value__set)
 
@@ -274,8 +273,7 @@ class Radio(Select):
             for option, checked, text in self.options:
                 if checked:
                     return option
-            else:
-                return None
+            return None
 
     value = property(value__get, Select.value__set)
 
@@ -294,7 +292,7 @@ class Checkbox(Field):
         self._checked = "checked" in attrs
 
     def value__set(self, value):
-        self._checked = not not value
+        self._checked = bool(value)
 
     def value__get(self):
         if self._checked:
@@ -311,7 +309,7 @@ class Checkbox(Field):
         return bool(self._checked)
 
     def checked__set(self, value):
-        self._checked = not not value
+        self._checked = bool(value)
 
     checked = property(checked__get, checked__set)
 
@@ -382,8 +380,8 @@ class Form:
 
     # TODO: use BeautifulSoup4 for this
 
-    _tag_re = re.compile(r"<(/?)([a-z0-9_\-]*)([^>]*?)>", re.I)
-    _label_re = re.compile(r"""<label\s+(?:[^>]*)for=(?:"|')([a-z0-9_\-]+)(?:"|')(?:[^>]*)>""", re.I)
+    _tag_re = re.compile(r"<(/?)([a-z0-9_\-]*)([^>]*?)>", re.IGNORECASE)
+    _label_re = re.compile(r"""<label\s+(?:[^>]*)for=(?:"|')([a-z0-9_\-]+)(?:"|')(?:[^>]*)>""", re.IGNORECASE)
 
     FieldClass = Field
 
@@ -446,8 +444,7 @@ class Form:
             # https://github.com/Pylons/webtest/issues/131
             reserved_attributes = ("form", "tag", "pos")
             for attr in reserved_attributes:
-                if attr in attrs:
-                    del attrs[attr]
+                attrs.pop(attr, None)
 
             if name is None:
                 # Probably a button that uses javascript, ignore.
@@ -469,8 +466,7 @@ class Form:
                             field.selectedIndex = len(field.options) - 1
                         continue
                     elif tag_type == "file":
-                        if "value" in attrs:
-                            del attrs["value"]
+                        attrs.pop("value", None)
 
                 field = field_cls(self, tag, name, pos, **attrs)
                 fields.setdefault(name, []).append(field)

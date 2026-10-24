@@ -7,7 +7,7 @@ warnings.simplefilter("once", DeprecationWarning)
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "cciw.settings_local"
 
-from django.core import management  # noqa isort:skip
+from django.core import management
 
 if __name__ == "__main__":
     management.execute_from_command_line()

@@ -16,5 +16,5 @@ def indent(value, arg=1):
     """
     import re
 
-    regex = re.compile("^", re.M)
+    regex = re.compile("^", re.MULTILINE)
     return re.sub(regex, " " * int(arg), value)

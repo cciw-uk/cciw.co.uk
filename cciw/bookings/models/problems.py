@@ -340,8 +340,7 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[B
         # Don't want warnings for booking sec when a booked place is edited
         # after the cutoff date, so we allow self.booked_at to be used here:
         booked_date = booking.booked_at.date()
-        if booked_date < on_date:
-            on_date = booked_date
+        on_date = min(on_date, booked_date)
     else:
         date.today()
 

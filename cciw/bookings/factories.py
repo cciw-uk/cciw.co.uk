@@ -227,14 +227,14 @@ def create_prices(*, year: int, full_price=Auto) -> tuple[Decimal, Decimal, Deci
     else:
         full_price = Decimal(full_price)
     price_full = Price.objects.get_or_create(year=year, price_type=PriceType.FULL, price=full_price)[0].price
-    price_2nd_child = Price.objects.get_or_create(year=year, price_type=PriceType.SECOND_CHILD, price=Decimal("75"))[
+    price_2nd_child = Price.objects.get_or_create(year=year, price_type=PriceType.SECOND_CHILD, price=Decimal(75))[
         0
     ].price
-    price_3rd_child = Price.objects.get_or_create(year=year, price_type=PriceType.THIRD_CHILD, price=Decimal("50"))[
+    price_3rd_child = Price.objects.get_or_create(year=year, price_type=PriceType.THIRD_CHILD, price=Decimal(50))[
         0
     ].price
     price_booking_fee = Price.objects.get_or_create(
-        year=year, price_type=PriceType.BOOKING_FEE, defaults={"price": Decimal("30")}
+        year=year, price_type=PriceType.BOOKING_FEE, defaults={"price": Decimal(30)}
     )[0].price
     return price_full, price_2nd_child, price_3rd_child, price_booking_fee
 

@@ -81,7 +81,7 @@ def verify_sns_notification(request):
         logger.debug("Valid SNS signature %s with SigningCertURL %s", decoded_signature, signing_cert_url)
         return True
     except InvalidSignature:
-        logger.warn("Invalid SNS sig, decoded_signature=%s, content=%s", decoded_signature, content)
+        logger.warning("Invalid SNS sig, decoded_signature=%s, content=%s", decoded_signature, content)
         return False
 
 

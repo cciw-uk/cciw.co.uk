@@ -10,7 +10,6 @@
 
 #  fab local-db-dump ../db_backups/load-test-2025-09-02.pgdump                                                                                                                                                   git staging-server ~/devel/cciw.co.uk/src [12:22]
 
-# ruff: noqa:E402
 
 import django
 

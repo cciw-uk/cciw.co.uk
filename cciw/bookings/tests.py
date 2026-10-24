@@ -1229,7 +1229,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(["account"]),
         assert booking.account.manual_payments.count() == 1
         mp = booking.account.manual_payments.get()
         assert mp.payment_type == ManualPaymentType.CHEQUE
-        assert mp.amount == Decimal("100")
+        assert mp.amount == Decimal(100)
 
 
 class TestEditPlaceAdminWT(EditPlaceAdminBase, WebTestBase):
@@ -1299,7 +1299,7 @@ class EditPaymentAdminBase(fix_autocomplete_fields(["account"]), BookingBaseMixi
         self.assertTextPresent("was added successfully")
         account.refresh_from_db()
         assert account.manual_payments.count() == 1
-        assert account.total_received == Decimal("12")
+        assert account.total_received == Decimal(12)
 
 
 class TestEditPaymentAdminWT(EditPaymentAdminBase, WebTestBase):
@@ -2633,7 +2633,7 @@ def test_get_booking_queue_problems_rejected_first_timers(db):
     camp = camps_factories.create_camp(
         year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
     )
-    bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(0, 15)]
+    bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(15)]
     for b in bookings:
         queue_entry = b.add_to_queue(by_user=b.account)
         queue_entry.first_timer_allocated = True
@@ -2649,7 +2649,7 @@ def test_get_booking_queue_problems_too_many_first_timers(db):
     camp = camps_factories.create_camp(
         year=year_config.year, max_campers=20, max_male_campers=10, max_female_campers=10
     )
-    bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(0, 10)]
+    bookings: list[Booking] = [factories.create_booking(camp=camp, sex=Sex.MALE) for _ in range(10)]
     for b in bookings:
         queue_entry = b.add_to_queue(by_user=b.account)
         queue_entry.first_timer_allocated = True
@@ -2673,7 +2673,7 @@ class BookingQueuePageBase(FuncBaseMixin):
 
     def test_allocate_places(self):
         COUNT = 5
-        bookings = [self._create_booking(first_name=f"Joe {n}") for n in range(0, COUNT)]
+        bookings = [self._create_booking(first_name=f"Joe {n}") for n in range(COUNT)]
         for b in bookings:
             b.add_to_queue(by_user=b.account)
             assert b.state == BookingState.INFO_COMPLETE
@@ -2809,11 +2809,11 @@ def test_camp_places_left(db):
     assert places_left.female == 7
     assert places_left.minimum_places_available == 6
 
-    for _ in range(0, 1):
+    for _ in range(1):
         booking = factories.create_booking(sex=Sex.MALE)
         allocate_bookings_now([booking])
 
-    for _ in range(0, 3):
+    for _ in range(3):
         booking = factories.create_booking(sex=Sex.FEMALE)
         allocate_bookings_now([booking])
 
@@ -2833,7 +2833,7 @@ def test_allocate_places(db, mailoutbox: list[mail.EmailMessage]):
 
     # Enough accounts and bookings to test all the notification logic.
 
-    accounts = [factories.create_booking_account(name=f"Booker {n}") for n in range(0, 4)]
+    accounts = [factories.create_booking_account(name=f"Booker {n}") for n in range(4)]
     bookings = []
     for account in accounts:
         # 2 bookings for each account. With the odd number of places, this
@@ -2843,7 +2843,7 @@ def test_allocate_places(db, mailoutbox: list[mail.EmailMessage]):
                 factories.create_booking(
                     camp=camp, account=account, first_name=f"Joe {n}", last_name=f"Family {account.name}"
                 )
-                for n in range(0, 2)
+                for n in range(2)
             ]
         )
 
@@ -2916,7 +2916,7 @@ def test_allocate_places_for_waiting_list(
     booking_sec = officers_factories.create_booking_secretary()
 
     # Enough bookings to fill the camp up:
-    initial_bookings = [factories.create_booking() for n in range(0, 5)]
+    initial_bookings = [factories.create_booking() for n in range(5)]
     allocate_bookings_now(initial_bookings)
 
     # New one, for waiting list.
@@ -3111,7 +3111,7 @@ def test_booking_problems_maximum_age(db):
 
 def test_booking_problems_no_places_left(db):
     camp = camps_factories.create_camp(max_campers=3)
-    for i in range(0, camp.max_campers):
+    for i in range(camp.max_campers):
         factories.create_booking(camp=camp, state=BookingState.BOOKED)
 
     booking = factories.create_booking(camp=camp, sex=Sex.MALE)
@@ -3125,7 +3125,7 @@ def test_booking_problems_no_places_left(db):
 @pytest.mark.parametrize("sex", [Sex.MALE, Sex.FEMALE])
 def test_booking_problems_no_places_left_for_male_female(db, sex: Sex):
     camp = camps_factories.create_camp(max_campers=10, max_male_campers=3, max_female_campers=3)
-    for i in range(0, 3):
+    for i in range(3):
         factories.create_booking(camp=camp, state=BookingState.BOOKED, sex=sex)
 
     booking = factories.create_booking(camp=camp, sex=sex)
@@ -3136,7 +3136,7 @@ def test_booking_problems_no_places_left_for_male_female(db, sex: Sex):
 
 def test_booking_problems_not_enough_places_left(db):
     camp = camps_factories.create_camp(max_campers=3)
-    for i in range(0, camp.max_campers - 1):
+    for i in range(camp.max_campers - 1):
         factories.create_booking(camp=camp, state=BookingState.BOOKED)
 
     account = factories.create_booking_account()
@@ -3154,7 +3154,7 @@ def test_booking_problems_not_enough_places_left(db):
 @pytest.mark.parametrize("sex", [Sex.MALE, Sex.FEMALE])
 def test_booking_problems_not_enough_places_left_for_male_female(db, sex: Sex):
     camp = camps_factories.create_camp(max_campers=10, max_male_campers=3, max_female_campers=3)
-    for i in range(0, 2):
+    for i in range(2):
         factories.create_booking(camp=camp, state=BookingState.BOOKED, sex=sex)
 
     account = factories.create_booking_account()
@@ -3291,7 +3291,7 @@ def test_add_to_queue_after_camp_full(db):
     # Bookings that are added to a queue after a camp is full
     # are marked as 'waiting_list_from_start'
     camp: Camp = camps_factories.create_camp(max_campers=5)
-    initial_bookings = [factories.create_booking(camp=camp) for _ in range(0, 5)]
+    initial_bookings = [factories.create_booking(camp=camp) for _ in range(5)]
     for initial_booking in initial_bookings:
         initial_queue_entry = initial_booking.add_to_queue(by_user=initial_booking.account)
         assert not initial_queue_entry.waiting_list_from_start

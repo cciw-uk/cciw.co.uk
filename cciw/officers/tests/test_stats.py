@@ -4,15 +4,15 @@ from cciw.officers.tests import factories as officer_factories
 
 
 def test_get_camp_officer_stats(db):
-    camp = camp_factories.create_camp(officers=[officer_factories.create_officer() for _ in range(0, 3)])
+    camp = camp_factories.create_camp(officers=[officer_factories.create_officer() for _ in range(3)])
     results = get_camp_officer_stats(camp)
     assert results["Officers"].max() == 3
     assert results["Officers"].min() == 0
 
 
 def test_get_camp_officer_stats_trend(db):
-    camp_factories.create_camp(year=2010, officers=[officer_factories.create_officer() for _ in range(0, 3)])
-    camp_factories.create_camp(year=2011, officers=[officer_factories.create_officer() for _ in range(0, 2)])
+    camp_factories.create_camp(year=2010, officers=[officer_factories.create_officer() for _ in range(3)])
+    camp_factories.create_camp(year=2011, officers=[officer_factories.create_officer() for _ in range(2)])
     camp_factories.create_camp(year=2012)
     results = get_camp_officer_stats_trend(2010, 2012)
     assert results["Officer count"].to_dict() == {2010: 3, 2011: 2, 2012: 0}

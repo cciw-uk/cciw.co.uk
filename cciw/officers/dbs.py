@@ -286,9 +286,11 @@ def get_update_service_dbs_numbers(officers: list[User]) -> dict[int, DBSNumber]
         # Most recent last means most recent wins in the case of duplicates.
         # For online check, we count 'bad' (we saw something bad on
         # an update), but only count 'good' for the full form.
-        if dbs_check.check_type == DBSCheck.CheckType.FORM:
-            applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
-        elif dbs_check.check_type == DBSCheck.CheckType.ONLINE and not dbs_check.applicant_accepted:
+        if (
+            dbs_check.check_type == DBSCheck.CheckType.FORM
+            or dbs_check.check_type == DBSCheck.CheckType.ONLINE
+            and not dbs_check.applicant_accepted
+        ):
             applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
 
         if dbs_check.registered_with_dbs_update:

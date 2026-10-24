@@ -60,9 +60,9 @@ class EmailVerifyTokenGenerator:
             return VerifyFailed()
         try:
             return self.signer.unsign(unencoded_token, max_age=max_age)
-        except (SignatureExpired,):
+        except SignatureExpired:
             return VerifyExpired(self.signer.unsign(unencoded_token))
-        except (BadSignature,):
+        except BadSignature:
             return VerifyFailed()
 
     # Somehow the trailing '=' produced by base64 encode gets eaten by

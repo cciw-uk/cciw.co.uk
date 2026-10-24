@@ -10,14 +10,14 @@ import django
 
 django.setup()
 
-from django.utils import timezone  # noqa: E402
-from faker import Faker  # noqa: E402
+from django.utils import timezone
+from faker import Faker
 
-from cciw.accounts.models import User  # noqa: E402
-from cciw.bookings.models.accounts import BookingAccount  # noqa: E402
-from cciw.bookings.models.bookings import Booking  # noqa: E402
-from cciw.bookings.models.states import BookingState  # noqa: E402
-from cciw.cciwmain.models import Camp  # noqa: E402
+from cciw.accounts.models import User
+from cciw.bookings.models.accounts import BookingAccount
+from cciw.bookings.models.bookings import Booking
+from cciw.bookings.models.states import BookingState
+from cciw.cciwmain.models import Camp
 
 faker = Faker("en_GB")
 

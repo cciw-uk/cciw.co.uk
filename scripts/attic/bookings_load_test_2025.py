@@ -1,5 +1,3 @@
-# ruff: noqa:E402
-
 # Run this with:
 
 #   locust --config scripts/attic/bookings_load_test_2025.conf
@@ -263,7 +261,7 @@ class BookPlaceTaskSet(SequentialTaskSet):
             subprocess.Popen(cmd)
 
         # It takes a while to fill in details:
-        for i in range(0, random.randint(1, 4)):
+        for i in range(random.randint(1, 4)):
             self.wait()
         self.page.fill(place_details)
         self.page.submit()

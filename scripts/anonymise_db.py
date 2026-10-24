@@ -38,8 +38,6 @@ several years will be given the same 'first_name' and 'last_name'
 
 # Finally delete the downloaded production databases, keeping only the anonymized copies
 
-# ruff: noqa:E402
-
 import fnmatch
 import subprocess
 from abc import ABC, abstractmethod
@@ -906,7 +904,6 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
     bookings.WriteOffDebt: IgnoreTable(),
     bookings.PaymentSource: IgnoreTable(),
     bookings.YearConfig: IgnoreTable(),
-    #
     paypal.PayPalIPN: AnonymiseWithMap(paypal.PayPalIPN, PAYPAL_IPN_FIELD_MAP),
     # Applications and officers
     # NB: Application is after User, because it depends on it

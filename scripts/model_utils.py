@@ -95,7 +95,7 @@ class AutoSheet(visidata.TableSheet):
         if len(self.source) == 0:
             return
         if isinstance(self.source[0], list):
-            for i in range(0, len(self.source[0])):
+            for i in range(len(self.source[0])):
                 self.addColumn(visidata.ItemColumn(key=i, name=str(i)))
         else:
             for name, t in get_main_attrs(self.source[0]):

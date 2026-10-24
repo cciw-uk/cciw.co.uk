@@ -77,7 +77,7 @@ class ThisyearPage(TestBase):
 
     def test_get(self):
         init_query_caches()
-        for i in range(0, 20):
+        for i in range(20):
             factories.create_camp(leader=factories.get_any_camp_leader(), future=True)
         with self.assertNumQueries(FuzzyInt(1, 8)):
             resp = self.client.get(reverse("cciw-cciwmain-thisyear"))
@@ -90,7 +90,7 @@ class IndexPage(TestBase):
     def test_get(self):
         init_query_caches()
         year = 2020
-        for i in range(0, 20):
+        for i in range(20):
             factories.create_camp(year=year, leader=factories.get_any_camp_leader())
 
         with self.assertNumQueries(FuzzyInt(1, 6)):

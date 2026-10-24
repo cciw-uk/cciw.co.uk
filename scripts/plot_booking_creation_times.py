@@ -47,12 +47,10 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cciw.settings")
 django.setup()
 
-from cciw.bookings.models import Booking  # noqa:E402
+from cciw.bookings.models import Booking
 
 
-def plot_booking_creation_times(
-    year: int, timestamp_field: Literal["created_at"] | Literal["booked_at"], fileprefix: str
-):
+def plot_booking_creation_times(year: int, timestamp_field: Literal["created_at", "booked_at"], fileprefix: str):
     # Get all bookings for camps in the specified year
     bookings = (
         Booking.objects.filter(camp__year=year)
@@ -136,7 +134,7 @@ def plot_booking_creation_times(
     plt.title(f"Distribution of Bookings by Hour of Day ({year})")
     plt.xlabel("Hour of Day (24h format)")
     plt.ylabel("Number of Bookings")
-    plt.xticks(range(0, 24))
+    plt.xticks(range(24))
     plt.grid(True, linestyle="--", alpha=0.7)
     plt.tight_layout()
     plt.savefig(f"{fileprefix}_by_hour.png")
