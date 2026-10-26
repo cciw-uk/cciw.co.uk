@@ -160,7 +160,7 @@ def place_availability_json(request: HttpRequest) -> dict:
     camp_id = int(request.GET["camp_id"])
     camp: Camp = Camp.objects.get(id=camp_id)
     places = camp.get_places_left()
-    retval["result"] = dict(total=places.total, male=places.male, female=places.female)
+    retval["result"] = {"total": places.total, "male": places.male, "female": places.female}
     return retval
 
 
@@ -281,7 +281,7 @@ def booking_queue_row(request: HttpRequest, camp_id: CampId) -> HttpResponse:
     # We need all the bookings, ranked, to be able to show one row correctly,
     # due to the 'Allocate' column.
     ranking_result = get_camp_booking_queue_ranking_result(camp=camp, year_config=year_config)
-    booking = [b for b in ranking_result.bookings if b.id == booking_id][0]
+    booking = next(b for b in ranking_result.bookings if b.id == booking_id)
     queue_entry: BookingQueueEntry = booking.queue_entry
 
     assert year_config is not None

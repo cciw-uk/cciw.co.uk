@@ -43,10 +43,10 @@ def test_parse_keep_other():
 def make_policy(
     *,
     model: type[Model],
-    fields: list[str] = None,
+    fields: list[str] | None = None,
     keep: Keep,
     delete_row=False,
-    custom_erasure_methods: dict[str, ErasureMethod] = None,
+    custom_erasure_methods: dict[str, ErasureMethod] | None = None,
 ) -> Policy:
     model_field_list = model._meta.get_fields()
     field_dict = {f.name: f for f in model_field_list}

@@ -102,15 +102,12 @@ class CciwAuthBackend:
             # there is nothing they can edit.
             #
             # We fix that up with these exceptions:
-            if app_label == "officers":
-                if user_obj.can_manage_application_forms:
-                    return True
-            if app_label == "cciwmain":
-                if user_obj.can_edit_some_camps:
-                    return True
-            if app_label == "bookings":
-                if user_obj.can_view_booking_info:
-                    return True
+            if app_label == "officers" and user_obj.can_manage_application_forms:
+                return True
+            if app_label == "cciwmain" and user_obj.can_edit_some_camps:
+                return True
+            if app_label == "bookings" and user_obj.can_view_booking_info:
+                return True
         return user_obj.is_active and any(
             perm[: perm.index(".")] == app_label for perm in self.get_all_permissions(user_obj)
         )

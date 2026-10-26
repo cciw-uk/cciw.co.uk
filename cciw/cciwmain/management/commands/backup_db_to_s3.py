@@ -57,6 +57,6 @@ def backup_db():
 
     s3 = session.resource("s3")
     print("Uploading to S3")
-    s3.Bucket(AWS_BACKUPS["BUCKET_NAME"]).put_object(Key="db/" + filename, Body=open(full_path, "rb"))
+    s3.Bucket(AWS_BACKUPS["BUCKET_NAME"]).put_object(Key="db/" + filename, Body=full_path.read_bytes())
 
     full_path.unlink()

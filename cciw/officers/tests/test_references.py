@@ -57,10 +57,10 @@ class ManageReferencesPageWT(WebTestBase):
         self.assertTextPresent(application.referees[1].name)
 
     def test_page_officers_denied(self):
-        camp, leader, officer = create_camp_with_leader_and_officer()
+        camp, _leader, officer = create_camp_with_leader_and_officer()
         self.officer_login(officer)
         self.get_literal_url(
-            reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id)), expect_errors=[403]
+            reverse("cciw-officers-manage_references", kwargs={"camp_id": camp.url_id}), expect_errors=[403]
         )
         self.assertCode(403)
 
@@ -109,7 +109,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         Ensure page requires an email address to be entered if it isn't set.
         """
-        camp, leader, officer, referee = self.start_request_reference(referee_email="")
+        _camp, _leader, _officer, _referee = self.start_request_reference(referee_email="")
         self.assertTextAbsent("This field is required")  # Don't want errors on first view
 
         # Should refuse to send if we press send
@@ -122,7 +122,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         Test the error that should appear if the link is removed or altered
         """
-        camp, leader, officer, referee = self.start_request_reference()
+        _camp, _leader, _officer, referee = self.start_request_reference()
         self.fill_by_name({"message": "I removed the link! Haha"})
         self.click("[name=send]")
         self.wait_for_ajax()
@@ -132,7 +132,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         assert len(mail.outbox) == 0
 
     def test_cancel(self):
-        camp, leader, officer, referee = self.start_manage_reference_page()
+        _camp, _leader, _officer, referee = self.start_manage_reference_page()
         self.click(f"#id-manage-reference-{referee.id} [name=request-reference]")
         self.click("dialog [name=cancel]")
         self.wait_until_dialog_closed()
@@ -140,7 +140,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
 
     def test_set_referee_email(self):
         # Ensure we can add the email address
-        camp, leader, officer, referee = self.start_manage_reference_page()
+        _camp, _leader, _officer, referee = self.start_manage_reference_page()
         self.click(f"#id-manage-reference-{referee.id} [name=correct-referee-details]")
 
         self.fill_by_name({"email": "addedemail@example.com", "name": "Added Name"})
@@ -157,7 +157,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         # First year setup
         with travel(date(2010, 1, 1)):
-            camp1, leader, officer = create_camp_with_leader_and_officer(year=2010)
+            _camp1, leader, officer = create_camp_with_leader_and_officer(year=2010)
             app1 = factories.create_application(officer=officer)
             factories.create_complete_reference(app1.referees[0])
         # Second year setup
@@ -170,7 +170,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
             )
 
             referee = app2.referees[0]
-            prev_exact, prev_refs = get_previous_references(referee)
+            prev_exact, _prev_refs = get_previous_references(referee)
             assert prev_exact is not None
             self.officer_login(leader)
             self.get_url("cciw-officers-manage_references", camp_id=camp2.url_id)
@@ -184,7 +184,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         # First year setup
         with travel(date(2010, 1, 1)):
-            camp, leader, officer = create_camp_with_leader_and_officer(year=2010)
+            _camp, leader, officer = create_camp_with_leader_and_officer(year=2010)
         with travel(date(2010, 2, 1)):
             app1 = factories.create_application(
                 officer=officer,
@@ -227,7 +227,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
                 self.assertTextPresent(frag)
 
     def test_fill_in_manually(self):
-        camp, leader, officer, referee = self.start_manage_reference_page()
+        _camp, _leader, _officer, referee = self.start_manage_reference_page()
         self.click(f"#id-manage-reference-{referee.id} [name=fill-in-reference-manually]")
         self.fill_by_name(
             {
@@ -250,7 +250,7 @@ class ManageReferencesPageSL(RolesSetupMixin, SeleniumBase):
         """
         Tests for 'nag officer' page
         """
-        camp, leader, officer, referee = self.start_manage_reference()
+        camp, leader, _officer, referee = self.start_manage_reference()
         referee.log_request_made(leader, timezone.now())
         self.officer_login(leader)
         self.get_url("cciw-officers-manage_references", camp_id=camp.url_id)
@@ -307,7 +307,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         self.assertTextPresent(f"{officer.full_name} has requested we collect a reference from you")
 
     def test_role_name_present(self):
-        camp, leader, officer = create_camp_with_leader_and_officer(officer_role="Tent Officer")
+        camp, _leader, officer = create_camp_with_leader_and_officer(officer_role="Tent Officer")
         application = factories.create_application(officer=officer, year=camp.year, referee1_name="My Referee Name")
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
         self.get_literal_url(url)
@@ -330,7 +330,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         Check that a reference can be created using the page,
         and that the name on the application form is updated.
         """
-        camp, leader, officer = create_camp_with_leader_and_officer()
+        camp, _leader, officer = create_camp_with_leader_and_officer()
         application = factories.create_application(officer=officer, year=camp.year, referee1_name="My Referee Name")
         assert not application.referees[0].reference_is_received()
         url = make_local_url(make_ref_form_url(application.referees[0].id, None))
@@ -375,7 +375,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         app2 = factories.create_application(officer=officer, year=2001)
 
         # We should be able to find an exact match for references
-        prev_exact, prev_refs = get_previous_references(app2.referees[0])
+        prev_exact, _prev_refs = get_previous_references(app2.referees[0])
         assert prev_exact == app1.referees[0].reference
 
         # Go to the corresponding URL

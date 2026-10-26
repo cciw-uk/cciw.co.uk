@@ -79,7 +79,17 @@ extend-select = [
   "I",  # enable isort
   "FLY",  # enably flynt
 ]
-ignore = ["E501","E731", "E402"]
+ignore = [
+  "E501",
+  "E731",
+  "E402",
+  # "Mutable default value for class attribute" - two many false positives with
+  # Django admin classes etc.
+  "RUF012",
+  # This rule makes some bool functions harder to read
+  "SIM103"
+
+]
 
 [dependency-groups]
 dev = [
@@ -115,7 +125,7 @@ dev = [
     "django-stubs>=6.0.5",
     "django-urlconfchecks>=0.13.2",
     "pgcli>=4.5.0",
-    "ruff==0.14.9",
+    "ruff>=0.17.2",
 ]
 
 [tool.uv]

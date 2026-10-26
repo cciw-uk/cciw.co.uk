@@ -17,9 +17,8 @@ def rst_to_html(text: str, *, initial_header_level: int = 1, strict: bool = Fals
 
 def remove_rst_title(text: str) -> str:
     lines = text.split("\n")
-    if len(lines) > 3:
-        if lines[0].startswith("=") and lines[2].startswith("="):
-            lines = lines[3:]
+    if len(lines) > 3 and lines[0].startswith("=") and lines[2].startswith("="):
+        lines = lines[3:]
     return "\n".join(lines)
 
 

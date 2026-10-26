@@ -106,7 +106,7 @@ def _get_next_camp_name(excluding: list[str] | None = None) -> str:
     available_names = set(COLORS.keys())
     if excluding:
         available_names -= set(excluding)
-    return sorted(available_names)[0]
+    return min(available_names)
 
 
 def get_any_camp() -> Camp:

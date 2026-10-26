@@ -48,7 +48,7 @@ def create_reference(request: HttpRequest, referee_id: int, hash: str, prev_ref_
 
         reference = referee.reference if hasattr(referee, "reference") else None
         relevant_invitations = invitations_for_application(referee.application)
-        role_names = sorted(list({i.role.name for i in relevant_invitations if i.role is not None}))
+        role_names = sorted({i.role.name for i in relevant_invitations if i.role is not None})
         context["roles"] = role_names
 
         if reference is not None and not empty_reference(reference):

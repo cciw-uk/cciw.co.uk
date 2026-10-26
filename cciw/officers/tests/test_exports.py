@@ -12,7 +12,7 @@ def test_export_camper_data(db, client: Client):
     _booking = factories.create_booking(camp=camp, allocate_it=True)
 
     client.force_login(user)
-    url1 = reverse("cciw-officers-export_camper_data", kwargs=dict(camp_id=camp.url_id))
+    url1 = reverse("cciw-officers-export_camper_data", kwargs={"camp_id": camp.url_id})
     resp1 = client.get(url1)
 
     # We get data retention notice first of all

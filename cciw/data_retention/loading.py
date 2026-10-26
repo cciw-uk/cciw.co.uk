@@ -48,7 +48,7 @@ def load_data_retention_policy(available_erasure_methods: Mapping[str, ErasureMe
     # Other errors are handled more gracefully by get_data_retention_policy_issues.
     # Either way, we don't pass "manage.py check" if there are any problems.
     filename = settings.DATA_RETENTION_CONFIG_FILE
-    policy_yaml = yaml.load(open(filename), Loader=yaml.SafeLoader)
+    policy_yaml = yaml.load(filename.read_text(), Loader=yaml.SafeLoader)
     groups = []
     for yaml_group in policy_yaml:
         yaml_rules = yaml_group.pop("rules")
@@ -74,9 +74,8 @@ def load_data_retention_policy(available_erasure_methods: Mapping[str, ErasureMe
                 )
             else:
                 yaml_delete_row = yaml_table.pop("delete row", False)
-                if yaml_delete_row:
-                    if yaml_columns is not None:
-                        raise ValueError('You should specify either "columns" or "delete row: yes", not both')
+                if yaml_delete_row and yaml_columns is not None:
+                    raise ValueError('You should specify either "columns" or "delete row: yes", not both')
                 model_detail = build_ModelDetail(
                     name=yaml_model_name,
                     field_names=yaml_columns,

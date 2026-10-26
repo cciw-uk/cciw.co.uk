@@ -15,7 +15,7 @@ hostname = socket.gethostname()
 # resolve is important for removing symlinks, which can affect behaviour
 basepath = Path(os.path.abspath(__file__)).resolve().parent.parent
 parentpath = basepath.parent
-SECRETS = json.load(open(basepath / "config" / "secrets.json"))
+SECRETS = json.loads((basepath / "config" / "secrets.json").read_text())
 
 PROJECT_ROOT = basepath
 HOME_PATH = Path(os.environ["HOME"]).resolve()
@@ -605,7 +605,7 @@ BOOKING_FORM_DIR = "downloads"
 
 ESV_KEY = "IP"
 DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
-ROLES_CONFIG_FILE = basepath / "config" / "static_roles.yaml"
+ROLES_CONFIG_FILE: Path = basepath / "config" / "static_roles.yaml"
 DATA_RETENTION_CONFIG_FILE = basepath / "config" / "data_retention.yaml"
 
 # Referenced from style.css

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, time
+from typing import Self
 
 from django.contrib.sites.models import Site
 
@@ -19,7 +20,7 @@ def init_query_caches():
 
 
 class FuzzyInt(int):
-    def __new__(cls: type[FuzzyInt], lowest: int, highest: int) -> FuzzyInt:
+    def __new__(cls, lowest: int, highest: int) -> Self:
         obj = super().__new__(cls, highest)
         obj.lowest = lowest
         obj.highest = highest

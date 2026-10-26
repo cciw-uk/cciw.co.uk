@@ -219,7 +219,7 @@ def make_camp_leaders_for_year_list(year: int, camps: list[Camp]) -> EmailList:
         s = set()
         for c in camps:
             s.update(get_leaders_for_camp(c))
-        return sorted(list(s), key=lambda user: user.email)
+        return sorted(s, key=lambda user: user.email)
 
     def has_permission(email_address):
         return is_camp_admin_or_manager_or_dbs_officer_or_superuser(email_address, camps)
@@ -429,7 +429,7 @@ def forward_email_to_list(mail: EmailMessage, email_list: EmailList):
                 to_addresses,
             )
             send_mime_message(to_addresses, from_address, mail_as_bytes)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             errors.append((to_addresses, e))
 
     if len(errors) == len(messages_to_send):
@@ -549,7 +549,7 @@ def handle_mail(data: bytes):
         )
         return
 
-    for address in sorted(list(addresses)):
+    for address in sorted(addresses):
         try:
             email_list = find_list(address, from_email)
             forward_email_to_list(mail, email_list)

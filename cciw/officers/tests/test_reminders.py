@@ -128,7 +128,7 @@ def sort_emails_by_user(
 def download_officer_data(client: Client, user: User, camp: Camp) -> None:
     client.force_login(user)
     url1 = (
-        reverse("cciw-officers-export_officer_data", kwargs=dict(camp_id=camp.url_id)) + "?data_retention_notice_seen=1"
+        reverse("cciw-officers-export_officer_data", kwargs={"camp_id": camp.url_id}) + "?data_retention_notice_seen=1"
     )
     client.get(url1)
 
@@ -136,12 +136,12 @@ def download_officer_data(client: Client, user: User, camp: Camp) -> None:
 def download_camper_data(client: Client, user: User, camp: Camp) -> None:
     client.force_login(user)
     url1 = (
-        reverse("cciw-officers-export_camper_data", kwargs=dict(camp_id=camp.url_id)) + "?data_retention_notice_seen=1"
+        reverse("cciw-officers-export_camper_data", kwargs={"camp_id": camp.url_id}) + "?data_retention_notice_seen=1"
     )
     client.get(url1)
 
 
 def download_bookings_data(client: Client, user: User, year: int) -> None:
     client.force_login(user)
-    url1 = reverse("cciw-officers-export_camper_data_for_year", kwargs=dict(year=year))
+    url1 = reverse("cciw-officers-export_camper_data_for_year", kwargs={"year": year})
     client.get(url1)

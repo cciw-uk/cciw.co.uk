@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import timedelta
-from typing import TYPE_CHECKING
 
 import pydantic.dataclasses
 from django.db import models
@@ -15,10 +14,6 @@ DATACLASS_CONFIG: ConfigDict = {"arbitrary_types_allowed": True}
 
 
 dataclass = pydantic.dataclasses.dataclass(config=DATACLASS_CONFIG)
-
-if TYPE_CHECKING:
-    # Help some type checkers/IDE tools to understand pydantic
-    from dataclasses import dataclass
 
 
 # --- Policy and sub-components ---

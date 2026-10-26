@@ -166,11 +166,10 @@ class Application(ClearCachedPropertyMixin, models.Model):
         return f"Application from {self.full_name} ({submitted})"
 
     def _referee(self, num: int) -> Referee:
-        if hasattr(self, "_prefetched_objects_cache"):
-            if "referee_set" in self._prefetched_objects_cache:
-                vals = [v for v in self._prefetched_objects_cache["referee_set"] if v.referee_number == num]
-                if len(vals) == 1:
-                    return vals[0]
+        if hasattr(self, "_prefetched_objects_cache") and "referee_set" in self._prefetched_objects_cache:
+            vals = [v for v in self._prefetched_objects_cache["referee_set"] if v.referee_number == num]
+            if len(vals) == 1:
+                return vals[0]
         return self.referee_set.get_or_create(referee_number=num)[0]
 
     def could_be_for_camp(self, camp: Camp) -> bool:

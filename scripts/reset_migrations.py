@@ -3,12 +3,12 @@
 # Ham-fisted approach to squashing migrations, to avoid including data
 # migrations, and various Django bugs with migration squashing.
 
-
 import glob
 import importlib
 import os
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "cciw.settings"
 import django
@@ -92,7 +92,7 @@ def get_existing_migration_files_for_apps(app_migration_modules):
 
     for app, migration_mod in app_migration_modules.items():
         p = path_for_migration_mod(migration_mod)
-        migrations = sorted(f for f in os.listdir(p) if f.endswith(".py") and not f == "__init__.py")
+        migrations = sorted(f for f in os.listdir(p) if f.endswith(".py") and f != "__init__.py")
         app_migrations[app] = migrations
 
     assert sorted(app_migration_modules.keys()) == sorted(app_migrations.keys())
@@ -119,7 +119,7 @@ def hide_existing_migrations(app_migration_modules, old_app_migrations):
 
 
 def make_new_migrations(app_migration_modules):
-    app_names = [app.rsplit(".")[-1] for app in app_migration_modules.keys()]
+    app_names = [app.rsplit(".")[-1] for app in app_migration_modules]
     subprocess.check_call(["./manage.py", "makemigrations"] + app_names)
 
 
@@ -172,7 +172,7 @@ def rewrite_new_migrations(app_migration_modules, new_app_migrations, old_app_mi
 
         for m_file in new_migration_files:
             full_file_name = os.path.join(migration_mod_path, m_file)
-            contents = open(full_file_name, "rb").read()
+            contents = Path(full_file_name).read_bytes()
 
             # Now fix to make it actually a squashed migration
             replaces = replaces_for_file[m_file]

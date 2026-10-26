@@ -95,7 +95,7 @@ def plot_booking_creation_times(year: int, timestamp_field: Literal["created_at"
         f"Max: {max_per_minute['count']}",
         xy=(minutes[max_idx], counts[max_idx]),
         xytext=(minutes[max_idx], counts[max_idx] + 1),
-        arrowprops=dict(facecolor="black", shrink=0.05),
+        arrowprops={"facecolor": "black", "shrink": 0.05},
         ha="center",
     )
 

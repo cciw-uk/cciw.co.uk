@@ -7,7 +7,7 @@ from cciw.utils.rst import remove_rst_title, rst_to_html
 
 
 def data_retention_policy(request: HttpRequest) -> TemplateResponse:
-    policy = open(settings.DATA_RETENTION_CONFIG_FILE).read()
+    policy = settings.DATA_RETENTION_CONFIG_FILE.read_text()
     return TemplateResponse(
         request,
         "cciw/data_retention_policy.html",

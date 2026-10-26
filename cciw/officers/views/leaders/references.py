@@ -178,14 +178,14 @@ def request_reference(request: HttpRequest, camp_id: CampId, referee_id: int):
         url = make_ref_form_url(referee.id, None)
         prev_reference = None
 
-    messageform_info = dict(
-        referee=referee,
-        applicant=app.officer,
-        camp=camp,
-        url=url,
-        sender=request.user,
-        update=prev_reference is not None,
-    )
+    messageform_info = {
+        "referee": referee,
+        "applicant": app.officer,
+        "camp": camp,
+        "url": url,
+        "sender": request.user,
+        "update": prev_reference is not None,
+    }
 
     if request.method == "POST":
         if "send" in request.POST:
@@ -261,7 +261,7 @@ def nag_by_officer(request: HttpRequest, camp_id: CampId, referee_id: int):
     app = referee.application
     officer = app.officer
 
-    messageform_info = dict(referee=referee, officer=officer, sender=request.user, camp=camp)
+    messageform_info = {"referee": referee, "officer": officer, "sender": request.user, "camp": camp}
 
     if request.method == "POST":
         if "send" in request.POST:

@@ -57,16 +57,15 @@ def check_date_fields(app_configs, **kwargs):
                         id="cciw.conventions.E001",
                     )
                 )
-        elif isinstance(field, DateField):
-            if not (field_name.endswith("_date") or field_name.endswith("_on")):
-                errors.append(
-                    Warning(
-                        f"{model.__name__}.{field_name} field expected to end with `_date` or `_on`, "
-                        + "or be added to the exceptions in this check.",
-                        obj=field,
-                        id="cciw.conventions.E002",
-                    )
+        elif isinstance(field, DateField) and not (field_name.endswith(("_date", "_on"))):
+            errors.append(
+                Warning(
+                    f"{model.__name__}.{field_name} field expected to end with `_date` or `_on`, "
+                    + "or be added to the exceptions in this check.",
+                    obj=field,
+                    id="cciw.conventions.E002",
                 )
+            )
     return errors
 
 
@@ -84,6 +83,4 @@ def is_first_party_app(app_config: AppConfig) -> bool:
     if app_config.module.__name__ in settings.FIRST_PARTY_APPS:
         return True
     app_config_class = app_config.__class__
-    if f"{app_config_class.__module__}.{app_config_class.__name__}" in settings.FIRST_PARTY_APPS:
-        return True
-    return False
+    return f"{app_config_class.__module__}.{app_config_class.__name__}" in settings.FIRST_PARTY_APPS

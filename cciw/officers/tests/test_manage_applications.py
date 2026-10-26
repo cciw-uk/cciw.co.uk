@@ -16,7 +16,7 @@ class ManageApplicationsPage(WebTestBase):
         self.get_url("cciw-officers-manage_applications", camp_id=camp.url_id)
         self.assertCode(200)
         self.follow_link(f"#id_view_application_{application.id}")
-        self.assertUrlsEqual(reverse("cciw-officers-view_application", kwargs=dict(application_id=application.id)))
+        self.assertUrlsEqual(reverse("cciw-officers-view_application", kwargs={"application_id": application.id}))
         self.assertTextPresent(application.full_name)
 
     def test_view_by_non_leader(self):
@@ -24,6 +24,6 @@ class ManageApplicationsPage(WebTestBase):
         officer = factories.create_officer()
         self.officer_login(officer)
         self.get_literal_url(
-            reverse("cciw-officers-manage_applications", kwargs=dict(camp_id=camp.url_id)), expect_errors=[403]
+            reverse("cciw-officers-manage_applications", kwargs={"camp_id": camp.url_id}), expect_errors=[403]
         )
         self.assertCode(403)

@@ -112,7 +112,7 @@ def send_leaders_email_about_application(leader_emails: list[str], application: 
     subject = f"[CCIW] Application form from {application.full_name}"
     url = "https://{domain}{path}".format(
         domain=common.get_current_domain(),
-        path=reverse("cciw-officers-view_application", kwargs=dict(application_id=application.id)),
+        path=reverse("cciw-officers-view_application", kwargs={"application_id": application.id}),
     )
     body = f"""The following application form has been submitted via the
 CCiW website:
@@ -192,9 +192,11 @@ def make_ref_form_url(referee_id: int, prev_ref_id: int | None) -> str:
         domain=common.get_current_domain(),
         path=reverse(
             "cciw-officers-create_reference",
-            kwargs=dict(
-                referee_id=referee_id, prev_ref_id=prev_ref_id, hash=make_ref_form_url_hash(referee_id, prev_ref_id)
-            ),
+            kwargs={
+                "referee_id": referee_id,
+                "prev_ref_id": prev_ref_id,
+                "hash": make_ref_form_url_hash(referee_id, prev_ref_id),
+            },
         ),
     )
 
@@ -226,7 +228,7 @@ def send_leaders_reference_email(reference: Reference):
 
     view_reference_url = "https://{domain}{path}".format(
         domain=common.get_current_domain(),
-        path=reverse("cciw-officers-view_reference", kwargs=dict(reference_id=reference.id)),
+        path=reverse("cciw-officers-view_reference", kwargs={"reference_id": reference.id}),
     )
     subject = f"[CCIW] Reference form for {officer.full_name} from {referee.name}"
     body = f"""The following reference form has been submitted via the
@@ -321,7 +323,7 @@ Use the following link to manage this reference:
 """.format(
             link="https://"
             + common.get_current_domain()
-            + reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id))
+            + reverse("cciw-officers-manage_references", kwargs={"camp_id": camp.url_id})
             + "?ref_email="
             + urlquote(bounced_email_address)
         )
@@ -389,7 +391,7 @@ Thank you.
     ):
         send_mails_for_items_according_to_schedule(
             items=list(users),
-            tracking_id_format=lambda user: f"camp-{camp.url_id}-officer-data-user-{user.id}",
+            tracking_id_format=lambda user, camp=camp: f"camp-{camp.url_id}-officer-data-user-{user.id}",
             repeat=NeverRepeat(),
             builder=build_email,
         )
@@ -431,7 +433,7 @@ Thank you.
     ):
         send_mails_for_items_according_to_schedule(
             items=list(users),
-            tracking_id_format=lambda user: f"camp-{camp.url_id}-camper-data-user-{user.id}",
+            tracking_id_format=lambda user, camp=camp: f"camp-{camp.url_id}-camper-data-user-{user.id}",
             repeat=NeverRepeat(),
             builder=build_email,
         )

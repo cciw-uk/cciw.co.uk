@@ -5,7 +5,7 @@ from django.core.mail import EmailMessage
 
 
 def url_to_path_and_query(url: str) -> tuple[str, dict[str, str]]:
-    scheme, netloc, path, params, query, fragment = urlparse(url)
+    _scheme, _netloc, path, _params, query, _fragment = urlparse(url)
     querydata_t = parse_qs(query)
     querydata = {}
     for key, val in querydata_t.items():

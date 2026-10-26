@@ -33,7 +33,7 @@ def get_officer_with_dbs_info(camp: Camp) -> tuple[User, DBSInfo]:
 
 
 def test_DBSInfo_requires_action_no_application_form():
-    camp, officer = setup_dbs_info_tests()
+    camp, _officer = setup_dbs_info_tests()
     _, dbs_info = get_officer_with_dbs_info(camp)
     assert not dbs_info.requires_action
 

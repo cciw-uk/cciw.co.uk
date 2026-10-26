@@ -92,7 +92,7 @@ class Referee(models.Model):
                     if a.action_type == ReferenceAction.ActionType.REQUESTED
                 ]
                 if actions:
-                    last = sorted(actions, key=lambda a: a.created_at)[-1]
+                    last = max(actions, key=lambda a: a.created_at)
                 else:
                     last = None
         else:
@@ -269,13 +269,10 @@ class Reference(models.Model):
 
 
 def close_enough_referee_match(referee1: Referee, referee2: Referee):
-    if (
+    return bool(
         normalized_name(referee1.name).lower() == normalized_name(referee2.name).lower()
         and referee1.email.lower() == referee2.email.lower()
-    ):
-        return True
-
-    return False
+    )
 
 
 def add_previous_references(referee: Referee) -> None:

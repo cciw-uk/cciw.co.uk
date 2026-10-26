@@ -126,7 +126,7 @@ class _Missing:
     # object mistakenly gets passed back to the wrong API - hopefully
     # we'll get an error when we try to serialize.
 
-    def __bool__(self):  # pylint: disable=invalid-bool-returned
+    def __bool__(self):  # noqa: PLE0304
         self._raise()
 
     def __eq__(self, other):
@@ -190,12 +190,12 @@ def save_ruleset(ruleset: RuleSet):
         else:
             previous_rule = None
         # https://docs.aws.amazon.com/ses/latest/APIReference/API_CreateReceiptRule.html
-        args = dict(
-            Rule=rule.to_api(),
-            RuleSetName=ruleset.name,
-        )
+        args = {
+            "Rule": rule.to_api(),
+            "RuleSetName": ruleset.name,
+        }
         if previous_rule is not None:
-            args.update(dict(After=previous_rule.name))
+            args.update({"After": previous_rule.name})
 
         rule_response = ses_api.create_receipt_rule(**args)
         _assert_200(rule_response)

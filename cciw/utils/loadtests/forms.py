@@ -524,7 +524,7 @@ class Form:
 
         """
         labels = self._label_re.findall(self.text)
-        for name, fields in self.fields.items():
+        for fields in self.fields.values():
             for field in fields:
                 if not isinstance(field, Submit | Hidden):
                     if not field.id:
@@ -621,31 +621,30 @@ class Form:
 
         # This counts all fields with the submit name not just submit fields.
         current_index = 0
-        for name, field in self.field_order:
-            if name is None:  # pragma: no cover
+        for f_name, field in self.field_order:
+            if f_name is None:  # pragma: no cover
                 continue
-            if submit_name is not None and name == submit_name:
+            if submit_name is not None and f_name == submit_name:
                 if index is not None and current_index == index:
-                    submit.append((field.pos, name, field.value_if_submitted()))
+                    submit.append((field.pos, f_name, field.value_if_submitted()))
                 if submit_value is not None and field.value_if_submitted() == submit_value:
-                    submit.append((field.pos, name, field.value_if_submitted()))
+                    submit.append((field.pos, f_name, field.value_if_submitted()))
                 current_index += 1
             else:
                 value = field.value
                 if value is None:
                     continue
                 if isinstance(field, File):
-                    submit.append((field.pos, name, field))
+                    submit.append((field.pos, f_name, field))
                     continue
-                if isinstance(field, Radio):
-                    if field.selectedIndex is not None:
-                        submit.append((field.optionPositions[field.selectedIndex], name, value))
-                        continue
+                if isinstance(field, Radio) and field.selectedIndex is not None:
+                    submit.append((field.optionPositions[field.selectedIndex], f_name, value))
+                    continue
                 if isinstance(value, list):
                     for item in value:
-                        submit.append((field.pos, name, item))
+                        submit.append((field.pos, f_name, item))
                 else:
-                    submit.append((field.pos, name, value))
+                    submit.append((field.pos, f_name, value))
         submit.sort(key=operator.itemgetter(0))
         return [x[1:] for x in submit]
 

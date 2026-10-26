@@ -111,7 +111,7 @@ def get_application(request: HttpRequest) -> HttpResponse:
     format = request.POST.get("format", "")
     if format == "html":
         return HttpResponseRedirect(
-            reverse("cciw-officers-view_application", kwargs=dict(application_id=application_id))
+            reverse("cciw-officers-view_application", kwargs={"application_id": application_id})
         )
     elif format == "txt":
         resp = HttpResponse(application_to_text(app), content_type="text/plain")
@@ -156,7 +156,7 @@ Please find attached a copy of the application you requested
 def view_application_redirect(request):
     if "application_id" in request.GET:
         return HttpResponseRedirect(
-            reverse("cciw-officers-view_application", kwargs=dict(application_id=request.GET["application_id"]))
+            reverse("cciw-officers-view_application", kwargs={"application_id": request.GET["application_id"]})
         )
     raise Http404
 

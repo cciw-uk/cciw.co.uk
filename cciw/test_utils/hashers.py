@@ -52,7 +52,7 @@ class PlainPasswordHasher(BasePasswordHasher):
         >>> hasher.safe_summary(hasher.encode('secret', 'salt'))
         OrderedDict([('algorithm', 'plain'), ('hash', u'sec***')])
         """
-        algorithm, salt, hash = encoded.split("$", 2)
+        algorithm, _salt, hash = encoded.split("$", 2)
         assert algorithm == self.algorithm
         return OrderedDict(
             [

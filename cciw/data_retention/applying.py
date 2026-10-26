@@ -170,7 +170,7 @@ class UpdateCommand:
         if self.record_count == 0:
             return RECORD_IN_USE_MESSAGE
         return "The following columns will be erased:\n" + "\n".join(
-            f" - {key}" for key in self.update_dict.keys() if key != "erased_at"
+            f" - {key}" for key in self.update_dict if key != "erased_at"
         )
 
     @cached_property

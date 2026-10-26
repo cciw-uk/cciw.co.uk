@@ -185,7 +185,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         user, orig_email, new_email, emails = self._change_email_setup()
 
         # Read the email
-        url, path, querydata = read_email_url(emails[0], "https?://.*/correct-email/.*")
+        _url, path, querydata = read_email_url(emails[0], "https?://.*/correct-email/.*")
 
         # Check that nothing has changed yet
         user.refresh_from_db()
@@ -216,7 +216,7 @@ class ApplicationFormView(RequireQualificationTypesMixin, WebTestBase):
         user, user_email, application_email, emails = self._change_email_setup()
 
         # Read the email
-        url, path, querydata = read_email_url(emails[0], "https?://.*/correct-application/.*")
+        _url, path, querydata = read_email_url(emails[0], "https?://.*/correct-application/.*")
 
         # Check that nothing has changed yet
         assert user.email == user_email

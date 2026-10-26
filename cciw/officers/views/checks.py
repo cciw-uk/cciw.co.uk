@@ -34,9 +34,12 @@ def check_officers_views[**P](view_func: ViewFunc[P]) -> ViewFunc[P]:
         # - if the response is a SensitiveDownloadResponse,
         #   then the download should have been logged.
 
-        if isinstance(resp, SensitiveDownloadResponse) and not isinstance(resp.data_relation, NoSensitiveData):
-            if not getattr(resp, DOWNLOAD_HAS_BEEN_LOGGED, False):
-                raise AssertionError(f"Sensitive download wasn't logged, bug in {view_func_name}")
+        if (
+            isinstance(resp, SensitiveDownloadResponse)
+            and not isinstance(resp.data_relation, NoSensitiveData)
+            and not getattr(resp, DOWNLOAD_HAS_BEEN_LOGGED, False)
+        ):
+            raise AssertionError(f"Sensitive download wasn't logged, bug in {view_func_name}")
 
         return resp
 

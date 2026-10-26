@@ -154,7 +154,7 @@ def booking_progress_stats_download(
     end_year: int | None = None,
     camp_ids: list[CampId] | None = None,
 ) -> HttpResponse:
-    start_year, end_year, camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
+    start_year, end_year, _camp_objs, data_dates, data_rel_days = _get_booking_progress_stats_from_params(
         start_year, end_year, camp_ids, overlay_years=False
     )
     builder = ExcelFromDataFrameBuilder()
@@ -230,7 +230,7 @@ def booking_ages_stats_download(
     end_year: int | None = None,
     camp_ids: list[CampId] | None = None,
 ):
-    start_year, end_year, camps, data = _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
+    start_year, end_year, _camps, data = _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
     builder = ExcelFromDataFrameBuilder()
     builder.add_sheet_from_dataframe("Age of campers", data)
     if camp_ids is not None:

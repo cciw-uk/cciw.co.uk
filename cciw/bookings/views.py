@@ -363,14 +363,14 @@ def use_previous_data_modal(request: HttpRequest, booking_id: int | None = None)
 
 def _reuse_data_url(booking_id: int | None) -> str:
     if booking_id:
-        return reverse("cciw-bookings-add_place_reuse_data", kwargs=dict(booking_id=booking_id))
+        return reverse("cciw-bookings-add_place_reuse_data", kwargs={"booking_id": booking_id})
     else:
         return reverse("cciw-bookings-add_place_reuse_data")
 
 
 def _use_previous_data_modal_url(booking_id: int | None) -> str:
     if booking_id:
-        return reverse("cciw-bookings-use_previous_data_modal", kwargs=dict(booking_id=booking_id))
+        return reverse("cciw-bookings-use_previous_data_modal", kwargs={"booking_id": booking_id})
     else:
         return reverse("cciw-bookings-use_previous_data_modal")
 
@@ -508,7 +508,7 @@ def _handle_list_booking_actions(request: HttpRequest, places: list[Booking]) ->
         return False
 
     try:
-        place: Booking = [p for p in places if p.id == int(request.POST["booking_id"])][0]
+        place: Booking = next(p for p in places if p.id == int(request.POST["booking_id"]))
     except (ValueError, IndexError):
         return False
 

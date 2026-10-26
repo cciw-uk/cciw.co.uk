@@ -104,10 +104,10 @@ def _setup_role_for_email(*, name="Test", email, allow_emails_from_public, recip
     role.allow_emails_from_public = allow_emails_from_public
     role.email = email
     role.save()
-    for name, email in recipients:
+    for recip_name, recip_email in recipients:
         role.email_recipients.create(
-            username=name,
-            email=email,
+            username=recip_name,
+            email=recip_email,
         )
     return role
 
@@ -279,11 +279,11 @@ def test_handle_mail_exception():
     )
     with mock.patch("cciw.mail.lists.send_mime_message") as m_s:
 
-        def connection_error():
+        def connection_error(*args):
             raise ConnectionError("Connection refused")
 
         m_s.side_effect = connection_error
-        with pytest.raises(Exception):
+        with pytest.raises(ConnectionError):
             handle_mail(
                 make_message(to_email=role.email, from_email="a.person@example.com"),
             )

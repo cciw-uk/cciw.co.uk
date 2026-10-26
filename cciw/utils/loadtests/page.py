@@ -189,9 +189,8 @@ class Page:
                 raise WebTestCantUseElement(f"Element {css_selector} needs 'name' attribute in order to use it")
             found.append((form, field, item))
 
-        if len(found) > 1:
-            if not all(f[0:2] == found[0][0:2] for f in found):
-                raise WebTestMultipleElementsException(f"Multiple elements found matching '{css_selector}'")
+        if len(found) > 1 and not all(f[0:2] == found[0][0:2] for f in found):
+            raise WebTestMultipleElementsException(f"Multiple elements found matching '{css_selector}'")
 
         if len(found) > 0:
             return found[0]

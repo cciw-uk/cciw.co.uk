@@ -28,7 +28,7 @@ class Site(models.Model):
         return self.short_name
 
     def get_absolute_url(self) -> str:
-        return reverse("cciw-cciwmain-sites_detail", kwargs=dict(slug=self.slug_name))
+        return reverse("cciw-cciwmain-sites_detail", kwargs={"slug": self.slug_name})
 
     def save(self, **kwargs):
         from django.template.defaultfilters import slugify
@@ -282,7 +282,7 @@ class Camp(models.Model):
         return format_html("<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
 
     def get_absolute_url(self) -> str:
-        return reverse("cciw-cciwmain-camps_detail", kwargs=dict(year=self.year, slug=self.slug_name))
+        return reverse("cciw-cciwmain-camps_detail", kwargs={"year": self.year, "slug": self.slug_name})
 
     def is_past(self) -> bool:
         return self.end_date <= date.today()
@@ -356,7 +356,6 @@ def generate_colors_css(update_existing=False):
         os.path.join(settings.STATIC_ROOT, settings.COLORS_CSS_FILE),  # production
     ]
     for p in paths:
-        if os.path.exists(os.path.dirname(p)):
-            if update_existing or not os.path.exists(p):
-                with open(p, "wb") as f:
-                    f.write(colors_css)
+        if os.path.exists(os.path.dirname(p)) and (update_existing or not os.path.exists(p)):
+            with open(p, "wb") as f:
+                f.write(colors_css)

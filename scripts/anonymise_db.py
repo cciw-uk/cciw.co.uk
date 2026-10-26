@@ -369,7 +369,7 @@ def anonymize_model_with_map_and_groups(
     all_qs = model.objects.all()
     count = all_qs.count()
     for instance in tqdm.tqdm(all_qs, total=count):
-        fields_needed_for_mapped_values = set(attr for attr_group in mapped_field_groups for attr in attr_group)
+        fields_needed_for_mapped_values = {attr for attr_group in mapped_field_groups for attr in attr_group}
         saved_field_values = {f: getattr(instance, f) for f in fields_needed_for_mapped_values}
 
         corrected_fields: set[str] = set()
@@ -1054,7 +1054,7 @@ def test_anonymisation():
             )
 
         if isinstance(fields_covered, set):
-            real_field_names = set(f.name for f in model_field_list)
+            real_field_names = {f.name for f in model_field_list}
             unexpected_names = fields_covered - real_field_names
             if unexpected_names:
                 assert False, f"The following fields for {model.__name__} are not recognised: " + ", ".join(

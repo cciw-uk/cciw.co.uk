@@ -64,7 +64,7 @@ def test_data_retention_rst():
     """
     Check that the embedded rst markup in the data retention YAML is fully correct.
     """
-    policy = open(settings.DATA_RETENTION_CONFIG_FILE).read()
+    policy = settings.DATA_RETENTION_CONFIG_FILE.read_text()
     # This is similar to what we do in the view, but with `strict=True`
     output = rst_to_html(remove_rst_title(literate_yaml_to_rst(policy)), initial_header_level=2, strict=True)
     assert output is not None

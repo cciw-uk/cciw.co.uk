@@ -527,12 +527,12 @@ def get_sibling_bonus_scores(
     # a high probability of being accepted.
 
     # These are based on the ranking criteria, but simplified a bit.
-    is_officer_child_ids: set[BookingId] = set(b.id for b in bookings if b.queue_entry.officer_child)
-    has_attended_before_ids: set[BookingId] = set(b_id for b_id, count in attendance_counts.items() if count > 0)
-    is_first_timer_ids: set[BookingId] = set(b.id for b in bookings if b.queue_entry.first_timer_allocated)
-    in_previous_year_waiting_list_ids: set[BookingId] = set(
+    is_officer_child_ids: set[BookingId] = {b.id for b in bookings if b.queue_entry.officer_child}
+    has_attended_before_ids: set[BookingId] = {b_id for b_id, count in attendance_counts.items() if count > 0}
+    is_first_timer_ids: set[BookingId] = {b.id for b in bookings if b.queue_entry.first_timer_allocated}
+    in_previous_year_waiting_list_ids: set[BookingId] = {
         b_id for b_id, in_list in in_previous_year_waiting_list_info.items() if in_list
-    )
+    }
 
     high_probability_booking_ids = (
         already_booked_ids
@@ -580,7 +580,7 @@ def find_siblings(bookings: list[Booking], camp: Camp) -> dict[BookingId, set[Bo
     booking_to_sibling_booking_ids_dict: dict[BookingId, set[BookingId]] = {}
     for booking in bookings:
         all_siblings_ids = sibling_to_booking_ids_dict.get(booking.queue_entry.sibling_fuzzy_id, [])
-        non_self_siblings = set(all_siblings_ids) - set([booking.id])
+        non_self_siblings = set(all_siblings_ids) - {booking.id}
         booking_to_sibling_booking_ids_dict[booking.id] = non_self_siblings
     return booking_to_sibling_booking_ids_dict
 
@@ -791,7 +791,7 @@ def allocate_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
     now = timezone.now()
 
     for b in bookings:
-        if not b.state == BookingState.BOOKED:
+        if b.state != BookingState.BOOKED:
             b.booked_at = now
             b.auto_set_amount_due()
             b.state = BookingState.BOOKED

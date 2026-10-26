@@ -1,5 +1,6 @@
 import os
 import time
+from typing import assert_never
 from urllib.parse import urlparse
 
 import pytest
@@ -41,7 +42,7 @@ class CommonMixin:
             self.shortcut_login(username=username, password=password)
             return User.objects.get(username=username)
         else:
-            raise AssertionError(f"Don't know what to do with {type(user_or_creds)}")
+            assert_never(user_or_creds)
 
     def officer_logout(self):
         self.shortcut_logout()

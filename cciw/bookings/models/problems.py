@@ -75,9 +75,7 @@ class ApprovalNeeded:
 
     @property
     def blocker(self) -> bool:
-        if self.linked_booking_approval is not None and self.linked_booking_approval.is_approved:
-            return False
-        return True
+        return not (self.linked_booking_approval is not None and self.linked_booking_approval.is_approved)
 
     @property
     def fixable(self) -> bool:
@@ -293,15 +291,17 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[B
     #
     # This is not exactly correct, but allows all legitimate discounts.
 
-    if booking.price_type == PriceType.SECOND_CHILD:
-        if not (relevant_bookings_excluding_self.filter(price_type=PriceType.FULL)).exists():
-            errors.append(
-                blocker(
-                    "You cannot use a 2nd child discount unless you have "
-                    "another child at full price. Please edit the place details "
-                    "and choose an appropriate price type."
-                )
+    if (
+        booking.price_type == PriceType.SECOND_CHILD
+        and not (relevant_bookings_excluding_self.filter(price_type=PriceType.FULL)).exists()
+    ):
+        errors.append(
+            blocker(
+                "You cannot use a 2nd child discount unless you have "
+                "another child at full price. Please edit the place details "
+                "and choose an appropriate price type."
             )
+        )
 
     if booking.price_type == PriceType.THIRD_CHILD:
         qs = relevant_bookings_excluding_self.filter(
@@ -329,11 +329,10 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[B
             blocker("Transport from South Wales is not available for this camp, or all places have been taken already.")
         )
 
-    if booking_sec and booking.price_type != PriceType.CUSTOM:
-        if booking.can_calculate_expected_amount_due():
-            expected_amount = booking.expected_amount_due()
-            if booking.amount_due != expected_amount:
-                errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
+    if booking_sec and booking.price_type != PriceType.CUSTOM and booking.can_calculate_expected_amount_due():
+        expected_amount = booking.expected_amount_due()
+        if booking.amount_due != expected_amount:
+            errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
 
     on_date: date = date.today()
     if booking_sec and booking.is_booked and booking.booked_at:

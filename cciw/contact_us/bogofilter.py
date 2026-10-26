@@ -46,7 +46,7 @@ _STATUS_MAP = {
 
 
 def get_bogofilter_classification(msg_bytes: bytes) -> tuple[BogofilterStatus, float | None]:
-    result = subprocess.run(_bogofilter_command(["-T"]), input=msg_bytes, capture_output=True)
+    result = subprocess.run(_bogofilter_command(["-T"]), input=msg_bytes, capture_output=True, check=False)
     if result.returncode > 2:
         logger.error("Error running bogofilter: %r", result.stderr)
         return (BogofilterStatus.ERROR, None)

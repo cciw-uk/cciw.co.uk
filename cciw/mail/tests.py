@@ -24,9 +24,8 @@ class CheckSubjectMixin:
     def check_messages(self, messages: list[EmailMessage]):
         # Subject check
         for m in messages:
-            if not m.subject.startswith("[CCIW]"):
-                if not _is_forwarded_message(m):
-                    raise EmailSubjectAssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
+            if not m.subject.startswith("[CCIW]") and not _is_forwarded_message(m):
+                raise EmailSubjectAssertionError(f'Email with subject "{m.subject}" should start with [CCIW]')
 
 
 class TestMailBackend(CheckSubjectMixin, LocMemEmailBackend):

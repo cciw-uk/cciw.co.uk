@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 from datetime import date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
 
 import pgtrigger
 from django.db import models
@@ -31,9 +30,6 @@ from .problems import (
 from .states import BOOKING_STATES_NO_FEE_DUE, CANCELLED_BOOKING_STATES, BookingState
 from .utils import normalise_booking_name, sql_normalise_booking_name
 from .yearconfig import YearConfigFetcher
-
-if TYPE_CHECKING:
-    from .problems import BookingApproval
 
 ANT = ApprovalNeededType
 

@@ -117,9 +117,9 @@ class PersonalApplicationList(RequireQualificationTypesMixin, WebTestBase):
         for a in officer.applications.all():
             assert a.full_name == application.full_name
             assert a.referee_set.get(referee_number=1).name == application.referee_set.get(referee_number=1).name
-            assert list([q.type, q.issued_on] for q in a.qualifications.all()) == list(
+            assert [[q.type, q.issued_on] for q in a.qualifications.all()] == [
                 [q.type, q.issued_on] for q in application.qualifications.all()
-            )
+            ]
 
     def test_create_when_already_done(self):
         officer = self._start(old=True)

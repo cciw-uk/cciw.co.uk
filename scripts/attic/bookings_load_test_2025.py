@@ -265,7 +265,7 @@ class BookPlaceTaskSet(SequentialTaskSet):
             self.wait()
         self.page.fill(place_details)
         self.page.submit()
-        assert f'Details for "{camper.full_name}" were saved successfully'
+        assert f'Details for "{camper.full_name}" were saved successfully' in self.page.last_response.text
 
     def get_booking_details(self) -> tuple[dict, FakeCamperData]:
         user_data = self.user.data

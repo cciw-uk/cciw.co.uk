@@ -43,7 +43,7 @@ urlpatterns = [
     path("basket/", views.basket_list_bookings, name="cciw-bookings-basket_list_bookings"),
     path("added/", views.added_to_queue, name="cciw-bookings-added_to_queue"),
     path("pay/", views.pay, name="cciw-bookings-pay"),
-    path("pay-installment/", views.pay, name="cciw-bookings-pay-installment", kwargs=dict(installment=True)),
+    path("pay-installment/", views.pay, name="cciw-bookings-pay-installment", kwargs={"installment": True}),
     path("pay/done/", views.pay_done, name="cciw-bookings-pay_done"),
     path("pay/cancelled/", views.pay_cancelled, name="cciw-bookings-pay_cancelled"),
     path("overview/", views.account_overview, name="cciw-bookings-account_overview"),

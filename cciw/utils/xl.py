@@ -64,9 +64,8 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
 
             if isinstance(val, datetime | date):
                 cell.number_format = date_format
-                if isinstance(val, datetime):
-                    if timezone.is_aware(val):
-                        val = timezone.make_naive(val, UTC)
+                if isinstance(val, datetime) and timezone.is_aware(val):
+                    val = timezone.make_naive(val, UTC)
             else:
                 if isinstance(val, str) and "\n" in val:
                     # This is needed or Excel displays box character for newlines.
@@ -82,12 +81,7 @@ def add_sheet_with_header_row(wkbk: Workbook, name: str, headers: list[str], con
 
 
 def looks_like_url(val: object) -> bool:
-    return (
-        isinstance(val, str)
-        and " " not in val
-        and "\n" not in val
-        and (val.startswith("http://") or val.startswith("https://"))
-    )
+    return isinstance(val, str) and " " not in val and "\n" not in val and (val.startswith(("http://", "https://")))
 
 
 def workbook_to_bytes(wkbk: Workbook) -> bytes:

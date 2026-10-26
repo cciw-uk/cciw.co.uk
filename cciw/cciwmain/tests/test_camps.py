@@ -94,7 +94,7 @@ class IndexPage(TestBase):
             factories.create_camp(year=year, leader=factories.get_any_camp_leader())
 
         with self.assertNumQueries(FuzzyInt(1, 6)):
-            resp = self.client.get(reverse("cciw-cciwmain-camps_year_index", kwargs=dict(year=year)))
+            resp = self.client.get(reverse("cciw-cciwmain-camps_year_index", kwargs={"year": year}))
 
         for c in Camp.objects.filter(year=year):
             self.assertContains(resp, c.get_absolute_url())
@@ -103,6 +103,8 @@ class IndexPage(TestBase):
 class DetailPage(TestBase):
     def test_get(self):
         camp = factories.create_camp(leader=factories.create_person(name=(leader_name := "Joe Bloggs")))
-        resp = self.client.get(reverse("cciw-cciwmain-camps_detail", kwargs=dict(year=camp.year, slug=camp.slug_name)))
+        resp = self.client.get(
+            reverse("cciw-cciwmain-camps_detail", kwargs={"year": camp.year, "slug": camp.slug_name})
+        )
         self.assertContains(resp, leader_name)
         self.assertContains(resp, camp.camp_name.name)

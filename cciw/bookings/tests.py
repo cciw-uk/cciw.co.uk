@@ -103,7 +103,7 @@ class BookingLogInMixin:
             self.get_url("cciw-bookings-start")
             self.fill_by_name({"email": self.booker_email})
             self.submit("[type=submit]")
-            url, path, querydata = read_email_url(mail.outbox.pop(), "https://.*/booking/v/.*")
+            _url, path, querydata = read_email_url(mail.outbox.pop(), "https://.*/booking/v/.*")
             self.get_literal_url(path_and_query_to_url(path, querydata))
             account = BookingAccount.objects.get(email=self.booker_email)
 
@@ -567,7 +567,7 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         Test the email verification stage when the URL is correct
         """
         self._start(email="booker@bookers.com")
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        _url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
         self.assertTextPresent("Logged in as booker@bookers.com! You will stay logged in for two weeks")
@@ -591,7 +591,7 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         """
         self._start()
         self._add_booking_account_address()
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        _url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse("cciw-bookings-add_place"))
 
@@ -608,7 +608,7 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         account.last_login_at = account.first_login_at
         account.save()
 
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        _url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
         self.assertTextPresent("Welcome back!")
@@ -621,19 +621,19 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         self._start()
 
         # The following will trigger a BadSignature
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        _url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         querydata["bt"] = "a000" + querydata["bt"]
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed", within="title")
 
         # This will trigger a base64 decode error:
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        _url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         querydata["bt"] = "XXX" + querydata["bt"]
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed", within="title")
 
         # This will trigger a UnicodeDecodeError
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        _url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         querydata["bt"] = "xxxx"
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed", within="title")
@@ -691,7 +691,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         m = mail.outbox[0]
         assert "You have payments due" in m.body
         assert "[CCIW] Payment due" == m.subject
-        url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
+        _url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse("cciw-bookings-pay"))
         self.assertTextPresent(booking.account.get_balance_due_now())
@@ -701,7 +701,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         mail.outbox = []
         send_payment_reminder_emails()
         m = mail.outbox[0]
-        url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
+        _url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
 
         with override_settings(BOOKING_EMAIL_VERIFY_TIMEOUT=timedelta(days=-1)):
             self.get_literal_url(path_and_query_to_url(path, querydata))
@@ -711,7 +711,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         assert len(mail.outbox) == 2
         m2 = mail.outbox[1]
 
-        url2, path2, querydata2 = read_email_url(m2, "https://.*/booking/p.*")
+        _url2, path2, querydata2 = read_email_url(m2, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path2, querydata2))
         self.assertUrlsEqual(reverse("cciw-bookings-pay"))
 
@@ -1141,7 +1141,7 @@ def fix_autocomplete_fields(field_names: list[str]):
                         to_fix.append((field_name, value))
                     else:
                         # Hack needed to cope with autocomplete widget and WebTest:
-                        form, field, item = self._find_form_and_field_by_css_selector(
+                        form, _field, _item = self._find_form_and_field_by_css_selector(
                             self.last_response,
                             f"[name={field_name}]",
                         )
@@ -1948,7 +1948,7 @@ def test_ManualPayment_edit(db):
     mp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
 
     mp.amount = Decimal("101.00")
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         mp.save()
 
 
@@ -1982,7 +1982,7 @@ def test_RefundPayment_edit(db):
     rp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
 
     rp.amount = Decimal("101.00")
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         rp.save()
 
 
@@ -2502,8 +2502,8 @@ def test_rank_queue_booking(db):
     assert b5 not in ranked_bookings  # never added to queue
 
     # Don't know if b1 or b2 will be first.
-    b1_q = [b for b in ranked_bookings if b.id == b1.id][0]
-    b2_q = [b for b in ranked_bookings if b.id == b2.id][0]
+    b1_q = next(b for b in ranked_bookings if b.id == b1.id)
+    b2_q = next(b for b in ranked_bookings if b.id == b2.id)
 
     b3_q = ranked_bookings[2]
     assert b3_q.id == b3.id
@@ -2949,8 +2949,8 @@ def test_allocate_places_for_waiting_list(
     email = mailoutbox[0]
 
     # The email gives a link to cancel and one to accept:
-    accept_url, accept_path, accept_querydata = read_email_url(email, r"https://.*/accept/.*")
-    cancel_url, cancel_path, cancel_querydata = read_email_url(email, r"https://.*/cancel/.*")
+    _accept_url, accept_path, accept_querydata = read_email_url(email, r"https://.*/accept/.*")
+    _cancel_url, cancel_path, cancel_querydata = read_email_url(email, r"https://.*/cancel/.*")
 
     if action == "accept":
         response = client.get(accept_path, accept_querydata, follow=True)

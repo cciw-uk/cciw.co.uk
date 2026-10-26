@@ -143,7 +143,7 @@ def add_officer_to_camp(camp: Camp, officer: User, role: CampRole) -> User:
     """
     Add officers to camp using CampRole. Returns officer added successfully.
     """
-    inv, created = Invitation.objects.get_or_create(camp=camp, officer=officer, defaults=dict(role=role))
+    inv, _created = Invitation.objects.get_or_create(camp=camp, officer=officer, defaults={"role": role})
     if inv.role != role:
         inv.role = role
         inv.save()

@@ -4,7 +4,6 @@ import re
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
-from pathlib import Path
 from shlex import quote
 
 from fabric.connection import Connection

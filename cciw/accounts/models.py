@@ -368,18 +368,14 @@ class User(AbstractBaseUser):
         # They only get view permissions for old camps when they also have
         # edit permissions for at least one camp. i.e. current leaders
         # can view old info, past leaders can't
-        if self.viewable_camps and self.editable_camps:
-            return True
-        return False
+        return bool(self.viewable_camps and self.editable_camps)
 
     def can_view_camp(self, camp: Camp):
         # NB also viewable_camps
         if self.has_perm("cciwmain.view_camp"):
             return True
 
-        if self.can_view_any_camps and camp in self.viewable_camps:
-            return True
-        return False
+        return bool(self.can_view_any_camps and camp in self.viewable_camps)
 
     @cached_property
     def viewable_camps(self) -> CampQuerySet:
@@ -389,17 +385,13 @@ class User(AbstractBaseUser):
     def can_edit_some_camps(self):
         if self.has_perm("cciwmain.change_camp"):
             return True
-        if self.editable_camps:
-            return True
-        return False
+        return bool(self.editable_camps)
 
     def can_edit_camp(self, camp: Camp):
         if self.has_perm("cciwmain.change_camp"):
             return True
 
-        if self.can_edit_some_camps and camp in self.editable_camps:
-            return True
-        return False
+        return bool(self.can_edit_some_camps and camp in self.editable_camps)
 
     @cached_property
     def editable_camps(self) -> list[Camp]:
@@ -522,7 +514,7 @@ def get_or_create_perm(*, app_label: str, model: str, codename: str, create_if_m
 
 
 def setup_auth_roles(*, check_only: bool = False):
-    permissions_conf = yaml.load(open(settings.ROLES_CONFIG_FILE), Loader=yaml.SafeLoader)
+    permissions_conf = yaml.load(settings.ROLES_CONFIG_FILE.read_text(), Loader=yaml.SafeLoader)
     roles = permissions_conf["Roles"]
     for role_name, role_details in roles.items():
         if check_only:
@@ -554,7 +546,7 @@ def _current_password_validators_as_string() -> str:
         elif isinstance(val, list):
             return "[" + ",".join(f"{val_to_str(v)}" for v in val) + "]"
         else:
-            raise AssertionError("Can't handle {type(val)}")
+            raise TypeError(f"Can't handle {type(val)}")
 
     return val_to_str(settings.AUTH_PASSWORD_VALIDATORS)
 
