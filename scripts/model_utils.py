@@ -10,7 +10,7 @@ from datetime import date
 import texttable
 import visidata
 import visidata.pyobj
-from _pytest.assertion.util import _compare_eq_iterable
+from _pytest.assertion._compare_sequence import _compare_eq_iterable
 from django.db.models import QuerySet
 from django.db.models.query import ValuesIterable, ValuesListIterable
 
