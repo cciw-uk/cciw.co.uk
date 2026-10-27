@@ -73,6 +73,7 @@ from cciw.cciwmain import models as cciwmain
 from cciw.contact_us import models as contact_us
 from cciw.data_retention import models as data_retention
 from cciw.data_retention.applying import DELETED_STRING
+from cciw.mail import models as mail
 from cciw.officers import models as officers
 from cciw.sitecontent import models as sitecontent
 from cciw.visitors import models as visitors
@@ -447,6 +448,7 @@ BOOKING_FIELD_MAP: dict[str, Fixer[bookings.Booking, object]] = {
     "last_name": last_name,
     "sex": keep,
     "birth_date": make_date_same_year,
+    "stored_age_on_camp": keep,
     "address_line1": address_line_1,
     "address_line2": make_empty,
     "address_city": city,
@@ -960,6 +962,7 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
             "created_at": keep,
         },
     ),
+    officers.DataDownloadLog: IgnoreTable(),
     # Site content:
     sitecontent.MenuLink: IgnoreTable(),
     sitecontent.HtmlChunk: IgnoreTable(),
@@ -998,6 +1001,7 @@ MODEL_HANDLERS: dict[type, Anonymiser] = {
     # Data retention
     data_retention.ErasureExecutionLog: IgnoreTable(),
     # Mails
+    mail.ScheduledMailRecord: IgnoreTable(),
     mailer.Message: TruncateTable(mailer.Message),
     mailer.MessageLog: TruncateTable(mailer.MessageLog),
     mailer.DontSendEntry: TruncateTable(mailer.DontSendEntry),
