@@ -62,7 +62,7 @@ def make_content_disposition_safe_filename(filename):
     value = re.sub(r'[\\\/:\'"]', "", value)
     value = unicodedata.normalize("NFKD", value)
     value = value.encode("ascii", "ignore")
-    return value.decode("utf-8")
+    return value.decode("utf-8").strip()
 
 
 def get_protected_download(folder: str, filename: str) -> HttpResponse:
