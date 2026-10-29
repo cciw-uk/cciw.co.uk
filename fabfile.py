@@ -132,6 +132,7 @@ TEMPLATES = [
         system=True,
         local_path="config/crontab.template",
         remote_path=f"/etc/cron.d/{PROJECT_NAME}",
+        reload_command="service cron reload",
         owner="root",
         mode="600",
     ),
