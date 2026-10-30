@@ -222,6 +222,7 @@ def provision(c):
 def install_apt_requirements(c):
     apt.update_upgrade(c)
     apt.install(c, REQS)
+    apt.remove(c, ["ubuntu-release-upgrader-core"])
 
 
 def _install_system(c: Connection):
