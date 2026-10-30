@@ -229,7 +229,7 @@ def _install_system(c: Connection):
     install_apt_requirements(c)
     # Remove some bloat:
     apt.remove(c, ["snapd"])
-    disks.add_swap(c, size="1G", swappiness="10")
+    disks.add_swap(c, size="2G", swappiness="10")
     ssl.generate_ssl_dhparams(c)
 
 
