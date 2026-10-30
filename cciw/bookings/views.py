@@ -387,7 +387,7 @@ def make_state_token(bookings: list[Booking]) -> str:
             for b in sorted(bookings, key=lambda b: b.id)
         ]
     )
-    return salted_hmac("cciw.bookings.state_token", data.encode("utf-8")).hexdigest()
+    return salted_hmac("cciw.bookings.state_token", data.encode("utf-8"), algorithm="sha1").hexdigest()
 
 
 @booking_account_required

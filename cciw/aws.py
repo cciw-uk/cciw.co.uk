@@ -91,14 +91,17 @@ def load_resource_cached(url):
     return requests.get(url, timeout=10).content
 
 
-def ensure_from_aws_sns[T: Callable](view_func: T) -> T:
+type SVF = Callable[[HttpRequest], HttpResponse]
+
+
+def ensure_from_aws_sns(view_func: SVF) -> SVF:
     """
     Checks the signature on the request to ensure it is genuinely
     from Amazon SNS
     """
 
     @wraps(view_func)
-    def wrapper(request: HttpRequest):
+    def wrapper(request: HttpRequest) -> HttpResponse:
         if not verify_sns_notification(request):
             return HttpResponse("Invalid or missing signature", status=400)
         return view_func(request)
@@ -106,7 +109,7 @@ def ensure_from_aws_sns[T: Callable](view_func: T) -> T:
     return wrapper
 
 
-def confirm_sns_subscriptions[T: Callable](view_func: T) -> T:
+def confirm_sns_subscriptions(view_func: SVF) -> SVF:
     """
     Wraps a view in a handler that will automatically respond to 'confirmation'
     requests that Amazon will send to any webhook we attempt to set up
@@ -114,7 +117,7 @@ def confirm_sns_subscriptions[T: Callable](view_func: T) -> T:
     """
 
     @wraps(view_func)
-    def wrapper(request: HttpRequest):
+    def wrapper(request: HttpRequest, /) -> HttpResponse:
         msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
         if msg_type == SNS_MESSAGE_TYPE_SUB_NOTIFICATION:
             # Verify before doing a request.get()

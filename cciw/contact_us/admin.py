@@ -33,18 +33,18 @@ class MessageAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("booking_account")
 
-    def view(message):
+    def view(message: Message):
         url = reverse("cciw-contact_us-view", kwargs={"message_id": message.id})
-        return format_html(f"""<a href='{url}'>View {message.id}</a>""")
+        return format_html(f"""<a href='{url}'>View {{}}</a>""", message.id)
 
     @admin.display(description="Booking account")
-    def booking_account(message):
+    def booking_account(message: Message):
         if message.booking_account:
             return format_html("{0}<br>{1}", message.booking_account.name, message.booking_account.email)
         return ""
 
     @admin.display(description="Message")
-    def message_formatted(message):
+    def message_formatted(message: Message):
         return linebreaksbr(message.message)
 
     date_hierarchy = "created_at"

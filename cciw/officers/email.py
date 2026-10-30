@@ -184,7 +184,9 @@ This was an automated response by the CCiW website.
 
 def make_ref_form_url_hash(referee_id: int, prev_ref_id: int | None) -> str:
     prev_ref_id_str = "" if prev_ref_id is None else str(int)
-    return salted_hmac("cciw.officers.create_reference", f"{referee_id}:{prev_ref_id_str}").hexdigest()[::2]
+    return salted_hmac(
+        "cciw.officers.create_reference", f"{referee_id}:{prev_ref_id_str}", algorithm="sha1"
+    ).hexdigest()[::2]
 
 
 def make_ref_form_url(referee_id: int, prev_ref_id: int | None) -> str:

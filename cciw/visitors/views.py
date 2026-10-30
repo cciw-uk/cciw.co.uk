@@ -16,7 +16,7 @@ from cciw.visitors.models import VisitorLog
 def make_visitor_log_token(year: int) -> str:
     # Relatively low security needed on this, and people might need to be
     # entering the link manually, so we use just 8 digits.
-    return salted_hmac("cciw.visitors.create_visitor_log", f"year:{year}").hexdigest()[0:8]
+    return salted_hmac("cciw.visitors.create_visitor_log", f"year:{year}", algorithm="sha1").hexdigest()[0:8]
 
 
 def make_visitor_log_url(year: int) -> str:

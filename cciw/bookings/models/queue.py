@@ -8,7 +8,7 @@ import hashlib
 import itertools
 import math
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Generator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
@@ -134,7 +134,7 @@ class BookingQueueEntry(models.Model):
         return int(self.tiebreaker[0:4], 16)
 
     @contextmanager
-    def track_changes(self, *, by_user: User | BookingAccount | None) -> Iterator[None]:
+    def track_changes(self, *, by_user: User | BookingAccount | None) -> Generator[None]:
         old_queue_entry_fields = self.get_current_field_data()
         yield
         self.save_fields_changed_action_log(by_user=by_user, old_fields=old_queue_entry_fields)
