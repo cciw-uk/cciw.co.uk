@@ -2193,6 +2193,7 @@ def test_booking_add_to_queue(db):
     assert not booking.is_in_queue()
     booking.add_to_queue(by_user=booking.account)
     assert booking.is_in_queue()
+    assert (sibling_surname := booking.queue_entry.sibling_surname) != "" and sibling_surname == booking.last_name
     booking.refresh_from_db()
     assert booking.queue_entry.is_active
     action_log = booking.queue_entry.action_logs.all()[0]
