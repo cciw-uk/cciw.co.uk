@@ -145,7 +145,7 @@ def send_places_allocated_emails(account: BookingAccount, bookings: Sequence[Boo
 
     year = bookings[0].camp.year
     booking_open_data = get_booking_open_data(year)
-    expiring_bookings, non_expiring_bookings = partition(bookings, lambda b: b.will_expire)
+    expiring_bookings, non_expiring_bookings = partition(bookings, lambda b: b.will_expire())
 
     for booking in expiring_bookings:
         # Send individual emails, because there are actions are we don't

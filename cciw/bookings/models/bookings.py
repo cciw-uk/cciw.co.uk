@@ -373,7 +373,6 @@ class Booking(models.Model):
         # See also BookingQuerySet.payable()
         return self.state not in BOOKING_STATES_NO_FEE_DUE
 
-    @property
     def is_booked(self) -> bool:
         return self.state == BookingState.BOOKED
 
@@ -384,7 +383,6 @@ class Booking(models.Model):
         except BookingQueueEntry.DoesNotExist:
             return None
 
-    @property
     def is_in_queue(self) -> bool:
         return (queue_entry := self.queue_entry_or_none) is not None and queue_entry.is_active
 
@@ -399,15 +397,15 @@ class Booking(models.Model):
         return queue_entry
 
     def withdraw_from_queue(self, *, by_user: User | BookingAccount | None) -> None:
-        if self.is_in_queue:
+        if self.is_in_queue():
             self.queue_entry.make_inactive(by_user=by_user)
 
     def accept_expiring_place(self, *, by_user: BookingAccount) -> None:
         """
         Accept a place that is going to expire
         """
-        assert self.is_booked
-        assert self.will_expire
+        assert self.is_booked()
+        assert self.will_expire()
 
         self.booking_expires_at = None
         self.save()
@@ -418,8 +416,8 @@ class Booking(models.Model):
         """
         Cancel a place that is going to expire
         """
-        assert self.is_booked
-        assert self.will_expire
+        assert self.is_booked()
+        assert self.will_expire()
 
         self.booking_expires_at = None
         self.state = BookingState.CANCELLED_FULL_REFUND
@@ -537,7 +535,6 @@ class Booking(models.Model):
     def is_too_old(self) -> bool:
         return self.age_on_camp > self.camp.maximum_age
 
-    @property
     def will_expire(self) -> bool:
         # See also `BookingQuerySet.booked_but_will_expire()`
         return self.booking_expires_at is not None
@@ -700,14 +697,14 @@ class Booking(models.Model):
         """
         Friendly description of status, for admin
         """
-        if self.is_booked:
-            if self.will_expire:
+        if self.is_booked():
+            if self.will_expire():
                 return "Booked, but will expire if they don't accept it"
             else:
                 return "Booked"
 
         else:
-            if self.is_in_queue:
+            if self.is_in_queue():
                 return "Waiting in queue to be allocated"
             else:
                 return "Not waiting in queue - they still need to 'Apply'"

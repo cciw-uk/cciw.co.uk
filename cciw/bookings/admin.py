@@ -294,7 +294,7 @@ class YearFilter(admin.SimpleListFilter):
         val = self.value()
         if val is None:
             return queryset
-        return queryset.for_year(val)
+        return queryset.for_year(int(val))
 
 
 class QueueStateFilter(admin.SimpleListFilter):

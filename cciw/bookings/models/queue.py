@@ -795,7 +795,7 @@ def allocate_bookings_now(bookings_qs: BookingQuerySet | list[Booking]):
             b.booked_at = now
             b.auto_set_amount_due()
             b.state = BookingState.BOOKED
-            if b.is_in_queue and b.queue_entry.waiting_list_mode:
+            if b.is_in_queue() and b.queue_entry.waiting_list_mode:
                 b.booking_expires_at = now + settings.BOOKING_EXPIRES_FOR_UNCONFIRMED_BOOKING_AFTER
             b.save()
 

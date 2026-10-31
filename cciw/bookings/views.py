@@ -254,7 +254,7 @@ def add_or_edit_place(
         # Edit
         try:
             booking: Booking = booking_account.bookings.get(id=booking_id)
-            state_was_booked = booking.is_booked
+            state_was_booked = booking.is_booked()
         except (ValueError, Booking.DoesNotExist):
             raise Http404
         if request.method == "POST" and not booking.is_user_editable():

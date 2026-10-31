@@ -335,7 +335,7 @@ def get_booking_errors(booking: Booking, *, booking_sec: bool = False) -> list[B
             errors.append(blocker(f"The 'amount due' is not the expected value of £{expected_amount}."))
 
     on_date: date = date.today()
-    if booking_sec and booking.is_booked and booking.booked_at:
+    if booking_sec and booking.is_booked() and booking.booked_at:
         # Don't want warnings for booking sec when a booked place is edited
         # after the cutoff date, so we allow self.booked_at to be used here:
         booked_date = booking.booked_at.date()

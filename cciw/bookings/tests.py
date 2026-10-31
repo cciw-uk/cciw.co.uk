@@ -1492,7 +1492,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         booking.refresh_from_db()
 
         # Should be on queue, but not booked yet.
-        assert booking.is_in_queue
+        assert booking.is_in_queue()
         assert booking.state != BookingState.BOOKED
 
         # Check confirmation email was sent
@@ -1515,7 +1515,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit("[name=book_now]")
         for b in account.bookings.all():
             assert b.state == BookingState.INFO_COMPLETE
-            assert not b.is_in_queue
+            assert not b.is_in_queue()
         self.assertTextPresent("These places cannot be booked")
 
     def test_book_now_safeguard(self):
@@ -1876,7 +1876,7 @@ class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
         booking.add_to_queue(by_user=account)
 
         booking.refresh_from_db()
-        assert booking.is_in_queue
+        assert booking.is_in_queue()
 
         self.get_url(self.urlname)
         manage_button_selector = f"#id_manage_booking_button_{booking.id}"
@@ -1886,7 +1886,7 @@ class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
         self.wait_for_ajax()
 
         booking.refresh_from_db()
-        assert not booking.is_in_queue
+        assert not booking.is_in_queue()
 
         assert not self.is_element_present(manage_button_selector)
 
@@ -2190,9 +2190,9 @@ def test_booking_saved_approvals_unapproved_and_need_approving(db):
 
 def test_booking_add_to_queue(db):
     booking = factories.create_booking()
-    assert not booking.is_in_queue
+    assert not booking.is_in_queue()
     booking.add_to_queue(by_user=booking.account)
-    assert booking.is_in_queue
+    assert booking.is_in_queue()
     booking.refresh_from_db()
     assert booking.queue_entry.is_active
     action_log = booking.queue_entry.action_logs.all()[0]
@@ -2941,7 +2941,7 @@ def test_allocate_places_for_waiting_list(
     assert booking.state == BookingState.BOOKED
 
     # But set to expire:
-    assert booking.will_expire
+    assert booking.will_expire()
     assert booking.booking_expires_at is not None
 
     # They get emailed:
@@ -2958,8 +2958,8 @@ def test_allocate_places_for_waiting_list(
         assert b"The place has been confirmed" in response.content
 
         booking.refresh_from_db()
-        assert booking.is_booked
-        assert not booking.will_expire
+        assert booking.is_booked()
+        assert not booking.will_expire()
 
     elif action == "cancel":
         response = client.get(cancel_path, cancel_querydata, follow=True)
@@ -2967,9 +2967,9 @@ def test_allocate_places_for_waiting_list(
         assert b"The place has been cancelled" in response.content
 
         booking.refresh_from_db()
-        assert not booking.is_booked
+        assert not booking.is_booked()
         assert booking.state == BookingState.CANCELLED_FULL_REFUND
-        assert not booking.is_in_queue
+        assert not booking.is_in_queue()
         assert booking.shelved
         last_email = mailoutbox[-1]
         assert last_email.subject.startswith(f"[CCIW] Place cancelled - {booking.name}")
@@ -2985,9 +2985,9 @@ def test_allocate_places_for_waiting_list(
             assert last_email.to == settings.BOOKING_SECRETARY_EMAILS
 
             booking.refresh_from_db()
-            assert not booking.is_booked
+            assert not booking.is_booked()
             assert booking.state == BookingState.CANCELLED_FULL_REFUND
-            assert not booking.is_in_queue
+            assert not booking.is_in_queue()
 
     else:
         assert_never(action)
