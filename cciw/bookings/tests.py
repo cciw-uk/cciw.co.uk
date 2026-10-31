@@ -2193,7 +2193,7 @@ def test_booking_add_to_queue(db):
     assert not booking.is_in_queue()
     booking.add_to_queue(by_user=booking.account)
     assert booking.is_in_queue()
-    assert (sibling_surname := booking.queue_entry.sibling_surname) != "" and sibling_surname == booking.last_name
+    assert (last_name := booking.last_name) != "" and booking.queue_entry.sibling_surname == last_name
     booking.refresh_from_db()
     assert booking.queue_entry.is_active
     action_log = booking.queue_entry.action_logs.all()[0]
@@ -2210,6 +2210,16 @@ def test_booking_add_to_queue(db):
 
     assert booking.queue_entry == old_queue_entry
     assert booking.queue_entry.created_at == created_at
+
+    # Modifying booking.surname should change
+    new_last_name = "Clarke"
+    assert new_last_name != last_name
+    booking.last_name = new_last_name
+    booking.save()
+
+    queue_entry = booking.queue_entry
+    queue_entry.refresh_from_db()
+    assert queue_entry.sibling_surname == new_last_name
 
 
 def test_payment_source_save_bad(db):

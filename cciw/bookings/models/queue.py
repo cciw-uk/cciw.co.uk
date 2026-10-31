@@ -61,16 +61,19 @@ class BookingQueueEntryManagerBase(models.Manager):
         queue_entry: BookingQueueEntry = self.create(
             booking=booking,
             is_active=True,
-            # FIXME https://github.com/cciw-uk/cciw.co.uk/issues/57 we should keep this in sync.
-            # The difficulty is that we want to refer to it in generated column `sibling_fuzzy_id`
-            # which can't use a join.
-            sibling_surname=booking.last_name,
-            sibling_booking_account=booking.account,
             waiting_list_from_start=should_use_waiting_list_from_start(booking),
             # enqueued_at - auto
+            **booking_queue_fields_from_booking(booking),
         )
         queue_entry.save_action_log(action_type=QueueEntryActionLogType.CREATED, by_user=by_user)
         return queue_entry
+
+
+def booking_queue_fields_from_booking(booking: Booking) -> dict:
+    return {
+        "sibling_surname": booking.last_name,
+        "sibling_booking_account": booking.account,
+    }
 
 
 BookingQueueEntryManager = BookingQueueEntryManagerBase.from_queryset(BookingQueueEntryQuerySet)

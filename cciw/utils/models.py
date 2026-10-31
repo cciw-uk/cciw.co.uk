@@ -1,3 +1,4 @@
+from django.db.models import Model
 from django.utils.functional import cached_property
 
 
@@ -53,3 +54,16 @@ class ClearCachedPropertyMixin:
                 self.__dict__.pop(attr, None)
 
         super().refresh_from_db(*args, **kwargs)
+
+
+def update_model_by_fields_and_save(model_instance: Model, fields: dict) -> None:
+    """
+    Update model instance with the attributes in fields. If any are different
+    from what they were, call .save()
+    """
+
+    old_fields = {k: getattr(model_instance, k) for k in fields}
+    if old_fields != fields:
+        for k, val in fields.items():
+            setattr(model_instance, k, val)
+        model_instance.save()

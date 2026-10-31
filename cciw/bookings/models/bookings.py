@@ -12,9 +12,9 @@ from django.utils.functional import cached_property
 from django_countries.fields import CountryField
 
 from cciw.accounts.models import User
-from cciw.bookings.models.queue import BookingQueueEntry, QueueEntryActionLogType
+from cciw.bookings.models.queue import BookingQueueEntry, QueueEntryActionLogType, booking_queue_fields_from_booking
 from cciw.cciwmain.models import Camp
-from cciw.utils.models import AfterFetchQuerySetMixin
+from cciw.utils.models import AfterFetchQuerySetMixin, update_model_by_fields_and_save
 
 from .accounts import BookingAccount
 from .constants import DEFAULT_COUNTRY, Sex
@@ -296,7 +296,7 @@ class Booking(models.Model):
     # fuzzy_camper_id_strict is a narrower version of the above,
     # that also limits to same booking account. This is far less likely
     # to result in false positives when matching.
-
+    # See also fuzzy_camper_id_strict_unsaved if changing this.
     fuzzy_camper_id_strict = models.GeneratedField(
         expression=functions.Concat(
             functions.Cast("account_id", output_field=models.CharField()),
@@ -350,6 +350,19 @@ class Booking(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}, {self.camp.url_id}, {self.account}"
+
+    def save(
+        self,
+        *,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+        queue = self.queue_entry_or_none
+        if queue is not None:
+            update_model_by_fields_and_save(queue, booking_queue_fields_from_booking(self))
 
     @property
     def name(self) -> str:
