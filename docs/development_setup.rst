@@ -105,3 +105,5 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 See also `<deployment.rst>`_ for docs on deploying, and setup you might
 want to do now for that.
+
+Then continue with `<development.rst>`_ for general development tips.

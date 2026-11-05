@@ -15,6 +15,30 @@ Git is used for VCS. Features and fixes should be developed in branches taken
 off the 'master' branch. These should be merged to the 'master' branch in order
 to deploy.
 
+Servers
+-------
+
+In development, you’ll want to run several server processes:
+
+- Django development server::
+
+    ./manage.py runserver
+
+- Django Q scheduled tasks::
+
+    ./manage.py qcluster
+
+- If testing any mail functionality, the ``runmailer_pg`` command. In
+  development this will not send real emails, it will just print them to the
+  terminal::
+
+    ./manage.py runmailer_pg
+
+It’s recommended to set up a terminal script or session that runs these in
+separate tabs at startup (e.g. if using `Kitty
+<https://sw.kovidgoyal.net/kitty/>`_ you can use `sessions
+<https://sw.kovidgoyal.net/kitty/sessions/>`_).
+
 Tests
 -----
 
