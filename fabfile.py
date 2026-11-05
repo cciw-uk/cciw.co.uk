@@ -28,8 +28,6 @@ PROJECT_LOCALE = "en_GB.UTF-8"
 
 PYTHON_BIN = "python3.14"  # See also packages below and pyproject.toml
 PYTHON_VERISON = PYTHON_BIN.removeprefix("python")
-PYTHON_PREFIX = ""  # e.g. /usr/local.  Use "" for automatic
-PYTHON_FULL_PATH = f"{PYTHON_PREFIX}/bin/{PYTHON_BIN}" if PYTHON_PREFIX else PYTHON_BIN
 
 join = os.path.join
 rel = lambda *x: os.path.normpath(join(os.path.abspath(os.path.dirname(__file__)), *x))
