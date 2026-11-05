@@ -5,6 +5,7 @@ command=%(VENV_ROOT)s/bin/gunicorn
     --env LANG=%(LOCALE)s --env LC_ALL=%(LOCALE)s --env LC_LANG=%(LOCALE)s
     --bind unix:/tmp/gunicorn.sock
     --workers 4
+    --preload
     --log-config /etc/gunicorn_logging.conf
     --pid=/tmp/%(PROJECT_NAME)s_gunicorn.pid
     %(PROJECT_PYTHON_MODULE)s.wsgi
