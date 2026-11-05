@@ -1,0 +1,436 @@
+t=   0.0 total PSS   972.3 MiB  reqs=0
+t=   5.1 total PSS   978.7 MiB  reqs=15
+t=  10.1 total PSS   981.6 MiB  reqs=33
+t=  15.2 total PSS   981.9 MiB  reqs=58
+t=  20.2 total PSS   992.0 MiB  reqs=76
+t=  25.2 total PSS   992.3 MiB  reqs=103
+t=  30.2 total PSS   992.9 MiB  reqs=120
+t=  35.3 total PSS   993.3 MiB  reqs=140
+t=  40.4 total PSS   993.6 MiB  reqs=158
+t=  45.4 total PSS   994.2 MiB  reqs=183
+t=  50.4 total PSS   994.9 MiB  reqs=196
+t=  55.5 total PSS   995.1 MiB  reqs=221
+t=  60.5 total PSS   995.2 MiB  reqs=240
+t=  65.5 total PSS   995.7 MiB  reqs=261
+t=  70.5 total PSS   995.9 MiB  reqs=280
+t=  75.6 total PSS   996.3 MiB  reqs=302
+t=  80.6 total PSS   996.4 MiB  reqs=317
+t=  85.6 total PSS   996.5 MiB  reqs=345
+t=  90.7 total PSS   996.5 MiB  reqs=365
+t=  95.7 total PSS   996.7 MiB  reqs=382
+t= 100.7 total PSS   996.7 MiB  reqs=396
+t= 105.8 total PSS   996.9 MiB  reqs=419
+t= 110.8 total PSS   996.9 MiB  reqs=443
+t= 115.9 total PSS   996.9 MiB  reqs=463
+t= 120.9 total PSS   997.0 MiB  reqs=482
+t= 125.9 total PSS   997.1 MiB  reqs=499
+t= 130.9 total PSS   997.1 MiB  reqs=521
+t= 136.0 total PSS   997.2 MiB  reqs=542
+t= 141.0 total PSS   997.2 MiB  reqs=562
+t= 146.0 total PSS   997.3 MiB  reqs=585
+t= 151.1 total PSS   997.3 MiB  reqs=602
+t= 156.1 total PSS   997.4 MiB  reqs=617
+t= 161.2 total PSS   997.4 MiB  reqs=638
+t= 166.2 total PSS   997.5 MiB  reqs=661
+t= 171.2 total PSS   998.1 MiB  reqs=680
+t= 176.3 total PSS   998.2 MiB  reqs=701
+t= 181.3 total PSS   998.3 MiB  reqs=723
+t= 186.3 total PSS   998.4 MiB  reqs=741
+t= 191.4 total PSS   998.5 MiB  reqs=761
+t= 196.4 total PSS   998.6 MiB  reqs=789
+t= 201.4 total PSS   998.6 MiB  reqs=812
+t= 206.5 total PSS   998.6 MiB  reqs=830
+t= 211.5 total PSS   998.6 MiB  reqs=845
+t= 216.5 total PSS   998.7 MiB  reqs=867
+t= 221.6 total PSS   998.7 MiB  reqs=884
+t= 226.6 total PSS   998.8 MiB  reqs=899
+t= 231.6 total PSS   998.9 MiB  reqs=910
+t= 236.7 total PSS   999.3 MiB  reqs=936
+t= 241.7 total PSS   999.4 MiB  reqs=959
+t= 246.7 total PSS   999.5 MiB  reqs=985
+t= 251.8 total PSS   999.6 MiB  reqs=1009
+t= 256.8 total PSS   999.6 MiB  reqs=1028
+t= 261.8 total PSS   999.7 MiB  reqs=1048
+t= 266.9 total PSS   999.8 MiB  reqs=1071
+t= 271.9 total PSS   999.8 MiB  reqs=1090
+t= 276.9 total PSS   999.9 MiB  reqs=1109
+t= 282.0 total PSS   999.9 MiB  reqs=1121
+t= 287.0 total PSS   999.9 MiB  reqs=1135
+t= 292.0 total PSS   999.9 MiB  reqs=1152
+t= 297.1 total PSS  1000.0 MiB  reqs=1174
+
+Results written to scripts/memory_benchmark/results/run-20261105-095441/py3.13.13.json
+
+== py3.13.13 (Python 3.13.13) ==
+HTTP: {'requests': 1193, 'errors': 0, 'status': {302: 480, 200: 684, 404: 14, 403: 15}}
+group          n       RSS       PSS       USS  (MiB, final sample)
+memcached      1       8.8       6.2       6.0
+    335169      8.8      6.2      6.0  /usr/bin/memcached -m 24 -s /home/exedev/cciw/cciw-bench/py3.13.13/hom
+gunicorn       5     830.8     635.8     602.0
+    335182     27.2     15.6     14.1  gunicorn: master [cciw.wsgi]                                          
+    335188    200.8    155.0    146.9  gunicorn: worker [cciw.wsgi]                                          
+    335189    200.3    154.4    146.3  gunicorn: worker [cciw.wsgi]                                          
+    335190    200.9    155.0    146.9  gunicorn: worker [cciw.wsgi]                                          
+    335192    201.7    155.8    147.8  gunicorn: worker [cciw.wsgi]                                          
+runmailer      1     197.8     153.8     145.4
+    335183    197.8    153.8    145.4  /home/exedev/cciw/cciw-bench/py3.13.13/src/.venv/bin/python /home/exed
+django_q       5     826.0     204.1      53.4
+    335184    197.7     48.0     12.1  qcluster MainProcess nebraska-mountain-kilo-network                   
+    335573    158.2     39.3     10.7  qcluster MainProcess nebraska-mountain-kilo-network                   
+    335579    155.2     37.4      7.9  qcluster Process-2adaf46564c84584a482ea8999b3acf6 idle                
+    335580    156.9     39.8     11.7  qcluster Process-de93b1c3fc3e4808aa88598c7870783f monitor             
+    335581    158.0     39.6     11.1  qcluster Process-98ff2cdf92ab40f68bf3efb677379456 pusher              
+TOTAL               1863.5    1000.0     806.8
+cron-like commands: {'retry_deferred': {'wall_s': 2.59, 'maxrss_kib': 200648}, 'check': {'wall_s': 2.44, 'maxrss_kib': 199628}}
+t=   0.0 total PSS   972.3 MiB  reqs=0
+t=   5.1 total PSS   973.6 MiB  reqs=16
+t=  10.1 total PSS   979.8 MiB  reqs=36
+t=  15.1 total PSS   980.2 MiB  reqs=60
+t=  20.2 total PSS   990.0 MiB  reqs=78
+t=  25.2 total PSS   990.4 MiB  reqs=106
+t=  30.2 total PSS   990.9 MiB  reqs=120
+t=  35.3 total PSS   991.1 MiB  reqs=140
+t=  40.3 total PSS   992.0 MiB  reqs=158
+t=  45.3 total PSS   992.3 MiB  reqs=184
+t=  50.4 total PSS   992.5 MiB  reqs=197
+t=  55.4 total PSS   992.7 MiB  reqs=222
+t=  60.4 total PSS   992.9 MiB  reqs=242
+t=  65.5 total PSS   993.4 MiB  reqs=262
+t=  70.5 total PSS   993.7 MiB  reqs=283
+t=  75.5 total PSS   994.1 MiB  reqs=302
+t=  80.6 total PSS   994.1 MiB  reqs=319
+t=  85.6 total PSS   994.1 MiB  reqs=345
+t=  90.6 total PSS   994.1 MiB  reqs=367
+t=  95.7 total PSS   994.3 MiB  reqs=383
+t= 100.7 total PSS   994.4 MiB  reqs=397
+t= 105.7 total PSS   994.8 MiB  reqs=420
+t= 110.8 total PSS   994.9 MiB  reqs=443
+t= 115.8 total PSS   994.9 MiB  reqs=464
+t= 120.9 total PSS   994.9 MiB  reqs=482
+t= 125.9 total PSS   995.0 MiB  reqs=500
+t= 130.9 total PSS   995.1 MiB  reqs=524
+t= 136.0 total PSS   995.2 MiB  reqs=543
+t= 141.0 total PSS   995.3 MiB  reqs=563
+t= 146.0 total PSS   995.4 MiB  reqs=586
+t= 151.1 total PSS   995.4 MiB  reqs=603
+t= 156.1 total PSS   995.4 MiB  reqs=617
+t= 161.1 total PSS   995.5 MiB  reqs=640
+t= 166.2 total PSS   995.6 MiB  reqs=662
+t= 171.2 total PSS   996.0 MiB  reqs=681
+t= 176.2 total PSS   996.0 MiB  reqs=703
+t= 181.3 total PSS   996.2 MiB  reqs=724
+t= 186.3 total PSS   996.3 MiB  reqs=743
+t= 191.3 total PSS   996.4 MiB  reqs=761
+t= 196.4 total PSS   996.6 MiB  reqs=789
+t= 201.4 total PSS   996.6 MiB  reqs=814
+t= 206.4 total PSS   996.6 MiB  reqs=831
+t= 211.5 total PSS   996.7 MiB  reqs=845
+t= 216.5 total PSS   996.8 MiB  reqs=867
+t= 221.5 total PSS   997.0 MiB  reqs=885
+t= 226.6 total PSS   997.1 MiB  reqs=899
+t= 231.6 total PSS   997.1 MiB  reqs=911
+t= 236.6 total PSS   997.2 MiB  reqs=937
+t= 241.7 total PSS   997.2 MiB  reqs=959
+t= 246.7 total PSS   997.3 MiB  reqs=985
+t= 251.7 total PSS   997.4 MiB  reqs=1009
+t= 256.8 total PSS   997.4 MiB  reqs=1029
+t= 261.8 total PSS   997.4 MiB  reqs=1048
+t= 266.8 total PSS   997.5 MiB  reqs=1073
+t= 271.9 total PSS   997.5 MiB  reqs=1090
+t= 276.9 total PSS   997.6 MiB  reqs=1109
+t= 281.9 total PSS   997.6 MiB  reqs=1121
+t= 287.0 total PSS   997.6 MiB  reqs=1136
+t= 292.0 total PSS   997.6 MiB  reqs=1153
+t= 297.0 total PSS   997.7 MiB  reqs=1175
+
+Results written to scripts/memory_benchmark/results/run-20261105-095441/py3.13.18.json
+
+== py3.13.18 (Python 3.13.18) ==
+HTTP: {'requests': 1194, 'errors': 0, 'status': {302: 480, 200: 685, 404: 14, 403: 15}}
+group          n       RSS       PSS       USS  (MiB, final sample)
+memcached      1       8.8       6.2       6.0
+    336626      8.8      6.2      6.0  /usr/bin/memcached -m 24 -s /home/exedev/cciw/cciw-bench/py3.13.18/hom
+gunicorn       5     829.0     635.3     602.2
+    336636     27.3     15.7     14.2  gunicorn: master [cciw.wsgi]                                          
+    336642    200.2    154.7    146.8  gunicorn: worker [cciw.wsgi]                                          
+    336643    200.1    154.6    146.7  gunicorn: worker [cciw.wsgi]                                          
+    336646    201.0    155.5    147.5  gunicorn: worker [cciw.wsgi]                                          
+    336647    200.5    154.9    147.0  gunicorn: worker [cciw.wsgi]                                          
+runmailer      1     198.8     155.0     146.7
+    336637    198.8    155.0    146.7  /home/exedev/cciw/cciw-bench/py3.13.18/src/.venv/bin/python /home/exed
+django_q       5     814.9     201.1      52.6
+    336638    195.5     47.5     12.2  qcluster MainProcess alanine-burger-eighteen-april                    
+    337015    155.9     38.7     10.5  qcluster MainProcess alanine-burger-eighteen-april                    
+    337017    152.9     36.8      7.8  qcluster Process-a8e17d93a89c44f9a40caebc58094670 idle                
+    337018    154.9     39.2     11.4  qcluster Process-e7b82335caef4e4bb011df156ecd0dfe monitor             
+    337019    155.7     38.9     10.7  qcluster Process-0a1f9d8982f84965bc65b85e7027a82f pusher              
+TOTAL               1851.5     997.7     807.4
+cron-like commands: {'retry_deferred': {'wall_s': 2.66, 'maxrss_kib': 200576}, 'check': {'wall_s': 2.42, 'maxrss_kib': 199436}}
+t=   0.0 total PSS  1572.4 MiB  reqs=0
+t=   5.1 total PSS  1574.3 MiB  reqs=16
+t=  10.1 total PSS  1575.1 MiB  reqs=36
+t=  15.1 total PSS  1575.7 MiB  reqs=60
+t=  20.2 total PSS  1576.5 MiB  reqs=78
+t=  25.2 total PSS  1577.3 MiB  reqs=106
+t=  30.2 total PSS  1578.1 MiB  reqs=120
+t=  35.3 total PSS  1578.7 MiB  reqs=140
+t=  40.3 total PSS  1579.7 MiB  reqs=158
+t=  45.4 total PSS  1580.2 MiB  reqs=185
+t=  50.4 total PSS  1581.1 MiB  reqs=197
+t=  55.4 total PSS  1581.7 MiB  reqs=223
+t=  60.5 total PSS  1582.0 MiB  reqs=243
+t=  65.5 total PSS  1583.1 MiB  reqs=262
+t=  70.5 total PSS  1583.7 MiB  reqs=283
+t=  75.6 total PSS  1584.8 MiB  reqs=303
+t=  80.6 total PSS  1585.2 MiB  reqs=321
+t=  85.6 total PSS  1585.7 MiB  reqs=346
+t=  90.7 total PSS  1586.1 MiB  reqs=368
+t=  95.8 total PSS  1586.5 MiB  reqs=384
+t= 100.8 total PSS  1586.8 MiB  reqs=397
+t= 105.8 total PSS  1587.8 MiB  reqs=420
+t= 110.9 total PSS  1588.3 MiB  reqs=444
+t= 115.9 total PSS  1588.7 MiB  reqs=465
+t= 120.9 total PSS  1589.0 MiB  reqs=483
+t= 126.0 total PSS  1589.5 MiB  reqs=501
+t= 131.0 total PSS  1590.1 MiB  reqs=525
+t= 136.1 total PSS  1590.4 MiB  reqs=544
+t= 141.1 total PSS  1590.9 MiB  reqs=564
+t= 146.1 total PSS  1591.3 MiB  reqs=589
+t= 151.2 total PSS  1591.5 MiB  reqs=603
+t= 156.2 total PSS  1591.8 MiB  reqs=617
+t= 161.2 total PSS  1592.3 MiB  reqs=641
+t= 166.3 total PSS  1592.9 MiB  reqs=662
+t= 171.3 total PSS  1594.4 MiB  reqs=681
+t= 176.3 total PSS  1595.0 MiB  reqs=705
+t= 181.4 total PSS  1595.4 MiB  reqs=725
+t= 186.4 total PSS  1595.7 MiB  reqs=743
+t= 191.5 total PSS  1596.2 MiB  reqs=762
+t= 196.5 total PSS  1596.8 MiB  reqs=790
+t= 201.5 total PSS  1597.3 MiB  reqs=815
+t= 206.6 total PSS  1597.7 MiB  reqs=832
+t= 211.6 total PSS  1598.1 MiB  reqs=848
+t= 216.6 total PSS  1598.5 MiB  reqs=868
+t= 221.7 total PSS  1599.4 MiB  reqs=887
+t= 226.7 total PSS  1599.7 MiB  reqs=899
+t= 231.7 total PSS  1600.5 MiB  reqs=915
+t= 236.8 total PSS  1601.7 MiB  reqs=940
+t= 241.8 total PSS  1602.1 MiB  reqs=961
+t= 246.9 total PSS  1602.7 MiB  reqs=991
+t= 252.0 total PSS  1603.2 MiB  reqs=1012
+t= 257.0 total PSS  1603.5 MiB  reqs=1031
+t= 262.1 total PSS  1604.0 MiB  reqs=1048
+t= 267.1 total PSS  1604.6 MiB  reqs=1073
+t= 272.2 total PSS  1604.9 MiB  reqs=1092
+t= 277.2 total PSS  1605.4 MiB  reqs=1110
+t= 282.3 total PSS  1605.7 MiB  reqs=1122
+t= 287.3 total PSS  1605.9 MiB  reqs=1138
+t= 292.3 total PSS  1606.3 MiB  reqs=1156
+t= 297.4 total PSS  1607.4 MiB  reqs=1178
+
+Results written to scripts/memory_benchmark/results/run-20261105-095441/py3.14.4.json
+
+== py3.14.4 (Python 3.14.4) ==
+HTTP: {'requests': 1197, 'errors': 0, 'status': {302: 480, 200: 688, 404: 14, 403: 15}}
+group          n       RSS       PSS       USS  (MiB, final sample)
+memcached      1       8.8       6.1       5.9
+    337819      8.8      6.1      5.9  /usr/bin/memcached -m 24 -s /home/exedev/cciw/cciw-bench/py3.14.4/home
+gunicorn       9     986.0     750.0     722.2
+    337829     28.2     16.3     15.3  gunicorn: master [cciw.wsgi]                                          
+    337835    224.9    177.3    171.1  gunicorn: worker [cciw.wsgi]                                          
+    337836    222.9    175.3    169.0  gunicorn: worker [cciw.wsgi]                                          
+    337837    224.2    176.6    170.4  gunicorn: worker [cciw.wsgi]                                          
+    337840    221.4    173.8    167.6  gunicorn: worker [cciw.wsgi]                                          
+    337869     16.0      7.6      7.2  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c from mul
+    337862     16.1      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c from mul
+    337865     16.1      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c from mul
+    337868     16.0      7.6      7.2  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c from mul
+runmailer      2     227.7     173.7     167.0
+    337830    211.5    166.0    159.8  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python /home/exede
+    337864     16.2      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c from mul
+django_q       8     897.3     677.6     649.8
+    337831    212.6    167.0    160.8  qcluster MainProcess oregon-august-emma-social                        
+    337863     16.2      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c from mul
+    338211     26.2     13.9     11.6  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c import s
+    338212    154.8    120.3    115.3  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c import s
+    338413     26.1     13.0     11.5  /home/exedev/cciw/cciw-bench/py3.14.4/src/.venv/bin/python -c import s
+    338446    153.0    118.3    114.3  qcluster Process-8d1755c190af4ee0b0019799fb871db9 idle                
+    338447    154.1    118.7    114.6  qcluster Process-8d3508dd0f014b8dba0550a382a9a29a monitor             
+    338448    154.2    118.7    114.6  qcluster Process-f3233017372f4f7ab76075bade006f38 pusher              
+TOTAL               2119.9    1607.4    1544.9
+cron-like commands: {'retry_deferred': {'wall_s': 2.9, 'maxrss_kib': 216776}, 'check': {'wall_s': 2.63, 'maxrss_kib': 215828}}
+t=   0.0 total PSS  1571.0 MiB  reqs=0
+t=   5.1 total PSS  1572.1 MiB  reqs=16
+t=  10.1 total PSS  1572.8 MiB  reqs=36
+t=  15.1 total PSS  1573.2 MiB  reqs=61
+t=  20.2 total PSS  1573.9 MiB  reqs=78
+t=  25.2 total PSS  1574.1 MiB  reqs=106
+t=  30.2 total PSS  1574.6 MiB  reqs=120
+t=  35.3 total PSS  1574.8 MiB  reqs=140
+t=  40.3 total PSS  1575.3 MiB  reqs=158
+t=  45.4 total PSS  1575.5 MiB  reqs=185
+t=  50.4 total PSS  1575.7 MiB  reqs=197
+t=  55.5 total PSS  1575.9 MiB  reqs=223
+t=  60.5 total PSS  1575.9 MiB  reqs=243
+t=  65.5 total PSS  1576.3 MiB  reqs=262
+t=  70.6 total PSS  1576.5 MiB  reqs=283
+t=  75.6 total PSS  1577.2 MiB  reqs=303
+t=  80.6 total PSS  1577.3 MiB  reqs=321
+t=  85.7 total PSS  1577.4 MiB  reqs=346
+t=  90.7 total PSS  1577.5 MiB  reqs=368
+t=  95.8 total PSS  1577.5 MiB  reqs=384
+t= 100.8 total PSS  1577.6 MiB  reqs=397
+t= 105.8 total PSS  1578.0 MiB  reqs=421
+t= 110.9 total PSS  1578.1 MiB  reqs=444
+t= 115.9 total PSS  1578.2 MiB  reqs=465
+t= 120.9 total PSS  1578.7 MiB  reqs=483
+t= 126.0 total PSS  1578.9 MiB  reqs=501
+t= 131.0 total PSS  1578.9 MiB  reqs=525
+t= 136.0 total PSS  1579.0 MiB  reqs=544
+t= 141.1 total PSS  1579.1 MiB  reqs=564
+t= 146.2 total PSS  1579.1 MiB  reqs=589
+t= 151.2 total PSS  1579.1 MiB  reqs=603
+t= 156.2 total PSS  1579.1 MiB  reqs=617
+t= 161.3 total PSS  1579.1 MiB  reqs=640
+t= 166.3 total PSS  1579.2 MiB  reqs=662
+t= 171.3 total PSS  1579.7 MiB  reqs=680
+t= 176.4 total PSS  1579.8 MiB  reqs=702
+t= 181.4 total PSS  1579.9 MiB  reqs=724
+t= 186.4 total PSS  1579.9 MiB  reqs=743
+t= 191.5 total PSS  1579.9 MiB  reqs=760
+t= 196.5 total PSS  1580.0 MiB  reqs=787
+t= 201.5 total PSS  1580.0 MiB  reqs=812
+t= 206.6 total PSS  1580.0 MiB  reqs=828
+t= 211.6 total PSS  1580.0 MiB  reqs=846
+t= 216.6 total PSS  1580.0 MiB  reqs=868
+t= 221.7 total PSS  1580.0 MiB  reqs=883
+t= 226.7 total PSS  1580.0 MiB  reqs=898
+t= 231.8 total PSS  1580.0 MiB  reqs=912
+t= 236.8 total PSS  1580.1 MiB  reqs=937
+t= 241.8 total PSS  1580.1 MiB  reqs=959
+t= 246.9 total PSS  1580.1 MiB  reqs=986
+t= 251.9 total PSS  1580.1 MiB  reqs=1009
+t= 256.9 total PSS  1580.1 MiB  reqs=1029
+t= 262.0 total PSS  1580.1 MiB  reqs=1047
+t= 267.0 total PSS  1580.1 MiB  reqs=1071
+t= 272.0 total PSS  1580.1 MiB  reqs=1089
+t= 277.1 total PSS  1580.2 MiB  reqs=1108
+t= 282.1 total PSS  1580.2 MiB  reqs=1121
+t= 287.1 total PSS  1580.2 MiB  reqs=1137
+t= 292.2 total PSS  1580.2 MiB  reqs=1153
+t= 297.2 total PSS  1580.2 MiB  reqs=1175
+
+Results written to scripts/memory_benchmark/results/run-20261105-095441/py3.14.10.json
+
+== py3.14.10 (Python 3.14.10) ==
+HTTP: {'requests': 1193, 'errors': 0, 'status': {302: 479, 200: 685, 404: 14, 403: 15}}
+group          n       RSS       PSS       USS  (MiB, final sample)
+memcached      1       8.8       6.1       6.0
+    339102      8.8      6.1      6.0  /usr/bin/memcached -m 24 -s /home/exedev/cciw/cciw-bench/py3.14.10/hom
+gunicorn       9     957.9     721.6     693.3
+    339112     26.5     14.7     13.6  gunicorn: master [cciw.wsgi]                                          
+    339118    216.7    168.5    162.2  gunicorn: worker [cciw.wsgi]                                          
+    339119    216.4    168.3    161.9  gunicorn: worker [cciw.wsgi]                                          
+    339120    218.0    169.8    163.4  gunicorn: worker [cciw.wsgi]                                          
+    339121    217.7    169.6    163.2  gunicorn: worker [cciw.wsgi]                                          
+    339151     15.7      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c from mu
+    339152     15.7      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c from mu
+    339150     15.7      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c from mu
+    339149     15.6      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c from mu
+runmailer      2     228.4     173.7     166.8
+    339113    212.7    166.0    159.6  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python /home/exed
+    339147     15.7      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c from mu
+django_q       8     898.3     678.8     651.3
+    339114    213.3    167.5    161.3  qcluster MainProcess one-cat-wisconsin-lactose                        
+    339148     15.7      7.7      7.2  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c from mu
+    339497     25.2     13.9     11.7  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c import 
+    339498    155.6    120.4    115.5  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c import 
+    339722     25.2     13.1     11.6  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python -c import 
+    339729    153.7    118.5    114.4  qcluster Process-d9ede2dc31574fb8bd776c538fcba2f4 idle                
+    339730    154.8    118.9    114.7  qcluster Process-8b6e4967104b4babb3067d5d4091710e monitor             
+    339731    154.8    118.8    114.7  qcluster Process-9d87be9eef3c49ac8349a3248bc69159 pusher              
+TOTAL               2093.5    1580.2    1517.4
+cron-like commands: {'retry_deferred': {'wall_s': 2.82, 'maxrss_kib': 217708}, 'check': {'wall_s': 2.51, 'maxrss_kib': 216312}}
+t=   0.0 total PSS  1065.2 MiB  reqs=0
+t=   5.1 total PSS  1066.7 MiB  reqs=16
+t=  10.1 total PSS  1073.3 MiB  reqs=36
+t=  15.1 total PSS  1073.7 MiB  reqs=60
+t=  20.2 total PSS  1083.8 MiB  reqs=77
+t=  25.2 total PSS  1084.3 MiB  reqs=106
+t=  30.2 total PSS  1084.8 MiB  reqs=120
+t=  35.3 total PSS  1085.0 MiB  reqs=140
+t=  40.3 total PSS  1085.6 MiB  reqs=158
+t=  45.4 total PSS  1085.9 MiB  reqs=184
+t=  50.4 total PSS  1086.3 MiB  reqs=197
+t=  55.4 total PSS  1086.5 MiB  reqs=222
+t=  60.5 total PSS  1086.6 MiB  reqs=242
+t=  65.5 total PSS  1086.7 MiB  reqs=262
+t=  70.5 total PSS  1086.9 MiB  reqs=283
+t=  75.6 total PSS  1087.3 MiB  reqs=302
+t=  80.6 total PSS  1087.4 MiB  reqs=320
+t=  85.6 total PSS  1087.4 MiB  reqs=345
+t=  90.7 total PSS  1087.6 MiB  reqs=367
+t=  95.7 total PSS  1087.7 MiB  reqs=383
+t= 100.8 total PSS  1087.9 MiB  reqs=397
+t= 105.8 total PSS  1088.3 MiB  reqs=420
+t= 110.9 total PSS  1088.5 MiB  reqs=443
+t= 115.9 total PSS  1088.5 MiB  reqs=464
+t= 121.0 total PSS  1088.5 MiB  reqs=482
+t= 126.0 total PSS  1088.8 MiB  reqs=500
+t= 131.0 total PSS  1088.9 MiB  reqs=524
+t= 136.1 total PSS  1088.9 MiB  reqs=543
+t= 141.1 total PSS  1088.9 MiB  reqs=562
+t= 146.1 total PSS  1089.0 MiB  reqs=586
+t= 151.2 total PSS  1089.1 MiB  reqs=603
+t= 156.2 total PSS  1089.2 MiB  reqs=617
+t= 161.3 total PSS  1089.3 MiB  reqs=640
+t= 166.3 total PSS  1089.4 MiB  reqs=662
+t= 171.3 total PSS  1089.9 MiB  reqs=681
+t= 176.4 total PSS  1090.0 MiB  reqs=704
+t= 181.4 total PSS  1090.1 MiB  reqs=724
+t= 186.4 total PSS  1090.2 MiB  reqs=742
+t= 191.5 total PSS  1090.3 MiB  reqs=761
+t= 196.6 total PSS  1090.5 MiB  reqs=790
+t= 201.6 total PSS  1090.5 MiB  reqs=813
+t= 206.7 total PSS  1090.6 MiB  reqs=828
+t= 211.7 total PSS  1090.6 MiB  reqs=845
+t= 216.7 total PSS  1090.6 MiB  reqs=867
+t= 221.8 total PSS  1090.6 MiB  reqs=884
+t= 226.8 total PSS  1090.8 MiB  reqs=898
+t= 231.9 total PSS  1090.8 MiB  reqs=910
+t= 236.9 total PSS  1090.8 MiB  reqs=934
+t= 241.9 total PSS  1090.8 MiB  reqs=958
+t= 247.0 total PSS  1090.9 MiB  reqs=984
+t= 252.0 total PSS  1090.9 MiB  reqs=1007
+t= 257.1 total PSS  1090.9 MiB  reqs=1026
+t= 262.1 total PSS  1090.9 MiB  reqs=1048
+t= 267.1 total PSS  1091.0 MiB  reqs=1071
+t= 272.2 total PSS  1091.0 MiB  reqs=1090
+t= 277.2 total PSS  1091.1 MiB  reqs=1109
+t= 282.3 total PSS  1091.1 MiB  reqs=1121
+t= 287.3 total PSS  1091.1 MiB  reqs=1135
+t= 292.3 total PSS  1091.1 MiB  reqs=1152
+t= 297.4 total PSS  1091.1 MiB  reqs=1174
+
+Results written to scripts/memory_benchmark/results/run-20261105-095441/py3.14.10-fork.json
+
+== py3.14.10-fork (Python 3.14.10) ==
+HTTP: {'requests': 1193, 'errors': 0, 'status': {200: 684, 302: 480, 404: 14, 403: 15}}
+group          n       RSS       PSS       USS  (MiB, final sample)
+memcached      1       8.9       6.2       5.9
+    340331      8.9      6.2      5.9  /usr/bin/memcached -m 24 -s /home/exedev/cciw/cciw-bench/py3.14.10/hom
+gunicorn       5     894.2     698.4     664.0
+    340341     26.7     15.4     13.9  gunicorn: master [cciw.wsgi]                                          
+    340347    217.4    171.2    163.0  gunicorn: worker [cciw.wsgi]                                          
+    340348    216.8    170.6    162.4  gunicorn: worker [cciw.wsgi]                                          
+    340349    216.8    170.7    162.4  gunicorn: worker [cciw.wsgi]                                          
+    340351    216.6    170.5    162.2  gunicorn: worker [cciw.wsgi]                                          
+runmailer      1     212.8     168.4     159.9
+    340342    212.8    168.4    159.9  /home/exedev/cciw/cciw-bench/py3.14.10/src/.venv/bin/python /home/exed
+django_q       5     894.6     218.0      53.1
+    340343    212.6     51.0     12.0  qcluster MainProcess hawaii-fish-thirteen-black                       
+    340720    171.9     42.3     10.9  qcluster MainProcess hawaii-fish-thirteen-black                       
+    340722    168.3     40.1      7.9  qcluster Process-c1b8bad7291b48a2ab9fba721ad816c3 idle                
+    340723    170.9     42.7     11.7  qcluster Process-f60111ed753e4645b5aa794b359874f2 monitor             
+    340724    170.9     42.0     10.7  qcluster Process-736085a0d4d14d08ac14b3a4537d60f8 pusher              
+TOTAL               2010.4    1091.1     882.9
+cron-like commands: {'retry_deferred': {'wall_s': 2.84, 'maxrss_kib': 217540}, 'check': {'wall_s': 2.57, 'maxrss_kib': 216632}}

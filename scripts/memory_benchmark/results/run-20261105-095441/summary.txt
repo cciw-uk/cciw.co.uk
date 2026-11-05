@@ -1,0 +1,13 @@
+run                   gunicorn n/PSS   runmailer n/PSS    django_q n/PSS   memcached n/PSS  TOTAL PSS  TOTAL USS cron maxRSS
+py3.13.13                5 /   635.8       1 /   153.8       5 /   204.1       1 /     6.2     1000.0      806.8       195.9
+py3.13.18                5 /   635.3       1 /   155.0       5 /   201.1       1 /     6.2      997.7      807.4       195.9
+py3.14.10-fork           5 /   698.4       1 /   168.4       5 /   218.0       1 /     6.2     1091.1      882.9       212.4
+py3.14.10                9 /   721.6       2 /   173.7       8 /   678.8       1 /     6.1     1580.2     1517.4       212.6
+py3.14.4                 9 /   750.0       2 /   173.7       8 /   677.6       1 /     6.1     1607.4     1544.9       211.7
+
+Timeline of total PSS (MiB), max over the run:
+  py3.13.13          start   972.3  end  1000.0  max  1000.0  (60 samples, 1193 requests)
+  py3.13.18          start   972.3  end   997.7  max   997.7  (60 samples, 1194 requests)
+  py3.14.10-fork     start  1065.2  end  1091.1  max  1091.1  (60 samples, 1193 requests)
+  py3.14.10          start  1571.0  end  1580.2  max  1580.2  (60 samples, 1193 requests)
+  py3.14.4           start  1572.4  end  1607.4  max  1607.4  (60 samples, 1197 requests)
