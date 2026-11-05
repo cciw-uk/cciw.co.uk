@@ -2,7 +2,6 @@
 import signal
 import faulthandler
 import json
-import multiprocessing
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -11,17 +10,6 @@ import subprocess
 import sys
 
 hostname = socket.gethostname()
-
-# Python 3.14 changed the default multiprocessing start method on Linux from
-# "fork" to "forkserver". django-q (qcluster) uses multiprocessing, and with
-# "forkserver" every child process (sentinel, pusher, monitor, workers) does a
-# full, unshared import of Django + our project (~115 MB each), and every
-# process importing django_q also starts a multiprocessing resource_tracker
-# process. On a 1 GB server this was ~+500 MB and caused heavy swapping.
-# See scripts/memory_benchmark/README.rst
-if multiprocessing.get_start_method(allow_none=True) is None:
-    multiprocessing.set_start_method("fork")
-
 
 # resolve is important for removing symlinks, which can affect behaviour
 basepath = Path(os.path.abspath(__file__)).resolve().parent.parent
