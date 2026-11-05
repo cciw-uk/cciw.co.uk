@@ -8,7 +8,6 @@ This assumes a Linux machine, but Windows/Mac may work.
 
 First, install:
 
-- `uv <https://docs.astral.sh/uv/>`_. This will be used to install Python and manage all Python dependencies
 - `Nix <https://nix.dev/>`_
 - `Devbox <https://www.jetify.com/docs/devbox/>`_. Devbox (which relies on Nix) will install all other “system” dependencies.
 

@@ -3,7 +3,8 @@
   "packages": [
     "postgresql@16",
     "glibcLocales@latest",
-    "bogofilter@latest"
+    "bogofilter@latest",
+    "uv@latest"
   ],
   "shell": {
     "init_hook": [
